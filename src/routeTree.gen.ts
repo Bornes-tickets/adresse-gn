@@ -18,6 +18,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ANumberRouteImport } from './routes/a.$number'
 import { Route as AgentGuardRouteRouteImport } from './routes/agent/_guard/route'
 import { Route as EtablissementNumberRouteImport } from './routes/etablissement.$number'
+import { Route as AgentGuardIndexRouteImport } from './routes/agent/_guard/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -64,6 +65,11 @@ const EtablissementNumberRoute = EtablissementNumberRouteImport.update({
   path: '/etablissement/$number',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AgentGuardIndexRoute = AgentGuardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AgentGuardRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -72,9 +78,10 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
   '/signup': typeof SignupRoute
-  '/agent': typeof AgentGuardRouteRoute
+  '/agent': typeof AgentGuardRouteRouteWithChildren
   '/a/$number': typeof ANumberRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
+  '/agent/': typeof AgentGuardIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -83,9 +90,9 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
   '/signup': typeof SignupRoute
-  '/agent': typeof AgentGuardRouteRoute
   '/a/$number': typeof ANumberRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
+  '/agent': typeof AgentGuardIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -95,9 +102,10 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
   '/signup': typeof SignupRoute
-  '/agent/_guard': typeof AgentGuardRouteRoute
+  '/agent/_guard': typeof AgentGuardRouteRouteWithChildren
   '/a/$number': typeof ANumberRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
+  '/agent/_guard/': typeof AgentGuardIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -111,6 +119,7 @@ export interface FileRouteTypes {
     | '/agent'
     | '/a/$number'
     | '/etablissement/$number'
+    | '/agent/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -119,9 +128,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/logout'
     | '/signup'
-    | '/agent'
     | '/a/$number'
     | '/etablissement/$number'
+    | '/agent'
   id:
     | '__root__'
     | '/'
@@ -133,6 +142,7 @@ export interface FileRouteTypes {
     | '/agent/_guard'
     | '/a/$number'
     | '/etablissement/$number'
+    | '/agent/_guard/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -142,7 +152,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   LogoutRoute: typeof LogoutRoute
   SignupRoute: typeof SignupRoute
-  AgentGuardRouteRoute: typeof AgentGuardRouteRoute
+  AgentGuardRouteRoute: typeof AgentGuardRouteRouteWithChildren
   ANumberRoute: typeof ANumberRoute
   EtablissementNumberRoute: typeof EtablissementNumberRoute
 }
@@ -212,8 +222,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EtablissementNumberRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/agent/_guard/': {
+      id: '/agent/_guard/'
+      path: '/'
+      fullPath: '/agent/'
+      preLoaderRoute: typeof AgentGuardIndexRouteImport
+      parentRoute: typeof AgentGuardRouteRoute
+    }
   }
 }
+
+interface AgentGuardRouteRouteChildren {
+  AgentGuardIndexRoute: typeof AgentGuardIndexRoute
+}
+
+const AgentGuardRouteRouteChildren: AgentGuardRouteRouteChildren = {
+  AgentGuardIndexRoute: AgentGuardIndexRoute,
+}
+
+const AgentGuardRouteRouteWithChildren = AgentGuardRouteRoute._addFileChildren(
+  AgentGuardRouteRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -222,7 +251,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   LogoutRoute: LogoutRoute,
   SignupRoute: SignupRoute,
-  AgentGuardRouteRoute: AgentGuardRouteRoute,
+  AgentGuardRouteRoute: AgentGuardRouteRouteWithChildren,
   ANumberRoute: ANumberRoute,
   EtablissementNumberRoute: EtablissementNumberRoute,
 }
