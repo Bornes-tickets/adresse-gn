@@ -46,14 +46,16 @@ export async function performInstall(
       .maybeSingle();
 
     if (existante) {
-      const { data: adresseExistante } = await supabaseAdmin
-        .from("addresses")
-        .select("id")
-        .eq("beacon_id", existante.beacon_id)
-        .maybeSingle();
+      const { data: adresseExistante } = existante.beacon_id
+        ? await supabaseAdmin
+            .from("addresses")
+            .select("id")
+            .eq("beacon_id", existante.beacon_id)
+            .maybeSingle()
+        : { data: null };
       return {
         success: true,
-        address_id: adresseExistante?.id,
+        ...(adresseExistante?.id ? { address_id: adresseExistante.id } : {}),
         public_url: `/a/${payload.beacon_number}`,
       };
     }
