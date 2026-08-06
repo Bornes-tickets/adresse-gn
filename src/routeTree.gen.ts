@@ -28,6 +28,7 @@ import { Route as AdminGuardInstallationsRouteImport } from './routes/admin/_gua
 import { Route as AdminGuardLotsRouteImport } from './routes/admin/_guard/lots'
 import { Route as AdminGuardReportsRouteImport } from './routes/admin/_guard/reports'
 import { Route as AdminGuardUsersRouteImport } from './routes/admin/_guard/users'
+import { Route as AdminGuardZonesRouteImport } from './routes/admin/_guard/zones'
 import { Route as AgentGuardIndexRouteImport } from './routes/agent/_guard/index'
 import { Route as AgentGuardHistoryRouteImport } from './routes/agent/_guard/history'
 import { Route as AgentGuardProfileRouteImport } from './routes/agent/_guard/profile'
@@ -130,6 +131,11 @@ const AdminGuardUsersRoute = AdminGuardUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AdminGuardRouteRoute,
 } as any)
+const AdminGuardZonesRoute = AdminGuardZonesRouteImport.update({
+  id: '/zones',
+  path: '/zones',
+  getParentRoute: () => AdminGuardRouteRoute,
+} as any)
 const AgentGuardIndexRoute = AgentGuardIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -180,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/admin/lots': typeof AdminGuardLotsRoute
   '/admin/reports': typeof AdminGuardReportsRoute
   '/admin/users': typeof AdminGuardUsersRoute
+  '/admin/zones': typeof AdminGuardZonesRoute
   '/agent/history': typeof AgentGuardHistoryRoute
   '/agent/profile': typeof AgentGuardProfileRoute
   '/agent/sync-issues': typeof AgentGuardSyncIssuesRoute
@@ -205,6 +212,7 @@ export interface FileRoutesByTo {
   '/admin/lots': typeof AdminGuardLotsRoute
   '/admin/reports': typeof AdminGuardReportsRoute
   '/admin/users': typeof AdminGuardUsersRoute
+  '/admin/zones': typeof AdminGuardZonesRoute
   '/agent/history': typeof AgentGuardHistoryRoute
   '/agent/profile': typeof AgentGuardProfileRoute
   '/agent/sync-issues': typeof AgentGuardSyncIssuesRoute
@@ -233,6 +241,7 @@ export interface FileRoutesById {
   '/admin/_guard/lots': typeof AdminGuardLotsRoute
   '/admin/_guard/reports': typeof AdminGuardReportsRoute
   '/admin/_guard/users': typeof AdminGuardUsersRoute
+  '/admin/_guard/zones': typeof AdminGuardZonesRoute
   '/agent/_guard/history': typeof AgentGuardHistoryRoute
   '/agent/_guard/profile': typeof AgentGuardProfileRoute
   '/agent/_guard/sync-issues': typeof AgentGuardSyncIssuesRoute
@@ -262,6 +271,7 @@ export interface FileRouteTypes {
     | '/admin/lots'
     | '/admin/reports'
     | '/admin/users'
+    | '/admin/zones'
     | '/agent/history'
     | '/agent/profile'
     | '/agent/sync-issues'
@@ -287,6 +297,7 @@ export interface FileRouteTypes {
     | '/admin/lots'
     | '/admin/reports'
     | '/admin/users'
+    | '/admin/zones'
     | '/agent/history'
     | '/agent/profile'
     | '/agent/sync-issues'
@@ -314,6 +325,7 @@ export interface FileRouteTypes {
     | '/admin/_guard/lots'
     | '/admin/_guard/reports'
     | '/admin/_guard/users'
+    | '/admin/_guard/zones'
     | '/agent/_guard/history'
     | '/agent/_guard/profile'
     | '/agent/_guard/sync-issues'
@@ -472,6 +484,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminGuardUsersRouteImport
       parentRoute: typeof AdminGuardRouteRoute
     }
+    '/admin/_guard/zones': {
+      id: '/admin/_guard/zones'
+      path: '/zones'
+      fullPath: '/admin/zones'
+      preLoaderRoute: typeof AdminGuardZonesRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
     '/agent/_guard/': {
       id: '/agent/_guard/'
       path: '/'
@@ -525,6 +544,7 @@ interface AdminGuardRouteRouteChildren {
   AdminGuardLotsRoute: typeof AdminGuardLotsRoute
   AdminGuardReportsRoute: typeof AdminGuardReportsRoute
   AdminGuardUsersRoute: typeof AdminGuardUsersRoute
+  AdminGuardZonesRoute: typeof AdminGuardZonesRoute
   AdminGuardIndexRoute: typeof AdminGuardIndexRoute
 }
 
@@ -536,6 +556,7 @@ const AdminGuardRouteRouteChildren: AdminGuardRouteRouteChildren = {
   AdminGuardLotsRoute: AdminGuardLotsRoute,
   AdminGuardReportsRoute: AdminGuardReportsRoute,
   AdminGuardUsersRoute: AdminGuardUsersRoute,
+  AdminGuardZonesRoute: AdminGuardZonesRoute,
   AdminGuardIndexRoute: AdminGuardIndexRoute,
 }
 
