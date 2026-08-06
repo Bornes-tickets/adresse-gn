@@ -38,6 +38,7 @@ import { Route as AgentGuardProfileRouteImport } from './routes/agent/_guard/pro
 import { Route as AgentGuardSyncIssuesRouteImport } from './routes/agent/_guard/sync-issues'
 import { Route as AgentGuardTasksRouteImport } from './routes/agent/_guard/tasks'
 import { Route as MonCompteGuardIndexRouteImport } from './routes/mon-compte/_guard/index'
+import { Route as MonCompteGuardBeaconsRouteImport } from './routes/mon-compte/_guard/beacons'
 import { Route as AgentGuardInstallNumberRouteImport } from './routes/agent/_guard/install.$number'
 
 const IndexRoute = IndexRouteImport.update({
@@ -185,6 +186,11 @@ const MonCompteGuardIndexRoute = MonCompteGuardIndexRouteImport.update({
   path: '/',
   getParentRoute: () => MonCompteGuardRouteRoute,
 } as any)
+const MonCompteGuardBeaconsRoute = MonCompteGuardBeaconsRouteImport.update({
+  id: '/beacons',
+  path: '/beacons',
+  getParentRoute: () => MonCompteGuardRouteRoute,
+} as any)
 const AgentGuardInstallNumberRoute = AgentGuardInstallNumberRouteImport.update({
   id: '/install/$number',
   path: '/install/$number',
@@ -218,6 +224,7 @@ export interface FileRoutesByFullPath {
   '/agent/profile': typeof AgentGuardProfileRoute
   '/agent/sync-issues': typeof AgentGuardSyncIssuesRoute
   '/agent/tasks': typeof AgentGuardTasksRoute
+  '/mon-compte/beacons': typeof MonCompteGuardBeaconsRoute
   '/admin/': typeof AdminGuardIndexRoute
   '/agent/': typeof AgentGuardIndexRoute
   '/mon-compte/': typeof MonCompteGuardIndexRoute
@@ -247,6 +254,7 @@ export interface FileRoutesByTo {
   '/agent/profile': typeof AgentGuardProfileRoute
   '/agent/sync-issues': typeof AgentGuardSyncIssuesRoute
   '/agent/tasks': typeof AgentGuardTasksRoute
+  '/mon-compte/beacons': typeof MonCompteGuardBeaconsRoute
   '/admin': typeof AdminGuardIndexRoute
   '/agent': typeof AgentGuardIndexRoute
   '/mon-compte': typeof MonCompteGuardIndexRoute
@@ -280,6 +288,7 @@ export interface FileRoutesById {
   '/agent/_guard/profile': typeof AgentGuardProfileRoute
   '/agent/_guard/sync-issues': typeof AgentGuardSyncIssuesRoute
   '/agent/_guard/tasks': typeof AgentGuardTasksRoute
+  '/mon-compte/_guard/beacons': typeof MonCompteGuardBeaconsRoute
   '/admin/_guard/': typeof AdminGuardIndexRoute
   '/agent/_guard/': typeof AgentGuardIndexRoute
   '/mon-compte/_guard/': typeof MonCompteGuardIndexRoute
@@ -314,6 +323,7 @@ export interface FileRouteTypes {
     | '/agent/profile'
     | '/agent/sync-issues'
     | '/agent/tasks'
+    | '/mon-compte/beacons'
     | '/admin/'
     | '/agent/'
     | '/mon-compte/'
@@ -343,6 +353,7 @@ export interface FileRouteTypes {
     | '/agent/profile'
     | '/agent/sync-issues'
     | '/agent/tasks'
+    | '/mon-compte/beacons'
     | '/admin'
     | '/agent'
     | '/mon-compte'
@@ -375,6 +386,7 @@ export interface FileRouteTypes {
     | '/agent/_guard/profile'
     | '/agent/_guard/sync-issues'
     | '/agent/_guard/tasks'
+    | '/mon-compte/_guard/beacons'
     | '/admin/_guard/'
     | '/agent/_guard/'
     | '/mon-compte/_guard/'
@@ -601,6 +613,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MonCompteGuardIndexRouteImport
       parentRoute: typeof MonCompteGuardRouteRoute
     }
+    '/mon-compte/_guard/beacons': {
+      id: '/mon-compte/_guard/beacons'
+      path: '/beacons'
+      fullPath: '/mon-compte/beacons'
+      preLoaderRoute: typeof MonCompteGuardBeaconsRouteImport
+      parentRoute: typeof MonCompteGuardRouteRoute
+    }
     '/agent/_guard/install/$number': {
       id: '/agent/_guard/install/$number'
       path: '/install/$number'
@@ -666,10 +685,12 @@ const AgentGuardRouteRouteWithChildren = AgentGuardRouteRoute._addFileChildren(
 )
 
 interface MonCompteGuardRouteRouteChildren {
+  MonCompteGuardBeaconsRoute: typeof MonCompteGuardBeaconsRoute
   MonCompteGuardIndexRoute: typeof MonCompteGuardIndexRoute
 }
 
 const MonCompteGuardRouteRouteChildren: MonCompteGuardRouteRouteChildren = {
+  MonCompteGuardBeaconsRoute: MonCompteGuardBeaconsRoute,
   MonCompteGuardIndexRoute: MonCompteGuardIndexRoute,
 }
 
