@@ -54,12 +54,26 @@ export function Layout({ children }: { children: ReactNode }) {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
+                  <Link to="/mon-compte" className="flex items-center gap-2">
+                    <UserIcon className="size-4" />
+                    Mon compte
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/pro" className="flex items-center gap-2">
+                    <Briefcase className="size-4" />
+                    Espace pro
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
                   <Link to="/logout" className="flex items-center gap-2">
                     <LogOut className="size-4" />
                     Se déconnecter
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
+
             </DropdownMenu>
           ) : (
             <Button asChild variant="outline">

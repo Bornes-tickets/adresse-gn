@@ -46,6 +46,7 @@ import { Route as MonCompteGuardFavoritesRouteImport } from './routes/mon-compte
 import { Route as MonCompteGuardReportsRouteImport } from './routes/mon-compte/_guard/reports'
 import { Route as MonCompteGuardSettingsRouteImport } from './routes/mon-compte/_guard/settings'
 import { Route as ProGuardIndexRouteImport } from './routes/pro/_guard/index'
+import { Route as ProGuardApiRouteImport } from './routes/pro/_guard/api'
 import { Route as ProGuardEquipeRouteImport } from './routes/pro/_guard/equipe'
 import { Route as ProGuardEtablissementsRouteImport } from './routes/pro/_guard/etablissements'
 import { Route as ProGuardFacturationRouteImport } from './routes/pro/_guard/facturation'
@@ -237,6 +238,11 @@ const ProGuardIndexRoute = ProGuardIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ProGuardRouteRoute,
 } as any)
+const ProGuardApiRoute = ProGuardApiRouteImport.update({
+  id: '/api',
+  path: '/api',
+  getParentRoute: () => ProGuardRouteRoute,
+} as any)
 const ProGuardEquipeRoute = ProGuardEquipeRouteImport.update({
   id: '/equipe',
   path: '/equipe',
@@ -297,6 +303,7 @@ export interface FileRoutesByFullPath {
   '/mon-compte/favorites': typeof MonCompteGuardFavoritesRoute
   '/mon-compte/reports': typeof MonCompteGuardReportsRoute
   '/mon-compte/settings': typeof MonCompteGuardSettingsRoute
+  '/pro/api': typeof ProGuardApiRoute
   '/pro/equipe': typeof ProGuardEquipeRoute
   '/pro/etablissements': typeof ProGuardEtablissementsRoute
   '/pro/facturation': typeof ProGuardFacturationRoute
@@ -337,6 +344,7 @@ export interface FileRoutesByTo {
   '/mon-compte/favorites': typeof MonCompteGuardFavoritesRoute
   '/mon-compte/reports': typeof MonCompteGuardReportsRoute
   '/mon-compte/settings': typeof MonCompteGuardSettingsRoute
+  '/pro/api': typeof ProGuardApiRoute
   '/pro/equipe': typeof ProGuardEquipeRoute
   '/pro/etablissements': typeof ProGuardEtablissementsRoute
   '/pro/facturation': typeof ProGuardFacturationRoute
@@ -382,6 +390,7 @@ export interface FileRoutesById {
   '/mon-compte/_guard/favorites': typeof MonCompteGuardFavoritesRoute
   '/mon-compte/_guard/reports': typeof MonCompteGuardReportsRoute
   '/mon-compte/_guard/settings': typeof MonCompteGuardSettingsRoute
+  '/pro/_guard/api': typeof ProGuardApiRoute
   '/pro/_guard/equipe': typeof ProGuardEquipeRoute
   '/pro/_guard/etablissements': typeof ProGuardEtablissementsRoute
   '/pro/_guard/facturation': typeof ProGuardFacturationRoute
@@ -428,6 +437,7 @@ export interface FileRouteTypes {
     | '/mon-compte/favorites'
     | '/mon-compte/reports'
     | '/mon-compte/settings'
+    | '/pro/api'
     | '/pro/equipe'
     | '/pro/etablissements'
     | '/pro/facturation'
@@ -468,6 +478,7 @@ export interface FileRouteTypes {
     | '/mon-compte/favorites'
     | '/mon-compte/reports'
     | '/mon-compte/settings'
+    | '/pro/api'
     | '/pro/equipe'
     | '/pro/etablissements'
     | '/pro/facturation'
@@ -512,6 +523,7 @@ export interface FileRouteTypes {
     | '/mon-compte/_guard/favorites'
     | '/mon-compte/_guard/reports'
     | '/mon-compte/_guard/settings'
+    | '/pro/_guard/api'
     | '/pro/_guard/equipe'
     | '/pro/_guard/etablissements'
     | '/pro/_guard/facturation'
@@ -801,6 +813,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProGuardIndexRouteImport
       parentRoute: typeof ProGuardRouteRoute
     }
+    '/pro/_guard/api': {
+      id: '/pro/_guard/api'
+      path: '/api'
+      fullPath: '/pro/api'
+      preLoaderRoute: typeof ProGuardApiRouteImport
+      parentRoute: typeof ProGuardRouteRoute
+    }
     '/pro/_guard/equipe': {
       id: '/pro/_guard/equipe'
       path: '/equipe'
@@ -915,6 +934,7 @@ const MonCompteGuardRouteRouteWithChildren =
   MonCompteGuardRouteRoute._addFileChildren(MonCompteGuardRouteRouteChildren)
 
 interface ProGuardRouteRouteChildren {
+  ProGuardApiRoute: typeof ProGuardApiRoute
   ProGuardEquipeRoute: typeof ProGuardEquipeRoute
   ProGuardEtablissementsRoute: typeof ProGuardEtablissementsRoute
   ProGuardFacturationRoute: typeof ProGuardFacturationRoute
@@ -923,6 +943,7 @@ interface ProGuardRouteRouteChildren {
 }
 
 const ProGuardRouteRouteChildren: ProGuardRouteRouteChildren = {
+  ProGuardApiRoute: ProGuardApiRoute,
   ProGuardEquipeRoute: ProGuardEquipeRoute,
   ProGuardEtablissementsRoute: ProGuardEtablissementsRoute,
   ProGuardFacturationRoute: ProGuardFacturationRoute,
