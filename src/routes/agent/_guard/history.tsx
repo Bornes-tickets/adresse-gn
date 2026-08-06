@@ -97,7 +97,15 @@ function History() {
 
       <ul className="space-y-3">
         {data?.map((ligne) => {
-          const categorie = ligne.beacons?.addresses?.[0]?.category ?? null;
+          const adresses = ligne.beacons?.addresses as
+            | { category: string }
+            | { category: string }[]
+            | null
+            | undefined;
+          const categorie = Array.isArray(adresses)
+            ? (adresses[0]?.category ?? null)
+            : (adresses?.category ?? null);
+
           return (
             <li key={ligne.id}>
               <Card>
