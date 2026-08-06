@@ -39,6 +39,10 @@ export const submitInstallation = createServerFn({ method: "POST" })
       owner_name: input.owner_name ? String(input.owner_name).slice(0, 160) : null,
       owner_phone: input.owner_phone ? String(input.owner_phone).slice(0, 40) : null,
       consent: true,
+      client_uuid:
+        typeof input.client_uuid === "string" && /^[0-9a-f-]{36}$/i.test(input.client_uuid)
+          ? input.client_uuid
+          : null,
     } satisfies InstallPayload;
   })
   .handler(async ({ data, context }): Promise<InstallResult> => {
