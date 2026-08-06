@@ -46,6 +46,7 @@ import { Route as MonCompteGuardFavoritesRouteImport } from './routes/mon-compte
 import { Route as MonCompteGuardReportsRouteImport } from './routes/mon-compte/_guard/reports'
 import { Route as MonCompteGuardSettingsRouteImport } from './routes/mon-compte/_guard/settings'
 import { Route as ProGuardIndexRouteImport } from './routes/pro/_guard/index'
+import { Route as ProGuardEtablissementsRouteImport } from './routes/pro/_guard/etablissements'
 import { Route as AgentGuardInstallNumberRouteImport } from './routes/agent/_guard/install.$number'
 
 const IndexRoute = IndexRouteImport.update({
@@ -233,6 +234,11 @@ const ProGuardIndexRoute = ProGuardIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ProGuardRouteRoute,
 } as any)
+const ProGuardEtablissementsRoute = ProGuardEtablissementsRouteImport.update({
+  id: '/etablissements',
+  path: '/etablissements',
+  getParentRoute: () => ProGuardRouteRoute,
+} as any)
 const AgentGuardInstallNumberRoute = AgentGuardInstallNumberRouteImport.update({
   id: '/install/$number',
   path: '/install/$number',
@@ -273,6 +279,7 @@ export interface FileRoutesByFullPath {
   '/mon-compte/favorites': typeof MonCompteGuardFavoritesRoute
   '/mon-compte/reports': typeof MonCompteGuardReportsRoute
   '/mon-compte/settings': typeof MonCompteGuardSettingsRoute
+  '/pro/etablissements': typeof ProGuardEtablissementsRoute
   '/admin/': typeof AdminGuardIndexRoute
   '/agent/': typeof AgentGuardIndexRoute
   '/mon-compte/': typeof MonCompteGuardIndexRoute
@@ -309,6 +316,7 @@ export interface FileRoutesByTo {
   '/mon-compte/favorites': typeof MonCompteGuardFavoritesRoute
   '/mon-compte/reports': typeof MonCompteGuardReportsRoute
   '/mon-compte/settings': typeof MonCompteGuardSettingsRoute
+  '/pro/etablissements': typeof ProGuardEtablissementsRoute
   '/admin': typeof AdminGuardIndexRoute
   '/agent': typeof AgentGuardIndexRoute
   '/mon-compte': typeof MonCompteGuardIndexRoute
@@ -350,6 +358,7 @@ export interface FileRoutesById {
   '/mon-compte/_guard/favorites': typeof MonCompteGuardFavoritesRoute
   '/mon-compte/_guard/reports': typeof MonCompteGuardReportsRoute
   '/mon-compte/_guard/settings': typeof MonCompteGuardSettingsRoute
+  '/pro/_guard/etablissements': typeof ProGuardEtablissementsRoute
   '/admin/_guard/': typeof AdminGuardIndexRoute
   '/agent/_guard/': typeof AgentGuardIndexRoute
   '/mon-compte/_guard/': typeof MonCompteGuardIndexRoute
@@ -392,6 +401,7 @@ export interface FileRouteTypes {
     | '/mon-compte/favorites'
     | '/mon-compte/reports'
     | '/mon-compte/settings'
+    | '/pro/etablissements'
     | '/admin/'
     | '/agent/'
     | '/mon-compte/'
@@ -428,6 +438,7 @@ export interface FileRouteTypes {
     | '/mon-compte/favorites'
     | '/mon-compte/reports'
     | '/mon-compte/settings'
+    | '/pro/etablissements'
     | '/admin'
     | '/agent'
     | '/mon-compte'
@@ -468,6 +479,7 @@ export interface FileRouteTypes {
     | '/mon-compte/_guard/favorites'
     | '/mon-compte/_guard/reports'
     | '/mon-compte/_guard/settings'
+    | '/pro/_guard/etablissements'
     | '/admin/_guard/'
     | '/agent/_guard/'
     | '/mon-compte/_guard/'
@@ -753,6 +765,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProGuardIndexRouteImport
       parentRoute: typeof ProGuardRouteRoute
     }
+    '/pro/_guard/etablissements': {
+      id: '/pro/_guard/etablissements'
+      path: '/etablissements'
+      fullPath: '/pro/etablissements'
+      preLoaderRoute: typeof ProGuardEtablissementsRouteImport
+      parentRoute: typeof ProGuardRouteRoute
+    }
     '/agent/_guard/install/$number': {
       id: '/agent/_guard/install/$number'
       path: '/install/$number'
@@ -839,10 +858,12 @@ const MonCompteGuardRouteRouteWithChildren =
   MonCompteGuardRouteRoute._addFileChildren(MonCompteGuardRouteRouteChildren)
 
 interface ProGuardRouteRouteChildren {
+  ProGuardEtablissementsRoute: typeof ProGuardEtablissementsRoute
   ProGuardIndexRoute: typeof ProGuardIndexRoute
 }
 
 const ProGuardRouteRouteChildren: ProGuardRouteRouteChildren = {
+  ProGuardEtablissementsRoute: ProGuardEtablissementsRoute,
   ProGuardIndexRoute: ProGuardIndexRoute,
 }
 
