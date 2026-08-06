@@ -15,6 +15,7 @@ import { Route as ConfidentialiteRouteImport } from './routes/confidentialite'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LogoutRouteImport } from './routes/logout'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as TarifsRouteImport } from './routes/tarifs'
 import { Route as ANumberRouteImport } from './routes/a.$number'
 import { Route as AdminGuardRouteRouteImport } from './routes/admin/_guard/route'
 import { Route as AgentGuardRouteRouteImport } from './routes/agent/_guard/route'
@@ -81,6 +82,11 @@ const LogoutRoute = LogoutRouteImport.update({
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TarifsRoute = TarifsRouteImport.update({
+  id: '/tarifs',
+  path: '/tarifs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ANumberRoute = ANumberRouteImport.update({
@@ -276,6 +282,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
   '/signup': typeof SignupRoute
+  '/tarifs': typeof TarifsRoute
   '/admin': typeof AdminGuardRouteRouteWithChildren
   '/agent': typeof AgentGuardRouteRouteWithChildren
   '/mon-compte': typeof MonCompteGuardRouteRouteWithChildren
@@ -321,6 +328,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
   '/signup': typeof SignupRoute
+  '/tarifs': typeof TarifsRoute
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
@@ -363,6 +371,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
   '/signup': typeof SignupRoute
+  '/tarifs': typeof TarifsRoute
   '/admin/_guard': typeof AdminGuardRouteRouteWithChildren
   '/agent/_guard': typeof AgentGuardRouteRouteWithChildren
   '/mon-compte/_guard': typeof MonCompteGuardRouteRouteWithChildren
@@ -410,6 +419,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/logout'
     | '/signup'
+    | '/tarifs'
     | '/admin'
     | '/agent'
     | '/mon-compte'
@@ -455,6 +465,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/logout'
     | '/signup'
+    | '/tarifs'
     | '/a/$number'
     | '/agent/login'
     | '/etablissement/$number'
@@ -496,6 +507,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/logout'
     | '/signup'
+    | '/tarifs'
     | '/admin/_guard'
     | '/agent/_guard'
     | '/mon-compte/_guard'
@@ -542,6 +554,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   LogoutRoute: typeof LogoutRoute
   SignupRoute: typeof SignupRoute
+  TarifsRoute: typeof TarifsRoute
   AdminGuardRouteRoute: typeof AdminGuardRouteRouteWithChildren
   AgentGuardRouteRoute: typeof AgentGuardRouteRouteWithChildren
   MonCompteGuardRouteRoute: typeof MonCompteGuardRouteRouteWithChildren
@@ -594,6 +607,13 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tarifs': {
+      id: '/tarifs'
+      path: '/tarifs'
+      fullPath: '/tarifs'
+      preLoaderRoute: typeof TarifsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/a/$number': {
@@ -962,6 +982,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   LogoutRoute: LogoutRoute,
   SignupRoute: SignupRoute,
+  TarifsRoute: TarifsRoute,
   AdminGuardRouteRoute: AdminGuardRouteRouteWithChildren,
   AgentGuardRouteRoute: AgentGuardRouteRouteWithChildren,
   MonCompteGuardRouteRoute: MonCompteGuardRouteRouteWithChildren,
@@ -974,13 +995,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
