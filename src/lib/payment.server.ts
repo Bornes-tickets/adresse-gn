@@ -546,10 +546,13 @@ async function genererFacture(commande: any, items: OrderItem[], profil: any) {
     .maybeSingle();
   if (deja?.pdf_url) return deja;
 
-  const { data: numeroData } = await db.rpc("next_invoice_ref");
-  const numero =
-    (numeroData as string | null) ??
-    `INV-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-0001`;
+  const jour = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const { count: dejaEmises } = await db
+    .from("invoices")
+    .select("id", { count: "exact", head: true })
+    .like("number", `INV-${jour}-%`);
+  const numero = `INV-${jour}-${String((dejaEmises ?? 0) + 1).padStart(4, "0")}`;
+
   const emisLe = new Date().toISOString();
 
   const { data: utilisateur } = await supabaseAdmin.auth.admin.getUserById(
