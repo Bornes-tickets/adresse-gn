@@ -34,6 +34,7 @@ import { Route as AdminGuardBeaconsRouteImport } from './routes/admin/_guard/bea
 import { Route as AdminGuardClaimsRouteImport } from './routes/admin/_guard/claims'
 import { Route as AdminGuardInstallationsRouteImport } from './routes/admin/_guard/installations'
 import { Route as AdminGuardLotsRouteImport } from './routes/admin/_guard/lots'
+import { Route as AdminGuardPaymentsRouteImport } from './routes/admin/_guard/payments'
 import { Route as AdminGuardReportsRouteImport } from './routes/admin/_guard/reports'
 import { Route as AdminGuardUsersRouteImport } from './routes/admin/_guard/users'
 import { Route as AdminGuardZonesRouteImport } from './routes/admin/_guard/zones'
@@ -181,6 +182,11 @@ const AdminGuardLotsRoute = AdminGuardLotsRouteImport.update({
   path: '/lots',
   getParentRoute: () => AdminGuardRouteRoute,
 } as any)
+const AdminGuardPaymentsRoute = AdminGuardPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => AdminGuardRouteRoute,
+} as any)
 const AdminGuardReportsRoute = AdminGuardReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
@@ -313,6 +319,7 @@ export interface FileRoutesByFullPath {
   '/admin/claims': typeof AdminGuardClaimsRoute
   '/admin/installations': typeof AdminGuardInstallationsRoute
   '/admin/lots': typeof AdminGuardLotsRoute
+  '/admin/payments': typeof AdminGuardPaymentsRoute
   '/admin/reports': typeof AdminGuardReportsRoute
   '/admin/users': typeof AdminGuardUsersRoute
   '/admin/zones': typeof AdminGuardZonesRoute
@@ -357,6 +364,7 @@ export interface FileRoutesByTo {
   '/admin/claims': typeof AdminGuardClaimsRoute
   '/admin/installations': typeof AdminGuardInstallationsRoute
   '/admin/lots': typeof AdminGuardLotsRoute
+  '/admin/payments': typeof AdminGuardPaymentsRoute
   '/admin/reports': typeof AdminGuardReportsRoute
   '/admin/users': typeof AdminGuardUsersRoute
   '/admin/zones': typeof AdminGuardZonesRoute
@@ -406,6 +414,7 @@ export interface FileRoutesById {
   '/admin/_guard/claims': typeof AdminGuardClaimsRoute
   '/admin/_guard/installations': typeof AdminGuardInstallationsRoute
   '/admin/_guard/lots': typeof AdminGuardLotsRoute
+  '/admin/_guard/payments': typeof AdminGuardPaymentsRoute
   '/admin/_guard/reports': typeof AdminGuardReportsRoute
   '/admin/_guard/users': typeof AdminGuardUsersRoute
   '/admin/_guard/zones': typeof AdminGuardZonesRoute
@@ -456,6 +465,7 @@ export interface FileRouteTypes {
     | '/admin/claims'
     | '/admin/installations'
     | '/admin/lots'
+    | '/admin/payments'
     | '/admin/reports'
     | '/admin/users'
     | '/admin/zones'
@@ -500,6 +510,7 @@ export interface FileRouteTypes {
     | '/admin/claims'
     | '/admin/installations'
     | '/admin/lots'
+    | '/admin/payments'
     | '/admin/reports'
     | '/admin/users'
     | '/admin/zones'
@@ -548,6 +559,7 @@ export interface FileRouteTypes {
     | '/admin/_guard/claims'
     | '/admin/_guard/installations'
     | '/admin/_guard/lots'
+    | '/admin/_guard/payments'
     | '/admin/_guard/reports'
     | '/admin/_guard/users'
     | '/admin/_guard/zones'
@@ -769,6 +781,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminGuardLotsRouteImport
       parentRoute: typeof AdminGuardRouteRoute
     }
+    '/admin/_guard/payments': {
+      id: '/admin/_guard/payments'
+      path: '/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AdminGuardPaymentsRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
     '/admin/_guard/reports': {
       id: '/admin/_guard/reports'
       path: '/reports'
@@ -928,6 +947,7 @@ interface AdminGuardRouteRouteChildren {
   AdminGuardClaimsRoute: typeof AdminGuardClaimsRoute
   AdminGuardInstallationsRoute: typeof AdminGuardInstallationsRoute
   AdminGuardLotsRoute: typeof AdminGuardLotsRoute
+  AdminGuardPaymentsRoute: typeof AdminGuardPaymentsRoute
   AdminGuardReportsRoute: typeof AdminGuardReportsRoute
   AdminGuardUsersRoute: typeof AdminGuardUsersRoute
   AdminGuardZonesRoute: typeof AdminGuardZonesRoute
@@ -943,6 +963,7 @@ const AdminGuardRouteRouteChildren: AdminGuardRouteRouteChildren = {
   AdminGuardClaimsRoute: AdminGuardClaimsRoute,
   AdminGuardInstallationsRoute: AdminGuardInstallationsRoute,
   AdminGuardLotsRoute: AdminGuardLotsRoute,
+  AdminGuardPaymentsRoute: AdminGuardPaymentsRoute,
   AdminGuardReportsRoute: AdminGuardReportsRoute,
   AdminGuardUsersRoute: AdminGuardUsersRoute,
   AdminGuardZonesRoute: AdminGuardZonesRoute,
