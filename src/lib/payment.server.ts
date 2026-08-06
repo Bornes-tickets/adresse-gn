@@ -624,7 +624,24 @@ async function genererFacture(commande: any, items: OrderItem[], profil: any) {
 /* Installations à planifier                                           */
 /* ------------------------------------------------------------------ */
 
-export async function listerInstallationsEnAttente() {
+export interface PendingInstallationRow {
+  id: string;
+  status: string;
+  created_at: string;
+  note: string | null;
+  phone: string | null;
+  public_number: string | null;
+  order_ref: string | null;
+  offer_code: string | null;
+  assigned_agent_id: string | null;
+  client: string;
+}
+
+export async function listerInstallationsEnAttente(): Promise<{
+  lignes: PendingInstallationRow[];
+  agents: { id: string; label: string }[];
+}> {
+
   const { data, error } = await db
     .from("pending_installations")
     .select(
