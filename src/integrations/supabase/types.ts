@@ -765,6 +765,24 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          count: number
+          ip: string
+          minute_bucket: string
+        }
+        Insert: {
+          count?: number
+          ip: string
+          minute_bucket: string
+        }
+        Update: {
+          count?: number
+          ip?: string
+          minute_bucket?: string
+        }
+        Relationships: []
+      }
       regions: {
         Row: {
           code: string
@@ -911,6 +929,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      search_misses: {
+        Row: {
+          blocked_until: string | null
+          ip: string
+          miss_count: number
+          updated_at: string
+        }
+        Insert: {
+          blocked_until?: string | null
+          ip: string
+          miss_count?: number
+          updated_at?: string
+        }
+        Update: {
+          blocked_until?: string | null
+          ip?: string
+          miss_count?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       spatial_ref_sys: {
         Row: {
