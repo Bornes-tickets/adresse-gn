@@ -21,6 +21,7 @@ import { Route as AgentGuardRouteRouteImport } from './routes/agent/_guard/route
 import { Route as AgentLoginRouteImport } from './routes/agent/login'
 import { Route as EtablissementNumberRouteImport } from './routes/etablissement.$number'
 import { Route as AdminGuardIndexRouteImport } from './routes/admin/_guard/index'
+import { Route as AdminGuardAddressesRouteImport } from './routes/admin/_guard/addresses'
 import { Route as AdminGuardBeaconsRouteImport } from './routes/admin/_guard/beacons'
 import { Route as AgentGuardIndexRouteImport } from './routes/agent/_guard/index'
 import { Route as AgentGuardHistoryRouteImport } from './routes/agent/_guard/history'
@@ -89,6 +90,11 @@ const AdminGuardIndexRoute = AdminGuardIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminGuardRouteRoute,
 } as any)
+const AdminGuardAddressesRoute = AdminGuardAddressesRouteImport.update({
+  id: '/addresses',
+  path: '/addresses',
+  getParentRoute: () => AdminGuardRouteRoute,
+} as any)
 const AdminGuardBeaconsRoute = AdminGuardBeaconsRouteImport.update({
   id: '/beacons',
   path: '/beacons',
@@ -137,6 +143,7 @@ export interface FileRoutesByFullPath {
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
+  '/admin/addresses': typeof AdminGuardAddressesRoute
   '/admin/beacons': typeof AdminGuardBeaconsRoute
   '/agent/history': typeof AgentGuardHistoryRoute
   '/agent/profile': typeof AgentGuardProfileRoute
@@ -156,6 +163,7 @@ export interface FileRoutesByTo {
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
+  '/admin/addresses': typeof AdminGuardAddressesRoute
   '/admin/beacons': typeof AdminGuardBeaconsRoute
   '/agent/history': typeof AgentGuardHistoryRoute
   '/agent/profile': typeof AgentGuardProfileRoute
@@ -178,6 +186,7 @@ export interface FileRoutesById {
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
+  '/admin/_guard/addresses': typeof AdminGuardAddressesRoute
   '/admin/_guard/beacons': typeof AdminGuardBeaconsRoute
   '/agent/_guard/history': typeof AgentGuardHistoryRoute
   '/agent/_guard/profile': typeof AgentGuardProfileRoute
@@ -201,6 +210,7 @@ export interface FileRouteTypes {
     | '/a/$number'
     | '/agent/login'
     | '/etablissement/$number'
+    | '/admin/addresses'
     | '/admin/beacons'
     | '/agent/history'
     | '/agent/profile'
@@ -220,6 +230,7 @@ export interface FileRouteTypes {
     | '/a/$number'
     | '/agent/login'
     | '/etablissement/$number'
+    | '/admin/addresses'
     | '/admin/beacons'
     | '/agent/history'
     | '/agent/profile'
@@ -241,6 +252,7 @@ export interface FileRouteTypes {
     | '/a/$number'
     | '/agent/login'
     | '/etablissement/$number'
+    | '/admin/_guard/addresses'
     | '/admin/_guard/beacons'
     | '/agent/_guard/history'
     | '/agent/_guard/profile'
@@ -351,6 +363,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminGuardIndexRouteImport
       parentRoute: typeof AdminGuardRouteRoute
     }
+    '/admin/_guard/addresses': {
+      id: '/admin/_guard/addresses'
+      path: '/addresses'
+      fullPath: '/admin/addresses'
+      preLoaderRoute: typeof AdminGuardAddressesRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
     '/admin/_guard/beacons': {
       id: '/admin/_guard/beacons'
       path: '/beacons'
@@ -404,11 +423,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminGuardRouteRouteChildren {
+  AdminGuardAddressesRoute: typeof AdminGuardAddressesRoute
   AdminGuardBeaconsRoute: typeof AdminGuardBeaconsRoute
   AdminGuardIndexRoute: typeof AdminGuardIndexRoute
 }
 
 const AdminGuardRouteRouteChildren: AdminGuardRouteRouteChildren = {
+  AdminGuardAddressesRoute: AdminGuardAddressesRoute,
   AdminGuardBeaconsRoute: AdminGuardBeaconsRoute,
   AdminGuardIndexRoute: AdminGuardIndexRoute,
 }
