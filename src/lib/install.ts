@@ -31,13 +31,7 @@ export interface InstallResult {
 /** Numéro WhatsApp du superviseur (support terrain). */
 export const SUPERVISOR_WHATSAPP = "224620000000";
 
-export const ETAPES = [
-  "Balise",
-  "Position",
-  "Photo",
-  "Détails",
-  "Récapitulatif",
-] as const;
+export const ETAPES = ["Balise", "Position", "Photo", "Détails", "Récapitulatif"] as const;
 
 /** Seuils de précision GPS (mètres). */
 export const PRECISION_OK = 10;

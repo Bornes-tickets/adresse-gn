@@ -40,9 +40,7 @@ export function QrScannerDialog({ onDetecte, onFermer }: Props) {
         );
       } catch {
         if (!annule) {
-          setErreur(
-            "Caméra indisponible. Autorisez l'accès ou saisissez le numéro à la main.",
-          );
+          setErreur("Caméra indisponible. Autorisez l'accès ou saisissez le numéro à la main.");
         }
       }
     })();

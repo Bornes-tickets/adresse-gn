@@ -46,9 +46,7 @@ export function StepDetails({ details, onChange }: Props) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="nom-lieu">
-            Nom du lieu {nomRequis ? "(requis)" : "(optionnel)"}
-          </Label>
+          <Label htmlFor="nom-lieu">Nom du lieu {nomRequis ? "(requis)" : "(optionnel)"}</Label>
           <Input
             id="nom-lieu"
             className="h-12"
@@ -122,8 +120,8 @@ export function StepDetails({ details, onChange }: Props) {
             className="mt-0.5"
           />
           <Label htmlFor="consentement" className="text-sm font-normal leading-snug">
-            Le propriétaire consent à l'enregistrement de cette adresse et a été informé
-            de la politique de confidentialité.
+            Le propriétaire consent à l'enregistrement de cette adresse et a été informé de la
+            politique de confidentialité.
           </Label>
         </div>
       </CardContent>

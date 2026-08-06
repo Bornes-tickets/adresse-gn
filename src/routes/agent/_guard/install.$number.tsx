@@ -112,11 +112,7 @@ function Install() {
       <StepIndicator etape={etape} />
 
       {etape === 1 && (
-        <StepBeacon
-          attendu={numero}
-          confirme={baliseOk}
-          onConfirme={() => setBaliseOk(true)}
-        />
+        <StepBeacon attendu={numero} confirme={baliseOk} onConfirme={() => setBaliseOk(true)} />
       )}
       {etape === 2 && <StepGps mesures={mesures} onMesures={setMesures} />}
       {etape === 3 && <StepPhoto photo={photo} onPhoto={setPhoto} />}

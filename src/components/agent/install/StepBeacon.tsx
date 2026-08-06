@@ -79,9 +79,7 @@ export function StepBeacon({ attendu, confirme, onConfirme }: Props) {
         </div>
 
         {erreur && <p className="text-sm font-medium text-destructive">{erreur}</p>}
-        {confirme && (
-          <p className="text-sm font-medium text-accent">Balise confirmée.</p>
-        )}
+        {confirme && <p className="text-sm font-medium text-accent">Balise confirmée.</p>}
 
         {scanner && (
           <QrScannerDialog

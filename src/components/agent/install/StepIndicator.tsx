@@ -35,10 +35,7 @@ export function StepIndicator({ etape }: { etape: number }) {
             </div>
             {numero < ETAPES.length && (
               <span
-                className={cn(
-                  "mb-4 h-0.5 flex-1 rounded",
-                  faite ? "bg-accent" : "bg-border",
-                )}
+                className={cn("mb-4 h-0.5 flex-1 rounded", faite ? "bg-accent" : "bg-border")}
               />
             )}
           </div>

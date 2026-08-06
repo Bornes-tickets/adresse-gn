@@ -58,12 +58,7 @@ function History() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-foreground">Historique</h1>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => void refetch()}
-          disabled={isFetching}
-        >
+        <Button size="sm" variant="outline" onClick={() => void refetch()} disabled={isFetching}>
           <RefreshCw className={`size-4 ${isFetching ? "animate-spin" : ""}`} />
           Actualiser
         </Button>
@@ -88,9 +83,7 @@ function History() {
         <Card>
           <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
             <Clock className="size-8 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">
-              Aucune installation sur cette période.
-            </p>
+            <p className="text-sm text-muted-foreground">Aucune installation sur cette période.</p>
           </CardContent>
         </Card>
       )}
@@ -98,10 +91,7 @@ function History() {
       <ul className="space-y-3">
         {data?.map((ligne) => {
           const adresses = ligne.beacons?.addresses as
-            | { category: string }
-            | { category: string }[]
-            | null
-            | undefined;
+            { category: string } | { category: string }[] | null | undefined;
           const categorie = Array.isArray(adresses)
             ? (adresses[0]?.category ?? null)
             : (adresses?.category ?? null);

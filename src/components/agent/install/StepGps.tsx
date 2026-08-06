@@ -71,8 +71,7 @@ export function StepGps({ mesures, onMesures }: Props) {
     }
   };
 
-  const precisionMoyenne =
-    mesures.length === 3 ? moyenne(mesures.map((m) => m.accuracy_m)) : null;
+  const precisionMoyenne = mesures.length === 3 ? moyenne(mesures.map((m) => m.accuracy_m)) : null;
   const bonne = precision !== null && precision <= PRECISION_OK;
   const largeur =
     precision === null ? 0 : Math.max(8, Math.min(100, (PRECISION_OK / precision) * 100));
@@ -105,8 +104,8 @@ export function StepGps({ mesures, onMesures }: Props) {
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Objectif : ± {PRECISION_OK} m ou mieux (au-delà de ± {PRECISION_LIMITE} m la
-          mesure est refusée).
+          Objectif : ± {PRECISION_OK} m ou mieux (au-delà de ± {PRECISION_LIMITE} m la mesure est
+          refusée).
         </p>
 
         <Button
@@ -123,8 +122,7 @@ export function StepGps({ mesures, onMesures }: Props) {
 
         {precisionMoyenne !== null && (
           <p className="rounded-md bg-accent/10 px-3 py-2 text-sm font-medium text-accent">
-            3 mesures prises, position moyenne calculée à ±{" "}
-            {Math.round(precisionMoyenne)} m.
+            3 mesures prises, position moyenne calculée à ± {Math.round(precisionMoyenne)} m.
           </p>
         )}
       </CardContent>

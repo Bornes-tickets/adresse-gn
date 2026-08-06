@@ -7,7 +7,6 @@ import { BEACON_REGEX } from "@/lib/geo";
 import { moyenne } from "@/lib/install";
 import type { InstallPayload, InstallResult } from "@/lib/install";
 
-
 function erreur(code: string, message: string): InstallResult {
   return { success: false, code, message };
 }
@@ -20,7 +19,6 @@ function base64ToBytes(base64: string): Uint8Array {
   return octets;
 }
 
-
 /** Effectue l'enregistrement complet d'une installation. */
 export async function performInstall(
   userId: string,
@@ -30,10 +28,7 @@ export async function performInstall(
     return erreur("numero_invalide", "Numéro de balise invalide.");
   }
   if (payload.consent !== true) {
-    return erreur(
-      "consentement_manquant",
-      "Le consentement du propriétaire est obligatoire.",
-    );
+    return erreur("consentement_manquant", "Le consentement du propriétaire est obligatoire.");
   }
   if (payload.measures.length !== 3) {
     return erreur("mesures_invalides", "Trois mesures GPS sont requises.");

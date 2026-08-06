@@ -4,13 +4,7 @@ import { Button } from "@/components/ui/button";
 import { SUPERVISOR_WHATSAPP } from "@/lib/install";
 
 /** Écran de succès plein écran après enregistrement. */
-export function InstallSuccess({
-  numero,
-  onSuivante,
-}: {
-  numero: string;
-  onSuivante: () => void;
-}) {
+export function InstallSuccess({ numero, onSuivante }: { numero: string; onSuivante: () => void }) {
   return (
     <div className="flex min-h-[70dvh] flex-col items-center justify-center gap-6 text-center">
       <CheckCircle2 className="size-20 animate-[pulse_1.6s_ease-in-out_infinite] text-accent" />
@@ -46,9 +40,7 @@ export function InstallError({
   return (
     <div className="flex min-h-[70dvh] flex-col items-center justify-center gap-6 text-center">
       <div className="space-y-2">
-        <h1 className="text-lg font-semibold text-destructive">
-          Enregistrement impossible
-        </h1>
+        <h1 className="text-lg font-semibold text-destructive">Enregistrement impossible</h1>
         <p className="text-sm text-muted-foreground">{message}</p>
       </div>
       <div className="w-full max-w-sm space-y-3">

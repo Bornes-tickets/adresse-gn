@@ -56,12 +56,7 @@ function Tasks() {
             {total} balise{total > 1 ? "s" : ""} à installer
           </p>
         </div>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => void refetch()}
-          disabled={isFetching}
-        >
+        <Button size="sm" variant="outline" onClick={() => void refetch()} disabled={isFetching}>
           <RefreshCw className={`size-4 ${isFetching ? "animate-spin" : ""}`} />
           Actualiser
         </Button>
@@ -78,12 +73,9 @@ function Tasks() {
       {!isPending && total === 0 && (
         <Card>
           <CardContent className="py-10 text-center">
-            <p className="text-sm font-medium text-foreground">
-              Aucune balise assignée
-            </p>
+            <p className="text-sm font-medium text-foreground">Aucune balise assignée</p>
             <p className="mt-2 text-sm text-muted-foreground">
-              Vos balises à installer apparaîtront ici dès qu'un lot vous sera
-              attribué.
+              Vos balises à installer apparaîtront ici dès qu'un lot vous sera attribué.
             </p>
           </CardContent>
         </Card>
@@ -99,9 +91,7 @@ function Tasks() {
                     {balise.public_number}
                   </p>
                   <div className="mt-2">
-                    <Badge
-                      variant={balise.status === "assigned" ? "default" : "secondary"}
-                    >
+                    <Badge variant={balise.status === "assigned" ? "default" : "secondary"}>
                       {STATUT_LABEL[balise.status] ?? balise.status}
                     </Badge>
                   </div>
