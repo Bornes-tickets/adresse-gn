@@ -22,6 +22,7 @@ import { Route as EtablissementNumberRouteImport } from './routes/etablissement.
 import { Route as AgentGuardIndexRouteImport } from './routes/agent/_guard/index'
 import { Route as AgentGuardHistoryRouteImport } from './routes/agent/_guard/history'
 import { Route as AgentGuardProfileRouteImport } from './routes/agent/_guard/profile'
+import { Route as AgentGuardSyncIssuesRouteImport } from './routes/agent/_guard/sync-issues'
 import { Route as AgentGuardTasksRouteImport } from './routes/agent/_guard/tasks'
 import { Route as AgentGuardInstallNumberRouteImport } from './routes/agent/_guard/install.$number'
 
@@ -90,6 +91,11 @@ const AgentGuardProfileRoute = AgentGuardProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AgentGuardRouteRoute,
 } as any)
+const AgentGuardSyncIssuesRoute = AgentGuardSyncIssuesRouteImport.update({
+  id: '/sync-issues',
+  path: '/sync-issues',
+  getParentRoute: () => AgentGuardRouteRoute,
+} as any)
 const AgentGuardTasksRoute = AgentGuardTasksRouteImport.update({
   id: '/tasks',
   path: '/tasks',
@@ -114,6 +120,7 @@ export interface FileRoutesByFullPath {
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/agent/history': typeof AgentGuardHistoryRoute
   '/agent/profile': typeof AgentGuardProfileRoute
+  '/agent/sync-issues': typeof AgentGuardSyncIssuesRoute
   '/agent/tasks': typeof AgentGuardTasksRoute
   '/agent/': typeof AgentGuardIndexRoute
   '/agent/install/$number': typeof AgentGuardInstallNumberRoute
@@ -130,6 +137,7 @@ export interface FileRoutesByTo {
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/agent/history': typeof AgentGuardHistoryRoute
   '/agent/profile': typeof AgentGuardProfileRoute
+  '/agent/sync-issues': typeof AgentGuardSyncIssuesRoute
   '/agent/tasks': typeof AgentGuardTasksRoute
   '/agent': typeof AgentGuardIndexRoute
   '/agent/install/$number': typeof AgentGuardInstallNumberRoute
@@ -148,6 +156,7 @@ export interface FileRoutesById {
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/agent/_guard/history': typeof AgentGuardHistoryRoute
   '/agent/_guard/profile': typeof AgentGuardProfileRoute
+  '/agent/_guard/sync-issues': typeof AgentGuardSyncIssuesRoute
   '/agent/_guard/tasks': typeof AgentGuardTasksRoute
   '/agent/_guard/': typeof AgentGuardIndexRoute
   '/agent/_guard/install/$number': typeof AgentGuardInstallNumberRoute
@@ -167,6 +176,7 @@ export interface FileRouteTypes {
     | '/etablissement/$number'
     | '/agent/history'
     | '/agent/profile'
+    | '/agent/sync-issues'
     | '/agent/tasks'
     | '/agent/'
     | '/agent/install/$number'
@@ -183,6 +193,7 @@ export interface FileRouteTypes {
     | '/etablissement/$number'
     | '/agent/history'
     | '/agent/profile'
+    | '/agent/sync-issues'
     | '/agent/tasks'
     | '/agent'
     | '/agent/install/$number'
@@ -200,6 +211,7 @@ export interface FileRouteTypes {
     | '/etablissement/$number'
     | '/agent/_guard/history'
     | '/agent/_guard/profile'
+    | '/agent/_guard/sync-issues'
     | '/agent/_guard/tasks'
     | '/agent/_guard/'
     | '/agent/_guard/install/$number'
@@ -311,6 +323,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgentGuardProfileRouteImport
       parentRoute: typeof AgentGuardRouteRoute
     }
+    '/agent/_guard/sync-issues': {
+      id: '/agent/_guard/sync-issues'
+      path: '/sync-issues'
+      fullPath: '/agent/sync-issues'
+      preLoaderRoute: typeof AgentGuardSyncIssuesRouteImport
+      parentRoute: typeof AgentGuardRouteRoute
+    }
     '/agent/_guard/tasks': {
       id: '/agent/_guard/tasks'
       path: '/tasks'
@@ -331,6 +350,7 @@ declare module '@tanstack/react-router' {
 interface AgentGuardRouteRouteChildren {
   AgentGuardHistoryRoute: typeof AgentGuardHistoryRoute
   AgentGuardProfileRoute: typeof AgentGuardProfileRoute
+  AgentGuardSyncIssuesRoute: typeof AgentGuardSyncIssuesRoute
   AgentGuardTasksRoute: typeof AgentGuardTasksRoute
   AgentGuardIndexRoute: typeof AgentGuardIndexRoute
   AgentGuardInstallNumberRoute: typeof AgentGuardInstallNumberRoute
@@ -339,6 +359,7 @@ interface AgentGuardRouteRouteChildren {
 const AgentGuardRouteRouteChildren: AgentGuardRouteRouteChildren = {
   AgentGuardHistoryRoute: AgentGuardHistoryRoute,
   AgentGuardProfileRoute: AgentGuardProfileRoute,
+  AgentGuardSyncIssuesRoute: AgentGuardSyncIssuesRoute,
   AgentGuardTasksRoute: AgentGuardTasksRoute,
   AgentGuardIndexRoute: AgentGuardIndexRoute,
   AgentGuardInstallNumberRoute: AgentGuardInstallNumberRoute,
