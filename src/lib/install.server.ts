@@ -4,34 +4,9 @@
  */
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { BEACON_REGEX } from "@/lib/geo";
+import { moyenne } from "@/lib/install";
+import type { InstallPayload, InstallResult } from "@/lib/install";
 
-export interface InstallMeasure {
-  lat: number;
-  lng: number;
-  accuracy_m: number;
-  taken_at: string;
-}
-
-export interface InstallPayload {
-  beacon_number: string;
-  measures: InstallMeasure[];
-  photo_base64: string;
-  category: string;
-  name: string | null;
-  visibility: "private" | "public";
-  access_point_note: string | null;
-  owner_name: string | null;
-  owner_phone: string | null;
-  consent: boolean;
-}
-
-export interface InstallResult {
-  success: boolean;
-  code?: string;
-  message?: string;
-  address_id?: string;
-  public_url?: string;
-}
 
 function erreur(code: string, message: string): InstallResult {
   return { success: false, code, message };
