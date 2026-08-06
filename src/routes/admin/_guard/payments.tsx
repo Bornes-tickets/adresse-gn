@@ -241,7 +241,7 @@ function PaiementsAdminPage() {
                   {l.status === "assigned" ? "Affectée" : "En attente"}
                 </Badge>
                 <Select
-                  value={l.assigned_agent_id ?? undefined}
+                  value={l.assigned_agent_id ?? ""}
                   onValueChange={(agentId) => affecter.mutate({ id: l.id, agentId })}
                 >
                   <SelectTrigger className="w-56">
