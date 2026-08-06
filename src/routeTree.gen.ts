@@ -20,6 +20,7 @@ import { Route as ANumberRouteImport } from './routes/a.$number'
 import { Route as AdminGuardRouteRouteImport } from './routes/admin/_guard/route'
 import { Route as AgentGuardRouteRouteImport } from './routes/agent/_guard/route'
 import { Route as AgentLoginRouteImport } from './routes/agent/login'
+import { Route as CommanderOfferCodeRouteImport } from './routes/commander.$offerCode'
 import { Route as EtablissementNumberRouteImport } from './routes/etablissement.$number'
 import { Route as MonCompteGuardRouteRouteImport } from './routes/mon-compte/_guard/route'
 import { Route as ProGuardRouteRouteImport } from './routes/pro/_guard/route'
@@ -107,6 +108,11 @@ const AgentGuardRouteRoute = AgentGuardRouteRouteImport.update({
 const AgentLoginRoute = AgentLoginRouteImport.update({
   id: '/agent/login',
   path: '/agent/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CommanderOfferCodeRoute = CommanderOfferCodeRouteImport.update({
+  id: '/commander/$offerCode',
+  path: '/commander/$offerCode',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EtablissementNumberRoute = EtablissementNumberRouteImport.update({
@@ -289,6 +295,7 @@ export interface FileRoutesByFullPath {
   '/pro': typeof ProGuardRouteRouteWithChildren
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
+  '/commander/$offerCode': typeof CommanderOfferCodeRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/pro/onboarding': typeof ProOnboardingRoute
   '/admin/addresses': typeof AdminGuardAddressesRoute
@@ -331,6 +338,7 @@ export interface FileRoutesByTo {
   '/tarifs': typeof TarifsRoute
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
+  '/commander/$offerCode': typeof CommanderOfferCodeRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/pro/onboarding': typeof ProOnboardingRoute
   '/admin/addresses': typeof AdminGuardAddressesRoute
@@ -378,6 +386,7 @@ export interface FileRoutesById {
   '/pro/_guard': typeof ProGuardRouteRouteWithChildren
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
+  '/commander/$offerCode': typeof CommanderOfferCodeRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/pro/onboarding': typeof ProOnboardingRoute
   '/admin/_guard/addresses': typeof AdminGuardAddressesRoute
@@ -426,6 +435,7 @@ export interface FileRouteTypes {
     | '/pro'
     | '/a/$number'
     | '/agent/login'
+    | '/commander/$offerCode'
     | '/etablissement/$number'
     | '/pro/onboarding'
     | '/admin/addresses'
@@ -468,6 +478,7 @@ export interface FileRouteTypes {
     | '/tarifs'
     | '/a/$number'
     | '/agent/login'
+    | '/commander/$offerCode'
     | '/etablissement/$number'
     | '/pro/onboarding'
     | '/admin/addresses'
@@ -514,6 +525,7 @@ export interface FileRouteTypes {
     | '/pro/_guard'
     | '/a/$number'
     | '/agent/login'
+    | '/commander/$offerCode'
     | '/etablissement/$number'
     | '/pro/onboarding'
     | '/admin/_guard/addresses'
@@ -561,6 +573,7 @@ export interface RootRouteChildren {
   ProGuardRouteRoute: typeof ProGuardRouteRouteWithChildren
   ANumberRoute: typeof ANumberRoute
   AgentLoginRoute: typeof AgentLoginRoute
+  CommanderOfferCodeRoute: typeof CommanderOfferCodeRoute
   EtablissementNumberRoute: typeof EtablissementNumberRoute
   ProOnboardingRoute: typeof ProOnboardingRoute
 }
@@ -642,6 +655,13 @@ declare module '@tanstack/react-router' {
       path: '/agent/login'
       fullPath: '/agent/login'
       preLoaderRoute: typeof AgentLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/commander/$offerCode': {
+      id: '/commander/$offerCode'
+      path: '/commander/$offerCode'
+      fullPath: '/commander/$offerCode'
+      preLoaderRoute: typeof CommanderOfferCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/etablissement/$number': {
@@ -989,6 +1009,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProGuardRouteRoute: ProGuardRouteRouteWithChildren,
   ANumberRoute: ANumberRoute,
   AgentLoginRoute: AgentLoginRoute,
+  CommanderOfferCodeRoute: CommanderOfferCodeRoute,
   EtablissementNumberRoute: EtablissementNumberRoute,
   ProOnboardingRoute: ProOnboardingRoute,
 }
