@@ -150,14 +150,25 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const estAgent = pathname === "/agent" || pathname.startsWith("/agent/");
+
+  useEffect(() => {
+    registerServiceWorker();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Layout>
-          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+        {estAgent ? (
+          /* L'espace agent a son propre shell mobile (voir routes/agent). */
           <Outlet />
-        </Layout>
+        ) : (
+          <Layout>
+            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+            <Outlet />
+          </Layout>
+        )}
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>
