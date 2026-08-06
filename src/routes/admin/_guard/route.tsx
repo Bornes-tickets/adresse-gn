@@ -97,7 +97,7 @@ function AdminShell() {
             <Link
               key={to}
               to={to}
-              activeOptions={to === "/admin" ? { exact: true } : undefined}
+              activeOptions={{ exact: to === "/admin" }}
               className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               activeProps={{ className: "bg-primary/10 text-primary font-medium" }}
             >
@@ -139,7 +139,7 @@ function AdminShell() {
             <Link
               key={to}
               to={to}
-              activeOptions={to === "/admin" ? { exact: true } : undefined}
+              activeOptions={{ exact: to === "/admin" }}
               className="whitespace-nowrap rounded-full px-3 py-1.5 text-xs text-muted-foreground"
               activeProps={{ className: "bg-primary/10 text-primary font-medium" }}
             >
