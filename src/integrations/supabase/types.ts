@@ -1147,7 +1147,6 @@ export type Database = {
             }
             Returns: string
           }
-      current_role_is: { Args: { target_roles: string[] }; Returns: boolean }
       disablelongtransactions: { Args: never; Returns: string }
       dropgeometrycolumn:
         | {
