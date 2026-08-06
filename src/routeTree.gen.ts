@@ -22,6 +22,7 @@ import { Route as AgentLoginRouteImport } from './routes/agent/login'
 import { Route as EtablissementNumberRouteImport } from './routes/etablissement.$number'
 import { Route as MonCompteGuardRouteRouteImport } from './routes/mon-compte/_guard/route'
 import { Route as ProGuardRouteRouteImport } from './routes/pro/_guard/route'
+import { Route as ProOnboardingRouteImport } from './routes/pro/onboarding'
 import { Route as AdminGuardIndexRouteImport } from './routes/admin/_guard/index'
 import { Route as AdminGuardAddressesRouteImport } from './routes/admin/_guard/addresses'
 import { Route as AdminGuardAgentsRouteImport } from './routes/admin/_guard/agents'
@@ -109,6 +110,11 @@ const MonCompteGuardRouteRoute = MonCompteGuardRouteRouteImport.update({
 const ProGuardRouteRoute = ProGuardRouteRouteImport.update({
   id: '/pro/_guard',
   path: '/pro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProOnboardingRoute = ProOnboardingRouteImport.update({
+  id: '/pro/onboarding',
+  path: '/pro/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminGuardIndexRoute = AdminGuardIndexRouteImport.update({
@@ -241,6 +247,7 @@ export interface FileRoutesByFullPath {
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
+  '/pro/onboarding': typeof ProOnboardingRoute
   '/admin/addresses': typeof AdminGuardAddressesRoute
   '/admin/agents': typeof AdminGuardAgentsRoute
   '/admin/analytics': typeof AdminGuardAnalyticsRoute
@@ -276,6 +283,7 @@ export interface FileRoutesByTo {
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
+  '/pro/onboarding': typeof ProOnboardingRoute
   '/admin/addresses': typeof AdminGuardAddressesRoute
   '/admin/agents': typeof AdminGuardAgentsRoute
   '/admin/analytics': typeof AdminGuardAnalyticsRoute
@@ -315,6 +323,7 @@ export interface FileRoutesById {
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
+  '/pro/onboarding': typeof ProOnboardingRoute
   '/admin/_guard/addresses': typeof AdminGuardAddressesRoute
   '/admin/_guard/agents': typeof AdminGuardAgentsRoute
   '/admin/_guard/analytics': typeof AdminGuardAnalyticsRoute
@@ -355,6 +364,7 @@ export interface FileRouteTypes {
     | '/a/$number'
     | '/agent/login'
     | '/etablissement/$number'
+    | '/pro/onboarding'
     | '/admin/addresses'
     | '/admin/agents'
     | '/admin/analytics'
@@ -390,6 +400,7 @@ export interface FileRouteTypes {
     | '/a/$number'
     | '/agent/login'
     | '/etablissement/$number'
+    | '/pro/onboarding'
     | '/admin/addresses'
     | '/admin/agents'
     | '/admin/analytics'
@@ -428,6 +439,7 @@ export interface FileRouteTypes {
     | '/a/$number'
     | '/agent/login'
     | '/etablissement/$number'
+    | '/pro/onboarding'
     | '/admin/_guard/addresses'
     | '/admin/_guard/agents'
     | '/admin/_guard/analytics'
@@ -467,6 +479,7 @@ export interface RootRouteChildren {
   ANumberRoute: typeof ANumberRoute
   AgentLoginRoute: typeof AgentLoginRoute
   EtablissementNumberRoute: typeof EtablissementNumberRoute
+  ProOnboardingRoute: typeof ProOnboardingRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -560,6 +573,13 @@ declare module '@tanstack/react-router' {
       path: '/pro'
       fullPath: '/pro'
       preLoaderRoute: typeof ProGuardRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pro/onboarding': {
+      id: '/pro/onboarding'
+      path: '/pro/onboarding'
+      fullPath: '/pro/onboarding'
+      preLoaderRoute: typeof ProOnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/_guard/': {
@@ -815,6 +835,7 @@ const rootRouteChildren: RootRouteChildren = {
   ANumberRoute: ANumberRoute,
   AgentLoginRoute: AgentLoginRoute,
   EtablissementNumberRoute: EtablissementNumberRoute,
+  ProOnboardingRoute: ProOnboardingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
