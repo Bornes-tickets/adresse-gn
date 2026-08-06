@@ -23,7 +23,7 @@ export const submitInstallation = createServerFn({ method: "POST" })
     if (input.consent !== true) throw new Error("Consentement requis");
     return {
       beacon_number: input.beacon_number.trim().toUpperCase().slice(0, 32),
-      measures: input.measures.map((m) => ({
+      measures: input.measures.map((m: InstallMeasure) => ({
         lat: Number(m.lat),
         lng: Number(m.lng),
         accuracy_m: Number(m.accuracy_m),
