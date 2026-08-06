@@ -26,6 +26,7 @@ import { Route as MonCompteGuardRouteRouteImport } from './routes/mon-compte/_gu
 import { Route as ProGuardRouteRouteImport } from './routes/pro/_guard/route'
 import { Route as ProOnboardingRouteImport } from './routes/pro/onboarding'
 import { Route as AdminGuardIndexRouteImport } from './routes/admin/_guard/index'
+import { Route as AdminGuardAbonnementsRouteImport } from './routes/admin/_guard/abonnements'
 import { Route as AdminGuardAddressesRouteImport } from './routes/admin/_guard/addresses'
 import { Route as AdminGuardAgentsRouteImport } from './routes/admin/_guard/agents'
 import { Route as AdminGuardAnalyticsRouteImport } from './routes/admin/_guard/analytics'
@@ -140,6 +141,11 @@ const ProOnboardingRoute = ProOnboardingRouteImport.update({
 const AdminGuardIndexRoute = AdminGuardIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AdminGuardRouteRoute,
+} as any)
+const AdminGuardAbonnementsRoute = AdminGuardAbonnementsRouteImport.update({
+  id: '/abonnements',
+  path: '/abonnements',
   getParentRoute: () => AdminGuardRouteRoute,
 } as any)
 const AdminGuardAddressesRoute = AdminGuardAddressesRouteImport.update({
@@ -311,6 +317,7 @@ export interface FileRoutesByFullPath {
   '/commander/$offerCode': typeof CommanderOfferCodeRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/pro/onboarding': typeof ProOnboardingRoute
+  '/admin/abonnements': typeof AdminGuardAbonnementsRoute
   '/admin/addresses': typeof AdminGuardAddressesRoute
   '/admin/agents': typeof AdminGuardAgentsRoute
   '/admin/analytics': typeof AdminGuardAnalyticsRoute
@@ -356,6 +363,7 @@ export interface FileRoutesByTo {
   '/commander/$offerCode': typeof CommanderOfferCodeRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/pro/onboarding': typeof ProOnboardingRoute
+  '/admin/abonnements': typeof AdminGuardAbonnementsRoute
   '/admin/addresses': typeof AdminGuardAddressesRoute
   '/admin/agents': typeof AdminGuardAgentsRoute
   '/admin/analytics': typeof AdminGuardAnalyticsRoute
@@ -406,6 +414,7 @@ export interface FileRoutesById {
   '/commander/$offerCode': typeof CommanderOfferCodeRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/pro/onboarding': typeof ProOnboardingRoute
+  '/admin/_guard/abonnements': typeof AdminGuardAbonnementsRoute
   '/admin/_guard/addresses': typeof AdminGuardAddressesRoute
   '/admin/_guard/agents': typeof AdminGuardAgentsRoute
   '/admin/_guard/analytics': typeof AdminGuardAnalyticsRoute
@@ -457,6 +466,7 @@ export interface FileRouteTypes {
     | '/commander/$offerCode'
     | '/etablissement/$number'
     | '/pro/onboarding'
+    | '/admin/abonnements'
     | '/admin/addresses'
     | '/admin/agents'
     | '/admin/analytics'
@@ -502,6 +512,7 @@ export interface FileRouteTypes {
     | '/commander/$offerCode'
     | '/etablissement/$number'
     | '/pro/onboarding'
+    | '/admin/abonnements'
     | '/admin/addresses'
     | '/admin/agents'
     | '/admin/analytics'
@@ -551,6 +562,7 @@ export interface FileRouteTypes {
     | '/commander/$offerCode'
     | '/etablissement/$number'
     | '/pro/onboarding'
+    | '/admin/_guard/abonnements'
     | '/admin/_guard/addresses'
     | '/admin/_guard/agents'
     | '/admin/_guard/analytics'
@@ -723,6 +735,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminGuardIndexRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
+    '/admin/_guard/abonnements': {
+      id: '/admin/_guard/abonnements'
+      path: '/abonnements'
+      fullPath: '/admin/abonnements'
+      preLoaderRoute: typeof AdminGuardAbonnementsRouteImport
       parentRoute: typeof AdminGuardRouteRoute
     }
     '/admin/_guard/addresses': {
@@ -939,6 +958,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminGuardRouteRouteChildren {
+  AdminGuardAbonnementsRoute: typeof AdminGuardAbonnementsRoute
   AdminGuardAddressesRoute: typeof AdminGuardAddressesRoute
   AdminGuardAgentsRoute: typeof AdminGuardAgentsRoute
   AdminGuardAnalyticsRoute: typeof AdminGuardAnalyticsRoute
@@ -955,6 +975,7 @@ interface AdminGuardRouteRouteChildren {
 }
 
 const AdminGuardRouteRouteChildren: AdminGuardRouteRouteChildren = {
+  AdminGuardAbonnementsRoute: AdminGuardAbonnementsRoute,
   AdminGuardAddressesRoute: AdminGuardAddressesRoute,
   AdminGuardAgentsRoute: AdminGuardAgentsRoute,
   AdminGuardAnalyticsRoute: AdminGuardAnalyticsRoute,
