@@ -47,6 +47,7 @@ import { Route as AgentGuardTasksRouteImport } from './routes/agent/_guard/tasks
 import { Route as CommandeOrderRefPaiementRouteImport } from './routes/commande.$orderRef.paiement'
 import { Route as MonCompteGuardIndexRouteImport } from './routes/mon-compte/_guard/index'
 import { Route as MonCompteGuardBeaconsRouteImport } from './routes/mon-compte/_guard/beacons'
+import { Route as MonCompteGuardCommandesRouteImport } from './routes/mon-compte/_guard/commandes'
 import { Route as MonCompteGuardFavoritesRouteImport } from './routes/mon-compte/_guard/favorites'
 import { Route as MonCompteGuardReportsRouteImport } from './routes/mon-compte/_guard/reports'
 import { Route as MonCompteGuardSettingsRouteImport } from './routes/mon-compte/_guard/settings'
@@ -252,6 +253,11 @@ const MonCompteGuardBeaconsRoute = MonCompteGuardBeaconsRouteImport.update({
   path: '/beacons',
   getParentRoute: () => MonCompteGuardRouteRoute,
 } as any)
+const MonCompteGuardCommandesRoute = MonCompteGuardCommandesRouteImport.update({
+  id: '/commandes',
+  path: '/commandes',
+  getParentRoute: () => MonCompteGuardRouteRoute,
+} as any)
 const MonCompteGuardFavoritesRoute = MonCompteGuardFavoritesRouteImport.update({
   id: '/favorites',
   path: '/favorites',
@@ -355,6 +361,7 @@ export interface FileRoutesByFullPath {
   '/agent/tasks': typeof AgentGuardTasksRoute
   '/commande/$orderRef/paiement': typeof CommandeOrderRefPaiementRoute
   '/mon-compte/beacons': typeof MonCompteGuardBeaconsRoute
+  '/mon-compte/commandes': typeof MonCompteGuardCommandesRoute
   '/mon-compte/favorites': typeof MonCompteGuardFavoritesRoute
   '/mon-compte/reports': typeof MonCompteGuardReportsRoute
   '/mon-compte/settings': typeof MonCompteGuardSettingsRoute
@@ -404,6 +411,7 @@ export interface FileRoutesByTo {
   '/agent/tasks': typeof AgentGuardTasksRoute
   '/commande/$orderRef/paiement': typeof CommandeOrderRefPaiementRoute
   '/mon-compte/beacons': typeof MonCompteGuardBeaconsRoute
+  '/mon-compte/commandes': typeof MonCompteGuardCommandesRoute
   '/mon-compte/favorites': typeof MonCompteGuardFavoritesRoute
   '/mon-compte/reports': typeof MonCompteGuardReportsRoute
   '/mon-compte/settings': typeof MonCompteGuardSettingsRoute
@@ -458,6 +466,7 @@ export interface FileRoutesById {
   '/agent/_guard/tasks': typeof AgentGuardTasksRoute
   '/commande/$orderRef/paiement': typeof CommandeOrderRefPaiementRoute
   '/mon-compte/_guard/beacons': typeof MonCompteGuardBeaconsRoute
+  '/mon-compte/_guard/commandes': typeof MonCompteGuardCommandesRoute
   '/mon-compte/_guard/favorites': typeof MonCompteGuardFavoritesRoute
   '/mon-compte/_guard/reports': typeof MonCompteGuardReportsRoute
   '/mon-compte/_guard/settings': typeof MonCompteGuardSettingsRoute
@@ -513,6 +522,7 @@ export interface FileRouteTypes {
     | '/agent/tasks'
     | '/commande/$orderRef/paiement'
     | '/mon-compte/beacons'
+    | '/mon-compte/commandes'
     | '/mon-compte/favorites'
     | '/mon-compte/reports'
     | '/mon-compte/settings'
@@ -562,6 +572,7 @@ export interface FileRouteTypes {
     | '/agent/tasks'
     | '/commande/$orderRef/paiement'
     | '/mon-compte/beacons'
+    | '/mon-compte/commandes'
     | '/mon-compte/favorites'
     | '/mon-compte/reports'
     | '/mon-compte/settings'
@@ -615,6 +626,7 @@ export interface FileRouteTypes {
     | '/agent/_guard/tasks'
     | '/commande/$orderRef/paiement'
     | '/mon-compte/_guard/beacons'
+    | '/mon-compte/_guard/commandes'
     | '/mon-compte/_guard/favorites'
     | '/mon-compte/_guard/reports'
     | '/mon-compte/_guard/settings'
@@ -924,6 +936,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MonCompteGuardBeaconsRouteImport
       parentRoute: typeof MonCompteGuardRouteRoute
     }
+    '/mon-compte/_guard/commandes': {
+      id: '/mon-compte/_guard/commandes'
+      path: '/commandes'
+      fullPath: '/mon-compte/commandes'
+      preLoaderRoute: typeof MonCompteGuardCommandesRouteImport
+      parentRoute: typeof MonCompteGuardRouteRoute
+    }
     '/mon-compte/_guard/favorites': {
       id: '/mon-compte/_guard/favorites'
       path: '/favorites'
@@ -1080,6 +1099,7 @@ const AgentGuardRouteRouteWithChildren = AgentGuardRouteRoute._addFileChildren(
 
 interface MonCompteGuardRouteRouteChildren {
   MonCompteGuardBeaconsRoute: typeof MonCompteGuardBeaconsRoute
+  MonCompteGuardCommandesRoute: typeof MonCompteGuardCommandesRoute
   MonCompteGuardFavoritesRoute: typeof MonCompteGuardFavoritesRoute
   MonCompteGuardReportsRoute: typeof MonCompteGuardReportsRoute
   MonCompteGuardSettingsRoute: typeof MonCompteGuardSettingsRoute
@@ -1088,6 +1108,7 @@ interface MonCompteGuardRouteRouteChildren {
 
 const MonCompteGuardRouteRouteChildren: MonCompteGuardRouteRouteChildren = {
   MonCompteGuardBeaconsRoute: MonCompteGuardBeaconsRoute,
+  MonCompteGuardCommandesRoute: MonCompteGuardCommandesRoute,
   MonCompteGuardFavoritesRoute: MonCompteGuardFavoritesRoute,
   MonCompteGuardReportsRoute: MonCompteGuardReportsRoute,
   MonCompteGuardSettingsRoute: MonCompteGuardSettingsRoute,

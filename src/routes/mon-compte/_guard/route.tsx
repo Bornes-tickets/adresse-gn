@@ -1,6 +1,6 @@
 import { Link, Outlet, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { Flag, Heart, LayoutDashboard, LogOut, QrCode, Settings } from "lucide-react";
+import { Flag, Heart, LayoutDashboard, LogOut, QrCode, Receipt, Settings } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -16,6 +16,7 @@ const SECTIONS = [
   { to: "/mon-compte", label: "Tableau de bord", icon: LayoutDashboard, exact: true },
   { to: "/mon-compte/beacons", label: "Mes balises", icon: QrCode },
   { to: "/mon-compte/favorites", label: "Mes favoris", icon: Heart },
+  { to: "/mon-compte/commandes", label: "Commandes", icon: Receipt },
   { to: "/mon-compte/reports", label: "Signalements", icon: Flag },
   { to: "/mon-compte/settings", label: "Paramètres", icon: Settings },
 ] as const;
