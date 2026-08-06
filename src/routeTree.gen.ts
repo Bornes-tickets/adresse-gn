@@ -23,6 +23,7 @@ import { Route as EtablissementNumberRouteImport } from './routes/etablissement.
 import { Route as AdminGuardIndexRouteImport } from './routes/admin/_guard/index'
 import { Route as AdminGuardAddressesRouteImport } from './routes/admin/_guard/addresses'
 import { Route as AdminGuardAgentsRouteImport } from './routes/admin/_guard/agents'
+import { Route as AdminGuardAnalyticsRouteImport } from './routes/admin/_guard/analytics'
 import { Route as AdminGuardAuditRouteImport } from './routes/admin/_guard/audit'
 import { Route as AdminGuardBeaconsRouteImport } from './routes/admin/_guard/beacons'
 import { Route as AdminGuardInstallationsRouteImport } from './routes/admin/_guard/installations'
@@ -107,6 +108,11 @@ const AdminGuardAgentsRoute = AdminGuardAgentsRouteImport.update({
   path: '/agents',
   getParentRoute: () => AdminGuardRouteRoute,
 } as any)
+const AdminGuardAnalyticsRoute = AdminGuardAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AdminGuardRouteRoute,
+} as any)
 const AdminGuardAuditRoute = AdminGuardAuditRouteImport.update({
   id: '/audit',
   path: '/audit',
@@ -187,6 +193,7 @@ export interface FileRoutesByFullPath {
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/admin/addresses': typeof AdminGuardAddressesRoute
   '/admin/agents': typeof AdminGuardAgentsRoute
+  '/admin/analytics': typeof AdminGuardAnalyticsRoute
   '/admin/audit': typeof AdminGuardAuditRoute
   '/admin/beacons': typeof AdminGuardBeaconsRoute
   '/admin/installations': typeof AdminGuardInstallationsRoute
@@ -214,6 +221,7 @@ export interface FileRoutesByTo {
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/admin/addresses': typeof AdminGuardAddressesRoute
   '/admin/agents': typeof AdminGuardAgentsRoute
+  '/admin/analytics': typeof AdminGuardAnalyticsRoute
   '/admin/audit': typeof AdminGuardAuditRoute
   '/admin/beacons': typeof AdminGuardBeaconsRoute
   '/admin/installations': typeof AdminGuardInstallationsRoute
@@ -244,6 +252,7 @@ export interface FileRoutesById {
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/admin/_guard/addresses': typeof AdminGuardAddressesRoute
   '/admin/_guard/agents': typeof AdminGuardAgentsRoute
+  '/admin/_guard/analytics': typeof AdminGuardAnalyticsRoute
   '/admin/_guard/audit': typeof AdminGuardAuditRoute
   '/admin/_guard/beacons': typeof AdminGuardBeaconsRoute
   '/admin/_guard/installations': typeof AdminGuardInstallationsRoute
@@ -275,6 +284,7 @@ export interface FileRouteTypes {
     | '/etablissement/$number'
     | '/admin/addresses'
     | '/admin/agents'
+    | '/admin/analytics'
     | '/admin/audit'
     | '/admin/beacons'
     | '/admin/installations'
@@ -302,6 +312,7 @@ export interface FileRouteTypes {
     | '/etablissement/$number'
     | '/admin/addresses'
     | '/admin/agents'
+    | '/admin/analytics'
     | '/admin/audit'
     | '/admin/beacons'
     | '/admin/installations'
@@ -331,6 +342,7 @@ export interface FileRouteTypes {
     | '/etablissement/$number'
     | '/admin/_guard/addresses'
     | '/admin/_guard/agents'
+    | '/admin/_guard/analytics'
     | '/admin/_guard/audit'
     | '/admin/_guard/beacons'
     | '/admin/_guard/installations'
@@ -461,6 +473,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminGuardAgentsRouteImport
       parentRoute: typeof AdminGuardRouteRoute
     }
+    '/admin/_guard/analytics': {
+      id: '/admin/_guard/analytics'
+      path: '/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AdminGuardAnalyticsRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
     '/admin/_guard/audit': {
       id: '/admin/_guard/audit'
       path: '/audit'
@@ -558,6 +577,7 @@ declare module '@tanstack/react-router' {
 interface AdminGuardRouteRouteChildren {
   AdminGuardAddressesRoute: typeof AdminGuardAddressesRoute
   AdminGuardAgentsRoute: typeof AdminGuardAgentsRoute
+  AdminGuardAnalyticsRoute: typeof AdminGuardAnalyticsRoute
   AdminGuardAuditRoute: typeof AdminGuardAuditRoute
   AdminGuardBeaconsRoute: typeof AdminGuardBeaconsRoute
   AdminGuardInstallationsRoute: typeof AdminGuardInstallationsRoute
@@ -571,6 +591,7 @@ interface AdminGuardRouteRouteChildren {
 const AdminGuardRouteRouteChildren: AdminGuardRouteRouteChildren = {
   AdminGuardAddressesRoute: AdminGuardAddressesRoute,
   AdminGuardAgentsRoute: AdminGuardAgentsRoute,
+  AdminGuardAnalyticsRoute: AdminGuardAnalyticsRoute,
   AdminGuardAuditRoute: AdminGuardAuditRoute,
   AdminGuardBeaconsRoute: AdminGuardBeaconsRoute,
   AdminGuardInstallationsRoute: AdminGuardInstallationsRoute,
