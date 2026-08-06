@@ -39,6 +39,7 @@ import { Route as AgentGuardSyncIssuesRouteImport } from './routes/agent/_guard/
 import { Route as AgentGuardTasksRouteImport } from './routes/agent/_guard/tasks'
 import { Route as MonCompteGuardIndexRouteImport } from './routes/mon-compte/_guard/index'
 import { Route as MonCompteGuardBeaconsRouteImport } from './routes/mon-compte/_guard/beacons'
+import { Route as MonCompteGuardFavoritesRouteImport } from './routes/mon-compte/_guard/favorites'
 import { Route as AgentGuardInstallNumberRouteImport } from './routes/agent/_guard/install.$number'
 
 const IndexRoute = IndexRouteImport.update({
@@ -191,6 +192,11 @@ const MonCompteGuardBeaconsRoute = MonCompteGuardBeaconsRouteImport.update({
   path: '/beacons',
   getParentRoute: () => MonCompteGuardRouteRoute,
 } as any)
+const MonCompteGuardFavoritesRoute = MonCompteGuardFavoritesRouteImport.update({
+  id: '/favorites',
+  path: '/favorites',
+  getParentRoute: () => MonCompteGuardRouteRoute,
+} as any)
 const AgentGuardInstallNumberRoute = AgentGuardInstallNumberRouteImport.update({
   id: '/install/$number',
   path: '/install/$number',
@@ -225,6 +231,7 @@ export interface FileRoutesByFullPath {
   '/agent/sync-issues': typeof AgentGuardSyncIssuesRoute
   '/agent/tasks': typeof AgentGuardTasksRoute
   '/mon-compte/beacons': typeof MonCompteGuardBeaconsRoute
+  '/mon-compte/favorites': typeof MonCompteGuardFavoritesRoute
   '/admin/': typeof AdminGuardIndexRoute
   '/agent/': typeof AgentGuardIndexRoute
   '/mon-compte/': typeof MonCompteGuardIndexRoute
@@ -255,6 +262,7 @@ export interface FileRoutesByTo {
   '/agent/sync-issues': typeof AgentGuardSyncIssuesRoute
   '/agent/tasks': typeof AgentGuardTasksRoute
   '/mon-compte/beacons': typeof MonCompteGuardBeaconsRoute
+  '/mon-compte/favorites': typeof MonCompteGuardFavoritesRoute
   '/admin': typeof AdminGuardIndexRoute
   '/agent': typeof AgentGuardIndexRoute
   '/mon-compte': typeof MonCompteGuardIndexRoute
@@ -289,6 +297,7 @@ export interface FileRoutesById {
   '/agent/_guard/sync-issues': typeof AgentGuardSyncIssuesRoute
   '/agent/_guard/tasks': typeof AgentGuardTasksRoute
   '/mon-compte/_guard/beacons': typeof MonCompteGuardBeaconsRoute
+  '/mon-compte/_guard/favorites': typeof MonCompteGuardFavoritesRoute
   '/admin/_guard/': typeof AdminGuardIndexRoute
   '/agent/_guard/': typeof AgentGuardIndexRoute
   '/mon-compte/_guard/': typeof MonCompteGuardIndexRoute
@@ -324,6 +333,7 @@ export interface FileRouteTypes {
     | '/agent/sync-issues'
     | '/agent/tasks'
     | '/mon-compte/beacons'
+    | '/mon-compte/favorites'
     | '/admin/'
     | '/agent/'
     | '/mon-compte/'
@@ -354,6 +364,7 @@ export interface FileRouteTypes {
     | '/agent/sync-issues'
     | '/agent/tasks'
     | '/mon-compte/beacons'
+    | '/mon-compte/favorites'
     | '/admin'
     | '/agent'
     | '/mon-compte'
@@ -387,6 +398,7 @@ export interface FileRouteTypes {
     | '/agent/_guard/sync-issues'
     | '/agent/_guard/tasks'
     | '/mon-compte/_guard/beacons'
+    | '/mon-compte/_guard/favorites'
     | '/admin/_guard/'
     | '/agent/_guard/'
     | '/mon-compte/_guard/'
@@ -620,6 +632,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MonCompteGuardBeaconsRouteImport
       parentRoute: typeof MonCompteGuardRouteRoute
     }
+    '/mon-compte/_guard/favorites': {
+      id: '/mon-compte/_guard/favorites'
+      path: '/favorites'
+      fullPath: '/mon-compte/favorites'
+      preLoaderRoute: typeof MonCompteGuardFavoritesRouteImport
+      parentRoute: typeof MonCompteGuardRouteRoute
+    }
     '/agent/_guard/install/$number': {
       id: '/agent/_guard/install/$number'
       path: '/install/$number'
@@ -686,11 +705,13 @@ const AgentGuardRouteRouteWithChildren = AgentGuardRouteRoute._addFileChildren(
 
 interface MonCompteGuardRouteRouteChildren {
   MonCompteGuardBeaconsRoute: typeof MonCompteGuardBeaconsRoute
+  MonCompteGuardFavoritesRoute: typeof MonCompteGuardFavoritesRoute
   MonCompteGuardIndexRoute: typeof MonCompteGuardIndexRoute
 }
 
 const MonCompteGuardRouteRouteChildren: MonCompteGuardRouteRouteChildren = {
   MonCompteGuardBeaconsRoute: MonCompteGuardBeaconsRoute,
+  MonCompteGuardFavoritesRoute: MonCompteGuardFavoritesRoute,
   MonCompteGuardIndexRoute: MonCompteGuardIndexRoute,
 }
 
