@@ -42,6 +42,7 @@ import { Route as AgentGuardHistoryRouteImport } from './routes/agent/_guard/his
 import { Route as AgentGuardProfileRouteImport } from './routes/agent/_guard/profile'
 import { Route as AgentGuardSyncIssuesRouteImport } from './routes/agent/_guard/sync-issues'
 import { Route as AgentGuardTasksRouteImport } from './routes/agent/_guard/tasks'
+import { Route as CommandeOrderRefPaiementRouteImport } from './routes/commande.$orderRef.paiement'
 import { Route as MonCompteGuardIndexRouteImport } from './routes/mon-compte/_guard/index'
 import { Route as MonCompteGuardBeaconsRouteImport } from './routes/mon-compte/_guard/beacons'
 import { Route as MonCompteGuardFavoritesRouteImport } from './routes/mon-compte/_guard/favorites'
@@ -220,6 +221,12 @@ const AgentGuardTasksRoute = AgentGuardTasksRouteImport.update({
   path: '/tasks',
   getParentRoute: () => AgentGuardRouteRoute,
 } as any)
+const CommandeOrderRefPaiementRoute =
+  CommandeOrderRefPaiementRouteImport.update({
+    id: '/commande/$orderRef/paiement',
+    path: '/commande/$orderRef/paiement',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const MonCompteGuardIndexRoute = MonCompteGuardIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -313,6 +320,7 @@ export interface FileRoutesByFullPath {
   '/agent/profile': typeof AgentGuardProfileRoute
   '/agent/sync-issues': typeof AgentGuardSyncIssuesRoute
   '/agent/tasks': typeof AgentGuardTasksRoute
+  '/commande/$orderRef/paiement': typeof CommandeOrderRefPaiementRoute
   '/mon-compte/beacons': typeof MonCompteGuardBeaconsRoute
   '/mon-compte/favorites': typeof MonCompteGuardFavoritesRoute
   '/mon-compte/reports': typeof MonCompteGuardReportsRoute
@@ -356,6 +364,7 @@ export interface FileRoutesByTo {
   '/agent/profile': typeof AgentGuardProfileRoute
   '/agent/sync-issues': typeof AgentGuardSyncIssuesRoute
   '/agent/tasks': typeof AgentGuardTasksRoute
+  '/commande/$orderRef/paiement': typeof CommandeOrderRefPaiementRoute
   '/mon-compte/beacons': typeof MonCompteGuardBeaconsRoute
   '/mon-compte/favorites': typeof MonCompteGuardFavoritesRoute
   '/mon-compte/reports': typeof MonCompteGuardReportsRoute
@@ -404,6 +413,7 @@ export interface FileRoutesById {
   '/agent/_guard/profile': typeof AgentGuardProfileRoute
   '/agent/_guard/sync-issues': typeof AgentGuardSyncIssuesRoute
   '/agent/_guard/tasks': typeof AgentGuardTasksRoute
+  '/commande/$orderRef/paiement': typeof CommandeOrderRefPaiementRoute
   '/mon-compte/_guard/beacons': typeof MonCompteGuardBeaconsRoute
   '/mon-compte/_guard/favorites': typeof MonCompteGuardFavoritesRoute
   '/mon-compte/_guard/reports': typeof MonCompteGuardReportsRoute
@@ -453,6 +463,7 @@ export interface FileRouteTypes {
     | '/agent/profile'
     | '/agent/sync-issues'
     | '/agent/tasks'
+    | '/commande/$orderRef/paiement'
     | '/mon-compte/beacons'
     | '/mon-compte/favorites'
     | '/mon-compte/reports'
@@ -496,6 +507,7 @@ export interface FileRouteTypes {
     | '/agent/profile'
     | '/agent/sync-issues'
     | '/agent/tasks'
+    | '/commande/$orderRef/paiement'
     | '/mon-compte/beacons'
     | '/mon-compte/favorites'
     | '/mon-compte/reports'
@@ -543,6 +555,7 @@ export interface FileRouteTypes {
     | '/agent/_guard/profile'
     | '/agent/_guard/sync-issues'
     | '/agent/_guard/tasks'
+    | '/commande/$orderRef/paiement'
     | '/mon-compte/_guard/beacons'
     | '/mon-compte/_guard/favorites'
     | '/mon-compte/_guard/reports'
@@ -576,6 +589,7 @@ export interface RootRouteChildren {
   CommanderOfferCodeRoute: typeof CommanderOfferCodeRoute
   EtablissementNumberRoute: typeof EtablissementNumberRoute
   ProOnboardingRoute: typeof ProOnboardingRoute
+  CommandeOrderRefPaiementRoute: typeof CommandeOrderRefPaiementRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -811,6 +825,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgentGuardTasksRouteImport
       parentRoute: typeof AgentGuardRouteRoute
     }
+    '/commande/$orderRef/paiement': {
+      id: '/commande/$orderRef/paiement'
+      path: '/commande/$orderRef/paiement'
+      fullPath: '/commande/$orderRef/paiement'
+      preLoaderRoute: typeof CommandeOrderRefPaiementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/mon-compte/_guard/': {
       id: '/mon-compte/_guard/'
       path: '/'
@@ -1012,6 +1033,7 @@ const rootRouteChildren: RootRouteChildren = {
   CommanderOfferCodeRoute: CommanderOfferCodeRoute,
   EtablissementNumberRoute: EtablissementNumberRoute,
   ProOnboardingRoute: ProOnboardingRoute,
+  CommandeOrderRefPaiementRoute: CommandeOrderRefPaiementRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
