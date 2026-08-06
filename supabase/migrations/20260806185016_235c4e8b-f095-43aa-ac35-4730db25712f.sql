@@ -1,0 +1,2 @@
+ALTER TABLE public.installations ADD COLUMN IF NOT EXISTS client_uuid uuid;
+CREATE UNIQUE INDEX IF NOT EXISTS installations_client_uuid_key ON public.installations (client_uuid) WHERE client_uuid IS NOT NULL;
