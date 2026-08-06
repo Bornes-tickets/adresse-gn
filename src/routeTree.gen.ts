@@ -23,6 +23,7 @@ import { Route as EtablissementNumberRouteImport } from './routes/etablissement.
 import { Route as AdminGuardIndexRouteImport } from './routes/admin/_guard/index'
 import { Route as AdminGuardAddressesRouteImport } from './routes/admin/_guard/addresses'
 import { Route as AdminGuardBeaconsRouteImport } from './routes/admin/_guard/beacons'
+import { Route as AdminGuardInstallationsRouteImport } from './routes/admin/_guard/installations'
 import { Route as AgentGuardIndexRouteImport } from './routes/agent/_guard/index'
 import { Route as AgentGuardHistoryRouteImport } from './routes/agent/_guard/history'
 import { Route as AgentGuardProfileRouteImport } from './routes/agent/_guard/profile'
@@ -100,6 +101,11 @@ const AdminGuardBeaconsRoute = AdminGuardBeaconsRouteImport.update({
   path: '/beacons',
   getParentRoute: () => AdminGuardRouteRoute,
 } as any)
+const AdminGuardInstallationsRoute = AdminGuardInstallationsRouteImport.update({
+  id: '/installations',
+  path: '/installations',
+  getParentRoute: () => AdminGuardRouteRoute,
+} as any)
 const AgentGuardIndexRoute = AgentGuardIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -145,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/admin/addresses': typeof AdminGuardAddressesRoute
   '/admin/beacons': typeof AdminGuardBeaconsRoute
+  '/admin/installations': typeof AdminGuardInstallationsRoute
   '/agent/history': typeof AgentGuardHistoryRoute
   '/agent/profile': typeof AgentGuardProfileRoute
   '/agent/sync-issues': typeof AgentGuardSyncIssuesRoute
@@ -165,6 +172,7 @@ export interface FileRoutesByTo {
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/admin/addresses': typeof AdminGuardAddressesRoute
   '/admin/beacons': typeof AdminGuardBeaconsRoute
+  '/admin/installations': typeof AdminGuardInstallationsRoute
   '/agent/history': typeof AgentGuardHistoryRoute
   '/agent/profile': typeof AgentGuardProfileRoute
   '/agent/sync-issues': typeof AgentGuardSyncIssuesRoute
@@ -188,6 +196,7 @@ export interface FileRoutesById {
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/admin/_guard/addresses': typeof AdminGuardAddressesRoute
   '/admin/_guard/beacons': typeof AdminGuardBeaconsRoute
+  '/admin/_guard/installations': typeof AdminGuardInstallationsRoute
   '/agent/_guard/history': typeof AgentGuardHistoryRoute
   '/agent/_guard/profile': typeof AgentGuardProfileRoute
   '/agent/_guard/sync-issues': typeof AgentGuardSyncIssuesRoute
@@ -212,6 +221,7 @@ export interface FileRouteTypes {
     | '/etablissement/$number'
     | '/admin/addresses'
     | '/admin/beacons'
+    | '/admin/installations'
     | '/agent/history'
     | '/agent/profile'
     | '/agent/sync-issues'
@@ -232,6 +242,7 @@ export interface FileRouteTypes {
     | '/etablissement/$number'
     | '/admin/addresses'
     | '/admin/beacons'
+    | '/admin/installations'
     | '/agent/history'
     | '/agent/profile'
     | '/agent/sync-issues'
@@ -254,6 +265,7 @@ export interface FileRouteTypes {
     | '/etablissement/$number'
     | '/admin/_guard/addresses'
     | '/admin/_guard/beacons'
+    | '/admin/_guard/installations'
     | '/agent/_guard/history'
     | '/agent/_guard/profile'
     | '/agent/_guard/sync-issues'
@@ -377,6 +389,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminGuardBeaconsRouteImport
       parentRoute: typeof AdminGuardRouteRoute
     }
+    '/admin/_guard/installations': {
+      id: '/admin/_guard/installations'
+      path: '/installations'
+      fullPath: '/admin/installations'
+      preLoaderRoute: typeof AdminGuardInstallationsRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
     '/agent/_guard/': {
       id: '/agent/_guard/'
       path: '/'
@@ -425,12 +444,14 @@ declare module '@tanstack/react-router' {
 interface AdminGuardRouteRouteChildren {
   AdminGuardAddressesRoute: typeof AdminGuardAddressesRoute
   AdminGuardBeaconsRoute: typeof AdminGuardBeaconsRoute
+  AdminGuardInstallationsRoute: typeof AdminGuardInstallationsRoute
   AdminGuardIndexRoute: typeof AdminGuardIndexRoute
 }
 
 const AdminGuardRouteRouteChildren: AdminGuardRouteRouteChildren = {
   AdminGuardAddressesRoute: AdminGuardAddressesRoute,
   AdminGuardBeaconsRoute: AdminGuardBeaconsRoute,
+  AdminGuardInstallationsRoute: AdminGuardInstallationsRoute,
   AdminGuardIndexRoute: AdminGuardIndexRoute,
 }
 
