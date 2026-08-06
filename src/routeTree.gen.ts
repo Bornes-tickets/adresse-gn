@@ -41,6 +41,7 @@ import { Route as MonCompteGuardIndexRouteImport } from './routes/mon-compte/_gu
 import { Route as MonCompteGuardBeaconsRouteImport } from './routes/mon-compte/_guard/beacons'
 import { Route as MonCompteGuardFavoritesRouteImport } from './routes/mon-compte/_guard/favorites'
 import { Route as MonCompteGuardReportsRouteImport } from './routes/mon-compte/_guard/reports'
+import { Route as MonCompteGuardSettingsRouteImport } from './routes/mon-compte/_guard/settings'
 import { Route as AgentGuardInstallNumberRouteImport } from './routes/agent/_guard/install.$number'
 
 const IndexRoute = IndexRouteImport.update({
@@ -203,6 +204,11 @@ const MonCompteGuardReportsRoute = MonCompteGuardReportsRouteImport.update({
   path: '/reports',
   getParentRoute: () => MonCompteGuardRouteRoute,
 } as any)
+const MonCompteGuardSettingsRoute = MonCompteGuardSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => MonCompteGuardRouteRoute,
+} as any)
 const AgentGuardInstallNumberRoute = AgentGuardInstallNumberRouteImport.update({
   id: '/install/$number',
   path: '/install/$number',
@@ -239,6 +245,7 @@ export interface FileRoutesByFullPath {
   '/mon-compte/beacons': typeof MonCompteGuardBeaconsRoute
   '/mon-compte/favorites': typeof MonCompteGuardFavoritesRoute
   '/mon-compte/reports': typeof MonCompteGuardReportsRoute
+  '/mon-compte/settings': typeof MonCompteGuardSettingsRoute
   '/admin/': typeof AdminGuardIndexRoute
   '/agent/': typeof AgentGuardIndexRoute
   '/mon-compte/': typeof MonCompteGuardIndexRoute
@@ -271,6 +278,7 @@ export interface FileRoutesByTo {
   '/mon-compte/beacons': typeof MonCompteGuardBeaconsRoute
   '/mon-compte/favorites': typeof MonCompteGuardFavoritesRoute
   '/mon-compte/reports': typeof MonCompteGuardReportsRoute
+  '/mon-compte/settings': typeof MonCompteGuardSettingsRoute
   '/admin': typeof AdminGuardIndexRoute
   '/agent': typeof AgentGuardIndexRoute
   '/mon-compte': typeof MonCompteGuardIndexRoute
@@ -307,6 +315,7 @@ export interface FileRoutesById {
   '/mon-compte/_guard/beacons': typeof MonCompteGuardBeaconsRoute
   '/mon-compte/_guard/favorites': typeof MonCompteGuardFavoritesRoute
   '/mon-compte/_guard/reports': typeof MonCompteGuardReportsRoute
+  '/mon-compte/_guard/settings': typeof MonCompteGuardSettingsRoute
   '/admin/_guard/': typeof AdminGuardIndexRoute
   '/agent/_guard/': typeof AgentGuardIndexRoute
   '/mon-compte/_guard/': typeof MonCompteGuardIndexRoute
@@ -344,6 +353,7 @@ export interface FileRouteTypes {
     | '/mon-compte/beacons'
     | '/mon-compte/favorites'
     | '/mon-compte/reports'
+    | '/mon-compte/settings'
     | '/admin/'
     | '/agent/'
     | '/mon-compte/'
@@ -376,6 +386,7 @@ export interface FileRouteTypes {
     | '/mon-compte/beacons'
     | '/mon-compte/favorites'
     | '/mon-compte/reports'
+    | '/mon-compte/settings'
     | '/admin'
     | '/agent'
     | '/mon-compte'
@@ -411,6 +422,7 @@ export interface FileRouteTypes {
     | '/mon-compte/_guard/beacons'
     | '/mon-compte/_guard/favorites'
     | '/mon-compte/_guard/reports'
+    | '/mon-compte/_guard/settings'
     | '/admin/_guard/'
     | '/agent/_guard/'
     | '/mon-compte/_guard/'
@@ -658,6 +670,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MonCompteGuardReportsRouteImport
       parentRoute: typeof MonCompteGuardRouteRoute
     }
+    '/mon-compte/_guard/settings': {
+      id: '/mon-compte/_guard/settings'
+      path: '/settings'
+      fullPath: '/mon-compte/settings'
+      preLoaderRoute: typeof MonCompteGuardSettingsRouteImport
+      parentRoute: typeof MonCompteGuardRouteRoute
+    }
     '/agent/_guard/install/$number': {
       id: '/agent/_guard/install/$number'
       path: '/install/$number'
@@ -726,6 +745,7 @@ interface MonCompteGuardRouteRouteChildren {
   MonCompteGuardBeaconsRoute: typeof MonCompteGuardBeaconsRoute
   MonCompteGuardFavoritesRoute: typeof MonCompteGuardFavoritesRoute
   MonCompteGuardReportsRoute: typeof MonCompteGuardReportsRoute
+  MonCompteGuardSettingsRoute: typeof MonCompteGuardSettingsRoute
   MonCompteGuardIndexRoute: typeof MonCompteGuardIndexRoute
 }
 
@@ -733,6 +753,7 @@ const MonCompteGuardRouteRouteChildren: MonCompteGuardRouteRouteChildren = {
   MonCompteGuardBeaconsRoute: MonCompteGuardBeaconsRoute,
   MonCompteGuardFavoritesRoute: MonCompteGuardFavoritesRoute,
   MonCompteGuardReportsRoute: MonCompteGuardReportsRoute,
+  MonCompteGuardSettingsRoute: MonCompteGuardSettingsRoute,
   MonCompteGuardIndexRoute: MonCompteGuardIndexRoute,
 }
 
