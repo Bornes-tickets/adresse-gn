@@ -802,7 +802,21 @@ export async function lancerFacturationRecurrente(adminId: string | null) {
   return { crees, suspendus };
 }
 
-export async function listerAbonnements() {
+export interface AdminSubscriptionRow {
+  id: string;
+  customer_id: string | null;
+  plan_code: string;
+  start_date: string;
+  end_date: string;
+  next_billing_date: string | null;
+  status: string;
+  price_gnf: number;
+  auto_renew: boolean;
+  client: string;
+}
+
+export async function listerAbonnements(): Promise<AdminSubscriptionRow[]> {
+
   const { data, error } = await db
     .from("subscriptions")
     .select(
