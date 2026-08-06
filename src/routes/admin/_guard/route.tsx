@@ -11,6 +11,7 @@ import {
   MapPin,
   Package,
   QrCode,
+  ShieldCheck,
   Users,
   UserSquare2,
 } from "lucide-react";
