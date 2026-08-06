@@ -21,6 +21,7 @@ import { Route as AgentGuardRouteRouteImport } from './routes/agent/_guard/route
 import { Route as AgentLoginRouteImport } from './routes/agent/login'
 import { Route as EtablissementNumberRouteImport } from './routes/etablissement.$number'
 import { Route as MonCompteGuardRouteRouteImport } from './routes/mon-compte/_guard/route'
+import { Route as ProGuardRouteRouteImport } from './routes/pro/_guard/route'
 import { Route as AdminGuardIndexRouteImport } from './routes/admin/_guard/index'
 import { Route as AdminGuardAddressesRouteImport } from './routes/admin/_guard/addresses'
 import { Route as AdminGuardAgentsRouteImport } from './routes/admin/_guard/agents'
@@ -103,6 +104,11 @@ const EtablissementNumberRoute = EtablissementNumberRouteImport.update({
 const MonCompteGuardRouteRoute = MonCompteGuardRouteRouteImport.update({
   id: '/mon-compte/_guard',
   path: '/mon-compte',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProGuardRouteRoute = ProGuardRouteRouteImport.update({
+  id: '/pro/_guard',
+  path: '/pro',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminGuardIndexRoute = AdminGuardIndexRouteImport.update({
@@ -231,6 +237,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminGuardRouteRouteWithChildren
   '/agent': typeof AgentGuardRouteRouteWithChildren
   '/mon-compte': typeof MonCompteGuardRouteRouteWithChildren
+  '/pro': typeof ProGuardRouteRoute
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
@@ -265,6 +272,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
   '/signup': typeof SignupRoute
+  '/pro': typeof ProGuardRouteRoute
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
@@ -303,6 +311,7 @@ export interface FileRoutesById {
   '/admin/_guard': typeof AdminGuardRouteRouteWithChildren
   '/agent/_guard': typeof AgentGuardRouteRouteWithChildren
   '/mon-compte/_guard': typeof MonCompteGuardRouteRouteWithChildren
+  '/pro/_guard': typeof ProGuardRouteRoute
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
@@ -342,6 +351,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/agent'
     | '/mon-compte'
+    | '/pro'
     | '/a/$number'
     | '/agent/login'
     | '/etablissement/$number'
@@ -376,6 +386,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/logout'
     | '/signup'
+    | '/pro'
     | '/a/$number'
     | '/agent/login'
     | '/etablissement/$number'
@@ -413,6 +424,7 @@ export interface FileRouteTypes {
     | '/admin/_guard'
     | '/agent/_guard'
     | '/mon-compte/_guard'
+    | '/pro/_guard'
     | '/a/$number'
     | '/agent/login'
     | '/etablissement/$number'
@@ -451,6 +463,7 @@ export interface RootRouteChildren {
   AdminGuardRouteRoute: typeof AdminGuardRouteRouteWithChildren
   AgentGuardRouteRoute: typeof AgentGuardRouteRouteWithChildren
   MonCompteGuardRouteRoute: typeof MonCompteGuardRouteRouteWithChildren
+  ProGuardRouteRoute: typeof ProGuardRouteRoute
   ANumberRoute: typeof ANumberRoute
   AgentLoginRoute: typeof AgentLoginRoute
   EtablissementNumberRoute: typeof EtablissementNumberRoute
@@ -540,6 +553,13 @@ declare module '@tanstack/react-router' {
       path: '/mon-compte'
       fullPath: '/mon-compte'
       preLoaderRoute: typeof MonCompteGuardRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pro/_guard': {
+      id: '/pro/_guard'
+      path: '/pro'
+      fullPath: '/pro'
+      preLoaderRoute: typeof ProGuardRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/_guard/': {
@@ -791,6 +811,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminGuardRouteRoute: AdminGuardRouteRouteWithChildren,
   AgentGuardRouteRoute: AgentGuardRouteRouteWithChildren,
   MonCompteGuardRouteRoute: MonCompteGuardRouteRouteWithChildren,
+  ProGuardRouteRoute: ProGuardRouteRoute,
   ANumberRoute: ANumberRoute,
   AgentLoginRoute: AgentLoginRoute,
   EtablissementNumberRoute: EtablissementNumberRoute,
