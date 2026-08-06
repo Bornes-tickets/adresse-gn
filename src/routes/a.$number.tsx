@@ -1,16 +1,20 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   BadgeCheck,
   Building2,
   Flag,
+  Heart,
   LocateFixed,
   Navigation,
   Share2,
+  ShieldCheck,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { BeaconMap } from "@/components/BeaconMap";
+import { ClaimDialog } from "@/components/ClaimDialog";
 import { DirectionsSheet } from "@/components/DirectionsSheet";
 import { ReportSheet } from "@/components/ReportSheet";
 import { ShareSheet } from "@/components/ShareSheet";
@@ -18,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/hooks/useAuth";
 import { displayName } from "@/lib/beacon";
 import {
   categoryLabel,
@@ -25,7 +30,9 @@ import {
   haversineKm,
   isCommercialCategory,
 } from "@/lib/geo";
+import { beaconContext, ownerToggleFavorite } from "@/lib/owner.functions";
 import { searchBeacon } from "@/lib/search.functions";
+
 
 export const Route = createFileRoute("/a/$number")({
   head: () => ({
