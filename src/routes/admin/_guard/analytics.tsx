@@ -155,7 +155,15 @@ function AdminAnalytics() {
           <CardTitle className="text-base">Densité des adresses actives</CardTitle>
         </CardHeader>
         <CardContent className="h-[420px] p-0">
-          <AdminPointsMap points={data.chaleur} />
+          <AdminPointsMap
+            points={data.chaleur.map((p) => ({
+              lat: p.lat,
+              lng: p.lng,
+              visibility: "public",
+              number: null,
+            }))}
+          />
+
         </CardContent>
       </Card>
     </div>
