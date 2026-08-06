@@ -50,7 +50,10 @@ export interface PaymentProvider {
   /** false ⇒ bouton grisé côté client, createIntent lève une erreur claire. */
   enabled: boolean;
   createIntent(order: OrderForPayment): Promise<CreateIntentResult>;
-  verifyWebhook(headers: Record<string, string>, rawBody: string): VerifyWebhookResult;
+  verifyWebhook(
+    headers: Record<string, string>,
+    rawBody: string,
+  ): Promise<VerifyWebhookResult>;
   handleEvent(event: WebhookEvent): Promise<HandleEventResult>;
 }
 
