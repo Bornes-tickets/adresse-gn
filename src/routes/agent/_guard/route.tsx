@@ -42,10 +42,7 @@ function AgentShell() {
         <p className="mt-3 text-sm text-muted-foreground">
           Cet espace est réservé aux agents installateurs.
         </p>
-        <Link
-          to="/agent/login"
-          className="mt-6 inline-block text-sm text-primary underline"
-        >
+        <Link to="/agent/login" className="mt-6 inline-block text-sm text-primary underline">
           Utiliser un autre compte
         </Link>
       </div>

@@ -17,13 +17,23 @@ const STATUT_LABEL: Record<string, string> = {
   assigned: "Assignée",
 };
 
+/** Balises des lots assignés à l'agent connecté, encore installables. */
 async function chargerBalises() {
+  const { data: assignations, error: erreurAssignations } = await supabase
+    .from("lot_assignments")
+    .select("lot_id");
+  if (erreurAssignations) throw erreurAssignations;
+
+  const lots = (assignations ?? []).map((ligne) => ligne.lot_id);
+  if (lots.length === 0) return [];
+
   const { data, error } = await supabase
     .from("beacons")
     .select("id, public_number, status, created_at, lot_id")
+    .in("lot_id", lots)
     .in("status", ["assigned", "generated"])
     .order("created_at", { ascending: false })
-    .limit(20);
+    .limit(50);
   if (error) throw error;
   return data ?? [];
 }
@@ -35,16 +45,18 @@ function Tasks() {
     queryFn: chargerBalises,
   });
 
+  const total = data?.length ?? 0;
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-foreground">Tâches</h1>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => void refetch()}
-          disabled={isFetching}
-        >
+        <div>
+          <h1 className="text-xl font-bold text-foreground">Tâches</h1>
+          <p className="text-sm text-muted-foreground">
+            {total} balise{total > 1 ? "s" : ""} à installer
+          </p>
+        </div>
+        <Button size="sm" variant="outline" onClick={() => void refetch()} disabled={isFetching}>
           <RefreshCw className={`size-4 ${isFetching ? "animate-spin" : ""}`} />
           Actualiser
         </Button>
@@ -58,15 +70,12 @@ function Tasks() {
         </div>
       )}
 
-      {!isPending && (data?.length ?? 0) === 0 && (
+      {!isPending && total === 0 && (
         <Card>
           <CardContent className="py-10 text-center">
-            <p className="text-sm font-medium text-foreground">
-              Aucune balise assignée
-            </p>
+            <p className="text-sm font-medium text-foreground">Aucune balise assignée</p>
             <p className="mt-2 text-sm text-muted-foreground">
-              Vos balises à installer apparaîtront ici dès qu'elles vous seront
-              attribuées.
+              Vos balises à installer apparaîtront ici dès qu'un lot vous sera attribué.
             </p>
           </CardContent>
         </Card>
@@ -82,16 +91,20 @@ function Tasks() {
                     {balise.public_number}
                   </p>
                   <div className="mt-2">
-                    <Badge
-                      variant={balise.status === "assigned" ? "default" : "secondary"}
-                    >
+                    <Badge variant={balise.status === "assigned" ? "default" : "secondary"}>
                       {STATUT_LABEL[balise.status] ?? balise.status}
                     </Badge>
                   </div>
                 </div>
                 <Button
                   size="lg"
-                  onClick={() => navigate({ to: "/a/$number", params: { number: balise.public_number } })}
+                  className="h-12"
+                  onClick={() =>
+                    navigate({
+                      to: "/agent/install/$number",
+                      params: { number: balise.public_number },
+                    })
+                  }
                 >
                   <Wrench className="size-4" />
                   Installer

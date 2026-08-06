@@ -23,6 +23,7 @@ import { Route as AgentGuardIndexRouteImport } from './routes/agent/_guard/index
 import { Route as AgentGuardHistoryRouteImport } from './routes/agent/_guard/history'
 import { Route as AgentGuardProfileRouteImport } from './routes/agent/_guard/profile'
 import { Route as AgentGuardTasksRouteImport } from './routes/agent/_guard/tasks'
+import { Route as AgentGuardInstallNumberRouteImport } from './routes/agent/_guard/install.$number'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -94,6 +95,11 @@ const AgentGuardTasksRoute = AgentGuardTasksRouteImport.update({
   path: '/tasks',
   getParentRoute: () => AgentGuardRouteRoute,
 } as any)
+const AgentGuardInstallNumberRoute = AgentGuardInstallNumberRouteImport.update({
+  id: '/install/$number',
+  path: '/install/$number',
+  getParentRoute: () => AgentGuardRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/agent/profile': typeof AgentGuardProfileRoute
   '/agent/tasks': typeof AgentGuardTasksRoute
   '/agent/': typeof AgentGuardIndexRoute
+  '/agent/install/$number': typeof AgentGuardInstallNumberRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -125,6 +132,7 @@ export interface FileRoutesByTo {
   '/agent/profile': typeof AgentGuardProfileRoute
   '/agent/tasks': typeof AgentGuardTasksRoute
   '/agent': typeof AgentGuardIndexRoute
+  '/agent/install/$number': typeof AgentGuardInstallNumberRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -142,6 +150,7 @@ export interface FileRoutesById {
   '/agent/_guard/profile': typeof AgentGuardProfileRoute
   '/agent/_guard/tasks': typeof AgentGuardTasksRoute
   '/agent/_guard/': typeof AgentGuardIndexRoute
+  '/agent/_guard/install/$number': typeof AgentGuardInstallNumberRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -160,6 +169,7 @@ export interface FileRouteTypes {
     | '/agent/profile'
     | '/agent/tasks'
     | '/agent/'
+    | '/agent/install/$number'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -175,6 +185,7 @@ export interface FileRouteTypes {
     | '/agent/profile'
     | '/agent/tasks'
     | '/agent'
+    | '/agent/install/$number'
   id:
     | '__root__'
     | '/'
@@ -191,6 +202,7 @@ export interface FileRouteTypes {
     | '/agent/_guard/profile'
     | '/agent/_guard/tasks'
     | '/agent/_guard/'
+    | '/agent/_guard/install/$number'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -306,6 +318,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgentGuardTasksRouteImport
       parentRoute: typeof AgentGuardRouteRoute
     }
+    '/agent/_guard/install/$number': {
+      id: '/agent/_guard/install/$number'
+      path: '/install/$number'
+      fullPath: '/agent/install/$number'
+      preLoaderRoute: typeof AgentGuardInstallNumberRouteImport
+      parentRoute: typeof AgentGuardRouteRoute
+    }
   }
 }
 
@@ -314,6 +333,7 @@ interface AgentGuardRouteRouteChildren {
   AgentGuardProfileRoute: typeof AgentGuardProfileRoute
   AgentGuardTasksRoute: typeof AgentGuardTasksRoute
   AgentGuardIndexRoute: typeof AgentGuardIndexRoute
+  AgentGuardInstallNumberRoute: typeof AgentGuardInstallNumberRoute
 }
 
 const AgentGuardRouteRouteChildren: AgentGuardRouteRouteChildren = {
@@ -321,6 +341,7 @@ const AgentGuardRouteRouteChildren: AgentGuardRouteRouteChildren = {
   AgentGuardProfileRoute: AgentGuardProfileRoute,
   AgentGuardTasksRoute: AgentGuardTasksRoute,
   AgentGuardIndexRoute: AgentGuardIndexRoute,
+  AgentGuardInstallNumberRoute: AgentGuardInstallNumberRoute,
 }
 
 const AgentGuardRouteRouteWithChildren = AgentGuardRouteRoute._addFileChildren(
@@ -342,13 +363,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
