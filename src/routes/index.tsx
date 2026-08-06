@@ -61,10 +61,33 @@ export const Route = createFileRoute("/")({
 function Home() {
   const navigate = useNavigate();
   const [numero, setNumero] = useState("");
+  const [erreur, setErreur] = useState<string | null>(null);
+  const [enCours, setEnCours] = useState(false);
 
-  const rechercher = (valeur: string) => {
-    const propre = valeur.trim().toUpperCase();
+  const rechercher = async (valeur: string) => {
+    const propre = normalizeBeaconNumber(valeur, getDefaultZone());
     if (!propre) return;
+
+    if (!isValidBeaconNumber(propre)) {
+      setErreur(
+        "Format invalide. Saisissez 6 chiffres (ex. 582741) ou un numéro complet GN-CKY-582741.",
+      );
+      return;
+    }
+
+    setErreur(null);
+    setEnCours(true);
+    const reponse = await searchBeacon({ data: { number: propre } }).catch(() => null);
+    setEnCours(false);
+
+    if (reponse?.status === "rate_limited") {
+      setErreur(reponse.message ?? "Trop de recherches. Réessayez dans un instant.");
+      return;
+    }
+    if (reponse?.status === "not_found") {
+      setErreur("Aucune adresse ne correspond à ce numéro.");
+      return;
+    }
     navigate({ to: "/a/$number", params: { number: propre } });
   };
 
@@ -82,15 +105,19 @@ function Home() {
         className="mt-10 flex flex-col gap-3 sm:flex-row"
         onSubmit={(event) => {
           event.preventDefault();
-          rechercher(numero);
+          void rechercher(numero);
         }}
       >
         <div className="flex flex-1 items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 shadow-xs focus-within:ring-2 focus-within:ring-ring">
           <input
             value={numero}
-            onChange={(event) => setNumero(event.target.value)}
+            onChange={(event) => {
+              setNumero(event.target.value);
+              setErreur(null);
+            }}
             placeholder="GN-CKY-______"
             aria-label="Numéro de balise"
+            aria-invalid={!!erreur}
             className="w-full bg-transparent py-2 font-mono text-xl tracking-[0.12em] text-foreground outline-hidden placeholder:text-muted-foreground/70 sm:text-2xl"
           />
           <Tooltip>
@@ -114,12 +141,20 @@ function Home() {
         <Button
           type="submit"
           size="lg"
+          disabled={enCours}
           className="h-auto bg-accent px-8 text-base text-accent-foreground hover:bg-accent/90"
         >
           <Search className="size-5" />
-          Rechercher
+          {enCours ? "Recherche…" : "Rechercher"}
         </Button>
       </form>
+
+      {erreur && (
+        <p role="alert" className="mt-2 text-sm text-destructive">
+          {erreur}
+        </p>
+      )}
+
 
       <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-sm">
         <span className="text-muted-foreground">Exemples :</span>
