@@ -20,6 +20,7 @@ import { Route as AdminGuardRouteRouteImport } from './routes/admin/_guard/route
 import { Route as AgentGuardRouteRouteImport } from './routes/agent/_guard/route'
 import { Route as AgentLoginRouteImport } from './routes/agent/login'
 import { Route as EtablissementNumberRouteImport } from './routes/etablissement.$number'
+import { Route as MonCompteGuardRouteRouteImport } from './routes/mon-compte/_guard/route'
 import { Route as AdminGuardIndexRouteImport } from './routes/admin/_guard/index'
 import { Route as AdminGuardAddressesRouteImport } from './routes/admin/_guard/addresses'
 import { Route as AdminGuardAgentsRouteImport } from './routes/admin/_guard/agents'
@@ -91,6 +92,11 @@ const AgentLoginRoute = AgentLoginRouteImport.update({
 const EtablissementNumberRoute = EtablissementNumberRouteImport.update({
   id: '/etablissement/$number',
   path: '/etablissement/$number',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MonCompteGuardRouteRoute = MonCompteGuardRouteRouteImport.update({
+  id: '/mon-compte/_guard',
+  path: '/mon-compte',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminGuardIndexRoute = AdminGuardIndexRouteImport.update({
@@ -188,6 +194,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/admin': typeof AdminGuardRouteRouteWithChildren
   '/agent': typeof AgentGuardRouteRouteWithChildren
+  '/mon-compte': typeof MonCompteGuardRouteRoute
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
@@ -216,6 +223,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
   '/signup': typeof SignupRoute
+  '/mon-compte': typeof MonCompteGuardRouteRoute
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
@@ -247,6 +255,7 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/admin/_guard': typeof AdminGuardRouteRouteWithChildren
   '/agent/_guard': typeof AgentGuardRouteRouteWithChildren
+  '/mon-compte/_guard': typeof MonCompteGuardRouteRoute
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
@@ -279,6 +288,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/agent'
+    | '/mon-compte'
     | '/a/$number'
     | '/agent/login'
     | '/etablissement/$number'
@@ -307,6 +317,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/logout'
     | '/signup'
+    | '/mon-compte'
     | '/a/$number'
     | '/agent/login'
     | '/etablissement/$number'
@@ -337,6 +348,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin/_guard'
     | '/agent/_guard'
+    | '/mon-compte/_guard'
     | '/a/$number'
     | '/agent/login'
     | '/etablissement/$number'
@@ -368,6 +380,7 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   AdminGuardRouteRoute: typeof AdminGuardRouteRouteWithChildren
   AgentGuardRouteRoute: typeof AgentGuardRouteRouteWithChildren
+  MonCompteGuardRouteRoute: typeof MonCompteGuardRouteRoute
   ANumberRoute: typeof ANumberRoute
   AgentLoginRoute: typeof AgentLoginRoute
   EtablissementNumberRoute: typeof EtablissementNumberRoute
@@ -450,6 +463,13 @@ declare module '@tanstack/react-router' {
       path: '/etablissement/$number'
       fullPath: '/etablissement/$number'
       preLoaderRoute: typeof EtablissementNumberRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mon-compte/_guard': {
+      id: '/mon-compte/_guard'
+      path: '/mon-compte'
+      fullPath: '/mon-compte'
+      preLoaderRoute: typeof MonCompteGuardRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/_guard/': {
@@ -637,6 +657,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   AdminGuardRouteRoute: AdminGuardRouteRouteWithChildren,
   AgentGuardRouteRoute: AgentGuardRouteRouteWithChildren,
+  MonCompteGuardRouteRoute: MonCompteGuardRouteRoute,
   ANumberRoute: ANumberRoute,
   AgentLoginRoute: AgentLoginRoute,
   EtablissementNumberRoute: EtablissementNumberRoute,
@@ -644,13 +665,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

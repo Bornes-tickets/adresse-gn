@@ -72,7 +72,7 @@ function OwnerShell() {
             <Link
               key={to}
               to={to}
-              activeOptions={"exact" in rest ? { exact: true } : undefined}
+              {...("exact" in rest ? { activeOptions: { exact: true as const } } : {})}
               className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted"
               activeProps={{ className: "bg-muted font-medium text-foreground" }}
             >
@@ -96,7 +96,7 @@ function OwnerShell() {
             <Link
               key={to}
               to={to}
-              activeOptions={"exact" in rest ? { exact: true } : undefined}
+              {...("exact" in rest ? { activeOptions: { exact: true as const } } : {})}
               className="flex flex-col items-center gap-1 py-2 text-[10px] text-muted-foreground"
               activeProps={{ className: "text-primary font-medium" }}
             >
