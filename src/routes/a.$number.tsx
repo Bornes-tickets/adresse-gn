@@ -63,12 +63,32 @@ function BeaconResult() {
   const [directionsOpen, setDirectionsOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [claimOpen, setClaimOpen] = useState(false);
+  const { isAuthenticated } = useAuth();
+  const queryClient = useQueryClient();
 
   const { data, error, isPending } = useQuery({
     queryKey: ["search-beacon", number],
     queryFn: () => searchBeacon({ data: { number } }),
     retry: false,
   });
+
+  const contexte = useQuery({
+    queryKey: ["beacon-context", number],
+    queryFn: () => beaconContext({ data: { number } }),
+    enabled: isAuthenticated && data?.status === "found",
+    retry: false,
+  });
+
+  const basculerFavori = useMutation({
+    mutationFn: () => ownerToggleFavorite({ data: { number } }),
+    onSuccess: (res: { favorited?: boolean }) => {
+      toast.success(res?.favorited === false ? "Retiré des favoris." : "Ajouté à vos favoris.");
+      queryClient.invalidateQueries({ queryKey: ["beacon-context", number] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
 
   const demanderPosition = () => {
     if (!("geolocation" in navigator)) {
