@@ -526,3 +526,33 @@ export const adminDeleteZone = createServerFn({ method: "POST" })
     await requireAdmin(context.userId);
     return supprimerZone(data.niveau, data.id);
   });
+
+/* --------------------------- RÉCLAMATIONS --------------------------- */
+
+export const adminClaims = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { statut?: string | null }) => ({
+    statut: input?.statut ?? null,
+  }))
+  .handler(async ({ context, data }) => {
+    const { requireAdmin } = await import("@/lib/admin.server");
+    const { listerReclamations } = await import("@/lib/admin-claims.server");
+    await requireAdmin(context.userId);
+    return listerReclamations(data.statut);
+  });
+
+export const adminDecideClaim = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string; decision: "approved" | "rejected"; note?: string | null }) => {
+    if (!input?.id) throw new Error("Demande requise");
+    if (input.decision !== "approved" && input.decision !== "rejected") {
+      throw new Error("Décision invalide.");
+    }
+    return { id: input.id, decision: input.decision, note: input.note?.slice(0, 500) ?? null };
+  })
+  .handler(async ({ context, data }) => {
+    const { requireAdmin } = await import("@/lib/admin.server");
+    const { deciderReclamation } = await import("@/lib/admin-claims.server");
+    const identite = await requireAdmin(context.userId);
+    return deciderReclamation({ ...data, actorId: identite.userId });
+  });

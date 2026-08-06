@@ -1,16 +1,20 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   BadgeCheck,
   Building2,
   Flag,
+  Heart,
   LocateFixed,
   Navigation,
   Share2,
+  ShieldCheck,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { BeaconMap } from "@/components/BeaconMap";
+import { ClaimDialog } from "@/components/ClaimDialog";
 import { DirectionsSheet } from "@/components/DirectionsSheet";
 import { ReportSheet } from "@/components/ReportSheet";
 import { ShareSheet } from "@/components/ShareSheet";
@@ -18,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/hooks/useAuth";
 import { displayName } from "@/lib/beacon";
 import {
   categoryLabel,
@@ -25,7 +30,9 @@ import {
   haversineKm,
   isCommercialCategory,
 } from "@/lib/geo";
+import { beaconContext, ownerToggleFavorite } from "@/lib/owner.functions";
 import { searchBeacon } from "@/lib/search.functions";
+
 
 export const Route = createFileRoute("/a/$number")({
   head: () => ({
@@ -56,12 +63,32 @@ function BeaconResult() {
   const [directionsOpen, setDirectionsOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [claimOpen, setClaimOpen] = useState(false);
+  const { isAuthenticated } = useAuth();
+  const queryClient = useQueryClient();
 
   const { data, error, isPending } = useQuery({
     queryKey: ["search-beacon", number],
     queryFn: () => searchBeacon({ data: { number } }),
     retry: false,
   });
+
+  const contexte = useQuery({
+    queryKey: ["beacon-context", number],
+    queryFn: () => beaconContext({ data: { number } }),
+    enabled: isAuthenticated && data?.status === "found",
+    retry: false,
+  });
+
+  const basculerFavori = useMutation({
+    mutationFn: () => ownerToggleFavorite({ data: { number } }),
+    onSuccess: (res: { favorited?: boolean }) => {
+      toast.success(res?.favorited === false ? "Retiré des favoris." : "Ajouté à vos favoris.");
+      queryClient.invalidateQueries({ queryKey: ["beacon-context", number] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
 
   const demanderPosition = () => {
     if (!("geolocation" in navigator)) {
@@ -206,6 +233,37 @@ function BeaconResult() {
                   </Button>
                 </div>
 
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      if (!isAuthenticated) {
+                        toast.info("Connectez-vous pour enregistrer un favori.");
+                        return;
+                      }
+                      basculerFavori.mutate();
+                    }}
+                    disabled={basculerFavori.isPending}
+                  >
+                    <Heart
+                      className={`size-4 ${contexte.data?.favorite_id ? "fill-destructive text-destructive" : ""}`}
+                    />
+                    {contexte.data?.favorite_id ? "Favori" : "Ajouter aux favoris"}
+                  </Button>
+                  {!contexte.data?.is_mine && (
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => setClaimOpen(true)}
+                    >
+                      <ShieldCheck className="size-4" />
+                      {contexte.data?.claim_status === "pending" ? "Demande envoyée" : "Réclamer"}
+                    </Button>
+                  )}
+                </div>
+
+
                 {isCommercialCategory(resultat.category) && resultat.business_name && (
                   <Button asChild variant="ghost" className="w-full">
                     <Link to="/etablissement/$number" params={{ number }}>
@@ -237,6 +295,14 @@ function BeaconResult() {
             beaconId={data?.beacon_id ?? null}
             number={resultat.public_number}
           />
+          <ClaimDialog
+            open={claimOpen}
+            onOpenChange={setClaimOpen}
+            number={resultat.public_number}
+            claimStatus={contexte.data?.claim_status ?? null}
+            isMine={contexte.data?.is_mine ?? false}
+          />
+
         </>
       )}
     </div>

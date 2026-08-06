@@ -11,6 +11,7 @@ import {
   MapPin,
   Package,
   QrCode,
+  ShieldCheck,
   Users,
   UserSquare2,
 } from "lucide-react";
@@ -32,6 +33,7 @@ const SECTIONS = [
   { to: "/admin/addresses", label: "Adresses", icon: MapPin },
   { to: "/admin/installations", label: "Installations & QC", icon: ClipboardCheck },
   { to: "/admin/reports", label: "Signalements", icon: Flag },
+  { to: "/admin/claims", label: "Réclamations", icon: ShieldCheck },
   { to: "/admin/users", label: "Utilisateurs", icon: Users },
   { to: "/admin/agents", label: "Agents", icon: UserSquare2 },
   { to: "/admin/lots", label: "Lots", icon: Package },

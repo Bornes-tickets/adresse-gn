@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { LogOut, User as UserIcon } from "lucide-react";
+import { Briefcase, LogOut, User as UserIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -54,12 +54,26 @@ export function Layout({ children }: { children: ReactNode }) {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
+                  <Link to="/mon-compte" className="flex items-center gap-2">
+                    <UserIcon className="size-4" />
+                    Mon compte
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/pro" className="flex items-center gap-2">
+                    <Briefcase className="size-4" />
+                    Espace pro
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
                   <Link to="/logout" className="flex items-center gap-2">
                     <LogOut className="size-4" />
                     Se déconnecter
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
+
             </DropdownMenu>
           ) : (
             <Button asChild variant="outline">
