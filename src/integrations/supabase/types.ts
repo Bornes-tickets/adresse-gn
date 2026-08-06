@@ -677,25 +677,34 @@ export type Database = {
       }
       invoices: {
         Row: {
+          amount_gnf: number
           id: string
           issued_at: string | null
           number: string
           order_id: string | null
+          paid_at: string | null
           pdf_url: string | null
+          status: string
         }
         Insert: {
+          amount_gnf?: number
           id?: string
           issued_at?: string | null
           number: string
           order_id?: string | null
+          paid_at?: string | null
           pdf_url?: string | null
+          status?: string
         }
         Update: {
+          amount_gnf?: number
           id?: string
           issued_at?: string | null
           number?: string
           order_id?: string | null
+          paid_at?: string | null
           pdf_url?: string | null
+          status?: string
         }
         Relationships: [
           {
@@ -808,34 +817,73 @@ export type Database = {
       orders: {
         Row: {
           amount_gnf: number
+          beacon_id: string | null
+          business_id: string | null
           created_at: string | null
           customer_id: string | null
           id: string
+          items: Json
+          notes: string | null
           offer_code: string
+          order_ref: string
           status: string
+          subscription_id: string | null
         }
         Insert: {
           amount_gnf: number
+          beacon_id?: string | null
+          business_id?: string | null
           created_at?: string | null
           customer_id?: string | null
           id?: string
+          items?: Json
+          notes?: string | null
           offer_code: string
+          order_ref?: string
           status?: string
+          subscription_id?: string | null
         }
         Update: {
           amount_gnf?: number
+          beacon_id?: string | null
+          business_id?: string | null
           created_at?: string | null
           customer_id?: string | null
           id?: string
+          items?: Json
+          notes?: string | null
           offer_code?: string
+          order_ref?: string
           status?: string
+          subscription_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "orders_beacon_id_fkey"
+            columns: ["beacon_id"]
+            isOneToOne: false
+            referencedRelation: "beacons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "orders_customer_id_fkey"
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
             referencedColumns: ["id"]
           },
         ]
@@ -869,37 +917,157 @@ export type Database = {
           },
         ]
       }
+      payment_webhooks: {
+        Row: {
+          error: string | null
+          headers: Json | null
+          id: string
+          payload: Json | null
+          processed: boolean
+          provider: string
+          received_at: string
+          signature_valid: boolean
+        }
+        Insert: {
+          error?: string | null
+          headers?: Json | null
+          id?: string
+          payload?: Json | null
+          processed?: boolean
+          provider: string
+          received_at?: string
+          signature_valid?: boolean
+        }
+        Update: {
+          error?: string | null
+          headers?: Json | null
+          id?: string
+          payload?: Json | null
+          processed?: boolean
+          provider?: string
+          received_at?: string
+          signature_valid?: boolean
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount_gnf: number
+          confirmed_at: string | null
+          confirmed_by: string | null
           external_ref: string | null
           id: string
+          intent_id: string | null
           order_id: string | null
           paid_at: string | null
           provider: string | null
           status: string
+          webhook_payload: Json | null
         }
         Insert: {
           amount_gnf: number
+          confirmed_at?: string | null
+          confirmed_by?: string | null
           external_ref?: string | null
           id?: string
+          intent_id?: string | null
           order_id?: string | null
           paid_at?: string | null
           provider?: string | null
           status?: string
+          webhook_payload?: Json | null
         }
         Update: {
           amount_gnf?: number
+          confirmed_at?: string | null
+          confirmed_by?: string | null
           external_ref?: string | null
           id?: string
+          intent_id?: string | null
           order_id?: string | null
           paid_at?: string | null
           provider?: string | null
           status?: string
+          webhook_payload?: Json | null
         }
         Relationships: [
           {
+            foreignKeyName: "payments_confirmed_by_fkey"
+            columns: ["confirmed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "payments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pending_installations: {
+        Row: {
+          assigned_agent_id: string | null
+          beacon_id: string | null
+          created_at: string
+          customer_id: string | null
+          id: string
+          note: string | null
+          order_id: string | null
+          phone: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_agent_id?: string | null
+          beacon_id?: string | null
+          created_at?: string
+          customer_id?: string | null
+          id?: string
+          note?: string | null
+          order_id?: string | null
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_agent_id?: string | null
+          beacon_id?: string | null
+          created_at?: string
+          customer_id?: string | null
+          id?: string
+          note?: string | null
+          order_id?: string | null
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_installations_assigned_agent_id_fkey"
+            columns: ["assigned_agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_installations_beacon_id_fkey"
+            columns: ["beacon_id"]
+            isOneToOne: false
+            referencedRelation: "beacons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_installations_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_installations_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
@@ -1143,27 +1311,33 @@ export type Database = {
       }
       subscriptions: {
         Row: {
+          auto_renew: boolean
           customer_id: string | null
           end_date: string
           id: string
+          next_billing_date: string | null
           plan_code: string
           price_gnf: number
           start_date: string
           status: string
         }
         Insert: {
+          auto_renew?: boolean
           customer_id?: string | null
           end_date: string
           id?: string
+          next_billing_date?: string | null
           plan_code: string
           price_gnf: number
           start_date: string
           status?: string
         }
         Update: {
+          auto_renew?: boolean
           customer_id?: string | null
           end_date?: string
           id?: string
+          next_billing_date?: string | null
           plan_code?: string
           price_gnf?: number
           start_date?: string
@@ -1562,6 +1736,8 @@ export type Database = {
       geomfromewkt: { Args: { "": string }; Returns: unknown }
       gettransactionid: { Args: never; Returns: unknown }
       longtransactionsenabled: { Args: never; Returns: boolean }
+      next_invoice_ref: { Args: never; Returns: string }
+      next_order_ref: { Args: never; Returns: string }
       populate_geometry_columns:
         | { Args: { tbl_oid: unknown; use_typmod?: boolean }; Returns: number }
         | { Args: { use_typmod?: boolean }; Returns: string }
