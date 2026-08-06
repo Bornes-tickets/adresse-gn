@@ -285,6 +285,133 @@ export type Database = {
           },
         ]
       }
+      business_profiles: {
+        Row: {
+          category: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          headquarters_address: string | null
+          id: string
+          legal_name: string | null
+          owner_id: string
+          plan_code: string | null
+          plan_ends_at: string | null
+          plan_started_at: string | null
+          tax_id: string | null
+          trade_name: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          headquarters_address?: string | null
+          id?: string
+          legal_name?: string | null
+          owner_id: string
+          plan_code?: string | null
+          plan_ends_at?: string | null
+          plan_started_at?: string | null
+          tax_id?: string | null
+          trade_name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          headquarters_address?: string | null
+          id?: string
+          legal_name?: string | null
+          owner_id?: string
+          plan_code?: string | null
+          plan_ends_at?: string | null
+          plan_started_at?: string | null
+          tax_id?: string | null
+          trade_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_profiles_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      claim_requests: {
+        Row: {
+          beacon_id: string
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decision_note: string | null
+          evidence: string | null
+          id: string
+          requester_id: string
+          status: string
+          unclaimed_owner_id: string | null
+        }
+        Insert: {
+          beacon_id: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          evidence?: string | null
+          id?: string
+          requester_id: string
+          status?: string
+          unclaimed_owner_id?: string | null
+        }
+        Update: {
+          beacon_id?: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          evidence?: string | null
+          id?: string
+          requester_id?: string
+          status?: string
+          unclaimed_owner_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claim_requests_beacon_id_fkey"
+            columns: ["beacon_id"]
+            isOneToOne: false
+            referencedRelation: "beacons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "claim_requests_decided_by_fkey"
+            columns: ["decided_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "claim_requests_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "claim_requests_unclaimed_owner_id_fkey"
+            columns: ["unclaimed_owner_id"]
+            isOneToOne: false
+            referencedRelation: "unclaimed_owners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       communes: {
         Row: {
           boundary: unknown
@@ -1046,6 +1173,48 @@ export type Database = {
           {
             foreignKeyName: "subscriptions_customer_id_fkey"
             columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_members: {
+        Row: {
+          business_id: string
+          id: string
+          invited_at: string
+          joined_at: string | null
+          member_id: string
+          role: string
+        }
+        Insert: {
+          business_id: string
+          id?: string
+          invited_at?: string
+          joined_at?: string | null
+          member_id: string
+          role?: string
+        }
+        Update: {
+          business_id?: string
+          id?: string
+          invited_at?: string
+          joined_at?: string | null
+          member_id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_members_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_members_member_id_fkey"
+            columns: ["member_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
