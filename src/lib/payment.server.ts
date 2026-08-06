@@ -255,11 +255,28 @@ export async function statutCommande(
 /* Administration des paiements                                        */
 /* ------------------------------------------------------------------ */
 
+export interface AdminPaymentRow {
+  id: string;
+  provider: string | null;
+  status: string;
+  amount_gnf: number;
+  external_ref: string | null;
+  paid_at: string | null;
+  order_ref: string;
+  offer_code: string;
+  order_status: string;
+  created_at: string | null;
+  client: string;
+  client_phone: string | null;
+  notes: string | null;
+}
+
 export async function listerPaiements(filtre: {
   statut?: string;
   page?: number;
   pageSize?: number;
-}) {
+}): Promise<{ total: number; page: number; pageSize: number; lignes: AdminPaymentRow[] }> {
+
   const page = Math.max(1, filtre.page ?? 1);
   const pageSize = Math.min(100, filtre.pageSize ?? 25);
   let requete = db
