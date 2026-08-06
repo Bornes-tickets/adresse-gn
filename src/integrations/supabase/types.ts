@@ -577,6 +577,42 @@ export type Database = {
           },
         ]
       }
+      lot_assignments: {
+        Row: {
+          agent_id: string
+          assigned_at: string
+          id: string
+          lot_id: string
+        }
+        Insert: {
+          agent_id: string
+          assigned_at?: string
+          id?: string
+          lot_id: string
+        }
+        Update: {
+          agent_id?: string
+          assigned_at?: string
+          id?: string
+          lot_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lot_assignments_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lot_assignments_lot_id_fkey"
+            columns: ["lot_id"]
+            isOneToOne: false
+            referencedRelation: "lots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lots: {
         Row: {
           code: string
@@ -1009,6 +1045,41 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unclaimed_owners: {
+        Row: {
+          beacon_id: string
+          consent_at: string | null
+          created_at: string
+          id: string
+          name: string | null
+          phone: string | null
+        }
+        Insert: {
+          beacon_id: string
+          consent_at?: string | null
+          created_at?: string
+          id?: string
+          name?: string | null
+          phone?: string | null
+        }
+        Update: {
+          beacon_id?: string
+          consent_at?: string | null
+          created_at?: string
+          id?: string
+          name?: string | null
+          phone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unclaimed_owners_beacon_id_fkey"
+            columns: ["beacon_id"]
+            isOneToOne: false
+            referencedRelation: "beacons"
             referencedColumns: ["id"]
           },
         ]
