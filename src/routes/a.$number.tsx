@@ -233,6 +233,37 @@ function BeaconResult() {
                   </Button>
                 </div>
 
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      if (!isAuthenticated) {
+                        toast.info("Connectez-vous pour enregistrer un favori.");
+                        return;
+                      }
+                      basculerFavori.mutate();
+                    }}
+                    disabled={basculerFavori.isPending}
+                  >
+                    <Heart
+                      className={`size-4 ${contexte.data?.favorite_id ? "fill-destructive text-destructive" : ""}`}
+                    />
+                    {contexte.data?.favorite_id ? "Favori" : "Ajouter aux favoris"}
+                  </Button>
+                  {!contexte.data?.is_mine && (
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => setClaimOpen(true)}
+                    >
+                      <ShieldCheck className="size-4" />
+                      {contexte.data?.claim_status === "pending" ? "Demande envoyée" : "Réclamer"}
+                    </Button>
+                  )}
+                </div>
+
+
                 {isCommercialCategory(resultat.category) && resultat.business_name && (
                   <Button asChild variant="ghost" className="w-full">
                     <Link to="/etablissement/$number" params={{ number }}>
