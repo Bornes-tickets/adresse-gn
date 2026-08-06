@@ -22,6 +22,7 @@ import { Route as AgentLoginRouteImport } from './routes/agent/login'
 import { Route as EtablissementNumberRouteImport } from './routes/etablissement.$number'
 import { Route as AdminGuardIndexRouteImport } from './routes/admin/_guard/index'
 import { Route as AdminGuardAddressesRouteImport } from './routes/admin/_guard/addresses'
+import { Route as AdminGuardAgentsRouteImport } from './routes/admin/_guard/agents'
 import { Route as AdminGuardBeaconsRouteImport } from './routes/admin/_guard/beacons'
 import { Route as AdminGuardInstallationsRouteImport } from './routes/admin/_guard/installations'
 import { Route as AdminGuardReportsRouteImport } from './routes/admin/_guard/reports'
@@ -98,6 +99,11 @@ const AdminGuardAddressesRoute = AdminGuardAddressesRouteImport.update({
   path: '/addresses',
   getParentRoute: () => AdminGuardRouteRoute,
 } as any)
+const AdminGuardAgentsRoute = AdminGuardAgentsRouteImport.update({
+  id: '/agents',
+  path: '/agents',
+  getParentRoute: () => AdminGuardRouteRoute,
+} as any)
 const AdminGuardBeaconsRoute = AdminGuardBeaconsRouteImport.update({
   id: '/beacons',
   path: '/beacons',
@@ -162,6 +168,7 @@ export interface FileRoutesByFullPath {
   '/agent/login': typeof AgentLoginRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/admin/addresses': typeof AdminGuardAddressesRoute
+  '/admin/agents': typeof AdminGuardAgentsRoute
   '/admin/beacons': typeof AdminGuardBeaconsRoute
   '/admin/installations': typeof AdminGuardInstallationsRoute
   '/admin/reports': typeof AdminGuardReportsRoute
@@ -185,6 +192,7 @@ export interface FileRoutesByTo {
   '/agent/login': typeof AgentLoginRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/admin/addresses': typeof AdminGuardAddressesRoute
+  '/admin/agents': typeof AdminGuardAgentsRoute
   '/admin/beacons': typeof AdminGuardBeaconsRoute
   '/admin/installations': typeof AdminGuardInstallationsRoute
   '/admin/reports': typeof AdminGuardReportsRoute
@@ -211,6 +219,7 @@ export interface FileRoutesById {
   '/agent/login': typeof AgentLoginRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/admin/_guard/addresses': typeof AdminGuardAddressesRoute
+  '/admin/_guard/agents': typeof AdminGuardAgentsRoute
   '/admin/_guard/beacons': typeof AdminGuardBeaconsRoute
   '/admin/_guard/installations': typeof AdminGuardInstallationsRoute
   '/admin/_guard/reports': typeof AdminGuardReportsRoute
@@ -238,6 +247,7 @@ export interface FileRouteTypes {
     | '/agent/login'
     | '/etablissement/$number'
     | '/admin/addresses'
+    | '/admin/agents'
     | '/admin/beacons'
     | '/admin/installations'
     | '/admin/reports'
@@ -261,6 +271,7 @@ export interface FileRouteTypes {
     | '/agent/login'
     | '/etablissement/$number'
     | '/admin/addresses'
+    | '/admin/agents'
     | '/admin/beacons'
     | '/admin/installations'
     | '/admin/reports'
@@ -286,6 +297,7 @@ export interface FileRouteTypes {
     | '/agent/login'
     | '/etablissement/$number'
     | '/admin/_guard/addresses'
+    | '/admin/_guard/agents'
     | '/admin/_guard/beacons'
     | '/admin/_guard/installations'
     | '/admin/_guard/reports'
@@ -406,6 +418,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminGuardAddressesRouteImport
       parentRoute: typeof AdminGuardRouteRoute
     }
+    '/admin/_guard/agents': {
+      id: '/admin/_guard/agents'
+      path: '/agents'
+      fullPath: '/admin/agents'
+      preLoaderRoute: typeof AdminGuardAgentsRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
     '/admin/_guard/beacons': {
       id: '/admin/_guard/beacons'
       path: '/beacons'
@@ -481,6 +500,7 @@ declare module '@tanstack/react-router' {
 
 interface AdminGuardRouteRouteChildren {
   AdminGuardAddressesRoute: typeof AdminGuardAddressesRoute
+  AdminGuardAgentsRoute: typeof AdminGuardAgentsRoute
   AdminGuardBeaconsRoute: typeof AdminGuardBeaconsRoute
   AdminGuardInstallationsRoute: typeof AdminGuardInstallationsRoute
   AdminGuardReportsRoute: typeof AdminGuardReportsRoute
@@ -490,6 +510,7 @@ interface AdminGuardRouteRouteChildren {
 
 const AdminGuardRouteRouteChildren: AdminGuardRouteRouteChildren = {
   AdminGuardAddressesRoute: AdminGuardAddressesRoute,
+  AdminGuardAgentsRoute: AdminGuardAgentsRoute,
   AdminGuardBeaconsRoute: AdminGuardBeaconsRoute,
   AdminGuardInstallationsRoute: AdminGuardInstallationsRoute,
   AdminGuardReportsRoute: AdminGuardReportsRoute,
