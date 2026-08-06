@@ -295,6 +295,14 @@ function BeaconResult() {
             beaconId={data?.beacon_id ?? null}
             number={resultat.public_number}
           />
+          <ClaimDialog
+            open={claimOpen}
+            onOpenChange={setClaimOpen}
+            number={resultat.public_number}
+            claimStatus={contexte.data?.claim_status ?? null}
+            isMine={contexte.data?.is_mine ?? false}
+          />
+
         </>
       )}
     </div>
