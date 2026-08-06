@@ -47,6 +47,7 @@ import { Route as MonCompteGuardReportsRouteImport } from './routes/mon-compte/_
 import { Route as MonCompteGuardSettingsRouteImport } from './routes/mon-compte/_guard/settings'
 import { Route as ProGuardIndexRouteImport } from './routes/pro/_guard/index'
 import { Route as ProGuardEtablissementsRouteImport } from './routes/pro/_guard/etablissements'
+import { Route as ProGuardStatistiquesRouteImport } from './routes/pro/_guard/statistiques'
 import { Route as AgentGuardInstallNumberRouteImport } from './routes/agent/_guard/install.$number'
 
 const IndexRoute = IndexRouteImport.update({
@@ -239,6 +240,11 @@ const ProGuardEtablissementsRoute = ProGuardEtablissementsRouteImport.update({
   path: '/etablissements',
   getParentRoute: () => ProGuardRouteRoute,
 } as any)
+const ProGuardStatistiquesRoute = ProGuardStatistiquesRouteImport.update({
+  id: '/statistiques',
+  path: '/statistiques',
+  getParentRoute: () => ProGuardRouteRoute,
+} as any)
 const AgentGuardInstallNumberRoute = AgentGuardInstallNumberRouteImport.update({
   id: '/install/$number',
   path: '/install/$number',
@@ -280,6 +286,7 @@ export interface FileRoutesByFullPath {
   '/mon-compte/reports': typeof MonCompteGuardReportsRoute
   '/mon-compte/settings': typeof MonCompteGuardSettingsRoute
   '/pro/etablissements': typeof ProGuardEtablissementsRoute
+  '/pro/statistiques': typeof ProGuardStatistiquesRoute
   '/admin/': typeof AdminGuardIndexRoute
   '/agent/': typeof AgentGuardIndexRoute
   '/mon-compte/': typeof MonCompteGuardIndexRoute
@@ -317,6 +324,7 @@ export interface FileRoutesByTo {
   '/mon-compte/reports': typeof MonCompteGuardReportsRoute
   '/mon-compte/settings': typeof MonCompteGuardSettingsRoute
   '/pro/etablissements': typeof ProGuardEtablissementsRoute
+  '/pro/statistiques': typeof ProGuardStatistiquesRoute
   '/admin': typeof AdminGuardIndexRoute
   '/agent': typeof AgentGuardIndexRoute
   '/mon-compte': typeof MonCompteGuardIndexRoute
@@ -359,6 +367,7 @@ export interface FileRoutesById {
   '/mon-compte/_guard/reports': typeof MonCompteGuardReportsRoute
   '/mon-compte/_guard/settings': typeof MonCompteGuardSettingsRoute
   '/pro/_guard/etablissements': typeof ProGuardEtablissementsRoute
+  '/pro/_guard/statistiques': typeof ProGuardStatistiquesRoute
   '/admin/_guard/': typeof AdminGuardIndexRoute
   '/agent/_guard/': typeof AgentGuardIndexRoute
   '/mon-compte/_guard/': typeof MonCompteGuardIndexRoute
@@ -402,6 +411,7 @@ export interface FileRouteTypes {
     | '/mon-compte/reports'
     | '/mon-compte/settings'
     | '/pro/etablissements'
+    | '/pro/statistiques'
     | '/admin/'
     | '/agent/'
     | '/mon-compte/'
@@ -439,6 +449,7 @@ export interface FileRouteTypes {
     | '/mon-compte/reports'
     | '/mon-compte/settings'
     | '/pro/etablissements'
+    | '/pro/statistiques'
     | '/admin'
     | '/agent'
     | '/mon-compte'
@@ -480,6 +491,7 @@ export interface FileRouteTypes {
     | '/mon-compte/_guard/reports'
     | '/mon-compte/_guard/settings'
     | '/pro/_guard/etablissements'
+    | '/pro/_guard/statistiques'
     | '/admin/_guard/'
     | '/agent/_guard/'
     | '/mon-compte/_guard/'
@@ -772,6 +784,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProGuardEtablissementsRouteImport
       parentRoute: typeof ProGuardRouteRoute
     }
+    '/pro/_guard/statistiques': {
+      id: '/pro/_guard/statistiques'
+      path: '/statistiques'
+      fullPath: '/pro/statistiques'
+      preLoaderRoute: typeof ProGuardStatistiquesRouteImport
+      parentRoute: typeof ProGuardRouteRoute
+    }
     '/agent/_guard/install/$number': {
       id: '/agent/_guard/install/$number'
       path: '/install/$number'
@@ -859,11 +878,13 @@ const MonCompteGuardRouteRouteWithChildren =
 
 interface ProGuardRouteRouteChildren {
   ProGuardEtablissementsRoute: typeof ProGuardEtablissementsRoute
+  ProGuardStatistiquesRoute: typeof ProGuardStatistiquesRoute
   ProGuardIndexRoute: typeof ProGuardIndexRoute
 }
 
 const ProGuardRouteRouteChildren: ProGuardRouteRouteChildren = {
   ProGuardEtablissementsRoute: ProGuardEtablissementsRoute,
+  ProGuardStatistiquesRoute: ProGuardStatistiquesRoute,
   ProGuardIndexRoute: ProGuardIndexRoute,
 }
 
