@@ -27,6 +27,7 @@ import { Route as AdminGuardAgentsRouteImport } from './routes/admin/_guard/agen
 import { Route as AdminGuardAnalyticsRouteImport } from './routes/admin/_guard/analytics'
 import { Route as AdminGuardAuditRouteImport } from './routes/admin/_guard/audit'
 import { Route as AdminGuardBeaconsRouteImport } from './routes/admin/_guard/beacons'
+import { Route as AdminGuardClaimsRouteImport } from './routes/admin/_guard/claims'
 import { Route as AdminGuardInstallationsRouteImport } from './routes/admin/_guard/installations'
 import { Route as AdminGuardLotsRouteImport } from './routes/admin/_guard/lots'
 import { Route as AdminGuardReportsRouteImport } from './routes/admin/_guard/reports'
@@ -134,6 +135,11 @@ const AdminGuardBeaconsRoute = AdminGuardBeaconsRouteImport.update({
   path: '/beacons',
   getParentRoute: () => AdminGuardRouteRoute,
 } as any)
+const AdminGuardClaimsRoute = AdminGuardClaimsRouteImport.update({
+  id: '/claims',
+  path: '/claims',
+  getParentRoute: () => AdminGuardRouteRoute,
+} as any)
 const AdminGuardInstallationsRoute = AdminGuardInstallationsRouteImport.update({
   id: '/installations',
   path: '/installations',
@@ -233,6 +239,7 @@ export interface FileRoutesByFullPath {
   '/admin/analytics': typeof AdminGuardAnalyticsRoute
   '/admin/audit': typeof AdminGuardAuditRoute
   '/admin/beacons': typeof AdminGuardBeaconsRoute
+  '/admin/claims': typeof AdminGuardClaimsRoute
   '/admin/installations': typeof AdminGuardInstallationsRoute
   '/admin/lots': typeof AdminGuardLotsRoute
   '/admin/reports': typeof AdminGuardReportsRoute
@@ -266,6 +273,7 @@ export interface FileRoutesByTo {
   '/admin/analytics': typeof AdminGuardAnalyticsRoute
   '/admin/audit': typeof AdminGuardAuditRoute
   '/admin/beacons': typeof AdminGuardBeaconsRoute
+  '/admin/claims': typeof AdminGuardClaimsRoute
   '/admin/installations': typeof AdminGuardInstallationsRoute
   '/admin/lots': typeof AdminGuardLotsRoute
   '/admin/reports': typeof AdminGuardReportsRoute
@@ -303,6 +311,7 @@ export interface FileRoutesById {
   '/admin/_guard/analytics': typeof AdminGuardAnalyticsRoute
   '/admin/_guard/audit': typeof AdminGuardAuditRoute
   '/admin/_guard/beacons': typeof AdminGuardBeaconsRoute
+  '/admin/_guard/claims': typeof AdminGuardClaimsRoute
   '/admin/_guard/installations': typeof AdminGuardInstallationsRoute
   '/admin/_guard/lots': typeof AdminGuardLotsRoute
   '/admin/_guard/reports': typeof AdminGuardReportsRoute
@@ -341,6 +350,7 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/beacons'
+    | '/admin/claims'
     | '/admin/installations'
     | '/admin/lots'
     | '/admin/reports'
@@ -374,6 +384,7 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/beacons'
+    | '/admin/claims'
     | '/admin/installations'
     | '/admin/lots'
     | '/admin/reports'
@@ -410,6 +421,7 @@ export interface FileRouteTypes {
     | '/admin/_guard/analytics'
     | '/admin/_guard/audit'
     | '/admin/_guard/beacons'
+    | '/admin/_guard/claims'
     | '/admin/_guard/installations'
     | '/admin/_guard/lots'
     | '/admin/_guard/reports'
@@ -572,6 +584,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminGuardBeaconsRouteImport
       parentRoute: typeof AdminGuardRouteRoute
     }
+    '/admin/_guard/claims': {
+      id: '/admin/_guard/claims'
+      path: '/claims'
+      fullPath: '/admin/claims'
+      preLoaderRoute: typeof AdminGuardClaimsRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
     '/admin/_guard/installations': {
       id: '/admin/_guard/installations'
       path: '/installations'
@@ -693,6 +712,7 @@ interface AdminGuardRouteRouteChildren {
   AdminGuardAnalyticsRoute: typeof AdminGuardAnalyticsRoute
   AdminGuardAuditRoute: typeof AdminGuardAuditRoute
   AdminGuardBeaconsRoute: typeof AdminGuardBeaconsRoute
+  AdminGuardClaimsRoute: typeof AdminGuardClaimsRoute
   AdminGuardInstallationsRoute: typeof AdminGuardInstallationsRoute
   AdminGuardLotsRoute: typeof AdminGuardLotsRoute
   AdminGuardReportsRoute: typeof AdminGuardReportsRoute
@@ -707,6 +727,7 @@ const AdminGuardRouteRouteChildren: AdminGuardRouteRouteChildren = {
   AdminGuardAnalyticsRoute: AdminGuardAnalyticsRoute,
   AdminGuardAuditRoute: AdminGuardAuditRoute,
   AdminGuardBeaconsRoute: AdminGuardBeaconsRoute,
+  AdminGuardClaimsRoute: AdminGuardClaimsRoute,
   AdminGuardInstallationsRoute: AdminGuardInstallationsRoute,
   AdminGuardLotsRoute: AdminGuardLotsRoute,
   AdminGuardReportsRoute: AdminGuardReportsRoute,
