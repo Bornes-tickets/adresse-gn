@@ -16,6 +16,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as LogoutRouteImport } from './routes/logout'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ANumberRouteImport } from './routes/a.$number'
+import { Route as EtablissementNumberRouteImport } from './routes/etablissement.$number'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -52,6 +53,11 @@ const ANumberRoute = ANumberRouteImport.update({
   path: '/a/$number',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EtablissementNumberRoute = EtablissementNumberRouteImport.update({
+  id: '/etablissement/$number',
+  path: '/etablissement/$number',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -61,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/logout': typeof LogoutRoute
   '/signup': typeof SignupRoute
   '/a/$number': typeof ANumberRoute
+  '/etablissement/$number': typeof EtablissementNumberRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByTo {
   '/logout': typeof LogoutRoute
   '/signup': typeof SignupRoute
   '/a/$number': typeof ANumberRoute
+  '/etablissement/$number': typeof EtablissementNumberRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +88,7 @@ export interface FileRoutesById {
   '/logout': typeof LogoutRoute
   '/signup': typeof SignupRoute
   '/a/$number': typeof ANumberRoute
+  '/etablissement/$number': typeof EtablissementNumberRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +100,7 @@ export interface FileRouteTypes {
     | '/logout'
     | '/signup'
     | '/a/$number'
+    | '/etablissement/$number'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
     | '/logout'
     | '/signup'
     | '/a/$number'
+    | '/etablissement/$number'
   id:
     | '__root__'
     | '/'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/logout'
     | '/signup'
     | '/a/$number'
+    | '/etablissement/$number'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,6 +131,7 @@ export interface RootRouteChildren {
   LogoutRoute: typeof LogoutRoute
   SignupRoute: typeof SignupRoute
   ANumberRoute: typeof ANumberRoute
+  EtablissementNumberRoute: typeof EtablissementNumberRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -172,6 +185,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ANumberRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/etablissement/$number': {
+      id: '/etablissement/$number'
+      path: '/etablissement/$number'
+      fullPath: '/etablissement/$number'
+      preLoaderRoute: typeof EtablissementNumberRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -183,6 +203,7 @@ const rootRouteChildren: RootRouteChildren = {
   LogoutRoute: LogoutRoute,
   SignupRoute: SignupRoute,
   ANumberRoute: ANumberRoute,
+  EtablissementNumberRoute: EtablissementNumberRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

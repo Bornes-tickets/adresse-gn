@@ -8,6 +8,13 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  getDefaultZone,
+  isValidBeaconNumber,
+  normalizeBeaconNumber,
+} from "@/lib/geo";
+import { searchBeacon } from "@/lib/search.functions";
+
 
 const EXEMPLES = ["GN-CKY-582741", "GN-CKY-152963", "GN-CKY-759482"];
 
