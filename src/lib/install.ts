@@ -18,6 +18,8 @@ export interface InstallPayload {
   owner_name: string | null;
   owner_phone: string | null;
   consent: boolean;
+  /** Clé d'idempotence générée par le mobile (mode offline). */
+  client_uuid?: string | null;
 }
 
 export interface InstallResult {
@@ -49,7 +51,35 @@ export function moyenne(valeurs: number[]): number {
   return valeurs.reduce((total, valeur) => total + valeur, 0) / valeurs.length;
 }
 
-/** Compresse une image côté client : 1600px max, JPEG qualité 0.85. */
+/** Taille maximale acceptée pour une photo stockée localement (octets). */
+export const PHOTO_MAX_OCTETS = 500 * 1024;
+
+/** Poids approximatif en octets d'une image encodée en data URL base64. */
+export function tailleDataUrl(dataUrl: string): number {
+  const base64 = dataUrl.includes(",") ? dataUrl.slice(dataUrl.indexOf(",") + 1) : dataUrl;
+  return Math.round((base64.length * 3) / 4);
+}
+
+/** Convertit une data URL en Blob (stockage IndexedDB). */
+export function dataUrlVersBlob(dataUrl: string): Blob {
+  const base64 = dataUrl.includes(",") ? dataUrl.slice(dataUrl.indexOf(",") + 1) : dataUrl;
+  const binaire = atob(base64);
+  const octets = new Uint8Array(binaire.length);
+  for (let i = 0; i < binaire.length; i += 1) octets[i] = binaire.charCodeAt(i);
+  return new Blob([octets], { type: "image/jpeg" });
+}
+
+/** Reconvertit un Blob stocké en data URL pour l'envoi serveur. */
+export function blobVersDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resoudre, rejeter) => {
+    const lecteur = new FileReader();
+    lecteur.onload = () => resoudre(String(lecteur.result));
+    lecteur.onerror = () => rejeter(new Error("Lecture de la photo impossible"));
+    lecteur.readAsDataURL(blob);
+  });
+}
+
+/** Compresse une image côté client : 1600px max, JPEG qualité 0.85 (0.75 si > 500 Ko). */
 export async function compresserImage(fichier: File): Promise<string> {
   const bitmap = await createImageBitmap(fichier);
   const max = 1600;
@@ -61,5 +91,7 @@ export async function compresserImage(fichier: File): Promise<string> {
   if (!contexte) throw new Error("Compression impossible");
   contexte.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   bitmap.close();
-  return canvas.toDataURL("image/jpeg", 0.85);
+  const normale = canvas.toDataURL("image/jpeg", 0.85);
+  if (tailleDataUrl(normale) <= PHOTO_MAX_OCTETS) return normale;
+  return canvas.toDataURL("image/jpeg", 0.75);
 }

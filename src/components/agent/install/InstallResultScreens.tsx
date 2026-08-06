@@ -1,4 +1,4 @@
-import { CheckCircle2, ExternalLink, MessageCircle, RefreshCw } from "lucide-react";
+import { CheckCircle2, Clock, ExternalLink, MessageCircle, RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { SUPERVISOR_WHATSAPP } from "@/lib/install";
@@ -21,6 +21,37 @@ export function InstallSuccess({ numero, onSuivante }: { numero: string; onSuiva
           <ExternalLink className="size-5" />
           Voir la fiche
         </Button>
+        <Button size="lg" className="h-12 w-full" onClick={onSuivante}>
+          Installer la balise suivante
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+/** Écran de succès local : l'installation est en file d'attente hors ligne. */
+export function InstallSuccessLocal({
+  numero,
+  onSuivante,
+}: {
+  numero: string;
+  onSuivante: () => void;
+}) {
+  return (
+    <div className="flex min-h-[70dvh] flex-col items-center justify-center gap-6 text-center">
+      <div className="relative">
+        <CheckCircle2 className="size-20 text-accent" />
+        <Clock className="absolute -bottom-1 -right-1 size-8 rounded-full bg-background text-[oklch(0.72_0.16_65)]" />
+      </div>
+      <div className="space-y-2">
+        <p className="text-lg font-semibold text-foreground">
+          Balise <span className="font-mono">{numero}</span> enregistrée localement
+        </p>
+        <p className="text-sm text-muted-foreground">
+          Elle sera synchronisée dès la reconnexion.
+        </p>
+      </div>
+      <div className="w-full max-w-sm">
         <Button size="lg" className="h-12 w-full" onClick={onSuivante}>
           Installer la balise suivante
         </Button>

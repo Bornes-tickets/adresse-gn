@@ -1,10 +1,14 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Loader2, Save } from "lucide-react";
 
-import { InstallError, InstallSuccess } from "@/components/agent/install/InstallResultScreens";
+import {
+  InstallError,
+  InstallSuccess,
+  InstallSuccessLocal,
+} from "@/components/agent/install/InstallResultScreens";
 import { StepBeacon } from "@/components/agent/install/StepBeacon";
 import { StepDetails } from "@/components/agent/install/StepDetails";
 import { StepGps } from "@/components/agent/install/StepGps";
@@ -13,6 +17,10 @@ import { StepPhoto } from "@/components/agent/install/StepPhoto";
 import { StepSummary } from "@/components/agent/install/StepSummary";
 import { DETAILS_VIDES, type InstallDetails } from "@/components/agent/install/types";
 import { Button } from "@/components/ui/button";
+import { useOnline } from "@/hooks/useOnline";
+import { enfilerInstallation } from "@/lib/agent-db";
+import { syncQueue } from "@/lib/agent-sync";
+import { dataUrlVersBlob } from "@/lib/install";
 import { isCommercialCategory } from "@/lib/geo";
 import type { InstallMeasure } from "@/lib/install";
 import { submitInstallation } from "@/lib/install.functions";
@@ -27,6 +35,7 @@ function Install() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const enregistrer = useServerFn(submitInstallation);
+  const isOnline = useOnline();
 
   const [etape, setEtape] = useState(1);
   const [baliseOk, setBaliseOk] = useState(false);
@@ -34,7 +43,8 @@ function Install() {
   const [photo, setPhoto] = useState<string | null>(null);
   const [details, setDetails] = useState<InstallDetails>(DETAILS_VIDES);
   const [envoi, setEnvoi] = useState(false);
-  const [resultat, setResultat] = useState<"succes" | string | null>(null);
+  const [resultat, setResultat] = useState<"succes" | "local" | string | null>(null);
+  const clientUuid = useRef<string>(crypto.randomUUID());
 
   const detailsValides =
     details.consent &&
@@ -47,9 +57,31 @@ function Install() {
     (etape === 3 && !!photo) ||
     (etape === 4 && detailsValides);
 
+  const enfiler = async () => {
+    await enfilerInstallation({
+      client_uuid: clientUuid.current,
+      beacon_number: numero,
+      measures: mesures,
+      photo_blob: photo ? dataUrlVersBlob(photo) : null,
+      category: details.category,
+      name: details.name.trim() || null,
+      visibility: details.visibility,
+      access_point_note: details.access_point_note.trim() || null,
+      owner_name: details.owner_name.trim() || null,
+      owner_phone: details.owner_phone.trim() || null,
+      consent: true,
+      created_at: new Date().toISOString(),
+    });
+    setResultat("local");
+  };
+
   const envoyer = async () => {
     setEnvoi(true);
     try {
+      if (!isOnline) {
+        await enfiler();
+        return;
+      }
       const reponse = await enregistrer({
         data: {
           beacon_number: numero,
@@ -62,6 +94,7 @@ function Install() {
           owner_name: details.owner_name.trim() || null,
           owner_phone: details.owner_phone.trim() || null,
           consent: true,
+          client_uuid: clientUuid.current,
         },
       });
       if (reponse.success) {
@@ -71,12 +104,10 @@ function Install() {
       } else {
         setResultat(reponse.message ?? "Erreur inconnue.");
       }
-    } catch (erreur) {
-      setResultat(
-        erreur instanceof Error
-          ? erreur.message
-          : "Connexion au serveur impossible. Vérifiez votre réseau.",
-      );
+    } catch {
+      // Panne réseau pendant l'envoi : bascule automatique en file locale.
+      await enfiler();
+      void syncQueue();
     } finally {
       setEnvoi(false);
     }
@@ -85,6 +116,15 @@ function Install() {
   if (resultat === "succes") {
     return (
       <InstallSuccess
+        numero={numero}
+        onSuivante={() => navigate({ to: "/agent/tasks", replace: true })}
+      />
+    );
+  }
+
+  if (resultat === "local") {
+    return (
+      <InstallSuccessLocal
         numero={numero}
         onSuivante={() => navigate({ to: "/agent/tasks", replace: true })}
       />

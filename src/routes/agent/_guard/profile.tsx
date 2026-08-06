@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { LogOut } from "lucide-react";
+import { useEffect, useState } from "react";
+import { AlertTriangle, LogOut } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,8 +21,22 @@ function Ligne({ label, valeur }: { label: string; valeur: string }) {
   );
 }
 
+function useEspaceLocal() {
+  const [mo, setMo] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!navigator.storage?.estimate) return;
+    void navigator.storage.estimate().then((estimation) => {
+      setMo((estimation.usage ?? 0) / (1024 * 1024));
+    });
+  }, []);
+
+  return mo;
+}
+
 function Profile() {
   const { agent } = useAgent();
+  const espaceMo = useEspaceLocal();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -42,8 +57,24 @@ function Profile() {
           <Ligne label="Nom" valeur={agent?.full_name ?? "—"} />
           <Ligne label="Téléphone" valeur={agent?.phone ?? "—"} />
           <Ligne label="Zone d'affectation" valeur={agent?.zone_name ?? "Non affectée"} />
+          {espaceMo !== null && (
+            <Ligne
+              label="Espace utilisé pour la synchro"
+              valeur={`${espaceMo.toFixed(1)} Mo`}
+            />
+          )}
         </CardContent>
       </Card>
+
+      {espaceMo !== null && espaceMo > 50 && (
+        <div className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+          <p>
+            Plus de 50 Mo utilisés localement. Synchronisez vos installations en attente pour
+            libérer de l'espace.
+          </p>
+        </div>
+      )}
 
       <Button variant="outline" size="lg" className="w-full" onClick={deconnexion}>
         <LogOut className="size-4" />

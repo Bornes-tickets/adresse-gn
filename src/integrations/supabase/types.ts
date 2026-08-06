@@ -489,6 +489,7 @@ export type Database = {
           accuracy_m: number | null
           agent_id: string | null
           beacon_id: string | null
+          client_uuid: string | null
           gps_lat: number
           gps_lng: number
           id: string
@@ -501,6 +502,7 @@ export type Database = {
           accuracy_m?: number | null
           agent_id?: string | null
           beacon_id?: string | null
+          client_uuid?: string | null
           gps_lat: number
           gps_lng: number
           id?: string
@@ -513,6 +515,7 @@ export type Database = {
           accuracy_m?: number | null
           agent_id?: string | null
           beacon_id?: string | null
+          client_uuid?: string | null
           gps_lat?: number
           gps_lng?: number
           id?: string

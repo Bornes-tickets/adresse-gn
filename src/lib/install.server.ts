@@ -37,6 +37,30 @@ export async function performInstall(
     return erreur("photo_manquante", "La photo de l'entrée est obligatoire.");
   }
 
+  // 0) Idempotence : cette installation a-t-elle déjà été enregistrée ?
+  if (payload.client_uuid) {
+    const { data: existante } = await supabaseAdmin
+      .from("installations")
+      .select("id, beacon_id")
+      .eq("client_uuid", payload.client_uuid)
+      .maybeSingle();
+
+    if (existante) {
+      const { data: adresseExistante } = existante.beacon_id
+        ? await supabaseAdmin
+            .from("addresses")
+            .select("id")
+            .eq("beacon_id", existante.beacon_id)
+            .maybeSingle()
+        : { data: null };
+      return {
+        success: true,
+        ...(adresseExistante?.id ? { address_id: adresseExistante.id } : {}),
+        public_url: `/a/${payload.beacon_number}`,
+      };
+    }
+  }
+
   // 1) L'utilisateur est-il un agent actif ?
   const [{ data: profile }, { data: agent }] = await Promise.all([
     supabaseAdmin.from("profiles").select("role").eq("id", userId).maybeSingle(),
@@ -110,6 +134,7 @@ export async function performInstall(
       accuracy_m: accuracy,
       photo_url: photoUrl,
       installed_at: new Date().toISOString(),
+      client_uuid: payload.client_uuid ?? null,
     })
     .select("id")
     .single();

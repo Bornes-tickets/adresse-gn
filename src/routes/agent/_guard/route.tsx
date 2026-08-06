@@ -1,8 +1,9 @@
 import { Link, Outlet, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { Clock, ListChecks, User as UserIcon, Wifi } from "lucide-react";
+import { Clock, ListChecks, User as UserIcon } from "lucide-react";
 
 import { InstallBanner } from "@/components/agent/InstallBanner";
+import { SyncBanner } from "@/components/agent/SyncBanner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAgent } from "@/hooks/useAgent";
 
@@ -66,10 +67,7 @@ function AgentShell() {
               {agent?.full_name ?? agent?.badge_number}
             </span>
           </div>
-          <span className="flex items-center gap-1 rounded-full bg-accent/15 px-2 py-1 text-xs font-medium text-accent">
-            <Wifi className="size-3.5" />
-            En ligne
-          </span>
+          <SyncBanner />
         </div>
       </header>
 
