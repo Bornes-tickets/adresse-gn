@@ -778,7 +778,7 @@ export async function majAgent(input: {
   if (input.zoneId !== undefined) patchAgent['zone_id'] = input.zoneId;
   if (input.active !== undefined) patchAgent['active'] = input.active;
   if (Object.keys(patchAgent).length) {
-    const { error } = await supabaseAdmin.from("agents").update(patchAgent).eq("id", input.id);
+    const { error } = await supabaseAdmin.from("agents").update(patchAgent as any).eq("id", input.id);
     if (error) throw new Error(error.message);
   }
 
@@ -786,7 +786,7 @@ export async function majAgent(input: {
   if (input.fullName !== undefined) patchProfil['full_name'] = input.fullName;
   if (input.phone !== undefined) patchProfil['phone'] = input.phone;
   if (Object.keys(patchProfil).length) {
-    await supabaseAdmin.from("profiles").update(patchProfil).eq("id", input.id);
+    await supabaseAdmin.from("profiles").update(patchProfil as any).eq("id", input.id);
   }
   return { success: true };
 }
@@ -900,7 +900,7 @@ export async function enregistrerZone(input: {
   if (boundary) ligne['boundary'] = boundary;
 
   if (input.id) {
-    const { error } = await supabaseAdmin.from(table).update(ligne).eq("id", input.id);
+    const { error } = await supabaseAdmin.from(table).update(ligne as any).eq("id", input.id);
     if (error) throw new Error(error.message);
   } else {
     const { error } = await supabaseAdmin.from(table).insert(ligne as any);
