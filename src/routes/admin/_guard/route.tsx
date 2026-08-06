@@ -32,6 +32,8 @@ const SECTIONS = [
   { to: "/admin/beacons", label: "Balises", icon: QrCode },
   { to: "/admin/addresses", label: "Adresses", icon: MapPin },
   { to: "/admin/installations", label: "Installations & QC", icon: ClipboardCheck },
+  { to: "/admin/payments", label: "Paiements", icon: CreditCard },
+  { to: "/admin/abonnements", label: "Abonnements", icon: Repeat },
   { to: "/admin/reports", label: "Signalements", icon: Flag },
   { to: "/admin/claims", label: "Réclamations", icon: ShieldCheck },
   { to: "/admin/users", label: "Utilisateurs", icon: Users },
@@ -41,6 +43,7 @@ const SECTIONS = [
   { to: "/admin/audit", label: "Journal d'audit", icon: FileClock },
   { to: "/admin/analytics", label: "Statistiques", icon: BarChart3 },
 ] as const;
+
 
 function AdminShell() {
   const { user, admin, isAdmin, loading } = useAdmin();

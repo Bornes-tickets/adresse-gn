@@ -57,6 +57,7 @@ import { Route as ProGuardEtablissementsRouteImport } from './routes/pro/_guard/
 import { Route as ProGuardFacturationRouteImport } from './routes/pro/_guard/facturation'
 import { Route as ProGuardStatistiquesRouteImport } from './routes/pro/_guard/statistiques'
 import { Route as AgentGuardInstallNumberRouteImport } from './routes/agent/_guard/install.$number'
+import { Route as ApiPublicHooksRunBillingRouteImport } from './routes/api/public/hooks/run-billing'
 import { Route as ApiPublicWebhooksMtnRouteImport } from './routes/api/public/webhooks/mtn'
 import { Route as ApiPublicWebhooksOrangeRouteImport } from './routes/api/public/webhooks/orange'
 
@@ -301,6 +302,12 @@ const AgentGuardInstallNumberRoute = AgentGuardInstallNumberRouteImport.update({
   path: '/install/$number',
   getParentRoute: () => AgentGuardRouteRoute,
 } as any)
+const ApiPublicHooksRunBillingRoute =
+  ApiPublicHooksRunBillingRouteImport.update({
+    id: '/api/public/hooks/run-billing',
+    path: '/api/public/hooks/run-billing',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicWebhooksMtnRoute = ApiPublicWebhooksMtnRouteImport.update({
   id: '/api/public/webhooks/mtn',
   path: '/api/public/webhooks/mtn',
@@ -361,6 +368,7 @@ export interface FileRoutesByFullPath {
   '/mon-compte/': typeof MonCompteGuardIndexRoute
   '/pro/': typeof ProGuardIndexRoute
   '/agent/install/$number': typeof AgentGuardInstallNumberRoute
+  '/api/public/hooks/run-billing': typeof ApiPublicHooksRunBillingRoute
   '/api/public/webhooks/mtn': typeof ApiPublicWebhooksMtnRoute
   '/api/public/webhooks/orange': typeof ApiPublicWebhooksOrangeRoute
 }
@@ -409,6 +417,7 @@ export interface FileRoutesByTo {
   '/mon-compte': typeof MonCompteGuardIndexRoute
   '/pro': typeof ProGuardIndexRoute
   '/agent/install/$number': typeof AgentGuardInstallNumberRoute
+  '/api/public/hooks/run-billing': typeof ApiPublicHooksRunBillingRoute
   '/api/public/webhooks/mtn': typeof ApiPublicWebhooksMtnRoute
   '/api/public/webhooks/orange': typeof ApiPublicWebhooksOrangeRoute
 }
@@ -462,6 +471,7 @@ export interface FileRoutesById {
   '/mon-compte/_guard/': typeof MonCompteGuardIndexRoute
   '/pro/_guard/': typeof ProGuardIndexRoute
   '/agent/_guard/install/$number': typeof AgentGuardInstallNumberRoute
+  '/api/public/hooks/run-billing': typeof ApiPublicHooksRunBillingRoute
   '/api/public/webhooks/mtn': typeof ApiPublicWebhooksMtnRoute
   '/api/public/webhooks/orange': typeof ApiPublicWebhooksOrangeRoute
 }
@@ -516,6 +526,7 @@ export interface FileRouteTypes {
     | '/mon-compte/'
     | '/pro/'
     | '/agent/install/$number'
+    | '/api/public/hooks/run-billing'
     | '/api/public/webhooks/mtn'
     | '/api/public/webhooks/orange'
   fileRoutesByTo: FileRoutesByTo
@@ -564,6 +575,7 @@ export interface FileRouteTypes {
     | '/mon-compte'
     | '/pro'
     | '/agent/install/$number'
+    | '/api/public/hooks/run-billing'
     | '/api/public/webhooks/mtn'
     | '/api/public/webhooks/orange'
   id:
@@ -616,6 +628,7 @@ export interface FileRouteTypes {
     | '/mon-compte/_guard/'
     | '/pro/_guard/'
     | '/agent/_guard/install/$number'
+    | '/api/public/hooks/run-billing'
     | '/api/public/webhooks/mtn'
     | '/api/public/webhooks/orange'
   fileRoutesById: FileRoutesById
@@ -638,6 +651,7 @@ export interface RootRouteChildren {
   EtablissementNumberRoute: typeof EtablissementNumberRoute
   ProOnboardingRoute: typeof ProOnboardingRoute
   CommandeOrderRefPaiementRoute: typeof CommandeOrderRefPaiementRoute
+  ApiPublicHooksRunBillingRoute: typeof ApiPublicHooksRunBillingRoute
   ApiPublicWebhooksMtnRoute: typeof ApiPublicWebhooksMtnRoute
   ApiPublicWebhooksOrangeRoute: typeof ApiPublicWebhooksOrangeRoute
 }
@@ -980,6 +994,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgentGuardInstallNumberRouteImport
       parentRoute: typeof AgentGuardRouteRoute
     }
+    '/api/public/hooks/run-billing': {
+      id: '/api/public/hooks/run-billing'
+      path: '/api/public/hooks/run-billing'
+      fullPath: '/api/public/hooks/run-billing'
+      preLoaderRoute: typeof ApiPublicHooksRunBillingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhooks/mtn': {
       id: '/api/public/webhooks/mtn'
       path: '/api/public/webhooks/mtn'
@@ -1116,6 +1137,7 @@ const rootRouteChildren: RootRouteChildren = {
   EtablissementNumberRoute: EtablissementNumberRoute,
   ProOnboardingRoute: ProOnboardingRoute,
   CommandeOrderRefPaiementRoute: CommandeOrderRefPaiementRoute,
+  ApiPublicHooksRunBillingRoute: ApiPublicHooksRunBillingRoute,
   ApiPublicWebhooksMtnRoute: ApiPublicWebhooksMtnRoute,
   ApiPublicWebhooksOrangeRoute: ApiPublicWebhooksOrangeRoute,
 }
