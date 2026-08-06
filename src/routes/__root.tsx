@@ -154,6 +154,8 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const estAgent = pathname === "/agent" || pathname.startsWith("/agent/");
+  const estAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
+  const sansLayout = estAgent || estAdmin;
 
   useEffect(() => {
     registerServiceWorker();
@@ -162,8 +164,8 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        {estAgent ? (
-          /* L'espace agent a son propre shell mobile (voir routes/agent). */
+        {sansLayout ? (
+          /* Les espaces agent et administration ont leur propre shell. */
           <Outlet />
         ) : (
           <Layout>
