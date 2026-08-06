@@ -20,8 +20,6 @@ function base64ToBytes(base64: string): Uint8Array {
   return octets;
 }
 
-const moyenne = (valeurs: number[]) =>
-  valeurs.reduce((total, valeur) => total + valeur, 0) / valeurs.length;
 
 /** Effectue l'enregistrement complet d'une installation. */
 export async function performInstall(
