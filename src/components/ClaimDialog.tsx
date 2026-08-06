@@ -54,17 +54,18 @@ export function ClaimDialog({
   const envoyer = useMutation({
     mutationFn: async () => {
       const base64 = fichier ? await fichierEnBase64(fichier) : null;
+      const explication = [
+        nom.trim() ? `Propriétaire déclaré : ${nom.trim()}` : "",
+        tel.trim() ? `Téléphone : ${tel.trim()}` : "",
+        details.trim(),
+      ]
+        .filter(Boolean)
+        .join("\n");
       return createClaim({
-        data: {
-          number,
-          declaredName: nom.trim() || null,
-          declaredPhone: tel.trim() || null,
-          evidence: details.trim() || null,
-          evidenceBase64: base64,
-          evidenceFileName: fichier?.name ?? null,
-        },
+        data: { number, explanation: explication, photoBase64: base64 },
       });
     },
+
     onSuccess: () => {
       toast.success("Demande envoyée. Notre équipe vérifie sous 48 h.");
       setDetails("");
