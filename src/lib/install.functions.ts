@@ -2,7 +2,7 @@
 import { createServerFn } from "@tanstack/react-start";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import type { InstallPayload, InstallResult } from "@/lib/install.server";
+import type { InstallMeasure, InstallPayload, InstallResult } from "@/lib/install";
 
 export const submitInstallation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
