@@ -16,6 +16,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as LogoutRouteImport } from './routes/logout'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ANumberRouteImport } from './routes/a.$number'
+import { Route as AgentGuardRouteRouteImport } from './routes/agent/_guard/route'
 import { Route as EtablissementNumberRouteImport } from './routes/etablissement.$number'
 
 const IndexRoute = IndexRouteImport.update({
@@ -53,6 +54,11 @@ const ANumberRoute = ANumberRouteImport.update({
   path: '/a/$number',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AgentGuardRouteRoute = AgentGuardRouteRouteImport.update({
+  id: '/agent/_guard',
+  path: '/agent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EtablissementNumberRoute = EtablissementNumberRouteImport.update({
   id: '/etablissement/$number',
   path: '/etablissement/$number',
@@ -66,6 +72,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
   '/signup': typeof SignupRoute
+  '/agent': typeof AgentGuardRouteRoute
   '/a/$number': typeof ANumberRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
 }
@@ -76,6 +83,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
   '/signup': typeof SignupRoute
+  '/agent': typeof AgentGuardRouteRoute
   '/a/$number': typeof ANumberRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
 }
@@ -87,6 +95,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
   '/signup': typeof SignupRoute
+  '/agent/_guard': typeof AgentGuardRouteRoute
   '/a/$number': typeof ANumberRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
 }
@@ -99,6 +108,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/logout'
     | '/signup'
+    | '/agent'
     | '/a/$number'
     | '/etablissement/$number'
   fileRoutesByTo: FileRoutesByTo
@@ -109,6 +119,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/logout'
     | '/signup'
+    | '/agent'
     | '/a/$number'
     | '/etablissement/$number'
   id:
@@ -119,6 +130,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/logout'
     | '/signup'
+    | '/agent/_guard'
     | '/a/$number'
     | '/etablissement/$number'
   fileRoutesById: FileRoutesById
@@ -130,6 +142,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   LogoutRoute: typeof LogoutRoute
   SignupRoute: typeof SignupRoute
+  AgentGuardRouteRoute: typeof AgentGuardRouteRoute
   ANumberRoute: typeof ANumberRoute
   EtablissementNumberRoute: typeof EtablissementNumberRoute
 }
@@ -185,6 +198,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ANumberRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/agent/_guard': {
+      id: '/agent/_guard'
+      path: '/agent'
+      fullPath: '/agent'
+      preLoaderRoute: typeof AgentGuardRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/etablissement/$number': {
       id: '/etablissement/$number'
       path: '/etablissement/$number'
@@ -202,6 +222,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   LogoutRoute: LogoutRoute,
   SignupRoute: SignupRoute,
+  AgentGuardRouteRoute: AgentGuardRouteRoute,
   ANumberRoute: ANumberRoute,
   EtablissementNumberRoute: EtablissementNumberRoute,
 }
