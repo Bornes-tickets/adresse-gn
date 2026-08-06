@@ -19,6 +19,7 @@ import { Route as ANumberRouteImport } from './routes/a.$number'
 import { Route as AgentGuardRouteRouteImport } from './routes/agent/_guard/route'
 import { Route as EtablissementNumberRouteImport } from './routes/etablissement.$number'
 import { Route as AgentGuardIndexRouteImport } from './routes/agent/_guard/index'
+import { Route as AgentGuardHistoryRouteImport } from './routes/agent/_guard/history'
 import { Route as AgentGuardTasksRouteImport } from './routes/agent/_guard/tasks'
 
 const IndexRoute = IndexRouteImport.update({
@@ -71,6 +72,11 @@ const AgentGuardIndexRoute = AgentGuardIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AgentGuardRouteRoute,
 } as any)
+const AgentGuardHistoryRoute = AgentGuardHistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => AgentGuardRouteRoute,
+} as any)
 const AgentGuardTasksRoute = AgentGuardTasksRouteImport.update({
   id: '/tasks',
   path: '/tasks',
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/agent': typeof AgentGuardRouteRouteWithChildren
   '/a/$number': typeof ANumberRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
+  '/agent/history': typeof AgentGuardHistoryRoute
   '/agent/tasks': typeof AgentGuardTasksRoute
   '/agent/': typeof AgentGuardIndexRoute
 }
@@ -99,6 +106,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/a/$number': typeof ANumberRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
+  '/agent/history': typeof AgentGuardHistoryRoute
   '/agent/tasks': typeof AgentGuardTasksRoute
   '/agent': typeof AgentGuardIndexRoute
 }
@@ -113,6 +121,7 @@ export interface FileRoutesById {
   '/agent/_guard': typeof AgentGuardRouteRouteWithChildren
   '/a/$number': typeof ANumberRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
+  '/agent/_guard/history': typeof AgentGuardHistoryRoute
   '/agent/_guard/tasks': typeof AgentGuardTasksRoute
   '/agent/_guard/': typeof AgentGuardIndexRoute
 }
@@ -128,6 +137,7 @@ export interface FileRouteTypes {
     | '/agent'
     | '/a/$number'
     | '/etablissement/$number'
+    | '/agent/history'
     | '/agent/tasks'
     | '/agent/'
   fileRoutesByTo: FileRoutesByTo
@@ -140,6 +150,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/a/$number'
     | '/etablissement/$number'
+    | '/agent/history'
     | '/agent/tasks'
     | '/agent'
   id:
@@ -153,6 +164,7 @@ export interface FileRouteTypes {
     | '/agent/_guard'
     | '/a/$number'
     | '/etablissement/$number'
+    | '/agent/_guard/history'
     | '/agent/_guard/tasks'
     | '/agent/_guard/'
   fileRoutesById: FileRoutesById
@@ -241,6 +253,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgentGuardIndexRouteImport
       parentRoute: typeof AgentGuardRouteRoute
     }
+    '/agent/_guard/history': {
+      id: '/agent/_guard/history'
+      path: '/history'
+      fullPath: '/agent/history'
+      preLoaderRoute: typeof AgentGuardHistoryRouteImport
+      parentRoute: typeof AgentGuardRouteRoute
+    }
     '/agent/_guard/tasks': {
       id: '/agent/_guard/tasks'
       path: '/tasks'
@@ -252,11 +271,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AgentGuardRouteRouteChildren {
+  AgentGuardHistoryRoute: typeof AgentGuardHistoryRoute
   AgentGuardTasksRoute: typeof AgentGuardTasksRoute
   AgentGuardIndexRoute: typeof AgentGuardIndexRoute
 }
 
 const AgentGuardRouteRouteChildren: AgentGuardRouteRouteChildren = {
+  AgentGuardHistoryRoute: AgentGuardHistoryRoute,
   AgentGuardTasksRoute: AgentGuardTasksRoute,
   AgentGuardIndexRoute: AgentGuardIndexRoute,
 }
