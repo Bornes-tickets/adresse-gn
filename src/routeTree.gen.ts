@@ -16,9 +16,21 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as LogoutRouteImport } from './routes/logout'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ANumberRouteImport } from './routes/a.$number'
+import { Route as AdminGuardRouteRouteImport } from './routes/admin/_guard/route'
 import { Route as AgentGuardRouteRouteImport } from './routes/agent/_guard/route'
 import { Route as AgentLoginRouteImport } from './routes/agent/login'
 import { Route as EtablissementNumberRouteImport } from './routes/etablissement.$number'
+import { Route as AdminGuardIndexRouteImport } from './routes/admin/_guard/index'
+import { Route as AdminGuardAddressesRouteImport } from './routes/admin/_guard/addresses'
+import { Route as AdminGuardAgentsRouteImport } from './routes/admin/_guard/agents'
+import { Route as AdminGuardAnalyticsRouteImport } from './routes/admin/_guard/analytics'
+import { Route as AdminGuardAuditRouteImport } from './routes/admin/_guard/audit'
+import { Route as AdminGuardBeaconsRouteImport } from './routes/admin/_guard/beacons'
+import { Route as AdminGuardInstallationsRouteImport } from './routes/admin/_guard/installations'
+import { Route as AdminGuardLotsRouteImport } from './routes/admin/_guard/lots'
+import { Route as AdminGuardReportsRouteImport } from './routes/admin/_guard/reports'
+import { Route as AdminGuardUsersRouteImport } from './routes/admin/_guard/users'
+import { Route as AdminGuardZonesRouteImport } from './routes/admin/_guard/zones'
 import { Route as AgentGuardIndexRouteImport } from './routes/agent/_guard/index'
 import { Route as AgentGuardHistoryRouteImport } from './routes/agent/_guard/history'
 import { Route as AgentGuardProfileRouteImport } from './routes/agent/_guard/profile'
@@ -61,6 +73,11 @@ const ANumberRoute = ANumberRouteImport.update({
   path: '/a/$number',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminGuardRouteRoute = AdminGuardRouteRouteImport.update({
+  id: '/admin/_guard',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AgentGuardRouteRoute = AgentGuardRouteRouteImport.update({
   id: '/agent/_guard',
   path: '/agent',
@@ -75,6 +92,61 @@ const EtablissementNumberRoute = EtablissementNumberRouteImport.update({
   id: '/etablissement/$number',
   path: '/etablissement/$number',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminGuardIndexRoute = AdminGuardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminGuardRouteRoute,
+} as any)
+const AdminGuardAddressesRoute = AdminGuardAddressesRouteImport.update({
+  id: '/addresses',
+  path: '/addresses',
+  getParentRoute: () => AdminGuardRouteRoute,
+} as any)
+const AdminGuardAgentsRoute = AdminGuardAgentsRouteImport.update({
+  id: '/agents',
+  path: '/agents',
+  getParentRoute: () => AdminGuardRouteRoute,
+} as any)
+const AdminGuardAnalyticsRoute = AdminGuardAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AdminGuardRouteRoute,
+} as any)
+const AdminGuardAuditRoute = AdminGuardAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AdminGuardRouteRoute,
+} as any)
+const AdminGuardBeaconsRoute = AdminGuardBeaconsRouteImport.update({
+  id: '/beacons',
+  path: '/beacons',
+  getParentRoute: () => AdminGuardRouteRoute,
+} as any)
+const AdminGuardInstallationsRoute = AdminGuardInstallationsRouteImport.update({
+  id: '/installations',
+  path: '/installations',
+  getParentRoute: () => AdminGuardRouteRoute,
+} as any)
+const AdminGuardLotsRoute = AdminGuardLotsRouteImport.update({
+  id: '/lots',
+  path: '/lots',
+  getParentRoute: () => AdminGuardRouteRoute,
+} as any)
+const AdminGuardReportsRoute = AdminGuardReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AdminGuardRouteRoute,
+} as any)
+const AdminGuardUsersRoute = AdminGuardUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminGuardRouteRoute,
+} as any)
+const AdminGuardZonesRoute = AdminGuardZonesRouteImport.update({
+  id: '/zones',
+  path: '/zones',
+  getParentRoute: () => AdminGuardRouteRoute,
 } as any)
 const AgentGuardIndexRoute = AgentGuardIndexRouteImport.update({
   id: '/',
@@ -114,14 +186,26 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
   '/signup': typeof SignupRoute
+  '/admin': typeof AdminGuardRouteRouteWithChildren
   '/agent': typeof AgentGuardRouteRouteWithChildren
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
+  '/admin/addresses': typeof AdminGuardAddressesRoute
+  '/admin/agents': typeof AdminGuardAgentsRoute
+  '/admin/analytics': typeof AdminGuardAnalyticsRoute
+  '/admin/audit': typeof AdminGuardAuditRoute
+  '/admin/beacons': typeof AdminGuardBeaconsRoute
+  '/admin/installations': typeof AdminGuardInstallationsRoute
+  '/admin/lots': typeof AdminGuardLotsRoute
+  '/admin/reports': typeof AdminGuardReportsRoute
+  '/admin/users': typeof AdminGuardUsersRoute
+  '/admin/zones': typeof AdminGuardZonesRoute
   '/agent/history': typeof AgentGuardHistoryRoute
   '/agent/profile': typeof AgentGuardProfileRoute
   '/agent/sync-issues': typeof AgentGuardSyncIssuesRoute
   '/agent/tasks': typeof AgentGuardTasksRoute
+  '/admin/': typeof AdminGuardIndexRoute
   '/agent/': typeof AgentGuardIndexRoute
   '/agent/install/$number': typeof AgentGuardInstallNumberRoute
 }
@@ -135,10 +219,21 @@ export interface FileRoutesByTo {
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
+  '/admin/addresses': typeof AdminGuardAddressesRoute
+  '/admin/agents': typeof AdminGuardAgentsRoute
+  '/admin/analytics': typeof AdminGuardAnalyticsRoute
+  '/admin/audit': typeof AdminGuardAuditRoute
+  '/admin/beacons': typeof AdminGuardBeaconsRoute
+  '/admin/installations': typeof AdminGuardInstallationsRoute
+  '/admin/lots': typeof AdminGuardLotsRoute
+  '/admin/reports': typeof AdminGuardReportsRoute
+  '/admin/users': typeof AdminGuardUsersRoute
+  '/admin/zones': typeof AdminGuardZonesRoute
   '/agent/history': typeof AgentGuardHistoryRoute
   '/agent/profile': typeof AgentGuardProfileRoute
   '/agent/sync-issues': typeof AgentGuardSyncIssuesRoute
   '/agent/tasks': typeof AgentGuardTasksRoute
+  '/admin': typeof AdminGuardIndexRoute
   '/agent': typeof AgentGuardIndexRoute
   '/agent/install/$number': typeof AgentGuardInstallNumberRoute
 }
@@ -150,14 +245,26 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
   '/signup': typeof SignupRoute
+  '/admin/_guard': typeof AdminGuardRouteRouteWithChildren
   '/agent/_guard': typeof AgentGuardRouteRouteWithChildren
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
+  '/admin/_guard/addresses': typeof AdminGuardAddressesRoute
+  '/admin/_guard/agents': typeof AdminGuardAgentsRoute
+  '/admin/_guard/analytics': typeof AdminGuardAnalyticsRoute
+  '/admin/_guard/audit': typeof AdminGuardAuditRoute
+  '/admin/_guard/beacons': typeof AdminGuardBeaconsRoute
+  '/admin/_guard/installations': typeof AdminGuardInstallationsRoute
+  '/admin/_guard/lots': typeof AdminGuardLotsRoute
+  '/admin/_guard/reports': typeof AdminGuardReportsRoute
+  '/admin/_guard/users': typeof AdminGuardUsersRoute
+  '/admin/_guard/zones': typeof AdminGuardZonesRoute
   '/agent/_guard/history': typeof AgentGuardHistoryRoute
   '/agent/_guard/profile': typeof AgentGuardProfileRoute
   '/agent/_guard/sync-issues': typeof AgentGuardSyncIssuesRoute
   '/agent/_guard/tasks': typeof AgentGuardTasksRoute
+  '/admin/_guard/': typeof AdminGuardIndexRoute
   '/agent/_guard/': typeof AgentGuardIndexRoute
   '/agent/_guard/install/$number': typeof AgentGuardInstallNumberRoute
 }
@@ -170,14 +277,26 @@ export interface FileRouteTypes {
     | '/login'
     | '/logout'
     | '/signup'
+    | '/admin'
     | '/agent'
     | '/a/$number'
     | '/agent/login'
     | '/etablissement/$number'
+    | '/admin/addresses'
+    | '/admin/agents'
+    | '/admin/analytics'
+    | '/admin/audit'
+    | '/admin/beacons'
+    | '/admin/installations'
+    | '/admin/lots'
+    | '/admin/reports'
+    | '/admin/users'
+    | '/admin/zones'
     | '/agent/history'
     | '/agent/profile'
     | '/agent/sync-issues'
     | '/agent/tasks'
+    | '/admin/'
     | '/agent/'
     | '/agent/install/$number'
   fileRoutesByTo: FileRoutesByTo
@@ -191,10 +310,21 @@ export interface FileRouteTypes {
     | '/a/$number'
     | '/agent/login'
     | '/etablissement/$number'
+    | '/admin/addresses'
+    | '/admin/agents'
+    | '/admin/analytics'
+    | '/admin/audit'
+    | '/admin/beacons'
+    | '/admin/installations'
+    | '/admin/lots'
+    | '/admin/reports'
+    | '/admin/users'
+    | '/admin/zones'
     | '/agent/history'
     | '/agent/profile'
     | '/agent/sync-issues'
     | '/agent/tasks'
+    | '/admin'
     | '/agent'
     | '/agent/install/$number'
   id:
@@ -205,14 +335,26 @@ export interface FileRouteTypes {
     | '/login'
     | '/logout'
     | '/signup'
+    | '/admin/_guard'
     | '/agent/_guard'
     | '/a/$number'
     | '/agent/login'
     | '/etablissement/$number'
+    | '/admin/_guard/addresses'
+    | '/admin/_guard/agents'
+    | '/admin/_guard/analytics'
+    | '/admin/_guard/audit'
+    | '/admin/_guard/beacons'
+    | '/admin/_guard/installations'
+    | '/admin/_guard/lots'
+    | '/admin/_guard/reports'
+    | '/admin/_guard/users'
+    | '/admin/_guard/zones'
     | '/agent/_guard/history'
     | '/agent/_guard/profile'
     | '/agent/_guard/sync-issues'
     | '/agent/_guard/tasks'
+    | '/admin/_guard/'
     | '/agent/_guard/'
     | '/agent/_guard/install/$number'
   fileRoutesById: FileRoutesById
@@ -224,6 +366,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   LogoutRoute: typeof LogoutRoute
   SignupRoute: typeof SignupRoute
+  AdminGuardRouteRoute: typeof AdminGuardRouteRouteWithChildren
   AgentGuardRouteRoute: typeof AgentGuardRouteRouteWithChildren
   ANumberRoute: typeof ANumberRoute
   AgentLoginRoute: typeof AgentLoginRoute
@@ -281,6 +424,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ANumberRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/_guard': {
+      id: '/admin/_guard'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminGuardRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/agent/_guard': {
       id: '/agent/_guard'
       path: '/agent'
@@ -301,6 +451,83 @@ declare module '@tanstack/react-router' {
       fullPath: '/etablissement/$number'
       preLoaderRoute: typeof EtablissementNumberRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/_guard/': {
+      id: '/admin/_guard/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminGuardIndexRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
+    '/admin/_guard/addresses': {
+      id: '/admin/_guard/addresses'
+      path: '/addresses'
+      fullPath: '/admin/addresses'
+      preLoaderRoute: typeof AdminGuardAddressesRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
+    '/admin/_guard/agents': {
+      id: '/admin/_guard/agents'
+      path: '/agents'
+      fullPath: '/admin/agents'
+      preLoaderRoute: typeof AdminGuardAgentsRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
+    '/admin/_guard/analytics': {
+      id: '/admin/_guard/analytics'
+      path: '/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AdminGuardAnalyticsRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
+    '/admin/_guard/audit': {
+      id: '/admin/_guard/audit'
+      path: '/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AdminGuardAuditRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
+    '/admin/_guard/beacons': {
+      id: '/admin/_guard/beacons'
+      path: '/beacons'
+      fullPath: '/admin/beacons'
+      preLoaderRoute: typeof AdminGuardBeaconsRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
+    '/admin/_guard/installations': {
+      id: '/admin/_guard/installations'
+      path: '/installations'
+      fullPath: '/admin/installations'
+      preLoaderRoute: typeof AdminGuardInstallationsRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
+    '/admin/_guard/lots': {
+      id: '/admin/_guard/lots'
+      path: '/lots'
+      fullPath: '/admin/lots'
+      preLoaderRoute: typeof AdminGuardLotsRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
+    '/admin/_guard/reports': {
+      id: '/admin/_guard/reports'
+      path: '/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AdminGuardReportsRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
+    '/admin/_guard/users': {
+      id: '/admin/_guard/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminGuardUsersRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
+    '/admin/_guard/zones': {
+      id: '/admin/_guard/zones'
+      path: '/zones'
+      fullPath: '/admin/zones'
+      preLoaderRoute: typeof AdminGuardZonesRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
     }
     '/agent/_guard/': {
       id: '/agent/_guard/'
@@ -347,6 +574,38 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminGuardRouteRouteChildren {
+  AdminGuardAddressesRoute: typeof AdminGuardAddressesRoute
+  AdminGuardAgentsRoute: typeof AdminGuardAgentsRoute
+  AdminGuardAnalyticsRoute: typeof AdminGuardAnalyticsRoute
+  AdminGuardAuditRoute: typeof AdminGuardAuditRoute
+  AdminGuardBeaconsRoute: typeof AdminGuardBeaconsRoute
+  AdminGuardInstallationsRoute: typeof AdminGuardInstallationsRoute
+  AdminGuardLotsRoute: typeof AdminGuardLotsRoute
+  AdminGuardReportsRoute: typeof AdminGuardReportsRoute
+  AdminGuardUsersRoute: typeof AdminGuardUsersRoute
+  AdminGuardZonesRoute: typeof AdminGuardZonesRoute
+  AdminGuardIndexRoute: typeof AdminGuardIndexRoute
+}
+
+const AdminGuardRouteRouteChildren: AdminGuardRouteRouteChildren = {
+  AdminGuardAddressesRoute: AdminGuardAddressesRoute,
+  AdminGuardAgentsRoute: AdminGuardAgentsRoute,
+  AdminGuardAnalyticsRoute: AdminGuardAnalyticsRoute,
+  AdminGuardAuditRoute: AdminGuardAuditRoute,
+  AdminGuardBeaconsRoute: AdminGuardBeaconsRoute,
+  AdminGuardInstallationsRoute: AdminGuardInstallationsRoute,
+  AdminGuardLotsRoute: AdminGuardLotsRoute,
+  AdminGuardReportsRoute: AdminGuardReportsRoute,
+  AdminGuardUsersRoute: AdminGuardUsersRoute,
+  AdminGuardZonesRoute: AdminGuardZonesRoute,
+  AdminGuardIndexRoute: AdminGuardIndexRoute,
+}
+
+const AdminGuardRouteRouteWithChildren = AdminGuardRouteRoute._addFileChildren(
+  AdminGuardRouteRouteChildren,
+)
+
 interface AgentGuardRouteRouteChildren {
   AgentGuardHistoryRoute: typeof AgentGuardHistoryRoute
   AgentGuardProfileRoute: typeof AgentGuardProfileRoute
@@ -376,6 +635,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   LogoutRoute: LogoutRoute,
   SignupRoute: SignupRoute,
+  AdminGuardRouteRoute: AdminGuardRouteRouteWithChildren,
   AgentGuardRouteRoute: AgentGuardRouteRouteWithChildren,
   ANumberRoute: ANumberRoute,
   AgentLoginRoute: AgentLoginRoute,
