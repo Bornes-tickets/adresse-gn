@@ -15,15 +15,18 @@ import { Route as ConfidentialiteRouteImport } from './routes/confidentialite'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LogoutRouteImport } from './routes/logout'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as TarifsRouteImport } from './routes/tarifs'
 import { Route as ANumberRouteImport } from './routes/a.$number'
 import { Route as AdminGuardRouteRouteImport } from './routes/admin/_guard/route'
 import { Route as AgentGuardRouteRouteImport } from './routes/agent/_guard/route'
 import { Route as AgentLoginRouteImport } from './routes/agent/login'
+import { Route as CommanderOfferCodeRouteImport } from './routes/commander.$offerCode'
 import { Route as EtablissementNumberRouteImport } from './routes/etablissement.$number'
 import { Route as MonCompteGuardRouteRouteImport } from './routes/mon-compte/_guard/route'
 import { Route as ProGuardRouteRouteImport } from './routes/pro/_guard/route'
 import { Route as ProOnboardingRouteImport } from './routes/pro/onboarding'
 import { Route as AdminGuardIndexRouteImport } from './routes/admin/_guard/index'
+import { Route as AdminGuardAbonnementsRouteImport } from './routes/admin/_guard/abonnements'
 import { Route as AdminGuardAddressesRouteImport } from './routes/admin/_guard/addresses'
 import { Route as AdminGuardAgentsRouteImport } from './routes/admin/_guard/agents'
 import { Route as AdminGuardAnalyticsRouteImport } from './routes/admin/_guard/analytics'
@@ -32,6 +35,7 @@ import { Route as AdminGuardBeaconsRouteImport } from './routes/admin/_guard/bea
 import { Route as AdminGuardClaimsRouteImport } from './routes/admin/_guard/claims'
 import { Route as AdminGuardInstallationsRouteImport } from './routes/admin/_guard/installations'
 import { Route as AdminGuardLotsRouteImport } from './routes/admin/_guard/lots'
+import { Route as AdminGuardPaymentsRouteImport } from './routes/admin/_guard/payments'
 import { Route as AdminGuardReportsRouteImport } from './routes/admin/_guard/reports'
 import { Route as AdminGuardUsersRouteImport } from './routes/admin/_guard/users'
 import { Route as AdminGuardZonesRouteImport } from './routes/admin/_guard/zones'
@@ -40,8 +44,10 @@ import { Route as AgentGuardHistoryRouteImport } from './routes/agent/_guard/his
 import { Route as AgentGuardProfileRouteImport } from './routes/agent/_guard/profile'
 import { Route as AgentGuardSyncIssuesRouteImport } from './routes/agent/_guard/sync-issues'
 import { Route as AgentGuardTasksRouteImport } from './routes/agent/_guard/tasks'
+import { Route as CommandeOrderRefPaiementRouteImport } from './routes/commande.$orderRef.paiement'
 import { Route as MonCompteGuardIndexRouteImport } from './routes/mon-compte/_guard/index'
 import { Route as MonCompteGuardBeaconsRouteImport } from './routes/mon-compte/_guard/beacons'
+import { Route as MonCompteGuardCommandesRouteImport } from './routes/mon-compte/_guard/commandes'
 import { Route as MonCompteGuardFavoritesRouteImport } from './routes/mon-compte/_guard/favorites'
 import { Route as MonCompteGuardReportsRouteImport } from './routes/mon-compte/_guard/reports'
 import { Route as MonCompteGuardSettingsRouteImport } from './routes/mon-compte/_guard/settings'
@@ -52,6 +58,9 @@ import { Route as ProGuardEtablissementsRouteImport } from './routes/pro/_guard/
 import { Route as ProGuardFacturationRouteImport } from './routes/pro/_guard/facturation'
 import { Route as ProGuardStatistiquesRouteImport } from './routes/pro/_guard/statistiques'
 import { Route as AgentGuardInstallNumberRouteImport } from './routes/agent/_guard/install.$number'
+import { Route as ApiPublicHooksRunBillingRouteImport } from './routes/api/public/hooks/run-billing'
+import { Route as ApiPublicWebhooksMtnRouteImport } from './routes/api/public/webhooks/mtn'
+import { Route as ApiPublicWebhooksOrangeRouteImport } from './routes/api/public/webhooks/orange'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -83,6 +92,11 @@ const SignupRoute = SignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TarifsRoute = TarifsRouteImport.update({
+  id: '/tarifs',
+  path: '/tarifs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ANumberRoute = ANumberRouteImport.update({
   id: '/a/$number',
   path: '/a/$number',
@@ -101,6 +115,11 @@ const AgentGuardRouteRoute = AgentGuardRouteRouteImport.update({
 const AgentLoginRoute = AgentLoginRouteImport.update({
   id: '/agent/login',
   path: '/agent/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CommanderOfferCodeRoute = CommanderOfferCodeRouteImport.update({
+  id: '/commander/$offerCode',
+  path: '/commander/$offerCode',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EtablissementNumberRoute = EtablissementNumberRouteImport.update({
@@ -126,6 +145,11 @@ const ProOnboardingRoute = ProOnboardingRouteImport.update({
 const AdminGuardIndexRoute = AdminGuardIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AdminGuardRouteRoute,
+} as any)
+const AdminGuardAbonnementsRoute = AdminGuardAbonnementsRouteImport.update({
+  id: '/abonnements',
+  path: '/abonnements',
   getParentRoute: () => AdminGuardRouteRoute,
 } as any)
 const AdminGuardAddressesRoute = AdminGuardAddressesRouteImport.update({
@@ -168,6 +192,11 @@ const AdminGuardLotsRoute = AdminGuardLotsRouteImport.update({
   path: '/lots',
   getParentRoute: () => AdminGuardRouteRoute,
 } as any)
+const AdminGuardPaymentsRoute = AdminGuardPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => AdminGuardRouteRoute,
+} as any)
 const AdminGuardReportsRoute = AdminGuardReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
@@ -208,6 +237,12 @@ const AgentGuardTasksRoute = AgentGuardTasksRouteImport.update({
   path: '/tasks',
   getParentRoute: () => AgentGuardRouteRoute,
 } as any)
+const CommandeOrderRefPaiementRoute =
+  CommandeOrderRefPaiementRouteImport.update({
+    id: '/commande/$orderRef/paiement',
+    path: '/commande/$orderRef/paiement',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const MonCompteGuardIndexRoute = MonCompteGuardIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -216,6 +251,11 @@ const MonCompteGuardIndexRoute = MonCompteGuardIndexRouteImport.update({
 const MonCompteGuardBeaconsRoute = MonCompteGuardBeaconsRouteImport.update({
   id: '/beacons',
   path: '/beacons',
+  getParentRoute: () => MonCompteGuardRouteRoute,
+} as any)
+const MonCompteGuardCommandesRoute = MonCompteGuardCommandesRouteImport.update({
+  id: '/commandes',
+  path: '/commandes',
   getParentRoute: () => MonCompteGuardRouteRoute,
 } as any)
 const MonCompteGuardFavoritesRoute = MonCompteGuardFavoritesRouteImport.update({
@@ -268,6 +308,22 @@ const AgentGuardInstallNumberRoute = AgentGuardInstallNumberRouteImport.update({
   path: '/install/$number',
   getParentRoute: () => AgentGuardRouteRoute,
 } as any)
+const ApiPublicHooksRunBillingRoute =
+  ApiPublicHooksRunBillingRouteImport.update({
+    id: '/api/public/hooks/run-billing',
+    path: '/api/public/hooks/run-billing',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicWebhooksMtnRoute = ApiPublicWebhooksMtnRouteImport.update({
+  id: '/api/public/webhooks/mtn',
+  path: '/api/public/webhooks/mtn',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicWebhooksOrangeRoute = ApiPublicWebhooksOrangeRouteImport.update({
+  id: '/api/public/webhooks/orange',
+  path: '/api/public/webhooks/orange',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -276,14 +332,17 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
   '/signup': typeof SignupRoute
+  '/tarifs': typeof TarifsRoute
   '/admin': typeof AdminGuardRouteRouteWithChildren
   '/agent': typeof AgentGuardRouteRouteWithChildren
   '/mon-compte': typeof MonCompteGuardRouteRouteWithChildren
   '/pro': typeof ProGuardRouteRouteWithChildren
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
+  '/commander/$offerCode': typeof CommanderOfferCodeRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/pro/onboarding': typeof ProOnboardingRoute
+  '/admin/abonnements': typeof AdminGuardAbonnementsRoute
   '/admin/addresses': typeof AdminGuardAddressesRoute
   '/admin/agents': typeof AdminGuardAgentsRoute
   '/admin/analytics': typeof AdminGuardAnalyticsRoute
@@ -292,6 +351,7 @@ export interface FileRoutesByFullPath {
   '/admin/claims': typeof AdminGuardClaimsRoute
   '/admin/installations': typeof AdminGuardInstallationsRoute
   '/admin/lots': typeof AdminGuardLotsRoute
+  '/admin/payments': typeof AdminGuardPaymentsRoute
   '/admin/reports': typeof AdminGuardReportsRoute
   '/admin/users': typeof AdminGuardUsersRoute
   '/admin/zones': typeof AdminGuardZonesRoute
@@ -299,7 +359,9 @@ export interface FileRoutesByFullPath {
   '/agent/profile': typeof AgentGuardProfileRoute
   '/agent/sync-issues': typeof AgentGuardSyncIssuesRoute
   '/agent/tasks': typeof AgentGuardTasksRoute
+  '/commande/$orderRef/paiement': typeof CommandeOrderRefPaiementRoute
   '/mon-compte/beacons': typeof MonCompteGuardBeaconsRoute
+  '/mon-compte/commandes': typeof MonCompteGuardCommandesRoute
   '/mon-compte/favorites': typeof MonCompteGuardFavoritesRoute
   '/mon-compte/reports': typeof MonCompteGuardReportsRoute
   '/mon-compte/settings': typeof MonCompteGuardSettingsRoute
@@ -313,6 +375,9 @@ export interface FileRoutesByFullPath {
   '/mon-compte/': typeof MonCompteGuardIndexRoute
   '/pro/': typeof ProGuardIndexRoute
   '/agent/install/$number': typeof AgentGuardInstallNumberRoute
+  '/api/public/hooks/run-billing': typeof ApiPublicHooksRunBillingRoute
+  '/api/public/webhooks/mtn': typeof ApiPublicWebhooksMtnRoute
+  '/api/public/webhooks/orange': typeof ApiPublicWebhooksOrangeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -321,10 +386,13 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
   '/signup': typeof SignupRoute
+  '/tarifs': typeof TarifsRoute
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
+  '/commander/$offerCode': typeof CommanderOfferCodeRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/pro/onboarding': typeof ProOnboardingRoute
+  '/admin/abonnements': typeof AdminGuardAbonnementsRoute
   '/admin/addresses': typeof AdminGuardAddressesRoute
   '/admin/agents': typeof AdminGuardAgentsRoute
   '/admin/analytics': typeof AdminGuardAnalyticsRoute
@@ -333,6 +401,7 @@ export interface FileRoutesByTo {
   '/admin/claims': typeof AdminGuardClaimsRoute
   '/admin/installations': typeof AdminGuardInstallationsRoute
   '/admin/lots': typeof AdminGuardLotsRoute
+  '/admin/payments': typeof AdminGuardPaymentsRoute
   '/admin/reports': typeof AdminGuardReportsRoute
   '/admin/users': typeof AdminGuardUsersRoute
   '/admin/zones': typeof AdminGuardZonesRoute
@@ -340,7 +409,9 @@ export interface FileRoutesByTo {
   '/agent/profile': typeof AgentGuardProfileRoute
   '/agent/sync-issues': typeof AgentGuardSyncIssuesRoute
   '/agent/tasks': typeof AgentGuardTasksRoute
+  '/commande/$orderRef/paiement': typeof CommandeOrderRefPaiementRoute
   '/mon-compte/beacons': typeof MonCompteGuardBeaconsRoute
+  '/mon-compte/commandes': typeof MonCompteGuardCommandesRoute
   '/mon-compte/favorites': typeof MonCompteGuardFavoritesRoute
   '/mon-compte/reports': typeof MonCompteGuardReportsRoute
   '/mon-compte/settings': typeof MonCompteGuardSettingsRoute
@@ -354,6 +425,9 @@ export interface FileRoutesByTo {
   '/mon-compte': typeof MonCompteGuardIndexRoute
   '/pro': typeof ProGuardIndexRoute
   '/agent/install/$number': typeof AgentGuardInstallNumberRoute
+  '/api/public/hooks/run-billing': typeof ApiPublicHooksRunBillingRoute
+  '/api/public/webhooks/mtn': typeof ApiPublicWebhooksMtnRoute
+  '/api/public/webhooks/orange': typeof ApiPublicWebhooksOrangeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -363,14 +437,17 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
   '/signup': typeof SignupRoute
+  '/tarifs': typeof TarifsRoute
   '/admin/_guard': typeof AdminGuardRouteRouteWithChildren
   '/agent/_guard': typeof AgentGuardRouteRouteWithChildren
   '/mon-compte/_guard': typeof MonCompteGuardRouteRouteWithChildren
   '/pro/_guard': typeof ProGuardRouteRouteWithChildren
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
+  '/commander/$offerCode': typeof CommanderOfferCodeRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/pro/onboarding': typeof ProOnboardingRoute
+  '/admin/_guard/abonnements': typeof AdminGuardAbonnementsRoute
   '/admin/_guard/addresses': typeof AdminGuardAddressesRoute
   '/admin/_guard/agents': typeof AdminGuardAgentsRoute
   '/admin/_guard/analytics': typeof AdminGuardAnalyticsRoute
@@ -379,6 +456,7 @@ export interface FileRoutesById {
   '/admin/_guard/claims': typeof AdminGuardClaimsRoute
   '/admin/_guard/installations': typeof AdminGuardInstallationsRoute
   '/admin/_guard/lots': typeof AdminGuardLotsRoute
+  '/admin/_guard/payments': typeof AdminGuardPaymentsRoute
   '/admin/_guard/reports': typeof AdminGuardReportsRoute
   '/admin/_guard/users': typeof AdminGuardUsersRoute
   '/admin/_guard/zones': typeof AdminGuardZonesRoute
@@ -386,7 +464,9 @@ export interface FileRoutesById {
   '/agent/_guard/profile': typeof AgentGuardProfileRoute
   '/agent/_guard/sync-issues': typeof AgentGuardSyncIssuesRoute
   '/agent/_guard/tasks': typeof AgentGuardTasksRoute
+  '/commande/$orderRef/paiement': typeof CommandeOrderRefPaiementRoute
   '/mon-compte/_guard/beacons': typeof MonCompteGuardBeaconsRoute
+  '/mon-compte/_guard/commandes': typeof MonCompteGuardCommandesRoute
   '/mon-compte/_guard/favorites': typeof MonCompteGuardFavoritesRoute
   '/mon-compte/_guard/reports': typeof MonCompteGuardReportsRoute
   '/mon-compte/_guard/settings': typeof MonCompteGuardSettingsRoute
@@ -400,6 +480,9 @@ export interface FileRoutesById {
   '/mon-compte/_guard/': typeof MonCompteGuardIndexRoute
   '/pro/_guard/': typeof ProGuardIndexRoute
   '/agent/_guard/install/$number': typeof AgentGuardInstallNumberRoute
+  '/api/public/hooks/run-billing': typeof ApiPublicHooksRunBillingRoute
+  '/api/public/webhooks/mtn': typeof ApiPublicWebhooksMtnRoute
+  '/api/public/webhooks/orange': typeof ApiPublicWebhooksOrangeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -410,14 +493,17 @@ export interface FileRouteTypes {
     | '/login'
     | '/logout'
     | '/signup'
+    | '/tarifs'
     | '/admin'
     | '/agent'
     | '/mon-compte'
     | '/pro'
     | '/a/$number'
     | '/agent/login'
+    | '/commander/$offerCode'
     | '/etablissement/$number'
     | '/pro/onboarding'
+    | '/admin/abonnements'
     | '/admin/addresses'
     | '/admin/agents'
     | '/admin/analytics'
@@ -426,6 +512,7 @@ export interface FileRouteTypes {
     | '/admin/claims'
     | '/admin/installations'
     | '/admin/lots'
+    | '/admin/payments'
     | '/admin/reports'
     | '/admin/users'
     | '/admin/zones'
@@ -433,7 +520,9 @@ export interface FileRouteTypes {
     | '/agent/profile'
     | '/agent/sync-issues'
     | '/agent/tasks'
+    | '/commande/$orderRef/paiement'
     | '/mon-compte/beacons'
+    | '/mon-compte/commandes'
     | '/mon-compte/favorites'
     | '/mon-compte/reports'
     | '/mon-compte/settings'
@@ -447,6 +536,9 @@ export interface FileRouteTypes {
     | '/mon-compte/'
     | '/pro/'
     | '/agent/install/$number'
+    | '/api/public/hooks/run-billing'
+    | '/api/public/webhooks/mtn'
+    | '/api/public/webhooks/orange'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -455,10 +547,13 @@ export interface FileRouteTypes {
     | '/login'
     | '/logout'
     | '/signup'
+    | '/tarifs'
     | '/a/$number'
     | '/agent/login'
+    | '/commander/$offerCode'
     | '/etablissement/$number'
     | '/pro/onboarding'
+    | '/admin/abonnements'
     | '/admin/addresses'
     | '/admin/agents'
     | '/admin/analytics'
@@ -467,6 +562,7 @@ export interface FileRouteTypes {
     | '/admin/claims'
     | '/admin/installations'
     | '/admin/lots'
+    | '/admin/payments'
     | '/admin/reports'
     | '/admin/users'
     | '/admin/zones'
@@ -474,7 +570,9 @@ export interface FileRouteTypes {
     | '/agent/profile'
     | '/agent/sync-issues'
     | '/agent/tasks'
+    | '/commande/$orderRef/paiement'
     | '/mon-compte/beacons'
+    | '/mon-compte/commandes'
     | '/mon-compte/favorites'
     | '/mon-compte/reports'
     | '/mon-compte/settings'
@@ -488,6 +586,9 @@ export interface FileRouteTypes {
     | '/mon-compte'
     | '/pro'
     | '/agent/install/$number'
+    | '/api/public/hooks/run-billing'
+    | '/api/public/webhooks/mtn'
+    | '/api/public/webhooks/orange'
   id:
     | '__root__'
     | '/'
@@ -496,14 +597,17 @@ export interface FileRouteTypes {
     | '/login'
     | '/logout'
     | '/signup'
+    | '/tarifs'
     | '/admin/_guard'
     | '/agent/_guard'
     | '/mon-compte/_guard'
     | '/pro/_guard'
     | '/a/$number'
     | '/agent/login'
+    | '/commander/$offerCode'
     | '/etablissement/$number'
     | '/pro/onboarding'
+    | '/admin/_guard/abonnements'
     | '/admin/_guard/addresses'
     | '/admin/_guard/agents'
     | '/admin/_guard/analytics'
@@ -512,6 +616,7 @@ export interface FileRouteTypes {
     | '/admin/_guard/claims'
     | '/admin/_guard/installations'
     | '/admin/_guard/lots'
+    | '/admin/_guard/payments'
     | '/admin/_guard/reports'
     | '/admin/_guard/users'
     | '/admin/_guard/zones'
@@ -519,7 +624,9 @@ export interface FileRouteTypes {
     | '/agent/_guard/profile'
     | '/agent/_guard/sync-issues'
     | '/agent/_guard/tasks'
+    | '/commande/$orderRef/paiement'
     | '/mon-compte/_guard/beacons'
+    | '/mon-compte/_guard/commandes'
     | '/mon-compte/_guard/favorites'
     | '/mon-compte/_guard/reports'
     | '/mon-compte/_guard/settings'
@@ -533,6 +640,9 @@ export interface FileRouteTypes {
     | '/mon-compte/_guard/'
     | '/pro/_guard/'
     | '/agent/_guard/install/$number'
+    | '/api/public/hooks/run-billing'
+    | '/api/public/webhooks/mtn'
+    | '/api/public/webhooks/orange'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -542,14 +652,20 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   LogoutRoute: typeof LogoutRoute
   SignupRoute: typeof SignupRoute
+  TarifsRoute: typeof TarifsRoute
   AdminGuardRouteRoute: typeof AdminGuardRouteRouteWithChildren
   AgentGuardRouteRoute: typeof AgentGuardRouteRouteWithChildren
   MonCompteGuardRouteRoute: typeof MonCompteGuardRouteRouteWithChildren
   ProGuardRouteRoute: typeof ProGuardRouteRouteWithChildren
   ANumberRoute: typeof ANumberRoute
   AgentLoginRoute: typeof AgentLoginRoute
+  CommanderOfferCodeRoute: typeof CommanderOfferCodeRoute
   EtablissementNumberRoute: typeof EtablissementNumberRoute
   ProOnboardingRoute: typeof ProOnboardingRoute
+  CommandeOrderRefPaiementRoute: typeof CommandeOrderRefPaiementRoute
+  ApiPublicHooksRunBillingRoute: typeof ApiPublicHooksRunBillingRoute
+  ApiPublicWebhooksMtnRoute: typeof ApiPublicWebhooksMtnRoute
+  ApiPublicWebhooksOrangeRoute: typeof ApiPublicWebhooksOrangeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -596,6 +712,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tarifs': {
+      id: '/tarifs'
+      path: '/tarifs'
+      fullPath: '/tarifs'
+      preLoaderRoute: typeof TarifsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/a/$number': {
       id: '/a/$number'
       path: '/a/$number'
@@ -622,6 +745,13 @@ declare module '@tanstack/react-router' {
       path: '/agent/login'
       fullPath: '/agent/login'
       preLoaderRoute: typeof AgentLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/commander/$offerCode': {
+      id: '/commander/$offerCode'
+      path: '/commander/$offerCode'
+      fullPath: '/commander/$offerCode'
+      preLoaderRoute: typeof CommanderOfferCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/etablissement/$number': {
@@ -657,6 +787,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminGuardIndexRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
+    '/admin/_guard/abonnements': {
+      id: '/admin/_guard/abonnements'
+      path: '/abonnements'
+      fullPath: '/admin/abonnements'
+      preLoaderRoute: typeof AdminGuardAbonnementsRouteImport
       parentRoute: typeof AdminGuardRouteRoute
     }
     '/admin/_guard/addresses': {
@@ -715,6 +852,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminGuardLotsRouteImport
       parentRoute: typeof AdminGuardRouteRoute
     }
+    '/admin/_guard/payments': {
+      id: '/admin/_guard/payments'
+      path: '/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AdminGuardPaymentsRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
     '/admin/_guard/reports': {
       id: '/admin/_guard/reports'
       path: '/reports'
@@ -771,6 +915,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgentGuardTasksRouteImport
       parentRoute: typeof AgentGuardRouteRoute
     }
+    '/commande/$orderRef/paiement': {
+      id: '/commande/$orderRef/paiement'
+      path: '/commande/$orderRef/paiement'
+      fullPath: '/commande/$orderRef/paiement'
+      preLoaderRoute: typeof CommandeOrderRefPaiementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/mon-compte/_guard/': {
       id: '/mon-compte/_guard/'
       path: '/'
@@ -783,6 +934,13 @@ declare module '@tanstack/react-router' {
       path: '/beacons'
       fullPath: '/mon-compte/beacons'
       preLoaderRoute: typeof MonCompteGuardBeaconsRouteImport
+      parentRoute: typeof MonCompteGuardRouteRoute
+    }
+    '/mon-compte/_guard/commandes': {
+      id: '/mon-compte/_guard/commandes'
+      path: '/commandes'
+      fullPath: '/mon-compte/commandes'
+      preLoaderRoute: typeof MonCompteGuardCommandesRouteImport
       parentRoute: typeof MonCompteGuardRouteRoute
     }
     '/mon-compte/_guard/favorites': {
@@ -855,10 +1013,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgentGuardInstallNumberRouteImport
       parentRoute: typeof AgentGuardRouteRoute
     }
+    '/api/public/hooks/run-billing': {
+      id: '/api/public/hooks/run-billing'
+      path: '/api/public/hooks/run-billing'
+      fullPath: '/api/public/hooks/run-billing'
+      preLoaderRoute: typeof ApiPublicHooksRunBillingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/webhooks/mtn': {
+      id: '/api/public/webhooks/mtn'
+      path: '/api/public/webhooks/mtn'
+      fullPath: '/api/public/webhooks/mtn'
+      preLoaderRoute: typeof ApiPublicWebhooksMtnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/webhooks/orange': {
+      id: '/api/public/webhooks/orange'
+      path: '/api/public/webhooks/orange'
+      fullPath: '/api/public/webhooks/orange'
+      preLoaderRoute: typeof ApiPublicWebhooksOrangeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 interface AdminGuardRouteRouteChildren {
+  AdminGuardAbonnementsRoute: typeof AdminGuardAbonnementsRoute
   AdminGuardAddressesRoute: typeof AdminGuardAddressesRoute
   AdminGuardAgentsRoute: typeof AdminGuardAgentsRoute
   AdminGuardAnalyticsRoute: typeof AdminGuardAnalyticsRoute
@@ -867,6 +1047,7 @@ interface AdminGuardRouteRouteChildren {
   AdminGuardClaimsRoute: typeof AdminGuardClaimsRoute
   AdminGuardInstallationsRoute: typeof AdminGuardInstallationsRoute
   AdminGuardLotsRoute: typeof AdminGuardLotsRoute
+  AdminGuardPaymentsRoute: typeof AdminGuardPaymentsRoute
   AdminGuardReportsRoute: typeof AdminGuardReportsRoute
   AdminGuardUsersRoute: typeof AdminGuardUsersRoute
   AdminGuardZonesRoute: typeof AdminGuardZonesRoute
@@ -874,6 +1055,7 @@ interface AdminGuardRouteRouteChildren {
 }
 
 const AdminGuardRouteRouteChildren: AdminGuardRouteRouteChildren = {
+  AdminGuardAbonnementsRoute: AdminGuardAbonnementsRoute,
   AdminGuardAddressesRoute: AdminGuardAddressesRoute,
   AdminGuardAgentsRoute: AdminGuardAgentsRoute,
   AdminGuardAnalyticsRoute: AdminGuardAnalyticsRoute,
@@ -882,6 +1064,7 @@ const AdminGuardRouteRouteChildren: AdminGuardRouteRouteChildren = {
   AdminGuardClaimsRoute: AdminGuardClaimsRoute,
   AdminGuardInstallationsRoute: AdminGuardInstallationsRoute,
   AdminGuardLotsRoute: AdminGuardLotsRoute,
+  AdminGuardPaymentsRoute: AdminGuardPaymentsRoute,
   AdminGuardReportsRoute: AdminGuardReportsRoute,
   AdminGuardUsersRoute: AdminGuardUsersRoute,
   AdminGuardZonesRoute: AdminGuardZonesRoute,
@@ -916,6 +1099,7 @@ const AgentGuardRouteRouteWithChildren = AgentGuardRouteRoute._addFileChildren(
 
 interface MonCompteGuardRouteRouteChildren {
   MonCompteGuardBeaconsRoute: typeof MonCompteGuardBeaconsRoute
+  MonCompteGuardCommandesRoute: typeof MonCompteGuardCommandesRoute
   MonCompteGuardFavoritesRoute: typeof MonCompteGuardFavoritesRoute
   MonCompteGuardReportsRoute: typeof MonCompteGuardReportsRoute
   MonCompteGuardSettingsRoute: typeof MonCompteGuardSettingsRoute
@@ -924,6 +1108,7 @@ interface MonCompteGuardRouteRouteChildren {
 
 const MonCompteGuardRouteRouteChildren: MonCompteGuardRouteRouteChildren = {
   MonCompteGuardBeaconsRoute: MonCompteGuardBeaconsRoute,
+  MonCompteGuardCommandesRoute: MonCompteGuardCommandesRoute,
   MonCompteGuardFavoritesRoute: MonCompteGuardFavoritesRoute,
   MonCompteGuardReportsRoute: MonCompteGuardReportsRoute,
   MonCompteGuardSettingsRoute: MonCompteGuardSettingsRoute,
@@ -962,25 +1147,21 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   LogoutRoute: LogoutRoute,
   SignupRoute: SignupRoute,
+  TarifsRoute: TarifsRoute,
   AdminGuardRouteRoute: AdminGuardRouteRouteWithChildren,
   AgentGuardRouteRoute: AgentGuardRouteRouteWithChildren,
   MonCompteGuardRouteRoute: MonCompteGuardRouteRouteWithChildren,
   ProGuardRouteRoute: ProGuardRouteRouteWithChildren,
   ANumberRoute: ANumberRoute,
   AgentLoginRoute: AgentLoginRoute,
+  CommanderOfferCodeRoute: CommanderOfferCodeRoute,
   EtablissementNumberRoute: EtablissementNumberRoute,
   ProOnboardingRoute: ProOnboardingRoute,
+  CommandeOrderRefPaiementRoute: CommandeOrderRefPaiementRoute,
+  ApiPublicHooksRunBillingRoute: ApiPublicHooksRunBillingRoute,
+  ApiPublicWebhooksMtnRoute: ApiPublicWebhooksMtnRoute,
+  ApiPublicWebhooksOrangeRoute: ApiPublicWebhooksOrangeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

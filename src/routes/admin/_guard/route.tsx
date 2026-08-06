@@ -4,6 +4,7 @@ import {
   Activity,
   BarChart3,
   ClipboardCheck,
+  CreditCard,
   FileClock,
   Flag,
   LayoutDashboard,
@@ -11,10 +12,12 @@ import {
   MapPin,
   Package,
   QrCode,
+  Repeat,
   ShieldCheck,
   Users,
   UserSquare2,
 } from "lucide-react";
+
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -32,6 +35,8 @@ const SECTIONS = [
   { to: "/admin/beacons", label: "Balises", icon: QrCode },
   { to: "/admin/addresses", label: "Adresses", icon: MapPin },
   { to: "/admin/installations", label: "Installations & QC", icon: ClipboardCheck },
+  { to: "/admin/payments", label: "Paiements", icon: CreditCard },
+  { to: "/admin/abonnements", label: "Abonnements", icon: Repeat },
   { to: "/admin/reports", label: "Signalements", icon: Flag },
   { to: "/admin/claims", label: "Réclamations", icon: ShieldCheck },
   { to: "/admin/users", label: "Utilisateurs", icon: Users },
@@ -41,6 +46,7 @@ const SECTIONS = [
   { to: "/admin/audit", label: "Journal d'audit", icon: FileClock },
   { to: "/admin/analytics", label: "Statistiques", icon: BarChart3 },
 ] as const;
+
 
 function AdminShell() {
   const { user, admin, isAdmin, loading } = useAdmin();

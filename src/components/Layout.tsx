@@ -34,6 +34,12 @@ export function Layout({ children }: { children: ReactNode }) {
             </span>
           </Link>
 
+          <nav className="ml-auto mr-2 hidden sm:block">
+            <Link to="/tarifs" className="text-sm text-muted-foreground hover:text-primary">
+              Tarifs
+            </Link>
+          </nav>
+
           {isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -92,6 +98,9 @@ export function Layout({ children }: { children: ReactNode }) {
         <div className="mx-auto flex max-w-5xl flex-col gap-2 px-4 py-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} Adresse GN · Mentions légales</p>
           <nav className="flex gap-4">
+            <Link to="/tarifs" className="hover:text-primary">
+              Tarifs
+            </Link>
             <Link to="/a-propos" className="hover:text-primary">
               À propos
             </Link>
