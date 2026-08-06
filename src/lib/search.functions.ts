@@ -13,7 +13,9 @@ export const searchBeacon = createServerFn({ method: "POST" })
     const { clientIp, runSearch, userIdFromAuthHeader } = await import(
       "@/lib/search.server"
     );
-    const headers = new Headers(getRequestHeaders() as Record<string, string>);
+    const headers = new Headers(
+      getRequestHeaders() as unknown as Record<string, string>,
+    );
     const userId = await userIdFromAuthHeader(getRequestHeader("authorization") ?? null);
     return runSearch(data.number, clientIp(headers), userId);
   });
