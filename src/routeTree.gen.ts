@@ -57,6 +57,7 @@ import { Route as ProGuardEtablissementsRouteImport } from './routes/pro/_guard/
 import { Route as ProGuardFacturationRouteImport } from './routes/pro/_guard/facturation'
 import { Route as ProGuardStatistiquesRouteImport } from './routes/pro/_guard/statistiques'
 import { Route as AgentGuardInstallNumberRouteImport } from './routes/agent/_guard/install.$number'
+import { Route as ApiPublicWebhooksOrangeRouteImport } from './routes/api/public/webhooks/orange'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -299,6 +300,11 @@ const AgentGuardInstallNumberRoute = AgentGuardInstallNumberRouteImport.update({
   path: '/install/$number',
   getParentRoute: () => AgentGuardRouteRoute,
 } as any)
+const ApiPublicWebhooksOrangeRoute = ApiPublicWebhooksOrangeRouteImport.update({
+  id: '/api/public/webhooks/orange',
+  path: '/api/public/webhooks/orange',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -349,6 +355,7 @@ export interface FileRoutesByFullPath {
   '/mon-compte/': typeof MonCompteGuardIndexRoute
   '/pro/': typeof ProGuardIndexRoute
   '/agent/install/$number': typeof AgentGuardInstallNumberRoute
+  '/api/public/webhooks/orange': typeof ApiPublicWebhooksOrangeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -395,6 +402,7 @@ export interface FileRoutesByTo {
   '/mon-compte': typeof MonCompteGuardIndexRoute
   '/pro': typeof ProGuardIndexRoute
   '/agent/install/$number': typeof AgentGuardInstallNumberRoute
+  '/api/public/webhooks/orange': typeof ApiPublicWebhooksOrangeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -446,6 +454,7 @@ export interface FileRoutesById {
   '/mon-compte/_guard/': typeof MonCompteGuardIndexRoute
   '/pro/_guard/': typeof ProGuardIndexRoute
   '/agent/_guard/install/$number': typeof AgentGuardInstallNumberRoute
+  '/api/public/webhooks/orange': typeof ApiPublicWebhooksOrangeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -498,6 +507,7 @@ export interface FileRouteTypes {
     | '/mon-compte/'
     | '/pro/'
     | '/agent/install/$number'
+    | '/api/public/webhooks/orange'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -544,6 +554,7 @@ export interface FileRouteTypes {
     | '/mon-compte'
     | '/pro'
     | '/agent/install/$number'
+    | '/api/public/webhooks/orange'
   id:
     | '__root__'
     | '/'
@@ -594,6 +605,7 @@ export interface FileRouteTypes {
     | '/mon-compte/_guard/'
     | '/pro/_guard/'
     | '/agent/_guard/install/$number'
+    | '/api/public/webhooks/orange'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -614,6 +626,7 @@ export interface RootRouteChildren {
   EtablissementNumberRoute: typeof EtablissementNumberRoute
   ProOnboardingRoute: typeof ProOnboardingRoute
   CommandeOrderRefPaiementRoute: typeof CommandeOrderRefPaiementRoute
+  ApiPublicWebhooksOrangeRoute: typeof ApiPublicWebhooksOrangeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -954,6 +967,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgentGuardInstallNumberRouteImport
       parentRoute: typeof AgentGuardRouteRoute
     }
+    '/api/public/webhooks/orange': {
+      id: '/api/public/webhooks/orange'
+      path: '/api/public/webhooks/orange'
+      fullPath: '/api/public/webhooks/orange'
+      preLoaderRoute: typeof ApiPublicWebhooksOrangeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1076,6 +1096,7 @@ const rootRouteChildren: RootRouteChildren = {
   EtablissementNumberRoute: EtablissementNumberRoute,
   ProOnboardingRoute: ProOnboardingRoute,
   CommandeOrderRefPaiementRoute: CommandeOrderRefPaiementRoute,
+  ApiPublicWebhooksOrangeRoute: ApiPublicWebhooksOrangeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
