@@ -342,12 +342,18 @@ function AdminBeacons() {
       {exportEnCours ? (
         <div className="space-y-2 rounded-lg border border-border bg-card p-4">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">
-              Génération {libelleExport} en cours… merci de patienter.
-            </span>
+            <div>
+              <p className="font-medium">Étape en cours : {etapeExport}</p>
+              <p className="text-muted-foreground">
+                Génération du fichier {etapeExport} en cours… merci de patienter.
+              </p>
+            </div>
             <span className="font-mono text-xs tabular-nums">{Math.round(progression)}%</span>
           </div>
-          <Progress value={progression} />
+          <Progress
+            value={progression}
+            aria-label={`Progression de la génération ${etapeExport}`}
+          />
         </div>
       ) : null}
 
