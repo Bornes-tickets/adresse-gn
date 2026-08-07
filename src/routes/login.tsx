@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { AuthLayout } from "@/components/AuthLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,13 +50,19 @@ function Login() {
   };
 
   return (
-    <div className="mx-auto max-w-sm px-4 py-16">
-      <h1 className="text-2xl font-bold text-foreground">Se connecter</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Email et mot de passe.
-      </p>
-
-      <form onSubmit={soumettre} className="mt-8 space-y-4">
+    <AuthLayout
+      title="Bon retour"
+      subtitle="Connectez-vous pour gérer vos adresses, vos balises et vos favoris."
+      footer={
+        <>
+          Pas encore de compte ?{" "}
+          <Link to="/signup" className="font-medium text-accent hover:underline">
+            Créer un compte
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={soumettre} className="space-y-5">
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input
@@ -65,6 +72,7 @@ function Login() {
             required
             value={email}
             onChange={(event) => setEmail(event.target.value)}
+            className="h-11 border-slate-300 focus-visible:ring-2 focus-visible:ring-accent/30"
           />
         </div>
         <div className="space-y-2">
@@ -76,19 +84,17 @@ function Login() {
             required
             value={motDePasse}
             onChange={(event) => setMotDePasse(event.target.value)}
+            className="h-11 border-slate-300 focus-visible:ring-2 focus-visible:ring-accent/30"
           />
         </div>
-        <Button type="submit" className="w-full" disabled={enCours}>
+        <Button
+          type="submit"
+          className="h-12 w-full text-base font-medium transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
+          disabled={enCours}
+        >
           {enCours ? "Connexion…" : "Se connecter"}
         </Button>
       </form>
-
-      <p className="mt-6 text-sm text-muted-foreground">
-        Pas de compte ?{" "}
-        <Link to="/signup" className="text-primary underline">
-          Créer un compte
-        </Link>
-      </p>
-    </div>
+    </AuthLayout>
   );
 }
