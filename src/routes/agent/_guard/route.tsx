@@ -9,8 +9,20 @@ import { useAgent } from "@/hooks/useAgent";
 
 export const Route = createFileRoute("/agent/_guard")({
   ssr: false,
+  head: () => ({
+    meta: [
+      { title: "Espace agent — ADRESSE GN" },
+      {
+        name: "description",
+        content:
+          "Application terrain des agents installateurs Adresse GN : tâches, pose de balises et synchronisation.",
+      },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: AgentShell,
 });
+
 
 const ONGLETS = [
   { to: "/agent/tasks", label: "Tâches", icon: ListChecks },
