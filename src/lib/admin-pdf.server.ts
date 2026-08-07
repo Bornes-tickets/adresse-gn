@@ -48,8 +48,10 @@ export function urlBalise(baseUrl: string, numero: string): string {
   return `${baseUrl.replace(/\/+$/, "")}/a/${numero}`;
 }
 
+export type MatriceQr = { taille: number; modules: boolean[][] };
+
 /** Matrice de modules du QR réellement dessiné (correction d'erreur H). */
-export function matriceQr(contenu: string) {
+export function matriceQr(contenu: string): MatriceQr {
   const qr = QRCode.create(contenu, { errorCorrectionLevel: "H" });
   const taille = qr.modules.size;
   const modules: boolean[][] = [];
@@ -61,10 +63,36 @@ export function matriceQr(contenu: string) {
   return { taille, modules };
 }
 
+/**
+ * Refuse une matrice inutilisable (vide, non carrée, taille incohérente, modules manquants)
+ * avec un message explicite désignant la balise fautive.
+ */
+export function validerMatrice(matrice: MatriceQr | null | undefined, numero: string): MatriceQr {
+  const echec = (raison: string): never => {
+    throw new Error(`QR illisible pour la balise ${numero} : ${raison}. Export PDF annulé.`);
+  };
+  if (!matrice || !Array.isArray(matrice.modules)) echec("matrice QR absente");
+  const { taille, modules } = matrice!;
+  if (!Number.isInteger(taille) || taille < 21) echec(`taille de matrice invalide (${String(taille)})`);
+  if (modules.length !== taille) echec(`nombre de lignes incohérent (${modules.length} au lieu de ${taille})`);
+  for (let r = 0; r < taille; r += 1) {
+    const ligne = modules[r];
+    if (!Array.isArray(ligne) || ligne.length !== taille) {
+      echec(`ligne ${r} corrompue (matrice non carrée)`);
+    }
+    for (let c = 0; c < taille; c += 1) {
+      if (typeof ligne![c] !== "boolean") echec(`module (${r}, ${c}) invalide`);
+    }
+  }
+  return matrice!;
+}
+
 export async function genererPdfQr(
   numeros: string[],
   baseUrl: string,
+  fabriquerMatrice: (contenu: string) => MatriceQr = matriceQr,
 ): Promise<{ base64: string; pages: number; url0: string }> {
+
   const racine = baseUrl.replace(/\/+$/, "");
   const doc = await PDFDocument.create();
   const mono = await doc.embedFont(StandardFonts.CourierBold);
