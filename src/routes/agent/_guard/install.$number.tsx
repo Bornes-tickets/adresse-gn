@@ -128,12 +128,17 @@ function Install() {
   };
 
   const envoyer = async () => {
+    console.log("Bouton validation cliqué");
+    console.log("Photo state:", photo ? `présente (${photo.length} car.)` : "ABSENTE");
+    console.log("Mesures:", mesures.length, "En ligne:", isOnline);
     setEnvoi(true);
     try {
       if (!isOnline) {
+        console.log("Hors ligne → mise en file locale");
         await enfiler();
         return;
       }
+      console.log("Avant upload");
       const reponse = await enregistrer({
         data: {
           beacon_number: numero,
@@ -149,21 +154,25 @@ function Install() {
           client_uuid: clientUuid.current,
         },
       });
+      console.log("Après upload", reponse);
       if (reponse.success) {
+        viderBrouillon();
         await queryClient.invalidateQueries({ queryKey: ["agent-tasks"] });
         await queryClient.invalidateQueries({ queryKey: ["agent-history"] });
         setResultat("succes");
       } else {
         setResultat(reponse.message ?? "Erreur inconnue.");
       }
-    } catch {
+    } catch (erreur) {
       // Panne réseau pendant l'envoi : bascule automatique en file locale.
+      console.error("Échec de l'envoi, bascule hors ligne", erreur);
       await enfiler();
       void syncQueue();
     } finally {
       setEnvoi(false);
     }
   };
+
 
   if (resultat === "succes") {
     return (
