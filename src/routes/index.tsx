@@ -163,7 +163,7 @@ function Home() {
   return (
     <div className="overflow-x-hidden">
       {/* Héros */}
-      <section className="gradient-signature relative flex min-h-[auto] items-center overflow-hidden py-16 md:py-24 lg:py-28">
+      <section className="gradient-signature relative flex items-center overflow-hidden py-16 md:py-24 lg:py-28">
         <div
           aria-hidden="true"
           className="dot-grid pointer-events-none absolute inset-0 text-white opacity-[0.06]"
