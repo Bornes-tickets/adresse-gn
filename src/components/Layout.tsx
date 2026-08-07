@@ -4,15 +4,15 @@ import { useEffect, useState } from "react";
 import {
   Briefcase,
   Facebook,
-  Heart,
   Instagram,
-  Linkedin,
   LogOut,
   Mail,
   Menu,
   MessageCircle,
+  Twitter,
   User as UserIcon,
 } from "lucide-react";
+
 
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
@@ -197,19 +197,13 @@ function Header() {
 function Footer() {
   return (
     <footer className="bg-slate-950 text-slate-300">
-      <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
+      <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
           <div className="space-y-4">
             <Logo tone="light" />
             <p className="text-sm text-slate-400">
-              Le système d'adressage guinéen : un numéro unique par lieu, une
-              position GPS vérifiée, un itinéraire immédiat.
+              Un numéro unique par lieu, en Guinée.
             </p>
-            <address className="text-sm not-italic text-slate-400">
-              Immeuble Adresse GN, Kaloum
-              <br />
-              Conakry, République de Guinée
-            </address>
             <a
               href={`https://wa.me/${WHATSAPP_SERVICE}`}
               target="_blank"
@@ -217,7 +211,7 @@ function Footer() {
               className="inline-flex items-center gap-2 text-sm font-medium text-accent hover:underline"
             >
               <MessageCircle className="size-4" />
-              Service client WhatsApp
+              WhatsApp
             </a>
           </div>
 
@@ -227,34 +221,23 @@ function Footer() {
               <Link to="/tarifs" className="hover:text-white">
                 Tarifs
               </Link>
-              <Link to="/" hash="comment-ca-marche" className="hover:text-white">
-                Comment ça marche
-              </Link>
               <Link to="/pro" className="hover:text-white">
                 Pour les pros
               </Link>
-              <Link to="/" hash="usages" className="hover:text-white">
-                Pour les livreurs
+              <Link to="/pro/api" className="hover:text-white">
+                API
               </Link>
             </nav>
           </div>
 
           <div className="space-y-4">
-            <h2 className="text-sm font-semibold text-white">Ressources</h2>
+            <h2 className="text-sm font-semibold text-white">Informations</h2>
             <nav className="flex flex-col gap-2.5 text-sm text-slate-400">
-              <a
-                href={`https://wa.me/${WHATSAPP_SERVICE}`}
-                target="_blank"
-                rel="noreferrer"
-                className="hover:text-white"
-              >
-                Aide et assistance
-              </a>
-              <Link to="/pro/api" className="hover:text-white">
-                API développeurs
-              </Link>
               <Link to="/a-propos" className="hover:text-white">
                 À propos
+              </Link>
+              <Link to="/confidentialite" className="hover:text-white">
+                Confidentialité
               </Link>
               <a
                 href="mailto:contact@adresse.gn"
@@ -265,35 +248,17 @@ function Footer() {
               </a>
             </nav>
           </div>
-
-          <div className="space-y-4">
-            <h2 className="text-sm font-semibold text-white">Légal</h2>
-            <nav className="flex flex-col gap-2.5 text-sm text-slate-400">
-              <Link to="/a-propos" className="hover:text-white">
-                Mentions légales
-              </Link>
-              <Link to="/confidentialite" className="hover:text-white">
-                Confidentialité
-              </Link>
-              <Link to="/confidentialite" hash="droits" className="hover:text-white">
-                Vos droits
-              </Link>
-              <Link to="/tarifs" className="hover:text-white">
-                Conditions et tarifs
-              </Link>
-            </nav>
-          </div>
         </div>
 
-        <div className="mt-14 flex flex-col gap-4 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-12 flex flex-col gap-4 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-slate-500">
-            © {new Date().getFullYear()} ADRESSE GN · Tous droits réservés.
+            © {new Date().getFullYear()} Adresse GN · Tous droits réservés.
           </p>
           <div className="flex items-center gap-3">
             {[
               { Icon: Facebook, label: "Facebook" },
               { Icon: Instagram, label: "Instagram" },
-              { Icon: Linkedin, label: "LinkedIn" },
+              { Icon: Twitter, label: "Twitter" },
             ].map(({ Icon, label }) => (
               <span
                 key={label}
@@ -305,15 +270,12 @@ function Footer() {
               </span>
             ))}
           </div>
-          <p className="inline-flex items-center gap-1.5 text-xs text-slate-500">
-            Fait en Guinée avec
-            <Heart className="size-3.5 fill-accent text-accent" />
-          </p>
         </div>
       </div>
     </footer>
   );
 }
+
 
 export function Layout({ children }: { children: ReactNode }) {
   return (
