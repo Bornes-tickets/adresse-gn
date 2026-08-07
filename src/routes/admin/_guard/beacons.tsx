@@ -128,9 +128,9 @@ function AdminBeacons() {
 
   const muterExport = useMutation({
     mutationFn: (id: string) =>
-      exporter({ data: { lotId: id, origin: window.location.origin } }),
+      exporter({ data: { lotId: id } }),
     onSuccess: (r) => {
-      downloadBase64(r.base64, "planches-qr-adresse-gn.pdf", "application/pdf");
+      downloadBase64(r.base64, `QR_lot_${r.lotCode}.pdf`, "application/pdf");
       toast.success(`${r.balises} QR exportés sur ${r.pages} page(s).`);
     },
     onError: (e: Error) => toast.error(e.message),

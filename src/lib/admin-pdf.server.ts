@@ -1,4 +1,4 @@
-/** Génération du PDF de planches QR (12 par page A4). Serveur uniquement. */
+/** Génération du PDF de planches QR (12 par page A4, prêt à l'impression). Serveur uniquement. */
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import QRCode from "qrcode";
 
@@ -6,13 +6,34 @@ const A4 = { w: 595.28, h: 841.89 };
 const COLS = 3;
 const ROWS = 4;
 const MARGE = 28;
+/** 25 mm en points PDF (unités vectorielles → densité illimitée à l'impression). */
+const QR_MM = 25;
+const TAILLE_QR = (QR_MM / 25.4) * 72;
+
+/** Trait pointillé horizontal/vertical pour les marges de coupe. */
+function pointilles(
+  page: ReturnType<PDFDocument["addPage"]>,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+) {
+  page.drawLine({
+    start: { x: x1, y: y1 },
+    end: { x: x2, y: y2 },
+    thickness: 0.5,
+    color: rgb(0.7, 0.72, 0.76),
+    dashArray: [2, 3],
+  });
+}
 
 export async function genererPdfQr(
   numeros: string[],
-  origine: string,
-): Promise<{ base64: string; pages: number }> {
+  baseUrl: string,
+): Promise<{ base64: string; pages: number; url0: string }> {
+  const racine = baseUrl.replace(/\/+$/, "");
   const doc = await PDFDocument.create();
-  const police = await doc.embedFont(StandardFonts.HelveticaBold);
+  const mono = await doc.embedFont(StandardFonts.CourierBold);
   const petite = await doc.embedFont(StandardFonts.Helvetica);
 
   const largeurCase = (A4.w - MARGE * 2) / COLS;
@@ -24,6 +45,16 @@ export async function genererPdfQr(
     const page = doc.addPage([A4.w, A4.h]);
     const lot = numeros.slice(p * parPage, (p + 1) * parPage);
 
+    // Marges de coupe pointillées : grille complète 3x4.
+    for (let c = 0; c <= COLS; c += 1) {
+      const x = MARGE + c * largeurCase;
+      pointilles(page, x, MARGE, x, A4.h - MARGE);
+    }
+    for (let r = 0; r <= ROWS; r += 1) {
+      const y = MARGE + r * hauteurCase;
+      pointilles(page, MARGE, y, A4.w - MARGE, y);
+    }
+
     for (let i = 0; i < lot.length; i += 1) {
       const numero = lot[i]!;
       const col = i % COLS;
@@ -31,21 +62,12 @@ export async function genererPdfQr(
       const x0 = MARGE + col * largeurCase;
       const y0 = A4.h - MARGE - (ligne + 1) * hauteurCase;
 
-      page.drawRectangle({
-        x: x0 + 4,
-        y: y0 + 4,
-        width: largeurCase - 8,
-        height: hauteurCase - 8,
-        borderColor: rgb(0.85, 0.87, 0.9),
-        borderWidth: 0.8,
-      });
-
-      const qr = QRCode.create(`${origine}/a/${numero}`, { errorCorrectionLevel: "M" });
+      // Correction d'erreur H (≈30 % de redondance) pour l'extérieur.
+      const qr = QRCode.create(`${racine}/a/${numero}`, { errorCorrectionLevel: "H" });
       const taille = qr.modules.size;
-      const dispo = Math.min(largeurCase - 40, hauteurCase - 70);
-      const module = dispo / taille;
-      const qx = x0 + (largeurCase - dispo) / 2;
-      const qy = y0 + hauteurCase - 24 - dispo;
+      const module = TAILLE_QR / taille;
+      const qx = x0 + (largeurCase - TAILLE_QR) / 2;
+      const qy = y0 + (hauteurCase - TAILLE_QR) / 2 + 16;
 
       for (let r = 0; r < taille; r += 1) {
         for (let c = 0; c < taille; c += 1) {
@@ -61,17 +83,20 @@ export async function genererPdfQr(
         }
       }
 
+      const tailleTexte = 11;
+      const largeurTexte = mono.widthOfTextAtSize(numero, tailleTexte);
       page.drawText(numero, {
-        x: x0 + 10,
-        y: qy - 22,
-        size: 13,
-        font: police,
-        color: rgb(0.18, 0.29, 0.48),
+        x: x0 + (largeurCase - largeurTexte) / 2,
+        y: qy - 18,
+        size: tailleTexte,
+        font: mono,
+        color: rgb(0.1, 0.12, 0.16),
       });
-      page.drawText("adresse.gn", {
-        x: x0 + 10,
-        y: qy - 36,
-        size: 8,
+      const legende = "adresse.gn";
+      page.drawText(legende, {
+        x: x0 + (largeurCase - petite.widthOfTextAtSize(legende, 7)) / 2,
+        y: qy - 30,
+        size: 7,
         font: petite,
         color: rgb(0.45, 0.48, 0.55),
       });
@@ -81,5 +106,5 @@ export async function genererPdfQr(
   const octets = await doc.save();
   let binaire = "";
   for (let i = 0; i < octets.length; i += 1) binaire += String.fromCharCode(octets[i]!);
-  return { base64: btoa(binaire), pages };
+  return { base64: btoa(binaire), pages, url0: `${racine}/a/${numeros[0] ?? ""}` };
 }
