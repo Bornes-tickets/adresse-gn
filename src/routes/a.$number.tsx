@@ -172,117 +172,124 @@ function BeaconResult() {
 
       {resultat && lat !== null && lng !== null && (
         <>
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[500] p-3 sm:p-4">
-            <Card className="pointer-events-auto mx-auto w-full max-w-md shadow-lg">
-              <CardContent className="space-y-4 pt-6">
-                <div className="space-y-2">
-                  <h1 className="text-xl font-semibold text-foreground">
-                    {displayName(resultat)}
-                  </h1>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant="secondary">{categoryLabel(resultat.category)}</Badge>
-                    {resultat.verification_level === "verified" && (
-                      <Badge className="bg-accent text-accent-foreground">
-                        <BadgeCheck className="size-3.5" />
-                        Vérifié
-                      </Badge>
-                    )}
-                    <span className="font-mono text-sm text-muted-foreground">
-                      {resultat.public_number}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[500] p-3 sm:inset-x-auto sm:bottom-6 sm:left-6 sm:p-0">
+            <div className="shadow-brand-lg pointer-events-auto mx-auto w-full max-w-md rounded-2xl border border-slate-200/60 bg-card p-6 sm:p-7">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-mono text-lg font-semibold tracking-tight text-primary sm:text-xl">
+                    {resultat.public_number}
+                  </span>
+                  {resultat.verification_level === "verified" && (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-success/10 px-3 py-1 text-xs font-medium text-success">
+                      <BadgeCheck className="size-3.5" />
+                      Vérifié
                     </span>
-                  </div>
-                  {resultat.access_point_note && (
-                    <p className="text-sm text-muted-foreground">
-                      {resultat.access_point_note}
-                    </p>
                   )}
-                  <div className="flex items-center gap-2 text-sm">
-                    <LocateFixed className="size-4 text-accent" />
-                    {distance ? (
-                      <span className="text-foreground">À {distance} de vous</span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={demanderPosition}
-                        className="text-primary underline underline-offset-2"
-                      >
-                        Calculer la distance depuis ma position
-                      </button>
-                    )}
-                  </div>
-                  {geoError && <p className="text-xs text-destructive">{geoError}</p>}
                 </div>
 
-                <Button
-                  size="lg"
-                  className="h-14 w-full bg-accent text-base text-accent-foreground hover:bg-accent/90"
-                  onClick={() => setDirectionsOpen(true)}
-                >
-                  <Navigation className="size-5" />
-                  S'y rendre
-                </Button>
+                <h1 className="text-display text-2xl font-bold leading-tight text-foreground">
+                  {displayName(resultat)}
+                </h1>
 
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => setShareOpen(true)}
-                  >
-                    <Share2 className="size-4" />
-                    Partager
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => setReportOpen(true)}
-                  >
-                    <Flag className="size-4" />
-                    Signaler
-                  </Button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-primary/8 px-3 py-1 text-xs font-medium text-primary">
+                    {categoryLabel(resultat.category)}
+                  </span>
                 </div>
 
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => {
-                      if (!isAuthenticated) {
-                        toast.info("Connectez-vous pour enregistrer un favori.");
-                        return;
-                      }
-                      basculerFavori.mutate();
-                    }}
-                    disabled={basculerFavori.isPending}
-                  >
-                    <Heart
-                      className={`size-4 ${contexte.data?.favorite_id ? "fill-destructive text-destructive" : ""}`}
-                    />
-                    {contexte.data?.favorite_id ? "Favori" : "Ajouter aux favoris"}
-                  </Button>
-                  {!contexte.data?.is_mine && (
-                    <Button
-                      variant="outline"
-                      className="flex-1"
-                      onClick={() => setClaimOpen(true)}
+                <div className="flex items-center gap-2 text-sm">
+                  <LocateFixed className="size-4 shrink-0 text-accent" />
+                  {distance ? (
+                    <span className="text-foreground">À {distance} de vous</span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={demanderPosition}
+                      className="text-accent underline underline-offset-2"
                     >
-                      <ShieldCheck className="size-4" />
-                      {contexte.data?.claim_status === "pending" ? "Demande envoyée" : "Réclamer"}
-                    </Button>
+                      Calculer la distance depuis ma position
+                    </button>
                   )}
                 </div>
 
-
-                {isCommercialCategory(resultat.category) && resultat.business_name && (
-                  <Button asChild variant="ghost" className="w-full">
-                    <Link to="/etablissement/$number" params={{ number }}>
-                      <Building2 className="size-4" />
-                      Voir la fiche établissement
-                    </Link>
-                  </Button>
+                {resultat.access_point_note && (
+                  <p className="text-sm italic leading-relaxed text-slate-500">
+                    {resultat.access_point_note}
+                  </p>
                 )}
-              </CardContent>
-            </Card>
+                {geoError && <p className="text-xs text-destructive">{geoError}</p>}
+              </div>
+
+              <div className="my-6 h-px bg-border" />
+
+              <Button
+                className="gradient-accent h-14 w-full text-base font-medium text-accent-foreground transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                onClick={() => setDirectionsOpen(true)}
+              >
+                <Navigation className="size-5" />
+                S'y rendre
+              </Button>
+
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                <Button
+                  variant="outline"
+                  className="h-11"
+                  onClick={() => setShareOpen(true)}
+                >
+                  <Share2 className="size-4" />
+                  <span className="hidden sm:inline">Partager</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-11"
+                  onClick={() => setReportOpen(true)}
+                >
+                  <Flag className="size-4" />
+                  <span className="hidden sm:inline">Signaler</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-11"
+                  onClick={() => {
+                    if (!isAuthenticated) {
+                      toast.info("Connectez-vous pour enregistrer un favori.");
+                      return;
+                    }
+                    basculerFavori.mutate();
+                  }}
+                  disabled={basculerFavori.isPending}
+                >
+                  <Heart
+                    className={`size-4 ${contexte.data?.favorite_id ? "fill-destructive text-destructive" : ""}`}
+                  />
+                  <span className="hidden sm:inline">Favori</span>
+                </Button>
+              </div>
+
+              {!contexte.data?.is_mine && (
+                <Button
+                  variant="ghost"
+                  className="mt-2 h-11 w-full text-sm"
+                  onClick={() => setClaimOpen(true)}
+                >
+                  <ShieldCheck className="size-4" />
+                  {contexte.data?.claim_status === "pending"
+                    ? "Demande de réclamation envoyée"
+                    : "Réclamer cette adresse"}
+                </Button>
+              )}
+
+              {isCommercialCategory(resultat.category) && resultat.business_name && (
+                <Button asChild variant="ghost" className="mt-1 h-11 w-full text-sm">
+                  <Link to="/etablissement/$number" params={{ number }}>
+                    <Building2 className="size-4" />
+                    Voir la fiche établissement
+                  </Link>
+                </Button>
+              )}
+            </div>
           </div>
+
 
           <DirectionsSheet
             open={directionsOpen}
