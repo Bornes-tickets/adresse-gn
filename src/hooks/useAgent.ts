@@ -73,12 +73,15 @@ export function useAgent() {
       setLoading(false);
     };
 
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
-      setLoading(true);
+    const { data: subscription } = supabase.auth.onAuthStateChange((event, session) => {
+      // Ne JAMAIS repasser en chargement sur un simple rafraîchissement de jeton :
+      // cela démonterait l'écran d'installation en cours (retour de l'appareil photo).
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       void charger(session?.user ?? null);
     });
 
     void supabase.auth.getUser().then(({ data }) => charger(data.user ?? null));
+
 
     return () => {
       annule = true;

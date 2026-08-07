@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Loader2, Save } from "lucide-react";
 
 import {
@@ -29,6 +29,26 @@ export const Route = createFileRoute("/agent/_guard/install/$number")({
   component: Install,
 });
 
+/** Brouillon persistant : survit à un remount (retour de l'appareil photo, refresh du jeton). */
+interface Brouillon {
+  etape: number;
+  baliseOk: boolean;
+  mesures: InstallMeasure[];
+  photo: string | null;
+  details: InstallDetails;
+  clientUuid: string;
+}
+
+function lireBrouillon(numero: string): Brouillon | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const brut = window.sessionStorage.getItem(`install-draft:${numero}`);
+    return brut ? (JSON.parse(brut) as Brouillon) : null;
+  } catch {
+    return null;
+  }
+}
+
 function Install() {
   const { number } = Route.useParams();
   const numero = number.toUpperCase();
@@ -37,14 +57,45 @@ function Install() {
   const enregistrer = useServerFn(submitInstallation);
   const isOnline = useOnline();
 
-  const [etape, setEtape] = useState(1);
-  const [baliseOk, setBaliseOk] = useState(false);
-  const [mesures, setMesures] = useState<InstallMeasure[]>([]);
-  const [photo, setPhoto] = useState<string | null>(null);
-  const [details, setDetails] = useState<InstallDetails>(DETAILS_VIDES);
+  const brouillon = useRef<Brouillon | null>(lireBrouillon(numero));
+  const [etape, setEtape] = useState(brouillon.current?.etape ?? 1);
+  const [baliseOk, setBaliseOk] = useState(brouillon.current?.baliseOk ?? false);
+  const [mesures, setMesures] = useState<InstallMeasure[]>(brouillon.current?.mesures ?? []);
+  const [photo, setPhoto] = useState<string | null>(brouillon.current?.photo ?? null);
+  const [details, setDetails] = useState<InstallDetails>(
+    brouillon.current?.details ?? DETAILS_VIDES,
+  );
   const [envoi, setEnvoi] = useState(false);
   const [resultat, setResultat] = useState<"succes" | "local" | string | null>(null);
-  const clientUuid = useRef<string>(crypto.randomUUID());
+  const clientUuid = useRef<string>(brouillon.current?.clientUuid ?? crypto.randomUUID());
+
+  // Sauvegarde du brouillon à chaque changement (aucun reset intempestif du formulaire).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.sessionStorage.setItem(
+        `install-draft:${numero}`,
+        JSON.stringify({
+          etape,
+          baliseOk,
+          mesures,
+          photo,
+          details,
+          clientUuid: clientUuid.current,
+        } satisfies Brouillon),
+      );
+    } catch {
+      /* quota dépassé : le formulaire reste utilisable en mémoire */
+    }
+  }, [numero, etape, baliseOk, mesures, photo, details]);
+
+  const viderBrouillon = () => {
+    try {
+      window.sessionStorage.removeItem(`install-draft:${numero}`);
+    } catch {
+      /* ignoré */
+    }
+  };
 
   const detailsValides =
     details.consent &&
@@ -56,6 +107,7 @@ function Install() {
     (etape === 2 && mesures.length === 3) ||
     (etape === 3 && !!photo) ||
     (etape === 4 && detailsValides);
+
 
   const enfiler = async () => {
     await enfilerInstallation({
@@ -72,16 +124,23 @@ function Install() {
       consent: true,
       created_at: new Date().toISOString(),
     });
+    viderBrouillon();
     setResultat("local");
   };
 
+
   const envoyer = async () => {
+    console.log("Bouton validation cliqué");
+    console.log("Photo state:", photo ? `présente (${photo.length} car.)` : "ABSENTE");
+    console.log("Mesures:", mesures.length, "En ligne:", isOnline);
     setEnvoi(true);
     try {
       if (!isOnline) {
+        console.log("Hors ligne → mise en file locale");
         await enfiler();
         return;
       }
+      console.log("Avant upload");
       const reponse = await enregistrer({
         data: {
           beacon_number: numero,
@@ -97,15 +156,18 @@ function Install() {
           client_uuid: clientUuid.current,
         },
       });
+      console.log("Après upload", reponse);
       if (reponse.success) {
+        viderBrouillon();
         await queryClient.invalidateQueries({ queryKey: ["agent-tasks"] });
         await queryClient.invalidateQueries({ queryKey: ["agent-history"] });
         setResultat("succes");
       } else {
         setResultat(reponse.message ?? "Erreur inconnue.");
       }
-    } catch {
+    } catch (erreur) {
       // Panne réseau pendant l'envoi : bascule automatique en file locale.
+      console.error("Échec de l'envoi, bascule hors ligne", erreur);
       await enfiler();
       void syncQueue();
     } finally {
@@ -113,23 +175,20 @@ function Install() {
     }
   };
 
+
+  const allerAuxTaches = () => {
+    console.log("Avant navigate", "/agent/tasks");
+    navigate({ to: "/agent/tasks", replace: true });
+  };
+
   if (resultat === "succes") {
-    return (
-      <InstallSuccess
-        numero={numero}
-        onSuivante={() => navigate({ to: "/agent/tasks", replace: true })}
-      />
-    );
+    return <InstallSuccess numero={numero} onSuivante={allerAuxTaches} />;
   }
 
   if (resultat === "local") {
-    return (
-      <InstallSuccessLocal
-        numero={numero}
-        onSuivante={() => navigate({ to: "/agent/tasks", replace: true })}
-      />
-    );
+    return <InstallSuccessLocal numero={numero} onSuivante={allerAuxTaches} />;
   }
+
 
   if (resultat) {
     return <InstallError message={resultat} onReessayer={() => setResultat(null)} />;
