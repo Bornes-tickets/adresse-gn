@@ -44,31 +44,44 @@ export const Route = createFileRoute("/confidentialite")({
 
 function Confidentialite() {
   return (
-    <div className="mx-auto max-w-3xl px-4 py-16">
-      <h1 className="text-3xl font-bold text-foreground">
-        Politique de confidentialité
-      </h1>
-      <p className="mt-3 text-sm text-muted-foreground">
-        Dernière mise à jour : janvier 2026
-      </p>
+    <>
+      <section className="gradient-signature relative overflow-hidden px-4 py-16 sm:px-6 sm:py-20">
+        <div
+          aria-hidden="true"
+          className="dot-grid pointer-events-none absolute inset-0 text-white opacity-[0.06]"
+        />
+        <div className="relative mx-auto max-w-3xl">
+          <h1 className="text-display text-3xl font-extrabold leading-tight text-white sm:text-4xl">
+            Politique de confidentialité
+          </h1>
+          <p className="mt-4 text-sm text-white/70">
+            Dernière mise à jour : janvier 2026
+          </p>
+        </div>
+      </section>
 
-      <nav
-        aria-label="Sommaire"
-        className="mt-8 rounded-xl border border-border bg-card p-5"
-      >
-        <h2 className="text-sm font-semibold text-foreground">Sommaire</h2>
-        <ol className="mt-3 space-y-1 text-sm text-muted-foreground">
-          {SOMMAIRE.map((item) => (
-            <li key={item.id}>
-              <a href={`#${item.id}`} className="hover:text-primary">
-                {item.titre}
-              </a>
-            </li>
-          ))}
-        </ol>
-      </nav>
+      <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
+        <nav
+          aria-label="Sommaire"
+          className="shadow-brand rounded-2xl border border-slate-200/60 bg-card p-6"
+        >
+          <h2 className="text-sm font-semibold text-foreground">Sommaire</h2>
+          <ol className="mt-3 space-y-1.5 text-sm text-slate-500">
+            {SOMMAIRE.map((item) => (
+              <li key={item.id}>
+                <a
+                  href={`#${item.id}`}
+                  className="transition-colors hover:text-accent"
+                >
+                  {item.titre}
+                </a>
+              </li>
+            ))}
+          </ol>
+        </nav>
 
-      <div className="mt-10 space-y-10 text-muted-foreground">
+        <div className="mt-12 space-y-10 leading-relaxed text-slate-500">
+
         <section id="responsable">
           <h2 className="text-xl font-semibold text-foreground">
             1. Responsable du traitement
@@ -214,7 +227,9 @@ function Confidentialite() {
             . Nous répondons dans un délai de trente jours.
           </p>
         </section>
+        </div>
       </div>
-    </div>
+    </>
+
   );
 }

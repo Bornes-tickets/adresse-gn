@@ -6,9 +6,7 @@ import { BadgeCheck, Clock, Navigation, Phone, Share2 } from "lucide-react";
 import { BeaconMap } from "@/components/BeaconMap";
 import { DirectionsSheet } from "@/components/DirectionsSheet";
 import { ShareSheet } from "@/components/ShareSheet";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { categoryLabel, DAYS_FR, todayKey } from "@/lib/geo";
@@ -87,51 +85,56 @@ function EstablishmentPage() {
   const cover = etablissement.cover_url ?? adresse.cover_url;
 
   return (
-    <div className="mx-auto max-w-3xl pb-10">
-      {cover ? (
-        <img
-          src={cover}
-          alt={`Devanture de ${etablissement.business_name}`}
-          loading="lazy"
-          className="h-52 w-full object-cover sm:h-64"
+    <div className="pb-16">
+      <div className="relative h-[40vh] min-h-[280px] w-full overflow-hidden">
+        {cover ? (
+          <img
+            src={cover}
+            alt={`Devanture de ${etablissement.business_name}`}
+            className="size-full object-cover"
+          />
+        ) : (
+          <div className="gradient-signature size-full" aria-hidden />
+        )}
+        <div
+          className="absolute inset-0 bg-linear-to-t from-slate-950/85 via-slate-950/35 to-transparent"
+          aria-hidden
         />
-      ) : (
-        <div className="h-40 w-full bg-primary/90 sm:h-52" aria-hidden />
-      )}
-
-      <div className="space-y-6 px-4 py-6">
-        <header className="space-y-2">
-          <h1 className="text-2xl font-bold text-foreground">
-            {etablissement.business_name}
-          </h1>
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="secondary">{categoryLabel(adresse.category)}</Badge>
-            {adresse.verification_level === "verified" && (
-              <Badge className="bg-accent text-accent-foreground">
-                <BadgeCheck className="size-3.5" />
-                Vérifié
-              </Badge>
-            )}
-            <span className="font-mono text-sm text-muted-foreground">
-              {adresse.public_number}
-            </span>
+        <div className="absolute inset-x-0 bottom-0">
+          <div className="mx-auto max-w-4xl px-4 pb-8 sm:px-6">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                {categoryLabel(adresse.category)}
+              </span>
+              {adresse.verification_level === "verified" && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-medium text-accent-foreground">
+                  <BadgeCheck className="size-3.5" />
+                  Vérifié
+                </span>
+              )}
+              <span className="font-mono text-sm text-white/80">
+                {adresse.public_number}
+              </span>
+            </div>
+            <h1 className="text-display mt-4 text-3xl font-extrabold leading-tight text-white sm:text-4xl">
+              {etablissement.business_name}
+            </h1>
           </div>
-          {etablissement.description && (
-            <p className="text-sm text-muted-foreground">{etablissement.description}</p>
-          )}
-        </header>
+        </div>
+      </div>
 
-        <div className="flex flex-col gap-2 sm:flex-row">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6">
+        <div className="shadow-brand-lg -mt-8 flex flex-col gap-3 rounded-2xl border border-slate-200/60 bg-card p-4 sm:flex-row sm:p-5">
           <Button
             size="lg"
-            className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90"
+            className="gradient-accent h-12 flex-1 text-base font-medium text-accent-foreground transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
             onClick={() => setDirectionsOpen(true)}
           >
             <Navigation className="size-5" />
             S'y rendre
           </Button>
           {etablissement.phone && (
-            <Button asChild variant="outline" size="lg" className="flex-1">
+            <Button asChild variant="outline" size="lg" className="h-12 flex-1">
               <a href={`tel:${etablissement.phone}`}>
                 <Phone className="size-4" />
                 Appeler
@@ -141,7 +144,7 @@ function EstablishmentPage() {
           <Button
             variant="outline"
             size="lg"
-            className="flex-1"
+            className="h-12 flex-1"
             onClick={() => setShareOpen(true)}
           >
             <Share2 className="size-4" />
@@ -149,69 +152,84 @@ function EstablishmentPage() {
           </Button>
         </div>
 
-        {horaires && (
-          <Card>
-            <CardContent className="pt-6">
-              <h2 className="flex items-center gap-2 text-lg font-semibold text-primary">
-                <Clock className="size-4" />
-                Horaires
-              </h2>
-              <ul className="mt-3 divide-y divide-border text-sm">
-                {DAYS_FR.map((day) => (
-                  <li
-                    key={day.key}
-                    className={`flex justify-between py-2 ${
-                      day.key === jour
-                        ? "font-semibold text-foreground"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    <span>{day.label}</span>
-                    <span className="font-mono">{horaires[day.key] ?? "Fermé"}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
+        {etablissement.description && (
+          <p className="mt-10 max-w-2xl text-base leading-relaxed text-slate-500">
+            {etablissement.description}
+          </p>
         )}
 
-        {photos.length > 0 && (
-          <section>
-            <h2 className="text-lg font-semibold text-primary">Photos</h2>
-            <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {photos.map((photo) => (
-                <button
-                  key={photo.id}
-                  type="button"
-                  onClick={() => setPhotoActive(photo.url)}
-                  className="overflow-hidden rounded-lg border border-border"
-                >
-                  <img
-                    src={photo.url}
-                    alt={`Photo de ${etablissement.business_name}`}
-                    loading="lazy"
-                    className="aspect-square w-full object-cover transition hover:scale-105"
+        <div className="mt-12 grid gap-10 lg:grid-cols-[1.4fr_1fr]">
+          <div className="space-y-12">
+            {photos.length > 0 && (
+              <section>
+                <h2 className="text-display text-2xl font-bold text-foreground">
+                  Photos
+                </h2>
+                <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {photos.map((photo) => (
+                    <button
+                      key={photo.id}
+                      type="button"
+                      onClick={() => setPhotoActive(photo.url)}
+                      className="group overflow-hidden rounded-xl border border-slate-200/60"
+                    >
+                      <img
+                        src={photo.url}
+                        alt={`Photo de ${etablissement.business_name}`}
+                        loading="lazy"
+                        className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {adresse.lat !== null && adresse.lng !== null && (
+              <section>
+                <h2 className="text-display text-2xl font-bold text-foreground">
+                  Localisation
+                </h2>
+                <div className="shadow-brand mt-5 h-72 overflow-hidden rounded-2xl border border-slate-200/60">
+                  <BeaconMap
+                    lat={adresse.lat}
+                    lng={adresse.lng}
+                    zoom={17}
+                    label={etablissement.business_name}
                   />
-                </button>
-              ))}
-            </div>
-          </section>
-        )}
+                </div>
+              </section>
+            )}
+          </div>
 
-        {adresse.lat !== null && adresse.lng !== null && (
-          <section>
-            <h2 className="text-lg font-semibold text-primary">Localisation</h2>
-            <div className="mt-3 h-64 overflow-hidden rounded-lg border border-border">
-              <BeaconMap
-                lat={adresse.lat}
-                lng={adresse.lng}
-                zoom={17}
-                label={etablissement.business_name}
-              />
-            </div>
-          </section>
-        )}
+          {horaires && (
+            <aside className="lg:sticky lg:top-24 lg:self-start">
+              <div className="rounded-2xl border border-slate-200/60 bg-card p-6">
+                <h2 className="text-display flex items-center gap-2 text-lg font-bold text-foreground">
+                  <Clock className="size-4 text-accent" />
+                  Horaires
+                </h2>
+                <ul className="mt-4 divide-y divide-border text-sm">
+                  {DAYS_FR.map((day) => (
+                    <li
+                      key={day.key}
+                      className={`flex justify-between py-2.5 ${
+                        day.key === jour
+                          ? "font-semibold text-foreground"
+                          : "text-slate-500"
+                      }`}
+                    >
+                      <span>{day.label}</span>
+                      <span className="font-mono">{horaires[day.key] ?? "Fermé"}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </aside>
+          )}
+        </div>
       </div>
+
 
       {adresse.lat !== null && adresse.lng !== null && (
         <DirectionsSheet
