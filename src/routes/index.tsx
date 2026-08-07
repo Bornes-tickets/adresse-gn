@@ -3,13 +3,11 @@ import { useState } from "react";
 import {
   Bike,
   Building2,
+  Check,
   Home as HomeIcon,
   MapPin,
-  Navigation,
   QrCode,
   Search,
-  ShieldCheck,
-  Truck,
   UtensilsCrossed,
 } from "lucide-react";
 
@@ -29,48 +27,19 @@ import { searchBeacon } from "@/lib/search.functions";
 
 const EXEMPLES = ["GN-CKY-582741", "GN-CKY-152963", "GN-CKY-759482"];
 
-const ETAPES = [
-  {
-    icone: MapPin,
-    titre: "Votre lieu reçoit un numéro",
-    texte: "Un agent agréé pose la balise et active votre numéro.",
-  },
-  {
-    icone: Search,
-    titre: "Vous le partagez",
-    texte: "Six chiffres suffisent, par message ou par téléphone.",
-  },
-  {
-    icone: Navigation,
-    titre: "On guide jusqu'à la porte",
-    texte: "Position GPS exacte et itinéraire immédiat.",
-  },
+const ATOUTS = [
+  "Fonctionne aussi via QR code",
+  "Compatible avec toutes les apps de navigation",
+  "Aucune installation requise pour rechercher",
 ];
 
 const USAGES = [
-  { icone: HomeIcon, titre: "Particuliers", texte: "Recevoir livraisons et visiteurs." },
-  { icone: UtensilsCrossed, titre: "Restaurants", texte: "Être trouvés sans expliquer." },
-  { icone: Bike, titre: "Livreurs", texte: "Naviguer directement à destination." },
+  { icone: HomeIcon, titre: "Particuliers", texte: "Recevoir visiteurs et livraisons." },
+  { icone: UtensilsCrossed, titre: "Commerces", texte: "Être trouvés sans expliquer." },
+  { icone: Bike, titre: "Livraisons", texte: "Livrer sans appels d'orientation." },
   { icone: Building2, titre: "Entreprises", texte: "Intégrer les adresses par API." },
 ];
 
-const GARANTIES = [
-  {
-    icone: ShieldCheck,
-    titre: "Adresses vérifiées",
-    texte: "Relevées sur place par un agent agréé.",
-  },
-  {
-    icone: Truck,
-    titre: "Prêt pour la livraison",
-    texte: "Itinéraire dans Maps, Waze ou OSM.",
-  },
-  {
-    icone: Building2,
-    titre: "Ouvert aux institutions",
-    texte: "Export de données et API.",
-  },
-];
 
 export const Route = createFileRoute("/")({
   head: () => ({
