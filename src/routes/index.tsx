@@ -211,61 +211,94 @@ function Home() {
         </div>
       </section>
 
-      {/* Processus */}
+      {/* Produit en contexte */}
       <section
         id="comment-ca-marche"
-        className="bg-white px-4 py-16 sm:px-6 md:py-20 lg:px-8"
+        className="bg-white px-6 py-16 md:px-8 md:py-24"
       >
-        <div className="mx-auto max-w-5xl">
+        <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-16 lg:grid-cols-2">
           <Reveal>
-            <Eyebrow>Processus</Eyebrow>
-            <h2 className="text-display mt-4 text-center text-3xl font-bold leading-[1.1] text-slate-900 md:text-4xl">
-              Trois étapes, aucune friction
+            <Eyebrow>Produit</Eyebrow>
+            <h2 className="text-display mt-4 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
+              Un numéro. Une carte. Un itinéraire.
             </h2>
+            <p className="mt-5 text-lg leading-relaxed text-slate-600">
+              Saisissez un numéro de balise, obtenez l'emplacement exact sur la
+              carte, et lancez l'itinéraire dans Google Maps, Waze ou Apple
+              Plans.
+            </p>
+            <ul className="mt-8 space-y-3">
+              {ATOUTS.map((atout) => (
+                <li key={atout} className="flex items-start gap-3">
+                  <Check className="mt-0.5 size-5 shrink-0 text-accent" />
+                  <span className="text-sm text-slate-700">{atout}</span>
+                </li>
+              ))}
+            </ul>
+            <Button
+              asChild
+              variant="outline"
+              className="mt-8 h-12 border-slate-300 bg-transparent px-6 text-base font-medium text-slate-700 transition-colors duration-200 ease-out hover:bg-slate-50"
+            >
+              <Link to="/a/$number" params={{ number: "GN-CKY-582741" }}>
+                Voir un exemple
+              </Link>
+            </Button>
           </Reveal>
 
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
-            {ETAPES.map((etape, index) => (
-              <Reveal key={etape.titre} delay={index * 100}>
-                <div className="h-full rounded-2xl border border-slate-200/60 bg-white p-8 transition-all duration-200 hover:-translate-y-[2px] hover:border-accent/30 hover:shadow-md">
-                  <span className="font-mono text-xs tracking-[0.2em] text-slate-400">
-                    0{index + 1}
-                  </span>
-                  <span className="mt-5 flex size-12 items-center justify-center rounded-xl bg-accent/10 text-accent">
-                    <etape.icone className="size-6" />
-                  </span>
-                  <h3 className="text-display mt-5 text-lg font-bold text-slate-900">
-                    {etape.titre}
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                    {etape.texte}
-                  </p>
+          <Reveal delay={120} className="relative">
+            <div
+              aria-hidden
+              className="absolute left-1/2 top-1/2 size-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/20 blur-3xl"
+            />
+            <div className="relative mx-auto aspect-9/19 max-w-[280px] rotate-[-3deg] overflow-hidden rounded-[2.5rem] border-8 border-slate-900 bg-white shadow-2xl">
+              <div className="flex h-full flex-col">
+                <div className="gradient-signature-soft px-4 py-3 text-center text-[10px] font-semibold uppercase tracking-[0.2em] text-white">
+                  Adresse GN
                 </div>
-              </Reveal>
-            ))}
-          </div>
+                <div className="relative flex-1 bg-slate-100">
+                  <MapPin className="absolute left-1/2 top-1/2 size-8 -translate-x-1/2 -translate-y-1/2 text-accent" />
+                </div>
+                <div className="space-y-3 bg-white p-4">
+                  <div className="rounded-xl border border-slate-200 bg-white p-3">
+                    <p className="text-sm font-bold text-slate-900">
+                      Restaurant Le Damier
+                    </p>
+                    <p className="mt-1 font-mono text-xs text-slate-500">
+                      GN-CKY-582741
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      Kaloum · Conakry
+                    </p>
+                  </div>
+                  <div className="rounded-xl bg-accent px-4 py-2.5 text-center text-sm font-medium text-accent-foreground">
+                    S'y rendre
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Reveal>
         </div>
       </section>
 
       {/* Usages */}
-      <section
-        id="usages"
-        className="bg-slate-50 px-4 py-16 sm:px-6 md:py-20 lg:px-8"
-      >
+      <section id="usages" className="bg-slate-50 px-6 py-16 md:px-8 md:py-24">
         <div className="mx-auto max-w-6xl">
           <Reveal>
             <Eyebrow>Usages</Eyebrow>
-            <h2 className="text-display mt-4 text-center text-3xl font-bold leading-[1.1] text-slate-900 md:text-4xl">
-              Une balise, mille usages
+            <h2 className="text-display mt-4 text-center text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
+              Pensé pour tous les usages du quotidien.
             </h2>
           </Reveal>
 
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
             {USAGES.map((item, index) => (
               <Reveal key={item.titre} delay={index * 80}>
-                <div className="h-full rounded-xl bg-white p-6 transition-all duration-200 hover:-translate-y-[2px] hover:shadow-md">
-                  <item.icone className="size-8 text-slate-700" />
-                  <h3 className="text-display mt-4 text-base font-bold text-slate-900">
+                <div className="h-full rounded-2xl border border-slate-200 bg-white p-8 transition-all duration-200 ease-out hover:-translate-y-[2px] hover:border-accent/40">
+                  <span className="flex size-12 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                    <item.icone className="size-8" />
+                  </span>
+                  <h3 className="text-display mt-5 text-lg font-bold text-slate-900">
                     {item.titre}
                   </h3>
                   <p className="mt-2 text-sm leading-relaxed text-slate-600">
@@ -278,57 +311,61 @@ function Home() {
         </div>
       </section>
 
-      {/* Garanties */}
-      <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mx-auto grid max-w-5xl gap-8 sm:grid-cols-3">
-          {GARANTIES.map((item, index) => (
-            <Reveal
-              key={item.titre}
-              delay={index * 80}
-              className={
-                index === 0 ? "" : "sm:border-l sm:border-slate-200 sm:pl-8"
-              }
-            >
-              <div className="flex items-start gap-3">
-                <item.icone className="mt-0.5 size-5 shrink-0 text-accent" />
-                <div className="min-w-0">
-                  <h3 className="text-sm font-bold text-slate-900">
-                    {item.titre}
-                  </h3>
-                  <p className="mt-1 text-xs text-slate-500">{item.texte}</p>
-                </div>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-      </section>
-
       {/* CTA final */}
-      <section className="bg-white px-4 py-16 sm:px-6 md:py-20 lg:px-8">
-        <Reveal className="mx-auto max-w-2xl text-center">
-          <h2 className="text-display text-3xl font-bold leading-[1.1] text-slate-900 md:text-4xl">
-            Prêt à obtenir votre adresse ?
-          </h2>
-          <p className="mt-4 text-slate-600">
-            Un agent vient chez vous, pose la plaque, active le numéro.
-          </p>
-          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            <Button
-              asChild
-              className="h-12 bg-accent px-8 text-base font-medium text-accent-foreground transition-colors hover:bg-accent-dark"
-            >
-              <Link to="/tarifs">Voir les tarifs</Link>
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              className="h-12 border-slate-300 bg-transparent px-8 text-base font-medium text-slate-700 hover:bg-slate-50"
-            >
-              <Link to="/a-propos">Découvrir le projet</Link>
-            </Button>
+      <section className="bg-white px-6 py-16 md:px-8 md:py-24">
+        <Reveal className="mx-auto max-w-5xl">
+          <div className="grid overflow-hidden rounded-3xl border border-slate-200 shadow-xl lg:grid-cols-5">
+            <div className="gradient-signature-soft p-10 md:p-14 lg:col-span-3">
+              <p className="text-xs font-medium uppercase tracking-[0.22em] text-white/70">
+                Commencer
+              </p>
+              <h2 className="text-display mt-4 text-3xl font-bold tracking-tight text-white">
+                Obtenez votre adresse en 15 minutes.
+              </h2>
+              <p className="mt-4 leading-relaxed text-white/85">
+                Un agent vient chez vous, pose la plaque numérique et active
+                votre numéro. Simple, rapide, définitif.
+              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Button
+                  asChild
+                  className="h-12 bg-white px-8 text-base font-medium text-slate-900 transition-colors duration-200 ease-out hover:bg-white/90"
+                >
+                  <Link to="/tarifs">Voir les tarifs</Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="h-12 border-white/40 bg-transparent px-8 text-base font-medium text-white transition-colors duration-200 ease-out hover:bg-white/10 hover:text-white"
+                >
+                  <Link to="/a-propos">Contactez-nous</Link>
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex flex-col justify-center bg-white p-10 lg:col-span-2">
+              <div className="flex items-center gap-4 rounded-lg bg-slate-100 p-6">
+                <span className="min-w-0 flex-1 font-mono text-base font-bold tracking-tight text-slate-900 sm:text-lg">
+                  GN-CKY-582741
+                </span>
+                <svg
+                  viewBox="0 0 21 21"
+                  aria-hidden
+                  className="size-12 shrink-0 text-slate-900"
+                  fill="currentColor"
+                >
+                  <path d="M0 0h7v7H0V0zm2 2v3h3V2H2zM14 0h7v7h-7V0zm2 2v3h3V2h-3zM0 14h7v7H0v-7zm2 2v3h3v-3H2z" />
+                  <path d="M9 0h2v2H9V0zM9 3h2v2H9V3zM12 9h2v2h-2V9zM9 9h2v2H9V9zM9 12h2v2H9v-2zM12 12h2v2h-2v-2zM16 9h2v2h-2V9zM19 9h2v2h-2V9zM16 12h2v2h-2v-2zM19 14h2v2h-2v-2zM16 16h2v2h-2v-2zM12 16h2v2h-2v-2zM9 19h2v2H9v-2zM12 19h2v2h-2v-2zM16 19h2v2h-2v-2zM19 19h2v2h-2v-2zM0 9h2v2H0V9zM3 9h2v2H3V9zM6 9h2v2H6V9zM3 12h2v2H3v-2z" />
+                </svg>
+              </div>
+              <p className="mt-4 text-xs text-slate-500">
+                Plaque physique posée par un agent agréé.
+              </p>
+            </div>
           </div>
         </Reveal>
       </section>
+
     </div>
   );
 }
