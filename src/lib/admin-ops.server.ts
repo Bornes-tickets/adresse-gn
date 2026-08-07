@@ -124,7 +124,7 @@ export async function genererLotBalises(input: {
       code,
       quantity: quantite,
       supplier: input.supplier,
-      status: "created",
+      status: "generated",
       received_at: new Date().toISOString(),
     })
     .select("id, code")

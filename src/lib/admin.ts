@@ -8,7 +8,7 @@ export const VERIFICATION_LEVELS = ["unverified", "declared", "verified", "certi
 export const VISIBILITIES = ["public", "private"] as const;
 export const REPORT_STATUSES = ["new", "in_review", "resolved", "rejected"] as const;
 export const USER_ROLES = ["user", "agent", "supervisor", "admin", "super_admin"] as const;
-export const LOT_STATUSES = ["created", "received", "distributed", "closed"] as const;
+export const LOT_STATUSES = ["generated", "ordered", "received", "in_use", "active", "suspended", "cancelled", "depleted", "recalled"] as const;
 
 export const STATUS_LABELS: Record<string, string> = {
   generated: "Générée",
@@ -31,6 +31,10 @@ export const STATUS_LABELS: Record<string, string> = {
   received: "Reçu",
   distributed: "Distribué",
   closed: "Clôturé",
+  ordered: "Commandé",
+  in_use: "En utilisation",
+  depleted: "Épuisé",
+  recalled: "Rappelé",
   user: "Utilisateur",
   agent: "Agent",
   supervisor: "Superviseur",
