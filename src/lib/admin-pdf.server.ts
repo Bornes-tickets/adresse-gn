@@ -27,6 +27,31 @@ function pointilles(
   });
 }
 
+/** Base absolue du site de production, surchargée par PUBLIC_SITE_URL. */
+export const SITE_PAR_DEFAUT = "https://adresse-gn.lovable.app";
+
+export function baseSite(): string {
+  return (process.env["PUBLIC_SITE_URL"] || SITE_PAR_DEFAUT).replace(/\/+$/, "");
+}
+
+/** URL absolue encodée dans le QR d'une balise. */
+export function urlBalise(baseUrl: string, numero: string): string {
+  return `${baseUrl.replace(/\/+$/, "")}/a/${numero}`;
+}
+
+/** Matrice de modules du QR réellement dessiné (correction d'erreur H). */
+export function matriceQr(contenu: string) {
+  const qr = QRCode.create(contenu, { errorCorrectionLevel: "H" });
+  const taille = qr.modules.size;
+  const modules: boolean[][] = [];
+  for (let r = 0; r < taille; r += 1) {
+    const ligne: boolean[] = [];
+    for (let c = 0; c < taille; c += 1) ligne.push(Boolean(qr.modules.get(r, c)));
+    modules.push(ligne);
+  }
+  return { taille, modules };
+}
+
 export async function genererPdfQr(
   numeros: string[],
   baseUrl: string,
@@ -35,6 +60,7 @@ export async function genererPdfQr(
   const doc = await PDFDocument.create();
   const mono = await doc.embedFont(StandardFonts.CourierBold);
   const petite = await doc.embedFont(StandardFonts.Helvetica);
+
 
   const largeurCase = (A4.w - MARGE * 2) / COLS;
   const hauteurCase = (A4.h - MARGE * 2) / ROWS;
@@ -63,15 +89,15 @@ export async function genererPdfQr(
       const y0 = A4.h - MARGE - (ligne + 1) * hauteurCase;
 
       // Correction d'erreur H (≈30 % de redondance) pour l'extérieur.
-      const qr = QRCode.create(`${racine}/a/${numero}`, { errorCorrectionLevel: "H" });
-      const taille = qr.modules.size;
+      const { taille, modules } = matriceQr(urlBalise(racine, numero));
       const module = TAILLE_QR / taille;
       const qx = x0 + (largeurCase - TAILLE_QR) / 2;
       const qy = y0 + (hauteurCase - TAILLE_QR) / 2 + 16;
 
       for (let r = 0; r < taille; r += 1) {
         for (let c = 0; c < taille; c += 1) {
-          if (qr.modules.get(r, c)) {
+          if (modules[r]![c]) {
+
             page.drawRectangle({
               x: qx + c * module,
               y: qy + (taille - 1 - r) * module,
