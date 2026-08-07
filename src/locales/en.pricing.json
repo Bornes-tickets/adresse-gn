@@ -85,6 +85,78 @@
         "title": "Support in French",
         "text": "A team reachable by WhatsApp and email, based in Conakry."
       }
+    },
+    "plans": {
+      "residential_digital": {
+        "title": "Digital only",
+        "description": "Your address registered, without a physical beacon.",
+        "features": [
+          "Unique address number GN-CKY-XXXXXX",
+          "Verified GPS location",
+          "Link and route sharing",
+          "No plate installed"
+        ]
+      },
+      "residential_standard": {
+        "title": "Residential Standard",
+        "description": "Beacon plate installed by an approved agent.",
+        "features": [
+          "Physical beacon with QR code",
+          "Installation by an Adresse GN agent",
+          "Precision GPS reading",
+          "Address sheet and route"
+        ]
+      },
+      "residential_premium": {
+        "title": "Residential Premium",
+        "description": "Reinforced beacon and detailed access point.",
+        "features": [
+          "Long-lasting reinforced beacon",
+          "Priority installation within 72 h",
+          "Detailed access note (gate, floor)",
+          "Replacement assistance for 12 months"
+        ]
+      },
+      "pro_basic": {
+        "title": "Pro Basic",
+        "description": "Business listing for shops.",
+        "features": [
+          "1 business listing",
+          "Name, phone, opening hours",
+          "Basic statistics (30 days)",
+          "Downloadable QR code"
+        ]
+      },
+      "pro_plus": {
+        "title": "Pro Plus",
+        "description": "Enriched listing, team and advanced statistics.",
+        "features": [
+          "Enriched listing (photos, description)",
+          "Detailed 90-day statistics",
+          "Multi-user team",
+          "Priority support"
+        ]
+      },
+      "multi_site": {
+        "title": "Multi-site",
+        "description": "Networks, franchises and multi-branch brands.",
+        "features": [
+          "Unlimited number of sites",
+          "Consolidated dashboard",
+          "Dedicated API access",
+          "Negotiated price based on volume"
+        ]
+      },
+      "institutional": {
+        "title": "Institutional",
+        "description": "Municipalities, ministries, network operators.",
+        "features": [
+          "Mass addressing: 60,000 to 120,000 GNF per unit",
+          "Supervised field addressing campaign",
+          "Data export and API",
+          "Agreement and invoicing on quote"
+        ]
+      }
     }
   },
   "privacy": {

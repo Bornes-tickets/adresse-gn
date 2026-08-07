@@ -85,6 +85,78 @@
         "title": "Support en français",
         "text": "Une équipe joignable par WhatsApp et par e-mail, basée à Conakry."
       }
+    },
+    "plans": {
+      "residential_digital": {
+        "title": "Numérique seule",
+        "description": "Votre adresse enregistrée, sans balise physique.",
+        "features": [
+          "Numéro d'adresse unique GN-CKY-XXXXXX",
+          "Localisation GPS vérifiée",
+          "Partage du lien et de l'itinéraire",
+          "Aucune plaque installée"
+        ]
+      },
+      "residential_standard": {
+        "title": "Résidentiel Standard",
+        "description": "Plaque balise posée par un agent agréé.",
+        "features": [
+          "Balise physique avec QR code",
+          "Pose par un agent Adresse GN",
+          "Relevé GPS de précision",
+          "Fiche adresse et itinéraire"
+        ]
+      },
+      "residential_premium": {
+        "title": "Résidentiel Premium",
+        "description": "Balise renforcée et point d'accès détaillé.",
+        "features": [
+          "Balise renforcée longue durée",
+          "Pose prioritaire sous 72 h",
+          "Note d'accès détaillée (portail, étage)",
+          "Assistance au remplacement 12 mois"
+        ]
+      },
+      "pro_basic": {
+        "title": "Pro Basic",
+        "description": "Fiche établissement pour les commerces.",
+        "features": [
+          "1 fiche établissement",
+          "Nom, téléphone, horaires",
+          "Statistiques de base (30 jours)",
+          "QR code téléchargeable"
+        ]
+      },
+      "pro_plus": {
+        "title": "Pro Plus",
+        "description": "Fiche enrichie, équipe et statistiques avancées.",
+        "features": [
+          "Fiche enrichie (photos, description)",
+          "Statistiques détaillées 90 jours",
+          "Équipe multi-utilisateurs",
+          "Support prioritaire"
+        ]
+      },
+      "multi_site": {
+        "title": "Multi-sites",
+        "description": "Réseaux, franchises et enseignes multi-agences.",
+        "features": [
+          "Nombre de sites illimité",
+          "Tableau de bord consolidé",
+          "Accès API dédié",
+          "Tarif négocié selon volume"
+        ]
+      },
+      "institutional": {
+        "title": "Institutionnel",
+        "description": "Communes, ministères, opérateurs de réseaux.",
+        "features": [
+          "Adressage de masse : 60 000 à 120 000 GNF par unité",
+          "Campagne d'adressage terrain encadrée",
+          "Export des données et API",
+          "Convention et facturation sur devis"
+        ]
+      }
     }
   },
   "privacy": {
