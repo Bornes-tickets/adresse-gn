@@ -35,26 +35,34 @@ import { searchBeacon } from "@/lib/search.functions";
 
 
 export const Route = createFileRoute("/a/$number")({
-  head: () => ({
+  head: ({ params }) => ({
     meta: [
-      { title: "Localisation d'une balise — Adresse GN" },
+      { title: `Adresse ${params.number} — ADRESSE GN` },
       {
         name: "description",
-        content:
-          "Carte, itinéraire et informations publiques d'une adresse guinéenne identifiée par son numéro de balise.",
+        content: `Position GPS vérifiée, carte et itinéraire immédiat pour l'adresse ${params.number} en Guinée.`,
       },
-      { property: "og:title", content: "Localisation d'une balise — Adresse GN" },
+      {
+        property: "og:title",
+        content: `Adresse ${params.number} — ADRESSE GN`,
+      },
       {
         property: "og:description",
-        content: "Un lieu · Un numéro · Un itinéraire. Ouvrez la carte et lancez la navigation.",
+        content:
+          "Un lieu · Un numéro · Un itinéraire. Ouvrez la carte et lancez la navigation.",
       },
       { property: "og:type", content: "website" },
+      {
+        property: "og:url",
+        content: `https://place-id-finder.lovable.app/a/${params.number}`,
+      },
       { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
     ],
   }),
   component: BeaconResult,
 });
+
 
 function BeaconResult() {
   const { number } = Route.useParams();

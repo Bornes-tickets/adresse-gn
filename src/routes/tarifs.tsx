@@ -9,24 +9,37 @@ import { OFFERS, type Offer } from "@/lib/pricing";
 export const Route = createFileRoute("/tarifs")({
   head: () => ({
     meta: [
-      { title: "Tarifs Adresse GN — offres résidentielles et professionnelles" },
+      { title: "Tarifs — ADRESSE GN" },
       {
         name: "description",
         content:
-          "Découvrez les tarifs Adresse GN : adresse numérique dès 40 000 GNF, balise résidentielle posée par un agent, offres Pro Basic et Pro Plus pour les commerces.",
+          "Tarifs Adresse GN en francs guinéens : adresse numérique dès 40 000 GNF, balise résidentielle posée par un agent, offres Pro Basic et Pro Plus pour les commerces.",
       },
-      { property: "og:title", content: "Tarifs Adresse GN" },
+      { property: "og:title", content: "Tarifs — ADRESSE GN" },
       {
         property: "og:description",
         content:
           "Adresse numérique, balise physique, fiche établissement : toutes les offres et leurs prix en francs guinéens.",
       },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
+      { property: "og:url", content: "https://place-id-finder.lovable.app/tarifs" },
+      {
+        property: "og:image",
+        content: "https://place-id-finder.lovable.app/og-cover.jpg",
+      },
+      {
+        name: "twitter:image",
+        content: "https://place-id-finder.lovable.app/og-cover.jpg",
+      },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+    links: [
+      { rel: "canonical", href: "https://place-id-finder.lovable.app/tarifs" },
     ],
   }),
   component: TarifsPage,
 });
+
 
 function gnf(montant: number): string {
   return `${montant.toLocaleString("fr-FR")} GNF`;
