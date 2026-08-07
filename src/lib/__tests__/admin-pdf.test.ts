@@ -1,7 +1,14 @@
 import jsQR from "jsqr";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { SITE_PAR_DEFAUT, baseSite, matriceQr, urlBalise } from "@/lib/admin-pdf.server";
+import {
+  SITE_PAR_DEFAUT,
+  baseSite,
+  genererPdfQr,
+  matriceQr,
+  urlBalise,
+  validerMatrice,
+} from "@/lib/admin-pdf.server";
 
 const NUMEROS = [
   "GN-CKY-582741",
@@ -122,5 +129,71 @@ describe("contenu des QR exportés", () => {
     // Le niveau H produit une version plus grande que L pour le même contenu.
     const url = urlBalise(SITE_PAR_DEFAUT, "GN-CKY-582741");
     expect(matriceQr(url).taille).toBeGreaterThanOrEqual(37);
+  });
+});
+
+describe("matrices QR corrompues", () => {
+  const NUM = "GN-CKY-582741";
+  const saine = () => matriceQr(urlBalise(SITE_PAR_DEFAUT, NUM));
+
+  const cas: { nom: string; fabrique: () => any }[] = [
+    { nom: "matrice absente", fabrique: () => null },
+    { nom: "modules non tableau", fabrique: () => ({ taille: 37, modules: undefined }) },
+    { nom: "taille invalide", fabrique: () => ({ ...saine(), taille: 0 }) },
+    { nom: "taille trop petite", fabrique: () => ({ taille: 5, modules: [[true]] }) },
+    {
+      nom: "lignes manquantes",
+      fabrique: () => {
+        const m = saine();
+        return { taille: m.taille, modules: m.modules.slice(0, -3) };
+      },
+    },
+    {
+      nom: "matrice non carrée",
+      fabrique: () => {
+        const m = saine();
+        m.modules[2] = m.modules[2]!.slice(0, 10);
+        return m;
+      },
+    },
+    {
+      nom: "module non booléen",
+      fabrique: () => {
+        const m = saine();
+        (m.modules[1] as any)[1] = "x";
+        return m;
+      },
+    },
+  ];
+
+  for (const c of cas) {
+    it(`rejette proprement : ${c.nom}`, () => {
+      expect(() => validerMatrice(c.fabrique(), NUM)).toThrowError(
+        /^QR illisible pour la balise GN-CKY-582741 : .+\. Export PDF annulé\.$/,
+      );
+    });
+
+    it(`annule l'export PDF : ${c.nom}`, async () => {
+      await expect(genererPdfQr([NUM], SITE_PAR_DEFAUT, c.fabrique)).rejects.toThrow(
+        /QR illisible pour la balise GN-CKY-582741/,
+      );
+    });
+  }
+
+  it("propage un message clair quand l'encodeur lui-même échoue", async () => {
+    await expect(
+      genererPdfQr([NUM], SITE_PAR_DEFAUT, () => {
+        throw new Error("contenu trop long");
+      }),
+    ).rejects.toThrow(
+      "QR illisible pour la balise GN-CKY-582741 : contenu trop long. Export PDF annulé.",
+    );
+  });
+
+  it("accepte une matrice saine et produit un PDF", async () => {
+    const pdf = await genererPdfQr([NUM], SITE_PAR_DEFAUT);
+    expect(pdf.pages).toBe(1);
+    expect(pdf.base64.length).toBeGreaterThan(100);
+    expect(pdf.url0).toBe(`${SITE_PAR_DEFAUT}/a/${NUM}`);
   });
 });
