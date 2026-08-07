@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { AdminTable, StatutBadge, type Colonne } from "@/components/admin/AdminTable";
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -170,6 +171,26 @@ function AdminBeacons() {
 
   type Ligne = NonNullable<typeof balises.data>["rows"][number];
 
+  const exportEnCours = muterExport.isPending || muterZip.isPending || muterCsv.isPending;
+  const libelleExport = muterExport.isPending
+    ? "du PDF"
+    : muterZip.isPending
+      ? "du ZIP"
+      : "du CSV";
+  const [progression, setProgression] = useState(0);
+
+  useEffect(() => {
+    if (!exportEnCours) {
+      setProgression(0);
+      return;
+    }
+    setProgression(8);
+    const timer = setInterval(() => {
+      setProgression((p) => (p >= 92 ? 92 : p + Math.max(1, (95 - p) / 12)));
+    }, 320);
+    return () => clearInterval(timer);
+  }, [exportEnCours]);
+
   const colonnes: Colonne<Ligne>[] = [
     {
       cle: "numero",
@@ -292,33 +313,47 @@ function AdminBeacons() {
         </div>
 
         <div className="flex w-full flex-col gap-2 sm:ml-auto sm:w-auto sm:flex-row sm:flex-wrap">
-          <Button onClick={() => setOuvrirGen(true)}>Générer un lot</Button>
+          <Button onClick={() => setOuvrirGen(true)} disabled={exportEnCours}>
+            Générer un lot
+          </Button>
           <Button
             variant="outline"
-            disabled={lotId === "tous" || muterExport.isPending}
+            disabled={lotId === "tous" || exportEnCours}
             onClick={() => muterExport.mutate(lotId)}
           >
             {muterExport.isPending ? "Génération…" : "Exporter les QR (PDF)"}
           </Button>
           <Button
             variant="outline"
-            disabled={lotId === "tous" || muterZip.isPending}
+            disabled={lotId === "tous" || exportEnCours}
             onClick={() => muterZip.mutate(lotId)}
           >
             {muterZip.isPending ? "Génération…" : "Exporter les QR (ZIP individuel)"}
           </Button>
           <Button
             variant="outline"
-            disabled={lotId === "tous" || muterCsv.isPending}
+            disabled={lotId === "tous" || exportEnCours}
             onClick={() => muterCsv.mutate(lotId)}
           >
             {muterCsv.isPending ? "Génération…" : "Exporter la manifeste (CSV)"}
           </Button>
-          <Button variant="outline" onClick={() => setOuvrirAffect(true)}>
+          <Button variant="outline" onClick={() => setOuvrirAffect(true)} disabled={exportEnCours}>
             Affecter à un agent
           </Button>
         </div>
       </div>
+
+      {exportEnCours ? (
+        <div className="space-y-2 rounded-lg border border-border bg-card p-4">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">
+              Génération {libelleExport} en cours… merci de patienter.
+            </span>
+            <span className="font-mono text-xs tabular-nums">{Math.round(progression)}%</span>
+          </div>
+          <Progress value={progression} />
+        </div>
+      ) : null}
 
       <AdminTable
         colonnes={colonnes}
