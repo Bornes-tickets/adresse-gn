@@ -20,24 +20,22 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 
 
 function NotFoundComponent() {
+  const { t } = useTranslation();
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-foreground">404</h1>
         <h2 className="mt-4 text-xl font-semibold text-foreground">
-          Cette page n'existe pas (ou plus)
+          {t("notFound.title")}
         </h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Le lien est peut-être incomplet. Revenez à l'accueil pour rechercher
-          une adresse par son numéro.
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">{t("notFound.text")}</p>
 
         <div className="mt-6">
           <Link
             to="/"
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Retour à l'accueil
+            {t("notFound.home")}
           </Link>
         </div>
       </div>
@@ -48,6 +46,7 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
+  const { t } = useTranslation();
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
@@ -56,11 +55,9 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          Cette page n'a pas pu s'afficher
+          {t("error.title")}
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Un incident technique s'est produit de notre côté. Réessayez ou revenez à l'accueil.
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">{t("error.text")}</p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {
@@ -69,19 +66,20 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
             }}
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Réessayer
+            {t("error.retry")}
           </button>
           <a
             href="/"
             className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
-            Retour à l'accueil
+            {t("error.home")}
           </a>
         </div>
       </div>
     </div>
   );
 }
+
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
