@@ -54,13 +54,6 @@ const USAGES = [
   { icone: Building2, titre: "Entreprises", texte: "Intégrer les adresses par API." },
 ];
 
-const CHIFFRES = [
-  { valeur: "6", label: "quartiers pilotes" },
-  { valeur: "500+", label: "adresses en construction" },
-  { valeur: "< 3 s", label: "pour trouver une adresse" },
-  { valeur: "2026", label: "déploiement pilote" },
-];
-
 const GARANTIES = [
   {
     icone: ShieldCheck,
@@ -165,16 +158,16 @@ function Home() {
   return (
     <div className="overflow-x-hidden bg-white">
       {/* Héros — seule section colorée de la page */}
-      <section className="gradient-signature-soft px-4 py-20 sm:px-6 md:py-28 lg:px-8">
-        <div className="mx-auto w-full max-w-3xl">
+      <section className="gradient-signature-soft px-4 py-16 sm:px-6 md:py-20 lg:px-8">
+        <div className="mx-auto w-full max-w-5xl">
           <h1
-            className="text-display text-center text-4xl font-extrabold leading-[1.1] text-white md:text-6xl"
+            className="text-display text-center text-4xl font-extrabold leading-[1.1] text-white md:whitespace-nowrap md:text-5xl lg:text-6xl"
             style={{ textShadow: "0 1px 12px rgb(15 23 42 / 0.18)" }}
           >
             Trouvez une adresse en un numéro
           </h1>
 
-          <p className="mx-auto mt-6 max-w-xl text-center text-lg leading-relaxed text-white/80">
+          <p className="mx-auto mt-6 max-w-xl text-center text-base leading-relaxed text-white/85 md:text-lg lg:max-w-none">
             Chaque lieu en Guinée reçoit un numéro unique. Saisissez-le pour
             obtenir sa localisation.
           </p>
@@ -313,36 +306,6 @@ function Home() {
               </Reveal>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Chiffres */}
-      <section className="bg-white px-4 py-16 sm:px-6 md:py-20 lg:px-8">
-        <div className="mx-auto max-w-6xl">
-          <Reveal>
-            <Eyebrow>Pilote 2026</Eyebrow>
-            <h2 className="text-display mt-4 text-center text-3xl font-bold leading-[1.1] text-slate-900 md:text-4xl">
-              Le déploiement en cours
-            </h2>
-          </Reveal>
-          <dl className="mt-12 grid grid-cols-2 gap-y-10 lg:grid-cols-4">
-            {CHIFFRES.map((item, index) => (
-              <Reveal
-                key={item.label}
-                delay={index * 80}
-                className={
-                  index === 0
-                    ? "px-4 text-center"
-                    : "px-4 text-center lg:border-l lg:border-slate-200"
-                }
-              >
-                <dt className="text-display text-5xl font-black text-slate-900 md:text-6xl">
-                  {item.valeur}
-                </dt>
-                <dd className="mt-3 text-sm text-slate-500">{item.label}</dd>
-              </Reveal>
-            ))}
-          </dl>
         </div>
       </section>
 
