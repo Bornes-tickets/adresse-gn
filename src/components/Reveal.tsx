@@ -10,12 +10,10 @@ export function Reveal({
   children,
   className,
   delay = 0,
-  as: Tag = "div",
 }: {
   children: ReactNode;
   className?: string;
   delay?: number;
-  as?: "div" | "section";
 }) {
   const ref = useRef<HTMLDivElement | null>(null);
   const [visible, setVisible] = useState(false);
@@ -43,7 +41,7 @@ export function Reveal({
   }, []);
 
   return (
-    <Tag
+    <div
       ref={ref}
       style={delay ? { transitionDelay: `${delay}ms` } : undefined}
       className={cn(
@@ -53,6 +51,6 @@ export function Reveal({
       )}
     >
       {children}
-    </Tag>
+    </div>
   );
 }
