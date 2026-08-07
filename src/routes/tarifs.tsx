@@ -395,7 +395,9 @@ function TarifsPage() {
                   </TableHead>
                   {COLONNES_COMPARATEUR.map((code) => (
                     <TableHead key={code} className="min-w-[120px] text-center">
-                      {OFFERS.find((o) => o.code === code)?.label}
+                      {t(`pricing.plans.${code}.title`, {
+                        defaultValue: OFFERS.find((o) => o.code === code)?.label ?? code,
+                      })}
                     </TableHead>
                   ))}
                 </TableRow>
