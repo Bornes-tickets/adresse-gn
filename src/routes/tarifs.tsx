@@ -47,11 +47,16 @@ function gnf(montant: number): string {
 
 function CarteOffre({ offre, vedette }: { offre: Offer; vedette: boolean }) {
   return (
-    <Card className={vedette ? "border-primary shadow-sm" : ""}>
+    <Card
+      className={
+        "h-full shadow-sm transition-transform duration-200 hover:scale-[1.02] hover:shadow-md" +
+        (vedette ? " border-primary" : "")
+      }
+    >
       <CardHeader className="space-y-2">
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="text-lg">{offre.label}</CardTitle>
-          {vedette && <Badge>Le plus choisi</Badge>}
+          {vedette && <Badge>Plus populaire</Badge>}
         </div>
         <p className="text-sm text-muted-foreground">{offre.tagline}</p>
         <div>
@@ -105,17 +110,19 @@ function TarifsPage() {
 
   return (
     <>
-      <div className="mx-auto max-w-5xl space-y-12 px-4 py-12">
-        <header className="space-y-3 text-center">
-          <h1 className="text-3xl font-bold text-foreground sm:text-4xl">
+      <section className="bg-linear-to-br from-primary to-[oklch(0.32_0.07_262)] px-4 py-16">
+        <header className="mx-auto max-w-3xl space-y-4 text-center">
+          <h1 className="text-3xl font-bold text-primary-foreground sm:text-4xl">
             Des tarifs simples, en francs guinéens
           </h1>
-          <p className="mx-auto max-w-2xl text-muted-foreground">
-            Choisissez l'offre adaptée à votre logement ou à votre commerce. Le paiement se
-            règle sur place ou par Mobile Money dès son activation ; l'installation est
-            planifiée par un agent agréé.
+          <p className="mx-auto max-w-2xl text-primary-foreground/85">
+            Choisissez l'offre adaptée à votre logement ou à votre commerce. Vous réglez sur
+            place ou par Mobile Money, puis un agent agréé vient poser votre balise.
           </p>
         </header>
+      </section>
+
+      <div className="mx-auto max-w-5xl space-y-12 px-4 py-12">
 
         <section className="space-y-4">
           <h2 className="text-xl font-semibold text-foreground">Particuliers</h2>
@@ -170,6 +177,34 @@ function TarifsPage() {
               <dd className="text-muted-foreground">
                 Oui, une facture PDF est générée automatiquement après confirmation du
                 paiement et disponible dans votre espace client.
+              </dd>
+            </div>
+            <div>
+              <dt className="font-medium text-foreground">
+                Mon adresse sera-t-elle visible par tout le monde ?
+              </dt>
+              <dd className="text-muted-foreground">
+                Non. Une adresse résidentielle reste privée : seule une personne qui connaît
+                votre numéro peut afficher la position. Les fiches d'établissement, elles,
+                sont publiques par choix du responsable.
+              </dd>
+            </div>
+            <div>
+              <dt className="font-medium text-foreground">
+                Que se passe-t-il si je déménage ?
+              </dt>
+              <dd className="text-muted-foreground">
+                Signalez-le depuis votre espace client : nous désactivons l'ancienne balise et
+                planifions une nouvelle pose à votre nouvelle adresse.
+              </dd>
+            </div>
+            <div>
+              <dt className="font-medium text-foreground">
+                Y a-t-il un abonnement pour les particuliers ?
+              </dt>
+              <dd className="text-muted-foreground">
+                Non. Les offres résidentielles se règlent une seule fois. Seules les offres
+                professionnelles comportent un abonnement mensuel.
               </dd>
             </div>
           </dl>
