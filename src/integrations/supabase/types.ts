@@ -1007,6 +1007,79 @@ export type Database = {
           },
         ]
       }
+      pending_installation_docs: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          label: string | null
+          mime_type: string | null
+          pending_installation_id: string
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          size_bytes: number | null
+          status: string
+          storage_path: string
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind?: string
+          label?: string | null
+          mime_type?: string | null
+          pending_installation_id: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          size_bytes?: number | null
+          status?: string
+          storage_path: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          label?: string | null
+          mime_type?: string | null
+          pending_installation_id?: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          size_bytes?: number | null
+          status?: string
+          storage_path?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_installation_docs_pending_installation_id_fkey"
+            columns: ["pending_installation_id"]
+            isOneToOne: false
+            referencedRelation: "pending_installations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_installation_docs_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_installation_docs_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pending_installations: {
         Row: {
           assigned_agent_id: string | null
