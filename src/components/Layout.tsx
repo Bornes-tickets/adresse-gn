@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Briefcase,
   ChevronDown,
@@ -17,6 +18,7 @@ import {
 
 
 import { Logo } from "@/components/Logo";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -35,14 +37,15 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/useAuth";
+import { useLangue } from "@/hooks/useLangue";
 import { cn } from "@/lib/utils";
 
 const WHATSAPP_SERVICE = "224620000000";
 
 const NAV = [
-  { to: "/tarifs" as const, label: "Tarifs" },
-  { to: "/pro" as const, label: "Pour les pros" },
-  { to: "/a-propos" as const, label: "À propos" },
+  { to: "/tarifs" as const, cle: "nav.pricing" },
+  { to: "/pro" as const, cle: "nav.pros" },
+  { to: "/a-propos" as const, cle: "nav.about" },
 ];
 
 function useScrolled() {
@@ -57,6 +60,7 @@ function useScrolled() {
 }
 
 function Header() {
+  const { t } = useTranslation();
   const { user, isAuthenticated } = useAuth();
   const scrolled = useScrolled();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -72,29 +76,31 @@ function Header() {
       )}
     >
       <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 py-3.5 sm:px-6">
-        <Link to="/" aria-label="Adresse GN — accueil" className="min-w-0">
+        <Link to="/" aria-label={t("nav.home")} className="min-w-0">
           <Logo />
         </Link>
 
         <div className="flex items-center gap-1 sm:gap-2">
-          <nav className="mr-2 hidden items-center gap-1 lg:flex">
+          <nav className="mr-2 hidden items-center gap-1 rtl:mr-0 rtl:ml-2 lg:flex">
             {NAV.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
                 className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
               >
-                {item.label}
+                {t(item.cle)}
               </Link>
             ))}
           </nav>
+
+          <LanguageSwitcher />
 
           {isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
                   className="rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-accent/40"
-                  aria-label="Menu utilisateur"
+                  aria-label={t("nav.userMenu")}
                 >
                   <Avatar>
                     <AvatarFallback className="bg-primary text-sm text-primary-foreground">
@@ -111,20 +117,20 @@ function Header() {
                 <DropdownMenuItem asChild>
                   <Link to="/mon-compte" className="flex items-center gap-2">
                     <UserIcon className="size-4" />
-                    Mon compte
+                    {t("nav.account")}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to="/pro" className="flex items-center gap-2">
                     <Briefcase className="size-4" />
-                    Espace pro
+                    {t("nav.proSpace")}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link to="/logout" className="flex items-center gap-2">
                     <LogOut className="size-4" />
-                    Se déconnecter
+                    {t("nav.logout")}
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -132,13 +138,13 @@ function Header() {
           ) : (
             <>
               <Button asChild variant="ghost" className="hidden h-11 sm:inline-flex">
-                <Link to="/login">Se connecter</Link>
+                <Link to="/login">{t("nav.login")}</Link>
               </Button>
               <Button
                 asChild
                 className="h-11 bg-accent text-accent-foreground transition-transform duration-200 hover:scale-[1.02] hover:bg-accent-dark active:scale-[0.98]"
               >
-                <Link to="/tarifs">Commander</Link>
+                <Link to="/tarifs">{t("nav.order")}</Link>
               </Button>
             </>
           )}
@@ -149,14 +155,14 @@ function Header() {
                 variant="ghost"
                 size="icon"
                 className="size-11 lg:hidden"
-                aria-label="Ouvrir le menu"
+                aria-label={t("nav.openMenu")}
               >
                 <Menu className="size-5" />
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[280px]">
               <SheetHeader>
-                <SheetTitle className="text-left">
+                <SheetTitle className="text-left rtl:text-right">
                   <Logo />
                 </SheetTitle>
               </SheetHeader>
@@ -168,7 +174,7 @@ function Header() {
                     onClick={() => setMenuOpen(false)}
                     className="rounded-lg px-3 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted"
                   >
-                    {item.label}
+                    {t(item.cle)}
                   </Link>
                 ))}
                 <Link
@@ -176,7 +182,7 @@ function Header() {
                   onClick={() => setMenuOpen(false)}
                   className="rounded-lg px-3 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted"
                 >
-                  Confidentialité
+                  {t("nav.privacy")}
                 </Link>
                 {!isAuthenticated && (
                   <Link
@@ -184,7 +190,7 @@ function Header() {
                     onClick={() => setMenuOpen(false)}
                     className="rounded-lg px-3 py-3 text-base font-medium text-accent transition-colors hover:bg-muted"
                   >
-                    Se connecter
+                    {t("nav.login")}
                   </Link>
                 )}
               </nav>
@@ -199,63 +205,65 @@ function Header() {
 const FOCUS =
   "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950";
 
-type FooterLink = { label: string; to?: string; href?: string; disabled?: boolean };
+type FooterLink = { cle: string; to?: string; href?: string; disabled?: boolean };
 
-const FOOTER_COLS: { title: string; links: FooterLink[] }[] = [
+const FOOTER_COLS: { cle: string; links: FooterLink[] }[] = [
   {
-    title: "Produit",
+    cle: "footer.cols.product",
     links: [
-      { label: "Tarifs", to: "/tarifs" },
-      { label: "Pour les particuliers", href: "/a-propos#particuliers" },
-      { label: "Pour les pros", href: "/a-propos#pros" },
-      { label: "API", href: "/a-propos#api" },
+      { cle: "footer.links.pricing", to: "/tarifs" },
+      { cle: "footer.links.individuals", href: "/a-propos#particuliers" },
+      { cle: "footer.links.pros", href: "/a-propos#pros" },
+      { cle: "footer.links.api", href: "/a-propos#api" },
     ],
   },
   {
-    title: "Ressources",
+    cle: "footer.cols.resources",
     links: [
-      { label: "Comment ça marche", to: "/a-propos" },
-      { label: "Aide", href: "mailto:contact@adresse.gn" },
-      { label: "FAQ", href: "/a-propos#faq" },
-      { label: "État du service", disabled: true },
+      { cle: "footer.links.howItWorks", to: "/a-propos" },
+      { cle: "footer.links.help", href: "mailto:contact@adresse.gn" },
+      { cle: "footer.links.faq", href: "/a-propos#faq" },
+      { cle: "footer.links.status", disabled: true },
     ],
   },
   {
-    title: "Entreprise",
+    cle: "footer.cols.company",
     links: [
-      { label: "À propos", to: "/a-propos" },
-      { label: "Contact", href: "mailto:contact@adresse.gn" },
-      { label: "Presse", disabled: true },
-      { label: "Partenaires", disabled: true },
+      { cle: "footer.links.about", to: "/a-propos" },
+      { cle: "footer.links.contact", href: "mailto:contact@adresse.gn" },
+      { cle: "footer.links.press", disabled: true },
+      { cle: "footer.links.partners", disabled: true },
     ],
   },
   {
-    title: "Légal",
+    cle: "footer.cols.legal",
     links: [
-      { label: "Mentions légales", to: "/confidentialite" },
-      { label: "Confidentialité", to: "/confidentialite" },
-      { label: "CGU", to: "/confidentialite" },
-      { label: "Cookies", to: "/confidentialite" },
+      { cle: "footer.links.legalNotice", to: "/confidentialite" },
+      { cle: "footer.links.privacy", to: "/confidentialite" },
+      { cle: "footer.links.terms", to: "/confidentialite" },
+      { cle: "footer.links.cookies", to: "/confidentialite" },
     ],
   },
 ];
 
 function FooterLinkItem({ link }: { link: FooterLink }) {
+  const { t } = useTranslation();
   const base = cn("text-sm transition-colors rounded-sm", FOCUS);
+  const label = t(link.cle);
   if (link.disabled) {
     return (
       <span
         aria-disabled="true"
         className={cn(base, "cursor-not-allowed text-slate-300 opacity-40")}
       >
-        {link.label}
+        {label}
       </span>
     );
   }
   if (link.href) {
     return (
       <a href={link.href} className={cn(base, "text-slate-300 hover:text-white")}>
-        {link.label}
+        {label}
       </a>
     );
   }
@@ -264,12 +272,16 @@ function FooterLinkItem({ link }: { link: FooterLink }) {
       to={link.to as "/tarifs"}
       className={cn(base, "text-slate-300 hover:text-white")}
     >
-      {link.label}
+      {label}
     </Link>
   );
 }
 
 function Footer() {
+  const { t } = useTranslation();
+  const { langue, langues } = useLangue();
+  const langueCourante = langues.find((l) => l.code === langue) ?? langues[0];
+
   return (
     <footer className="bg-slate-950 text-slate-300">
       <div className="mx-auto max-w-7xl px-6 pt-20 pb-10 md:px-8">
@@ -277,13 +289,11 @@ function Footer() {
           {/* Bloc marque */}
           <div className="space-y-5 lg:col-span-4">
             <Logo tone="light" />
-            <p className="max-w-xs text-sm text-slate-400">
-              L'adresse numérique de la Guinée.
-            </p>
+            <p className="max-w-xs text-sm text-slate-400">{t("footer.tagline")}</p>
             <div className="flex flex-col gap-2.5">
               <span className="flex items-center gap-2 text-sm text-slate-400">
                 <MapPin className="size-3.5 shrink-0" />
-                Conakry · Guinée
+                {t("footer.location")}
               </span>
               <a
                 href="mailto:contact@adresse.gn"
@@ -305,23 +315,23 @@ function Footer() {
                 )}
               >
                 <MessageCircle className="size-3.5 shrink-0" />
-                WhatsApp
+                {t("footer.whatsapp")}
               </a>
             </div>
             <span className="inline-flex rounded-full border border-accent/20 bg-accent/10 px-3 py-1 text-xs text-accent">
-              Pilote 2026 en cours
+              {t("footer.pilot")}
             </span>
           </div>
 
           {/* Colonnes de liens — desktop */}
           {FOOTER_COLS.map((col) => (
-            <div key={col.title} className="hidden lg:col-span-2 lg:block">
+            <div key={col.cle} className="hidden lg:col-span-2 lg:block">
               <h2 className="mb-4 text-xs font-semibold tracking-widest text-slate-500 uppercase">
-                {col.title}
+                {t(col.cle)}
               </h2>
               <nav className="flex flex-col space-y-3">
                 {col.links.map((link) => (
-                  <FooterLinkItem key={link.label} link={link} />
+                  <FooterLinkItem key={link.cle} link={link} />
                 ))}
               </nav>
             </div>
@@ -330,19 +340,19 @@ function Footer() {
           {/* Colonnes de liens — accordéons mobile/tablette */}
           <div className="divide-y divide-slate-800 border-y border-slate-800 lg:hidden">
             {FOOTER_COLS.map((col) => (
-              <details key={col.title} className="group py-3">
+              <details key={col.cle} className="group py-3">
                 <summary
                   className={cn(
                     "flex cursor-pointer list-none items-center justify-between rounded-sm text-xs font-semibold tracking-widest text-slate-500 uppercase",
                     FOCUS,
                   )}
                 >
-                  {col.title}
+                  {t(col.cle)}
                   <ChevronDown className="size-4 transition-transform group-open:rotate-180" />
                 </summary>
                 <nav className="mt-3 flex flex-col space-y-3">
                   {col.links.map((link) => (
-                    <FooterLinkItem key={link.label} link={link} />
+                    <FooterLinkItem key={link.cle} link={link} />
                   ))}
                 </nav>
               </details>
@@ -354,9 +364,9 @@ function Footer() {
 
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
           <div className="flex flex-wrap items-center justify-center gap-2 text-xs text-slate-500">
-            <span>© 2026 Adresse GN. Tous droits réservés.</span>
+            <span>{t("footer.rights")}</span>
             <span aria-hidden="true">·</span>
-            <span className="transition-colors hover:text-slate-300">🇫🇷 Français</span>
+            <LanguageSwitcher tone="light" className="h-8 px-2 text-xs text-slate-400" />
           </div>
           <div className="flex items-center gap-3">
             {[
@@ -374,6 +384,7 @@ function Footer() {
             ))}
           </div>
         </div>
+        <span className="sr-only">{langueCourante.nom}</span>
       </div>
     </footer>
   );

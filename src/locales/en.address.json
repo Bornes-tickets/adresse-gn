@@ -1,0 +1,93 @@
+{
+  "address": {
+    "verified": "Verified",
+    "distanceFromYou": "{{distance}} from you",
+    "computeDistance": "Calculate distance from my position",
+    "geolocationUnavailable": "Geolocation is not available on this device.",
+    "geolocationDenied": "Location denied. Allow geolocation to see the distance.",
+    "searchError": "An error occurred during the search.",
+    "rateLimited": "Too many searches, try again later.",
+    "invalidNumber": "Invalid number format (expected GN-XXX-999999).",
+    "notFound": "No address matches this number.",
+    "newSearch": "New search",
+    "goThere": "Get there",
+    "share": "Share",
+    "report": "Report",
+    "favorite": "Favorite",
+    "removedFromFavorites": "Removed from favorites.",
+    "addedToFavorites": "Added to your favorites.",
+    "loginToFavorite": "Log in to save a favorite.",
+    "claimPending": "Claim request sent",
+    "claimAddress": "Claim this address",
+    "viewEstablishment": "View business page"
+  },
+  "establishment": {
+    "notFound": "No business is associated with this number.",
+    "viewAddress": "View address",
+    "storefrontAlt": "Storefront of {{name}}",
+    "verified": "Verified",
+    "goThere": "Get there",
+    "call": "Call",
+    "share": "Share",
+    "photos": "Photos",
+    "photoAlt": "Photo of {{name}}",
+    "location": "Location",
+    "openingHours": "Opening hours",
+    "closed": "Closed"
+  },
+  "share": {
+    "title": "Share this address",
+    "whatsapp": "WhatsApp",
+    "sms": "SMS",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied",
+    "copyFailed": "Could not copy the link",
+    "downloadQr": "Download QR code",
+    "qrUnavailable": "QR code unavailable",
+    "qrDownloaded": "QR code downloaded",
+    "scanToOpen": "Scan to open this address",
+    "messageWithName": "{{name}} — Adresse GN {{number}}: {{link}}",
+    "messageWithoutName": "Adresse GN {{number}}: {{link}}"
+  },
+  "directions": {
+    "chooseApp": "Choose an app",
+    "opensTowards": "Directions will open towards"
+  },
+  "report": {
+    "title": "Report a problem",
+    "loginPrompt": "Log in to report a problem with this address.",
+    "login": "Log in",
+    "detailsPlaceholder": "Details (optional)",
+    "submit": "Send report",
+    "submitting": "Sending…",
+    "failed": "Report failed: {{error}}",
+    "success": "Thank you, your report has been submitted.",
+    "reasons": {
+      "wrongLocation": "Incorrect location",
+      "closed": "Place closed or nonexistent",
+      "damagedBeacon": "Damaged or illegible beacon",
+      "other": "Other"
+    }
+  },
+  "claim": {
+    "title": "Claim this address",
+    "alreadyMine": "This address already belongs to you.",
+    "manageBeacons": "Manage my beacons",
+    "loginPrompt": "Log in to declare that this place is yours.",
+    "login": "Log in",
+    "underReview": "Your request is under review ({{status}}).",
+    "ownerName": "Name of the owner or occupant",
+    "phone": "Contact phone number",
+    "phonePlaceholder": "+224 ...",
+    "justification": "Justification",
+    "justificationPlaceholder": "Lease, invoice, land title, connection to the place…",
+    "proofFile": "Supporting document (photo or PDF)",
+    "cancel": "Cancel",
+    "submit": "Send request",
+    "submitting": "Sending…",
+    "success": "Request sent. Our team will review it within 48 hours.",
+    "declaredOwner": "Declared owner: {{name}}",
+    "phoneLabel": "Phone: {{phone}}",
+    "fileReadError": "Unable to read the file."
+  }
+}

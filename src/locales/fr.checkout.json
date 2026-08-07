@@ -1,0 +1,48 @@
+{
+  "checkout": {
+    "commander": {
+      "offerUnavailable": {
+        "title": "Offre indisponible",
+        "description": "Cette offre est sur devis ou n'existe pas. Consultez la grille tarifaire.",
+        "viewPricing": "Voir les tarifs"
+      },
+      "title": "Récapitulatif de commande",
+      "total": "Total à payer",
+      "continueToPayment": "Continuer vers le paiement",
+      "changeOffer": "Changer d'offre",
+      "disclaimer": "Aucun prélèvement automatique : le paiement est encaissé après validation par un conseiller Adresse GN. Vous recevrez une facture PDF dès confirmation."
+    },
+    "paiement": {
+      "orderNotFound": {
+        "title": "Commande introuvable",
+        "description": "Cette commande n'existe pas ou ne vous appartient pas.",
+        "viewPricing": "Voir les tarifs"
+      },
+      "title": "Paiement",
+      "orderDetails": "Détail de la commande",
+      "total": "Total",
+      "paymentInfo": "Paiement {{provider}} — {{status}}",
+      "receipt": " · reçu {{ref}}",
+      "confirmed": {
+        "title": "Paiement confirmé",
+        "description": "Un agent va planifier votre installation. Vous serez prévenu par notification.",
+        "downloadInvoice": "Télécharger la facture {{number}}",
+        "goToAccount": "Aller à mon espace"
+      },
+      "chooseMethod": "Choisissez votre moyen de paiement",
+      "choose": "Choisir",
+      "comingSoon": "Bientôt disponible",
+      "instructions": {
+        "title": "Instructions de paiement",
+        "contactWhatsapp": "Contacter un conseiller sur WhatsApp",
+        "autoUpdate": "Cette page se met à jour automatiquement dès que le paiement est confirmé."
+      },
+      "toasts": {
+        "instructionsGenerated": "Instructions de paiement générées."
+      }
+    },
+    "logout": {
+      "inProgress": "Déconnexion en cours…"
+    }
+  }
+}

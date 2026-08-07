@@ -12,6 +12,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 import { BeaconMap } from "@/components/BeaconMap";
 import { ClaimDialog } from "@/components/ClaimDialog";
@@ -65,6 +66,7 @@ export const Route = createFileRoute("/a/$number")({
 
 
 function BeaconResult() {
+  const { t } = useTranslation();
   const { number } = Route.useParams();
   const [position, setPosition] = useState<{ lat: number; lng: number } | null>(null);
   const [geoError, setGeoError] = useState<string | null>(null);
@@ -91,7 +93,7 @@ function BeaconResult() {
   const basculerFavori = useMutation({
     mutationFn: () => ownerToggleFavorite({ data: { number } }),
     onSuccess: (res: { favorited?: boolean }) => {
-      toast.success(res?.favorited === false ? "Retiré des favoris." : "Ajouté à vos favoris.");
+      toast.success(res?.favorited === false ? t("address.removedFromFavorites") : t("address.addedToFavorites"));
       queryClient.invalidateQueries({ queryKey: ["beacon-context", number] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -100,7 +102,7 @@ function BeaconResult() {
 
   const demanderPosition = () => {
     if (!("geolocation" in navigator)) {
-      setGeoError("La géolocalisation n'est pas disponible sur cet appareil.");
+      setGeoError(t("address.geolocationUnavailable"));
       return;
     }
     navigator.geolocation.getCurrentPosition(
@@ -108,7 +110,7 @@ function BeaconResult() {
         setGeoError(null);
         setPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude });
       },
-      () => setGeoError("Position refusée. Autorisez la géolocalisation pour voir la distance."),
+      () => setGeoError(t("address.geolocationDenied")),
       { enableHighAccuracy: true, timeout: 10000 },
     );
   };
@@ -155,15 +157,15 @@ function BeaconResult() {
               <p className="font-mono text-lg text-primary">{number}</p>
               <p className="text-muted-foreground">
                 {error
-                  ? "Une erreur est survenue pendant la recherche."
+                  ? t("address.searchError")
                   : data?.status === "rate_limited"
-                    ? (data.message ?? "Trop de recherches, réessayez plus tard.")
+                    ? (data.message ?? t("address.rateLimited"))
                     : data?.status === "invalid"
-                      ? "Format de numéro invalide (attendu GN-XXX-999999)."
-                      : "Aucune adresse ne correspond à ce numéro."}
+                      ? t("address.invalidNumber")
+                      : t("address.notFound")}
               </p>
               <Button asChild variant="outline">
-                <Link to="/">Nouvelle recherche</Link>
+                <Link to="/">{t("address.newSearch")}</Link>
               </Button>
             </CardContent>
           </Card>
@@ -182,7 +184,7 @@ function BeaconResult() {
                   {resultat.verification_level === "verified" && (
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-success/10 px-3 py-1 text-xs font-medium text-success">
                       <BadgeCheck className="size-3.5" />
-                      Vérifié
+                      {t("address.verified")}
                     </span>
                   )}
                 </div>
@@ -200,14 +202,14 @@ function BeaconResult() {
                 <div className="flex items-center gap-2 text-sm">
                   <LocateFixed className="size-4 shrink-0 text-accent" />
                   {distance ? (
-                    <span className="text-foreground">À {distance} de vous</span>
+                    <span className="text-foreground">{t("address.distanceFromYou", { distance })}</span>
                   ) : (
                     <button
                       type="button"
                       onClick={demanderPosition}
                       className="text-accent underline underline-offset-2"
                     >
-                      Calculer la distance depuis ma position
+                      {t("address.computeDistance")}
                     </button>
                   )}
                 </div>
@@ -227,7 +229,7 @@ function BeaconResult() {
                 onClick={() => setDirectionsOpen(true)}
               >
                 <Navigation className="size-5" />
-                S'y rendre
+                {t("address.goThere")}
               </Button>
 
               <div className="mt-3 grid grid-cols-3 gap-2">
@@ -237,7 +239,7 @@ function BeaconResult() {
                   onClick={() => setShareOpen(true)}
                 >
                   <Share2 className="size-4" />
-                  <span className="hidden sm:inline">Partager</span>
+                  <span className="hidden sm:inline">{t("address.share")}</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -245,14 +247,14 @@ function BeaconResult() {
                   onClick={() => setReportOpen(true)}
                 >
                   <Flag className="size-4" />
-                  <span className="hidden sm:inline">Signaler</span>
+                  <span className="hidden sm:inline">{t("address.report")}</span>
                 </Button>
                 <Button
                   variant="outline"
                   className="h-11"
                   onClick={() => {
                     if (!isAuthenticated) {
-                      toast.info("Connectez-vous pour enregistrer un favori.");
+                      toast.info(t("address.loginToFavorite"));
                       return;
                     }
                     basculerFavori.mutate();
@@ -262,7 +264,7 @@ function BeaconResult() {
                   <Heart
                     className={`size-4 ${contexte.data?.favorite_id ? "fill-destructive text-destructive" : ""}`}
                   />
-                  <span className="hidden sm:inline">Favori</span>
+                  <span className="hidden sm:inline">{t("address.favorite")}</span>
                 </Button>
               </div>
 
@@ -274,8 +276,8 @@ function BeaconResult() {
                 >
                   <ShieldCheck className="size-4" />
                   {contexte.data?.claim_status === "pending"
-                    ? "Demande de réclamation envoyée"
-                    : "Réclamer cette adresse"}
+                    ? t("address.claimPending")
+                    : t("address.claimAddress")}
                 </Button>
               )}
 
@@ -283,7 +285,7 @@ function BeaconResult() {
                 <Button asChild variant="ghost" className="mt-1 h-11 w-full text-sm">
                   <Link to="/etablissement/$number" params={{ number }}>
                     <Building2 className="size-4" />
-                    Voir la fiche établissement
+                    {t("address.viewEstablishment")}
                   </Link>
                 </Button>
               )}

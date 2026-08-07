@@ -1,6 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+
 
 import { AuthLayout } from "@/components/AuthLayout";
 import { Button } from "@/components/ui/button";
@@ -28,6 +30,7 @@ export const Route = createFileRoute("/login")({
 });
 
 function Login() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
@@ -42,29 +45,29 @@ function Login() {
     });
     setEnCours(false);
     if (error) {
-      toast.error("Connexion impossible", { description: error.message });
+      toast.error(t("auth.login.errorTitle"), { description: error.message });
       return;
     }
-    toast.success("Connexion réussie");
+    toast.success(t("auth.login.success"));
     navigate({ to: "/" });
   };
 
   return (
     <AuthLayout
-      title="Bon retour"
-      subtitle="Connectez-vous pour gérer vos adresses, vos balises et vos favoris."
+      title={t("auth.login.title")}
+      subtitle={t("auth.login.subtitle")}
       footer={
         <>
-          Pas encore de compte ?{" "}
+          {t("auth.login.noAccount")}{" "}
           <Link to="/signup" className="font-medium text-accent hover:underline">
-            Créer un compte
+            {t("auth.login.createAccount")}
           </Link>
         </>
       }
     >
       <form onSubmit={soumettre} className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t("auth.email")}</Label>
           <Input
             id="email"
             type="email"
@@ -76,7 +79,7 @@ function Login() {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="password">Mot de passe</Label>
+          <Label htmlFor="password">{t("auth.password")}</Label>
           <Input
             id="password"
             type="password"
@@ -92,8 +95,9 @@ function Login() {
           className="h-12 w-full text-base font-medium transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
           disabled={enCours}
         >
-          {enCours ? "Connexion…" : "Se connecter"}
+          {enCours ? t("auth.login.submitting") : t("auth.login.submit")}
         </Button>
+
       </form>
     </AuthLayout>
   );

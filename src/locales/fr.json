@@ -1,0 +1,207 @@
+{
+  "language": {
+    "label": "Langue",
+    "fr": "Français",
+    "ar": "العربية",
+    "en": "English"
+  },
+  "brand": {
+    "tagline": "Un lieu · Un numéro · Un itinéraire"
+  },
+  "nav": {
+    "pricing": "Tarifs",
+    "pros": "Pour les pros",
+    "about": "À propos",
+    "privacy": "Confidentialité",
+    "home": "Adresse GN — accueil",
+    "openMenu": "Ouvrir le menu",
+    "userMenu": "Menu utilisateur",
+    "login": "Se connecter",
+    "order": "Commander",
+    "account": "Mon compte",
+    "proSpace": "Espace pro",
+    "logout": "Se déconnecter"
+  },
+  "footer": {
+    "tagline": "L'adresse numérique de la Guinée.",
+    "location": "Conakry · Guinée",
+    "whatsapp": "WhatsApp",
+    "pilot": "Pilote 2026 en cours",
+    "rights": "© 2026 Adresse GN. Tous droits réservés.",
+    "cols": {
+      "product": "Produit",
+      "resources": "Ressources",
+      "company": "Entreprise",
+      "legal": "Légal"
+    },
+    "links": {
+      "pricing": "Tarifs",
+      "individuals": "Pour les particuliers",
+      "pros": "Pour les pros",
+      "api": "API",
+      "howItWorks": "Comment ça marche",
+      "help": "Aide",
+      "faq": "FAQ",
+      "status": "État du service",
+      "about": "À propos",
+      "contact": "Contact",
+      "press": "Presse",
+      "partners": "Partenaires",
+      "legalNotice": "Mentions légales",
+      "privacy": "Confidentialité",
+      "terms": "CGU",
+      "cookies": "Cookies"
+    }
+  },
+  "home": {
+    "hero": {
+      "title": "Trouvez une adresse en un numéro",
+      "subtitle": "Chaque lieu en Guinée reçoit un numéro unique. Saisissez-le pour obtenir sa localisation.",
+      "inputLabel": "Numéro de balise",
+      "placeholder": "GN-CKY-582741",
+      "scan": "Scanner un QR code",
+      "soon": "Bientôt disponible",
+      "search": "Trouver l'adresse",
+      "searching": "Recherche…"
+    },
+    "errors": {
+      "incomplete": "Ce numéro semble incomplet — saisissez les 6 chiffres de la balise (ex. 582741) ou le numéro entier GN-CKY-582741.",
+      "rateLimited": "Beaucoup de recherches d'un coup — patientez quelques secondes puis réessayez.",
+      "notFound": "Nous n'avons pas trouvé cette adresse — vérifiez le numéro ou contactez le propriétaire du lieu."
+    },
+    "product": {
+      "eyebrow": "Produit",
+      "title": "Un numéro. Une carte. Un itinéraire.",
+      "text": "Saisissez un numéro de balise, obtenez l'emplacement exact sur la carte, et lancez l'itinéraire dans Google Maps, Waze ou Apple Plans.",
+      "perks": {
+        "qr": "Fonctionne aussi via QR code",
+        "apps": "Compatible avec toutes les apps de navigation",
+        "noInstall": "Aucune installation requise pour rechercher"
+      },
+      "example": "Voir un exemple",
+      "mockName": "Restaurant Le Damier",
+      "mockZone": "Kaloum · Conakry",
+      "goThere": "S'y rendre"
+    },
+    "usages": {
+      "eyebrow": "Usages",
+      "title": "Pensé pour tous les usages du quotidien.",
+      "individuals": {
+        "title": "Particuliers",
+        "text": "Recevoir visiteurs et livraisons."
+      },
+      "shops": {
+        "title": "Commerces",
+        "text": "Être trouvés sans expliquer."
+      },
+      "delivery": {
+        "title": "Livraisons",
+        "text": "Livrer sans appels d'orientation."
+      },
+      "companies": {
+        "title": "Entreprises",
+        "text": "Intégrer les adresses par API."
+      }
+    },
+    "cta": {
+      "eyebrow": "Commencer",
+      "title": "Obtenez votre adresse en 15 minutes.",
+      "text": "Un agent vient chez vous, pose la plaque numérique et active votre numéro. Simple, rapide, définitif.",
+      "pricing": "Voir les tarifs",
+      "contact": "Contactez-nous",
+      "plate": "Plaque physique posée par un agent agréé."
+    }
+  },
+  "auth": {
+    "privacyNote": "Vos données restent privées par défaut.",
+    "quote": "« Une adresse n'est pas un détail administratif. C'est la condition pour être livré, secouru, visité. »",
+    "quoteSource": "Adresse GN — système d'adressage guinéen, pilote 2026.",
+    "email": "Email",
+    "password": "Mot de passe",
+    "login": {
+      "title": "Bon retour",
+      "subtitle": "Connectez-vous pour gérer vos adresses, vos balises et vos favoris.",
+      "noAccount": "Pas encore de compte ?",
+      "createAccount": "Créer un compte",
+      "submit": "Se connecter",
+      "submitting": "Connexion…",
+      "errorTitle": "Connexion impossible",
+      "success": "Connexion réussie"
+    },
+    "signup": {
+      "title": "Créer votre compte",
+      "subtitle": "Quelques secondes suffisent pour commencer à gérer vos adresses Adresse GN.",
+      "already": "Déjà inscrit ?",
+      "login": "Se connecter",
+      "submit": "Créer mon compte",
+      "submitting": "Création…",
+      "minChars": "6 caractères minimum.",
+      "errorTitle": "Inscription impossible",
+      "success": "Compte créé",
+      "checkMailTitle": "Vérifiez votre boîte mail",
+      "checkMailSubtitle": "Nous avons envoyé un lien de confirmation à {{email}}. Cliquez sur ce lien pour activer votre compte.",
+      "backHome": "Retour à l'accueil"
+    }
+  },
+  "about": {
+    "heroTitle": "Donner une adresse à chaque lieu de Guinée",
+    "heroText": "Adresse GN attribue à chaque bâtiment, commerce ou parcelle un numéro unique matérialisé par une balise physique. Ce numéro suffit à retrouver la position exacte du lieu et à s'y rendre.",
+    "values": {
+      "reliability": {
+        "title": "Fiabilité",
+        "text": "Chaque position est relevée sur place par un agent agréé, puis contrôlée avant publication."
+      },
+      "privacy": {
+        "title": "Respect de la vie privée",
+        "text": "Une adresse résidentielle reste privée par défaut : elle n'est visible que par ceux à qui vous donnez le numéro."
+      },
+      "utility": {
+        "title": "Utilité immédiate",
+        "text": "Pas de théorie : un numéro, une carte, un itinéraire qui s'ouvre dans l'application de navigation."
+      },
+      "local": {
+        "title": "Ancrage local",
+        "text": "Le réseau d'agents installateurs est recruté et formé dans les quartiers qu'il couvre."
+      }
+    },
+    "mission": {
+      "title": "Notre mission",
+      "text": "En Guinée, expliquer où l'on habite prend souvent plusieurs minutes, un appel téléphonique et quelques repères approximatifs. Cette friction coûte du temps aux familles, des courses perdues aux livreurs et du chiffre d'affaires aux commerces. Notre mission est de remplacer cette explication par un numéro que l'on peut écrire, dicter ou envoyer en une seconde."
+    },
+    "vision": {
+      "title": "Notre vision",
+      "text": "Nous construisons une couche d'adressage nationale ouverte aux services publics comme aux entreprises privées : secours, logistique, commerce en ligne, transport, distribution d'eau et d'électricité. Chaque adresse vérifiée aujourd'hui rend ces services plus rapides demain."
+    },
+    "why": {
+      "eyebrow": "Pourquoi",
+      "quote": "« Une adresse n'est pas un détail administratif. C'est la condition pour être livré, secouru, visité — et donc pour exister dans l'économie. »"
+    },
+    "valuesTitle": "Nos valeurs",
+    "cta": {
+      "title": "Prêt à obtenir votre numéro ?",
+      "button": "Voir les offres"
+    },
+    "team": {
+      "title": "L'équipe",
+      "text": "Adresse GN réunit des profils opérations, terrain et technologie. Les présentations nominatives seront publiées ici.",
+      "management": "Direction générale",
+      "operations": "Opérations terrain",
+      "technology": "Technologie et données",
+      "soon": "Poste présenté prochainement"
+    }
+  },
+  "common": {
+    "backHome": "Retour à l'accueil"
+  },
+  "notFound": {
+    "title": "Cette page n'existe pas (ou plus)",
+    "text": "Le lien est peut-être incomplet. Revenez à l'accueil pour rechercher une adresse par son numéro.",
+    "home": "Retour à l'accueil"
+  },
+  "error": {
+    "title": "Cette page n'a pas pu s'afficher",
+    "text": "Un incident technique s'est produit de notre côté. Réessayez ou revenez à l'accueil.",
+    "retry": "Réessayer",
+    "home": "Retour à l'accueil"
+  }
+}

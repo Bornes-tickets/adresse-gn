@@ -1,0 +1,93 @@
+{
+  "address": {
+    "verified": "Vérifié",
+    "distanceFromYou": "À {{distance}} de vous",
+    "computeDistance": "Calculer la distance depuis ma position",
+    "geolocationUnavailable": "La géolocalisation n'est pas disponible sur cet appareil.",
+    "geolocationDenied": "Position refusée. Autorisez la géolocalisation pour voir la distance.",
+    "searchError": "Une erreur est survenue pendant la recherche.",
+    "rateLimited": "Trop de recherches, réessayez plus tard.",
+    "invalidNumber": "Format de numéro invalide (attendu GN-XXX-999999).",
+    "notFound": "Aucune adresse ne correspond à ce numéro.",
+    "newSearch": "Nouvelle recherche",
+    "goThere": "S'y rendre",
+    "share": "Partager",
+    "report": "Signaler",
+    "favorite": "Favori",
+    "removedFromFavorites": "Retiré des favoris.",
+    "addedToFavorites": "Ajouté à vos favoris.",
+    "loginToFavorite": "Connectez-vous pour enregistrer un favori.",
+    "claimPending": "Demande de réclamation envoyée",
+    "claimAddress": "Réclamer cette adresse",
+    "viewEstablishment": "Voir la fiche établissement"
+  },
+  "establishment": {
+    "notFound": "Aucun établissement n'est associé à ce numéro.",
+    "viewAddress": "Voir l'adresse",
+    "storefrontAlt": "Devanture de {{name}}",
+    "verified": "Vérifié",
+    "goThere": "S'y rendre",
+    "call": "Appeler",
+    "share": "Partager",
+    "photos": "Photos",
+    "photoAlt": "Photo de {{name}}",
+    "location": "Localisation",
+    "openingHours": "Horaires",
+    "closed": "Fermé"
+  },
+  "share": {
+    "title": "Partager cette adresse",
+    "whatsapp": "WhatsApp",
+    "sms": "SMS",
+    "copyLink": "Copier le lien",
+    "linkCopied": "Lien copié",
+    "copyFailed": "Impossible de copier le lien",
+    "downloadQr": "Télécharger le QR",
+    "qrUnavailable": "QR code indisponible",
+    "qrDownloaded": "QR code téléchargé",
+    "scanToOpen": "Scannez pour ouvrir cette adresse",
+    "messageWithName": "{{name}} — Adresse GN {{number}} : {{link}}",
+    "messageWithoutName": "Adresse GN {{number}} : {{link}}"
+  },
+  "directions": {
+    "chooseApp": "Choisir une application",
+    "opensTowards": "L'itinéraire s'ouvre vers"
+  },
+  "report": {
+    "title": "Signaler un problème",
+    "loginPrompt": "Connectez-vous pour signaler un problème sur cette adresse.",
+    "login": "Se connecter",
+    "detailsPlaceholder": "Détails (optionnel)",
+    "submit": "Envoyer le signalement",
+    "submitting": "Envoi…",
+    "failed": "Signalement impossible : {{error}}",
+    "success": "Merci, votre signalement a été transmis.",
+    "reasons": {
+      "wrongLocation": "Localisation incorrecte",
+      "closed": "Lieu fermé ou inexistant",
+      "damagedBeacon": "Balise abîmée ou illisible",
+      "other": "Autre"
+    }
+  },
+  "claim": {
+    "title": "Réclamer cette adresse",
+    "alreadyMine": "Cette adresse vous appartient déjà.",
+    "manageBeacons": "Gérer mes balises",
+    "loginPrompt": "Connectez-vous pour déclarer que ce lieu est le vôtre.",
+    "login": "Se connecter",
+    "underReview": "Votre demande est en cours d'examen ({{status}}).",
+    "ownerName": "Nom du propriétaire ou de l'occupant",
+    "phone": "Téléphone de contact",
+    "phonePlaceholder": "+224 ...",
+    "justification": "Justification",
+    "justificationPlaceholder": "Bail, facture, titre foncier, lien avec le lieu…",
+    "proofFile": "Pièce justificative (photo ou PDF)",
+    "cancel": "Annuler",
+    "submit": "Envoyer la demande",
+    "submitting": "Envoi…",
+    "success": "Demande envoyée. Notre équipe vérifie sous 48 h.",
+    "declaredOwner": "Propriétaire déclaré : {{name}}",
+    "phoneLabel": "Téléphone : {{phone}}",
+    "fileReadError": "Lecture du fichier impossible."
+  }
+}

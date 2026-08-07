@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 
 import { supabase } from "@/integrations/supabase/client";
 
@@ -23,6 +24,7 @@ export const Route = createFileRoute("/logout")({
 });
 
 function Logout() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -42,7 +44,7 @@ function Logout() {
   return (
     <div className="mx-auto max-w-sm px-4 py-16">
       <h1 className="text-xl font-semibold text-foreground">
-        Déconnexion en cours…
+        {t("checkout.logout.inProgress")}
       </h1>
     </div>
   );

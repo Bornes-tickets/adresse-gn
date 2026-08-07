@@ -3,6 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,6 +35,7 @@ function gnf(montant: number): string {
 }
 
 function CommanderPage() {
+  const { t } = useTranslation();
   const { offerCode } = useParams({ from: "/commander/$offerCode" });
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -57,12 +59,12 @@ function CommanderPage() {
     return (
       <>
         <div className="mx-auto max-w-lg px-4 py-20 text-center">
-          <h1 className="text-2xl font-semibold text-foreground">Offre indisponible</h1>
+          <h1 className="text-2xl font-semibold text-foreground">{t("checkout.commander.offerUnavailable.title")}</h1>
           <p className="mt-3 text-sm text-muted-foreground">
-            Cette offre est sur devis ou n'existe pas. Consultez la grille tarifaire.
+            {t("checkout.commander.offerUnavailable.description")}
           </p>
           <Button asChild className="mt-6">
-            <Link to="/tarifs">Voir les tarifs</Link>
+            <Link to="/tarifs">{t("checkout.commander.offerUnavailable.viewPricing")}</Link>
           </Button>
         </div>
       </>
@@ -76,7 +78,7 @@ function CommanderPage() {
     <>
       <div className="mx-auto max-w-2xl space-y-6 px-4 py-12">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">Récapitulatif de commande</h1>
+          <h1 className="text-2xl font-semibold text-foreground">{t("checkout.commander.title")}</h1>
           <p className="text-sm text-muted-foreground">{offre.tagline}</p>
         </div>
 
@@ -96,7 +98,7 @@ function CommanderPage() {
               ))}
             </ul>
             <div className="flex items-center justify-between border-t border-border pt-3">
-              <span className="font-medium text-foreground">Total à payer</span>
+              <span className="font-medium text-foreground">{t("checkout.commander.total")}</span>
               <span className="font-mono text-lg font-bold text-primary">{gnf(total)}</span>
             </div>
             <ul className="space-y-1 text-sm text-muted-foreground">
@@ -116,17 +118,16 @@ function CommanderPage() {
             onClick={() => creer.mutate()}
             disabled={creer.isPending || !user}
           >
-            {creer.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
-            Continuer vers le paiement
+            {creer.isPending && <Loader2 className="mr-2 size-4 animate-spin rtl:mr-0 rtl:ml-2" />}
+            {t("checkout.commander.continueToPayment")}
           </Button>
           <Button variant="outline" className="h-12 w-full sm:w-auto" asChild>
-            <Link to="/tarifs">Changer d'offre</Link>
+            <Link to="/tarifs">{t("checkout.commander.changeOffer")}</Link>
           </Button>
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Aucun prélèvement automatique : le paiement est encaissé après validation par un
-          conseiller Adresse GN. Vous recevrez une facture PDF dès confirmation.
+          {t("checkout.commander.disclaimer")}
         </p>
       </div>
     </>

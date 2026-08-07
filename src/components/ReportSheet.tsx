@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Flag } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -27,16 +28,18 @@ interface ReportSheetProps {
   number: string;
 }
 
-const RAISONS = [
-  { value: "wrong_location", label: "Localisation incorrecte" },
-  { value: "closed", label: "Lieu fermé ou inexistant" },
-  { value: "damaged_beacon", label: "Balise abîmée ou illisible" },
-  { value: "other", label: "Autre" },
-];
+const RAISON_VALUES = ["wrong_location", "closed", "damaged_beacon", "other"] as const;
 
 export function ReportSheet({ open, onOpenChange, beaconId, number }: ReportSheetProps) {
+  const { t } = useTranslation();
   const { user, isAuthenticated } = useAuth();
-  const [reason, setReason] = useState(RAISONS[0]!.value);
+  const RAISONS = [
+    { value: "wrong_location", label: t("report.reasons.wrongLocation") },
+    { value: "closed", label: t("report.reasons.closed") },
+    { value: "damaged_beacon", label: t("report.reasons.damagedBeacon") },
+    { value: "other", label: t("report.reasons.other") },
+  ];
+  const [reason, setReason] = useState<string>(RAISON_VALUES[0]);
   const [description, setDescription] = useState("");
   const [envoi, setEnvoi] = useState(false);
 
@@ -51,10 +54,10 @@ export function ReportSheet({ open, onOpenChange, beaconId, number }: ReportShee
     });
     setEnvoi(false);
     if (error) {
-      toast.error("Signalement impossible : " + error.message);
+      toast.error(t("report.failed", { error: error.message }));
       return;
     }
-    toast.success("Merci, votre signalement a été transmis.");
+    toast.success(t("report.success"));
     setDescription("");
     onOpenChange(false);
   };
@@ -65,7 +68,7 @@ export function ReportSheet({ open, onOpenChange, beaconId, number }: ReportShee
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <Flag className="size-5 text-destructive" />
-            Signaler un problème
+            {t("report.title")}
           </SheetTitle>
           <SheetDescription className="font-mono">{number}</SheetDescription>
         </SheetHeader>
@@ -74,10 +77,10 @@ export function ReportSheet({ open, onOpenChange, beaconId, number }: ReportShee
           {!isAuthenticated ? (
             <>
               <p className="text-sm text-muted-foreground">
-                Connectez-vous pour signaler un problème sur cette adresse.
+                {t("report.loginPrompt")}
               </p>
               <Button asChild size="lg">
-                <Link to="/login">Se connecter</Link>
+                <Link to="/login">{t("report.login")}</Link>
               </Button>
             </>
           ) : (
@@ -94,12 +97,12 @@ export function ReportSheet({ open, onOpenChange, beaconId, number }: ReportShee
               <Textarea
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
-                placeholder="Détails (optionnel)"
+                placeholder={t("report.detailsPlaceholder")}
                 rows={3}
               />
 
               <Button size="lg" onClick={envoyer} disabled={envoi || !beaconId}>
-                {envoi ? "Envoi…" : "Envoyer le signalement"}
+                {envoi ? t("report.submitting") : t("report.submit")}
               </Button>
             </>
           )}

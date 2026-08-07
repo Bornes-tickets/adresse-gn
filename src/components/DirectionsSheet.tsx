@@ -1,4 +1,5 @@
 import { ExternalLink, MapPin, Navigation } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -44,6 +45,7 @@ export function DirectionsSheet({
   lat,
   lng,
 }: DirectionsSheetProps) {
+  const { t } = useTranslation();
   const lancer = (providerId: string, url: string) => {
     window.open(url, "_blank", "noopener,noreferrer");
     void logRoute({ data: { number, provider: providerId } }).catch(() => {
@@ -58,10 +60,10 @@ export function DirectionsSheet({
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <Navigation className="size-5 text-accent" />
-            Choisir une application
+            {t("directions.chooseApp")}
           </SheetTitle>
           <SheetDescription>
-            L'itinéraire s'ouvre vers <span className="font-mono">{number}</span>.
+            {t("directions.opensTowards")} <span className="font-mono">{number}</span>.
           </SheetDescription>
         </SheetHeader>
 

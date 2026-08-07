@@ -1,0 +1,93 @@
+{
+  "address": {
+    "verified": "موثّق",
+    "distanceFromYou": "{{distance}} منك",
+    "computeDistance": "احسب المسافة من موقعي",
+    "geolocationUnavailable": "تحديد الموقع الجغرافي غير متاح على هذا الجهاز.",
+    "geolocationDenied": "تم رفض الموقع. يرجى السماح بتحديد الموقع الجغرافي لمعرفة المسافة.",
+    "searchError": "حدث خطأ أثناء البحث.",
+    "rateLimited": "عدد كبير جدًا من عمليات البحث، حاول مرة أخرى لاحقًا.",
+    "invalidNumber": "تنسيق الرقم غير صالح (المتوقع GN-XXX-999999).",
+    "notFound": "لا يوجد عنوان يطابق هذا الرقم.",
+    "newSearch": "بحث جديد",
+    "goThere": "الذهاب إلى هناك",
+    "share": "مشاركة",
+    "report": "إبلاغ",
+    "favorite": "المفضلة",
+    "removedFromFavorites": "تمت الإزالة من المفضلة.",
+    "addedToFavorites": "تمت الإضافة إلى مفضلتك.",
+    "loginToFavorite": "سجّل الدخول لحفظ عنصر في المفضلة.",
+    "claimPending": "تم إرسال طلب المطالبة",
+    "claimAddress": "المطالبة بهذا العنوان",
+    "viewEstablishment": "عرض صفحة المنشأة"
+  },
+  "establishment": {
+    "notFound": "لا توجد منشأة مرتبطة بهذا الرقم.",
+    "viewAddress": "عرض العنوان",
+    "storefrontAlt": "واجهة {{name}}",
+    "verified": "موثّق",
+    "goThere": "الذهاب إلى هناك",
+    "call": "اتصال",
+    "share": "مشاركة",
+    "photos": "الصور",
+    "photoAlt": "صورة {{name}}",
+    "location": "الموقع",
+    "openingHours": "ساعات العمل",
+    "closed": "مغلق"
+  },
+  "share": {
+    "title": "شارك هذا العنوان",
+    "whatsapp": "واتساب",
+    "sms": "رسالة نصية",
+    "copyLink": "نسخ الرابط",
+    "linkCopied": "تم نسخ الرابط",
+    "copyFailed": "تعذّر نسخ الرابط",
+    "downloadQr": "تنزيل رمز الاستجابة السريعة",
+    "qrUnavailable": "رمز الاستجابة السريعة غير متاح",
+    "qrDownloaded": "تم تنزيل رمز الاستجابة السريعة",
+    "scanToOpen": "امسح لفتح هذا العنوان",
+    "messageWithName": "{{name}} — عنوان GN {{number}}: {{link}}",
+    "messageWithoutName": "عنوان GN {{number}}: {{link}}"
+  },
+  "directions": {
+    "chooseApp": "اختر تطبيقًا",
+    "opensTowards": "سيفتح المسار نحو"
+  },
+  "report": {
+    "title": "الإبلاغ عن مشكلة",
+    "loginPrompt": "سجّل الدخول للإبلاغ عن مشكلة في هذا العنوان.",
+    "login": "تسجيل الدخول",
+    "detailsPlaceholder": "تفاصيل (اختياري)",
+    "submit": "إرسال البلاغ",
+    "submitting": "جارٍ الإرسال…",
+    "failed": "تعذّر الإبلاغ: {{error}}",
+    "success": "شكرًا لك، تم إرسال بلاغك.",
+    "reasons": {
+      "wrongLocation": "موقع غير صحيح",
+      "closed": "المكان مغلق أو غير موجود",
+      "damagedBeacon": "المنارة تالفة أو غير مقروءة",
+      "other": "أخرى"
+    }
+  },
+  "claim": {
+    "title": "المطالبة بهذا العنوان",
+    "alreadyMine": "هذا العنوان يخصك بالفعل.",
+    "manageBeacons": "إدارة منارتي",
+    "loginPrompt": "سجّل الدخول للتصريح بأن هذا المكان يخصك.",
+    "login": "تسجيل الدخول",
+    "underReview": "طلبك قيد المراجعة ({{status}}).",
+    "ownerName": "اسم المالك أو الشاغل",
+    "phone": "رقم هاتف للتواصل",
+    "phonePlaceholder": "+224 ...",
+    "justification": "المبرر",
+    "justificationPlaceholder": "عقد إيجار، فاتورة، سند ملكية، صلة بالمكان…",
+    "proofFile": "مستند إثبات (صورة أو PDF)",
+    "cancel": "إلغاء",
+    "submit": "إرسال الطلب",
+    "submitting": "جارٍ الإرسال…",
+    "success": "تم إرسال الطلب. سيقوم فريقنا بالمراجعة خلال 48 ساعة.",
+    "declaredOwner": "المالك المصرَّح به: {{name}}",
+    "phoneLabel": "الهاتف: {{phone}}",
+    "fileReadError": "تعذّرت قراءة الملف."
+  }
+}

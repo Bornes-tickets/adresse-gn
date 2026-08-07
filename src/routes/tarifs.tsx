@@ -11,6 +11,7 @@ import {
   Store,
   Wallet,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Reveal } from "@/components/Reveal";
 import {
@@ -66,10 +67,10 @@ export const Route = createFileRoute("/tarifs")({
   component: TarifsPage,
 });
 
-const FAMILLES: { key: OfferFamily; label: string; icone: typeof HomeIcon }[] = [
-  { key: "residential", label: "Résidentiel", icone: HomeIcon },
-  { key: "pro", label: "Professionnel", icone: Store },
-  { key: "quote", label: "Institutionnel", icone: Landmark },
+const FAMILLES: { key: OfferFamily; labelKey: string; icone: typeof HomeIcon }[] = [
+  { key: "residential", labelKey: "pricing.families.residential", icone: HomeIcon },
+  { key: "pro", labelKey: "pricing.families.pro", icone: Store },
+  { key: "quote", labelKey: "pricing.families.quote", icone: Landmark },
 ];
 
 const RECOMMANDEES: Record<OfferFamily, string> = {
@@ -88,9 +89,9 @@ const ICONES_OFFRE: Record<string, typeof HomeIcon> = {
   institutional: Landmark,
 };
 
-const COMPARATEUR: { critere: string; valeurs: Record<string, string | boolean> }[] = [
+const COMPARATEUR: { critereKey: string; valeurs: Record<string, string | boolean> }[] = [
   {
-    critere: "Numéro d'adresse unique",
+    critereKey: "pricing.comparator.rows.uniqueNumber",
     valeurs: {
       residential_digital: true,
       residential_standard: true,
@@ -100,7 +101,7 @@ const COMPARATEUR: { critere: string; valeurs: Record<string, string | boolean> 
     },
   },
   {
-    critere: "Balise physique avec QR code",
+    critereKey: "pricing.comparator.rows.physicalBeacon",
     valeurs: {
       residential_digital: false,
       residential_standard: true,
@@ -110,37 +111,37 @@ const COMPARATEUR: { critere: string; valeurs: Record<string, string | boolean> 
     },
   },
   {
-    critere: "Pose par un agent agréé",
+    critereKey: "pricing.comparator.rows.installByAgent",
     valeurs: {
       residential_digital: false,
       residential_standard: true,
-      residential_premium: "Prioritaire 72 h",
+      residential_premium: "priority72h",
       pro_basic: true,
-      pro_plus: "Prioritaire",
+      pro_plus: "priority",
     },
   },
   {
-    critere: "Fiche établissement publique",
+    critereKey: "pricing.comparator.rows.publicListing",
     valeurs: {
       residential_digital: false,
       residential_standard: false,
       residential_premium: false,
       pro_basic: true,
-      pro_plus: "Enrichie",
+      pro_plus: "enriched",
     },
   },
   {
-    critere: "Statistiques de consultation",
+    critereKey: "pricing.comparator.rows.stats",
     valeurs: {
       residential_digital: false,
       residential_standard: false,
       residential_premium: false,
-      pro_basic: "30 jours",
-      pro_plus: "90 jours",
+      pro_basic: "days30",
+      pro_plus: "days90",
     },
   },
   {
-    critere: "Comptes d'équipe",
+    critereKey: "pricing.comparator.rows.teamAccounts",
     valeurs: {
       residential_digital: false,
       residential_standard: false,
@@ -150,11 +151,11 @@ const COMPARATEUR: { critere: string; valeurs: Record<string, string | boolean> 
     },
   },
   {
-    critere: "Abonnement mensuel",
+    critereKey: "pricing.comparator.rows.monthlySubscription",
     valeurs: {
-      residential_digital: "Aucun",
-      residential_standard: "Aucun",
-      residential_premium: "Aucun",
+      residential_digital: "none",
+      residential_standard: "none",
+      residential_premium: "none",
       pro_basic: "50 000 GNF",
       pro_plus: "150 000 GNF",
     },
@@ -169,31 +170,13 @@ const COLONNES_COMPARATEUR = [
   "pro_plus",
 ];
 
-const FAQ = [
-  {
-    q: "Comment se déroule le paiement ?",
-    r: "Après votre commande, un conseiller vous contacte pour encaisser sur place ou par transfert. Orange Money et MTN Mobile Money arrivent prochainement.",
-  },
-  {
-    q: "Quand ma balise est-elle posée ?",
-    r: "Dès la confirmation du paiement, une demande d'installation est transmise à un agent de votre zone.",
-  },
-  {
-    q: "Puis-je obtenir une facture ?",
-    r: "Oui, une facture PDF est générée automatiquement après confirmation du paiement et disponible dans votre espace client.",
-  },
-  {
-    q: "Mon adresse sera-t-elle visible par tout le monde ?",
-    r: "Non. Une adresse résidentielle reste privée : seule une personne qui connaît votre numéro peut afficher la position. Les fiches d'établissement, elles, sont publiques par choix du responsable.",
-  },
-  {
-    q: "Que se passe-t-il si je déménage ?",
-    r: "Signalez-le depuis votre espace client : nous désactivons l'ancienne balise et planifions une nouvelle pose à votre nouvelle adresse.",
-  },
-  {
-    q: "Y a-t-il un abonnement pour les particuliers ?",
-    r: "Non. Les offres résidentielles se règlent une seule fois. Seules les offres professionnelles comportent un abonnement mensuel.",
-  },
+const FAQ_KEYS = [
+  "payment",
+  "installation",
+  "invoice",
+  "visibility",
+  "moving",
+  "subscription",
 ];
 
 function gnf(montant: number): string {
@@ -201,6 +184,7 @@ function gnf(montant: number): string {
 }
 
 function CarteOffre({ offre, vedette }: { offre: Offer; vedette: boolean }) {
+  const { t } = useTranslation();
   const Icone = ICONES_OFFRE[offre.code] ?? HomeIcon;
   return (
     <div
@@ -217,7 +201,7 @@ function CarteOffre({ offre, vedette }: { offre: Offer; vedette: boolean }) {
         </span>
         {vedette && (
           <Badge className="rounded-full bg-accent px-3 py-1 text-xs font-medium text-accent-foreground">
-            Plus populaire
+            {t("pricing.card.popular")}
           </Badge>
         )}
       </div>
@@ -230,7 +214,7 @@ function CarteOffre({ offre, vedette }: { offre: Offer; vedette: boolean }) {
       <div className="mt-6">
         {offre.quoteOnly ? (
           <p className="text-display text-3xl font-extrabold text-primary">
-            Sur devis
+            {t("pricing.card.quoteOnly")}
           </p>
         ) : (
           <>
@@ -242,8 +226,8 @@ function CarteOffre({ offre, vedette }: { offre: Offer; vedette: boolean }) {
             </p>
             <p className="mt-2 text-xs text-slate-500">
               {offre.monthly_gnf > 0
-                ? `à l'installation, puis ${gnf(offre.monthly_gnf)} GNF par mois`
-                : "paiement unique, sans abonnement"}
+                ? t("pricing.card.perMonth", { amount: gnf(offre.monthly_gnf) })
+                : t("pricing.card.oneTime")}
             </p>
           </>
         )}
@@ -262,7 +246,7 @@ function CarteOffre({ offre, vedette }: { offre: Offer; vedette: boolean }) {
         {offre.quoteOnly ? (
           <Button variant="outline" className="h-12 w-full text-base" asChild>
             <a href="mailto:commercial@adresse.gn?subject=Demande%20de%20devis">
-              Demander un devis
+              {t("pricing.card.requestQuote")}
             </a>
           </Button>
         ) : (
@@ -277,7 +261,7 @@ function CarteOffre({ offre, vedette }: { offre: Offer; vedette: boolean }) {
             asChild
           >
             <Link to="/commander/$offerCode" params={{ offerCode: offre.code }}>
-              Choisir
+              {t("pricing.card.choose")}
             </Link>
           </Button>
         )}
@@ -287,14 +271,30 @@ function CarteOffre({ offre, vedette }: { offre: Offer; vedette: boolean }) {
 }
 
 function CelluleComparateur({ valeur }: { valeur: string | boolean | undefined }) {
+  const { t } = useTranslation();
   if (valeur === true)
-    return <Check className="mx-auto size-4 text-accent" aria-label="Inclus" />;
+    return (
+      <Check
+        className="mx-auto size-4 text-accent"
+        aria-label={t("pricing.comparator.included")}
+      />
+    );
   if (valeur === false || valeur === undefined)
-    return <Minus className="mx-auto size-4 text-slate-300" aria-label="Non inclus" />;
-  return <span className="text-xs text-slate-600">{valeur}</span>;
+    return (
+      <Minus
+        className="mx-auto size-4 text-slate-300"
+        aria-label={t("pricing.comparator.notIncluded")}
+      />
+    );
+  const knownValues = ["none", "days30", "days90", "priority72h", "priority", "enriched"];
+  const texte = knownValues.includes(valeur)
+    ? t(`pricing.comparator.values.${valeur}`)
+    : valeur;
+  return <span className="text-xs text-slate-600">{texte}</span>;
 }
 
 function TarifsPage() {
+  const { t } = useTranslation();
   const [famille, setFamille] = useState<OfferFamily>("residential");
   const offres = OFFERS.filter((o) => o.family === famille);
 
@@ -307,13 +307,11 @@ function TarifsPage() {
         />
         <header className="relative mx-auto max-w-3xl text-center">
           <h1 className="text-display text-4xl font-extrabold leading-[1.05] text-white sm:text-5xl lg:text-[3.5rem]">
-            Des tarifs simples,
-            <span className="block text-white/80">en francs guinéens</span>
+            {t("pricing.hero.title")}
+            <span className="block text-white/80">{t("pricing.hero.titleAccent")}</span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-white/75 sm:text-lg">
-            Choisissez l'offre adaptée à votre logement ou à votre commerce. Vous
-            réglez sur place ou par Mobile Money, puis un agent agréé vient poser
-            votre balise.
+            {t("pricing.hero.subtitle")}
           </p>
         </header>
       </section>
@@ -321,7 +319,7 @@ function TarifsPage() {
       <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
         <div
           role="tablist"
-          aria-label="Type d'offre"
+          aria-label={t("pricing.tabsAriaLabel")}
           className="mx-auto flex w-fit flex-wrap justify-center gap-1 rounded-full border border-slate-200/60 bg-card p-1.5 shadow-brand"
         >
           {FAMILLES.map((item) => (
@@ -339,7 +337,7 @@ function TarifsPage() {
               )}
             >
               <item.icone className="size-4" />
-              {item.label}
+              {t(item.labelKey)}
             </button>
           ))}
         </div>
@@ -363,17 +361,19 @@ function TarifsPage() {
         <section className="mt-24">
           <Reveal>
             <h2 className="text-display text-center text-3xl font-extrabold text-foreground sm:text-4xl">
-              Comparer les offres
+              {t("pricing.comparator.title")}
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-center text-slate-500">
-              Ce que chaque formule inclut, en un coup d'œil.
+              {t("pricing.comparator.subtitle")}
             </p>
           </Reveal>
           <div className="mt-10 overflow-x-auto rounded-2xl border border-slate-200/60 bg-card">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="min-w-[200px]">Fonctionnalité</TableHead>
+                  <TableHead className="min-w-[200px]">
+                    {t("pricing.comparator.featureHeader")}
+                  </TableHead>
                   {COLONNES_COMPARATEUR.map((code) => (
                     <TableHead key={code} className="min-w-[120px] text-center">
                       {OFFERS.find((o) => o.code === code)?.label}
@@ -383,9 +383,9 @@ function TarifsPage() {
               </TableHeader>
               <TableBody>
                 {COMPARATEUR.map((ligne) => (
-                  <TableRow key={ligne.critere}>
+                  <TableRow key={ligne.critereKey}>
                     <TableCell className="font-medium text-foreground">
-                      {ligne.critere}
+                      {t(ligne.critereKey)}
                     </TableCell>
                     {COLONNES_COMPARATEUR.map((code) => (
                       <TableCell key={code} className="text-center">
@@ -402,7 +402,7 @@ function TarifsPage() {
         <section className="mt-24">
           <Reveal>
             <h2 className="text-display text-center text-3xl font-extrabold text-foreground sm:text-4xl">
-              Questions fréquentes
+              {t("pricing.faq.title")}
             </h2>
           </Reveal>
           <Accordion
@@ -410,13 +410,13 @@ function TarifsPage() {
             collapsible
             className="mx-auto mt-10 max-w-3xl rounded-2xl border border-slate-200/60 bg-card px-6"
           >
-            {FAQ.map((item, index) => (
-              <AccordionItem key={item.q} value={`faq-${index}`}>
+            {FAQ_KEYS.map((key, index) => (
+              <AccordionItem key={key} value={`faq-${index}`}>
                 <AccordionTrigger className="text-left text-base font-medium">
-                  {item.q}
+                  {t(`pricing.faq.items.${key}.q`)}
                 </AccordionTrigger>
                 <AccordionContent className="text-sm leading-relaxed text-slate-500">
-                  {item.r}
+                  {t(`pricing.faq.items.${key}.r`)}
                 </AccordionContent>
               </AccordionItem>
             ))}
@@ -427,21 +427,18 @@ function TarifsPage() {
           {[
             {
               icone: ShieldCheck,
-              titre: "Vos données protégées",
-              texte:
-                "Adresse privée par défaut, conforme aux lois guinéennes L/2016/037 et L/2016/035.",
+              titre: t("pricing.trust.data.title"),
+              texte: t("pricing.trust.data.text"),
             },
             {
               icone: Wallet,
-              titre: "Paiement sécurisé",
-              texte:
-                "Encaissement par agent agréé ou Mobile Money, avec facture PDF systématique.",
+              titre: t("pricing.trust.payment.title"),
+              texte: t("pricing.trust.payment.text"),
             },
             {
               icone: Headphones,
-              titre: "Support en français",
-              texte:
-                "Une équipe joignable par WhatsApp et par e-mail, basée à Conakry.",
+              titre: t("pricing.trust.support.title"),
+              texte: t("pricing.trust.support.text"),
             },
           ].map((item, index) => (
             <Reveal key={item.titre} delay={index * 80}>

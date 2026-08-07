@@ -1,0 +1,207 @@
+{
+  "language": {
+    "label": "Language",
+    "fr": "Français",
+    "ar": "العربية",
+    "en": "English"
+  },
+  "brand": {
+    "tagline": "One place · One number · One route"
+  },
+  "nav": {
+    "pricing": "Pricing",
+    "pros": "For businesses",
+    "about": "About",
+    "privacy": "Privacy",
+    "home": "Adresse GN — home",
+    "openMenu": "Open menu",
+    "userMenu": "User menu",
+    "login": "Sign in",
+    "order": "Order now",
+    "account": "My account",
+    "proSpace": "Business space",
+    "logout": "Sign out"
+  },
+  "footer": {
+    "tagline": "Guinea's digital address.",
+    "location": "Conakry · Guinea",
+    "whatsapp": "WhatsApp",
+    "pilot": "2026 pilot in progress",
+    "rights": "© 2026 Adresse GN. All rights reserved.",
+    "cols": {
+      "product": "Product",
+      "resources": "Resources",
+      "company": "Company",
+      "legal": "Legal"
+    },
+    "links": {
+      "pricing": "Pricing",
+      "individuals": "For individuals",
+      "pros": "For businesses",
+      "api": "API",
+      "howItWorks": "How it works",
+      "help": "Help",
+      "faq": "FAQ",
+      "status": "Service status",
+      "about": "About",
+      "contact": "Contact",
+      "press": "Press",
+      "partners": "Partners",
+      "legalNotice": "Legal notice",
+      "privacy": "Privacy",
+      "terms": "Terms of use",
+      "cookies": "Cookies"
+    }
+  },
+  "home": {
+    "hero": {
+      "title": "Find an address with one number",
+      "subtitle": "Every place in Guinea gets a unique number. Enter it to get its location.",
+      "inputLabel": "Beacon number",
+      "placeholder": "GN-CKY-582741",
+      "scan": "Scan a QR code",
+      "soon": "Coming soon",
+      "search": "Find the address",
+      "searching": "Searching…"
+    },
+    "errors": {
+      "incomplete": "This number looks incomplete — enter the beacon's 6 digits (e.g. 582741) or the full number GN-CKY-582741.",
+      "rateLimited": "Too many searches at once — wait a few seconds and try again.",
+      "notFound": "We couldn't find this address — check the number or contact the owner of the place."
+    },
+    "product": {
+      "eyebrow": "Product",
+      "title": "One number. One map. One route.",
+      "text": "Enter a beacon number, get the exact location on the map, and start navigation in Google Maps, Waze or Apple Maps.",
+      "perks": {
+        "qr": "Also works via QR code",
+        "apps": "Compatible with every navigation app",
+        "noInstall": "No install required to search"
+      },
+      "example": "See an example",
+      "mockName": "Restaurant Le Damier",
+      "mockZone": "Kaloum · Conakry",
+      "goThere": "Get directions"
+    },
+    "usages": {
+      "eyebrow": "Use cases",
+      "title": "Built for everyday needs.",
+      "individuals": {
+        "title": "Individuals",
+        "text": "Welcome visitors and deliveries."
+      },
+      "shops": {
+        "title": "Shops",
+        "text": "Be found without explaining."
+      },
+      "delivery": {
+        "title": "Deliveries",
+        "text": "Deliver without direction calls."
+      },
+      "companies": {
+        "title": "Companies",
+        "text": "Integrate addresses via API."
+      }
+    },
+    "cta": {
+      "eyebrow": "Get started",
+      "title": "Get your address in 15 minutes.",
+      "text": "An agent comes to you, installs the numbered plate and activates your number. Simple, fast, permanent.",
+      "pricing": "See pricing",
+      "contact": "Contact us",
+      "plate": "Physical plate installed by a certified agent."
+    }
+  },
+  "auth": {
+    "privacyNote": "Your data stays private by default.",
+    "quote": "“An address is not an administrative detail. It is what makes it possible to be delivered to, rescued, visited.”",
+    "quoteSource": "Adresse GN — Guinea's addressing system, 2026 pilot.",
+    "email": "Email",
+    "password": "Password",
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to manage your addresses, beacons and favourites.",
+      "noAccount": "No account yet?",
+      "createAccount": "Create an account",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "errorTitle": "Sign-in failed",
+      "success": "Signed in"
+    },
+    "signup": {
+      "title": "Create your account",
+      "subtitle": "It only takes a few seconds to start managing your Adresse GN addresses.",
+      "already": "Already registered?",
+      "login": "Sign in",
+      "submit": "Create my account",
+      "submitting": "Creating…",
+      "minChars": "6 characters minimum.",
+      "errorTitle": "Sign-up failed",
+      "success": "Account created",
+      "checkMailTitle": "Check your inbox",
+      "checkMailSubtitle": "We sent a confirmation link to {{email}}. Click it to activate your account.",
+      "backHome": "Back to home"
+    }
+  },
+  "about": {
+    "heroTitle": "Giving every place in Guinea an address",
+    "heroText": "Adresse GN assigns every building, shop or plot a unique number materialised by a physical beacon. That number is enough to find the exact location and go there.",
+    "values": {
+      "reliability": {
+        "title": "Reliability",
+        "text": "Every position is recorded on site by a certified agent, then reviewed before publication."
+      },
+      "privacy": {
+        "title": "Privacy first",
+        "text": "A residential address stays private by default: only the people you give the number to can see it."
+      },
+      "utility": {
+        "title": "Immediate usefulness",
+        "text": "No theory: a number, a map, a route that opens in your navigation app."
+      },
+      "local": {
+        "title": "Local roots",
+        "text": "The network of installer agents is recruited and trained in the neighbourhoods it covers."
+      }
+    },
+    "mission": {
+      "title": "Our mission",
+      "text": "In Guinea, explaining where you live often takes several minutes, a phone call and a few approximate landmarks. That friction costs families time, couriers lost trips and shops revenue. Our mission is to replace that explanation with a number you can write, dictate or send in one second."
+    },
+    "vision": {
+      "title": "Our vision",
+      "text": "We are building a national addressing layer open to public services and private companies alike: emergency response, logistics, e-commerce, transport, water and electricity distribution. Every address verified today makes those services faster tomorrow."
+    },
+    "why": {
+      "eyebrow": "Why",
+      "quote": "“An address is not an administrative detail. It is what makes it possible to be delivered to, rescued, visited — and therefore to exist in the economy.”"
+    },
+    "valuesTitle": "Our values",
+    "cta": {
+      "title": "Ready to get your number?",
+      "button": "See the plans"
+    },
+    "team": {
+      "title": "The team",
+      "text": "Adresse GN brings together operations, field and technology profiles. Individual introductions will be published here.",
+      "management": "Executive management",
+      "operations": "Field operations",
+      "technology": "Technology and data",
+      "soon": "Role announced soon"
+    }
+  },
+  "common": {
+    "backHome": "Back to home"
+  },
+  "notFound": {
+    "title": "This page doesn't exist (anymore)",
+    "text": "The link may be incomplete. Go back home to look up an address by its number.",
+    "home": "Back to home"
+  },
+  "error": {
+    "title": "This page could not be displayed",
+    "text": "A technical problem occurred on our side. Try again or go back home.",
+    "retry": "Try again",
+    "home": "Back to home"
+  }
+}

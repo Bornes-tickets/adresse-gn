@@ -1,0 +1,48 @@
+{
+  "checkout": {
+    "commander": {
+      "offerUnavailable": {
+        "title": "العرض غير متوفر",
+        "description": "هذا العرض يعتمد على عرض سعر مخصص أو غير موجود. اطّلع على قائمة الأسعار.",
+        "viewPricing": "عرض الأسعار"
+      },
+      "title": "ملخص الطلب",
+      "total": "المبلغ الإجمالي للدفع",
+      "continueToPayment": "المتابعة إلى الدفع",
+      "changeOffer": "تغيير العرض",
+      "disclaimer": "لا يوجد خصم تلقائي: يتم تحصيل الدفعة بعد التحقق من قبل مستشار Adresse GN. ستتلقى فاتورة PDF فور التأكيد."
+    },
+    "paiement": {
+      "orderNotFound": {
+        "title": "الطلب غير موجود",
+        "description": "هذا الطلب غير موجود أو لا يخصك.",
+        "viewPricing": "عرض الأسعار"
+      },
+      "title": "الدفع",
+      "orderDetails": "تفاصيل الطلب",
+      "total": "المجموع",
+      "paymentInfo": "الدفع {{provider}} — {{status}}",
+      "receipt": " · إيصال {{ref}}",
+      "confirmed": {
+        "title": "تم تأكيد الدفع",
+        "description": "سيقوم أحد الوكلاء بجدولة التركيب. سيتم إشعارك.",
+        "downloadInvoice": "تحميل الفاتورة {{number}}",
+        "goToAccount": "الذهاب إلى حسابي"
+      },
+      "chooseMethod": "اختر طريقة الدفع",
+      "choose": "اختيار",
+      "comingSoon": "قريباً",
+      "instructions": {
+        "title": "تعليمات الدفع",
+        "contactWhatsapp": "التواصل مع مستشار عبر واتساب",
+        "autoUpdate": "يتم تحديث هذه الصفحة تلقائياً بمجرد تأكيد الدفع."
+      },
+      "toasts": {
+        "instructionsGenerated": "تم إنشاء تعليمات الدفع."
+      }
+    },
+    "logout": {
+      "inProgress": "جارٍ تسجيل الخروج…"
+    }
+  }
+}

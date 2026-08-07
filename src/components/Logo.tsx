@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { cn } from "@/lib/utils";
 
 /**
@@ -13,6 +15,8 @@ export function Logo({
   tone?: "dark" | "light";
   withTagline?: boolean;
 }) {
+  const { t } = useTranslation();
+
   return (
     <span className={cn("flex items-center gap-2.5", className)}>
       <svg
@@ -53,7 +57,7 @@ export function Logo({
               tone === "light" ? "text-white/65" : "text-muted-foreground",
             )}
           >
-            Un lieu · Un numéro · Un itinéraire
+            {t("brand.tagline")}
           </span>
         )}
       </span>

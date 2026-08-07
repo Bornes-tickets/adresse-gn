@@ -1,16 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 
-const SOMMAIRE = [
-  { id: "responsable", titre: "1. Responsable du traitement" },
-  { id: "donnees", titre: "2. Données que nous collectons" },
-  { id: "finalites", titre: "3. Pourquoi nous les utilisons" },
-  { id: "visibilite", titre: "4. Adresses privées et adresses publiques" },
-  { id: "partage", titre: "5. Partage avec des tiers" },
-  { id: "conservation", titre: "6. Durée de conservation" },
-  { id: "droits", titre: "7. Vos droits" },
-  { id: "securite", titre: "8. Sécurité" },
-  { id: "contact", titre: "9. Nous contacter" },
-];
+const SOMMAIRE_IDS = [
+  "responsable",
+  "donnees",
+  "finalites",
+  "visibilite",
+  "partage",
+  "conservation",
+  "droits",
+  "securite",
+  "contact",
+] as const;
 
 export const Route = createFileRoute("/confidentialite")({
   head: () => ({
@@ -43,6 +44,8 @@ export const Route = createFileRoute("/confidentialite")({
 });
 
 function Confidentialite() {
+  const { t } = useTranslation();
+
   return (
     <>
       <section className="gradient-signature relative overflow-hidden px-4 py-16 sm:px-6 sm:py-20">
@@ -52,28 +55,30 @@ function Confidentialite() {
         />
         <div className="relative mx-auto max-w-3xl">
           <h1 className="text-display text-3xl font-extrabold leading-tight text-white sm:text-4xl">
-            Politique de confidentialité
+            {t("privacy.hero.title")}
           </h1>
           <p className="mt-4 text-sm text-white/70">
-            Dernière mise à jour : janvier 2026
+            {t("privacy.hero.lastUpdated")}
           </p>
         </div>
       </section>
 
       <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
         <nav
-          aria-label="Sommaire"
+          aria-label={t("privacy.toc.ariaLabel")}
           className="shadow-brand rounded-2xl border border-slate-200/60 bg-card p-6"
         >
-          <h2 className="text-sm font-semibold text-foreground">Sommaire</h2>
+          <h2 className="text-sm font-semibold text-foreground">
+            {t("privacy.toc.title")}
+          </h2>
           <ol className="mt-3 space-y-1.5 text-sm text-slate-500">
-            {SOMMAIRE.map((item) => (
-              <li key={item.id}>
+            {SOMMAIRE_IDS.map((id) => (
+              <li key={id}>
                 <a
-                  href={`#${item.id}`}
+                  href={`#${id}`}
                   className="transition-colors hover:text-accent"
                 >
-                  {item.titre}
+                  {t(`privacy.toc.items.${id}`)}
                 </a>
               </li>
             ))}
@@ -84,147 +89,95 @@ function Confidentialite() {
 
         <section id="responsable">
           <h2 className="text-xl font-semibold text-foreground">
-            1. Responsable du traitement
+            {t("privacy.sections.responsable.title")}
           </h2>
-          <p className="mt-3">
-            Adresse GN, société établie à Conakry (République de Guinée),
-            détermine et met en œuvre les traitements décrits dans cette page.
-            Ces traitements respectent la loi L/2016/037 relative à la
-            cybersécurité et à la protection des données à caractère personnel,
-            ainsi que la loi L/2016/035 portant sur les transactions
-            électroniques.
-          </p>
+          <p className="mt-3">{t("privacy.sections.responsable.body")}</p>
         </section>
 
         <section id="donnees">
           <h2 className="text-xl font-semibold text-foreground">
-            2. Données que nous collectons
+            {t("privacy.sections.donnees.title")}
           </h2>
           <h3 className="mt-4 font-medium text-foreground">
-            2.1 Données de compte
+            {t("privacy.sections.donnees.account.title")}
           </h3>
-          <p className="mt-2">
-            Adresse e-mail, numéro de téléphone, nom déclaré et rôle
-            (particulier, professionnel, agent, administrateur).
-          </p>
+          <p className="mt-2">{t("privacy.sections.donnees.account.body")}</p>
           <h3 className="mt-4 font-medium text-foreground">
-            2.2 Données d'adresse et de balise
+            {t("privacy.sections.donnees.address.title")}
           </h3>
-          <p className="mt-2">
-            Numéro de balise, coordonnées GPS relevées lors de l'installation,
-            précision du relevé, quartier et commune, photo de la balise posée,
-            libellé du lieu et catégorie éventuelle.
-          </p>
+          <p className="mt-2">{t("privacy.sections.donnees.address.body")}</p>
           <h3 className="mt-4 font-medium text-foreground">
-            2.3 Données d'usage
+            {t("privacy.sections.donnees.usage.title")}
           </h3>
-          <p className="mt-2">
-            Recherches effectuées, itinéraires lancés, signalements déposés, et
-            journaux techniques nécessaires à la sécurité du service.
-          </p>
+          <p className="mt-2">{t("privacy.sections.donnees.usage.body")}</p>
           <h3 className="mt-4 font-medium text-foreground">
-            2.4 Données de paiement
+            {t("privacy.sections.donnees.payment.title")}
           </h3>
-          <p className="mt-2">
-            Références de commande, montants et statut du règlement. Nous ne
-            conservons aucune donnée bancaire complète.
-          </p>
+          <p className="mt-2">{t("privacy.sections.donnees.payment.body")}</p>
         </section>
 
         <section id="finalites">
           <h2 className="text-xl font-semibold text-foreground">
-            3. Pourquoi nous les utilisons
+            {t("privacy.sections.finalites.title")}
           </h2>
           <ul className="mt-3 list-disc space-y-2 pl-5">
-            <li>Créer et maintenir votre adresse numérique.</li>
-            <li>
-              Permettre la recherche d'une adresse par son numéro et la
-              génération d'un itinéraire.
-            </li>
-            <li>Planifier et contrôler la pose des balises par nos agents.</li>
-            <li>Traiter vos commandes, paiements et factures.</li>
-            <li>Prévenir la fraude et les usages abusifs du service.</li>
+            <li>{t("privacy.sections.finalites.items.create")}</li>
+            <li>{t("privacy.sections.finalites.items.search")}</li>
+            <li>{t("privacy.sections.finalites.items.planning")}</li>
+            <li>{t("privacy.sections.finalites.items.orders")}</li>
+            <li>{t("privacy.sections.finalites.items.fraud")}</li>
           </ul>
         </section>
 
         <section id="visibilite">
           <h2 className="text-xl font-semibold text-foreground">
-            4. Adresses privées et adresses publiques
+            {t("privacy.sections.visibilite.title")}
           </h2>
-          <p className="mt-3">
-            Une adresse résidentielle est privée par défaut : son propriétaire
-            n'apparaît nulle part publiquement, et seule la personne qui connaît
-            le numéro de balise peut afficher la position.
-          </p>
-          <p className="mt-3">
-            Une fiche d'établissement (commerce, hôtel, service) est publique
-            lorsque son responsable la publie : nom, catégorie, horaires, photos
-            et position deviennent alors consultables sans compte.
-          </p>
+          <p className="mt-3">{t("privacy.sections.visibilite.p1")}</p>
+          <p className="mt-3">{t("privacy.sections.visibilite.p2")}</p>
         </section>
 
         <section id="partage">
           <h2 className="text-xl font-semibold text-foreground">
-            5. Partage avec des tiers
+            {t("privacy.sections.partage.title")}
           </h2>
-          <p className="mt-3">
-            Nous ne vendons aucune donnée. Nous partageons le strict nécessaire
-            avec nos prestataires d'hébergement, de messagerie et de paiement
-            mobile, ainsi qu'avec les autorités compétentes sur réquisition
-            légale. Les partenaires accédant à notre interface de
-            programmation (API) reçoivent uniquement des adresses publiques.
-          </p>
+          <p className="mt-3">{t("privacy.sections.partage.body")}</p>
         </section>
 
         <section id="conservation">
           <h2 className="text-xl font-semibold text-foreground">
-            6. Durée de conservation
+            {t("privacy.sections.conservation.title")}
           </h2>
-          <p className="mt-3">
-            Les données d'adresse sont conservées tant que la balise est active.
-            Les données de compte sont conservées jusqu'à la suppression du
-            compte. Les pièces comptables et journaux de sécurité sont conservés
-            selon les durées légales applicables en Guinée.
-          </p>
+          <p className="mt-3">{t("privacy.sections.conservation.body")}</p>
         </section>
 
         <section id="droits">
           <h2 className="text-xl font-semibold text-foreground">
-            7. Vos droits
+            {t("privacy.sections.droits.title")}
           </h2>
-          <p className="mt-3">
-            Vous disposez d'un droit d'accès, de rectification, d'opposition, de
-            limitation et de suppression de vos données, ainsi que du droit de
-            retirer votre consentement. Vous pouvez également demander la
-            correction d'une position GPS ou signaler une balise déplacée depuis
-            votre espace client.
-          </p>
+          <p className="mt-3">{t("privacy.sections.droits.body")}</p>
         </section>
 
         <section id="securite">
           <h2 className="text-xl font-semibold text-foreground">
-            8. Sécurité
+            {t("privacy.sections.securite.title")}
           </h2>
-          <p className="mt-3">
-            Les accès sont authentifiés et cloisonnés par rôle, les échanges sont
-            chiffrés en transit, les photos et justificatifs sont stockés dans
-            des espaces privés, et toute action sensible est journalisée.
-          </p>
+          <p className="mt-3">{t("privacy.sections.securite.body")}</p>
         </section>
 
         <section id="contact">
           <h2 className="text-xl font-semibold text-foreground">
-            9. Nous contacter
+            {t("privacy.sections.contact.title")}
           </h2>
           <p className="mt-3">
-            Pour toute question ou demande relative à vos données, écrivez à{" "}
+            {t("privacy.sections.contact.before")}{" "}
             <a
               href="mailto:confidentialite@adresse.gn"
               className="text-primary hover:underline"
             >
               confidentialite@adresse.gn
             </a>
-            . Nous répondons dans un délai de trente jours.
+            {t("privacy.sections.contact.after")}
           </p>
         </section>
         </div>
