@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Loader2, Save } from "lucide-react";
 
 import {
