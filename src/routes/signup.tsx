@@ -1,6 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+
 
 import { AuthLayout } from "@/components/AuthLayout";
 import { Button } from "@/components/ui/button";
@@ -28,6 +30,7 @@ export const Route = createFileRoute("/signup")({
 });
 
 function Signup() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
@@ -44,11 +47,11 @@ function Signup() {
     });
     setEnCours(false);
     if (error) {
-      toast.error("Inscription impossible", { description: error.message });
+      toast.error(t("auth.signup.errorTitle"), { description: error.message });
       return;
     }
     if (data.session) {
-      toast.success("Compte créé");
+      toast.success(t("auth.signup.success"));
       navigate({ to: "/" });
       return;
     }
@@ -58,11 +61,11 @@ function Signup() {
   if (aConfirmer) {
     return (
       <AuthLayout
-        title="Vérifiez votre boîte mail"
-        subtitle={`Nous avons envoyé un lien de confirmation à ${email}. Cliquez sur ce lien pour activer votre compte.`}
+        title={t("auth.signup.checkMailTitle")}
+        subtitle={t("auth.signup.checkMailSubtitle", { email })}
       >
         <Button asChild variant="outline" className="h-12 w-full text-base">
-          <Link to="/">Retour à l'accueil</Link>
+          <Link to="/">{t("auth.signup.backHome")}</Link>
         </Button>
       </AuthLayout>
     );
@@ -70,20 +73,20 @@ function Signup() {
 
   return (
     <AuthLayout
-      title="Créer votre compte"
-      subtitle="Quelques secondes suffisent pour commencer à gérer vos adresses Adresse GN."
+      title={t("auth.signup.title")}
+      subtitle={t("auth.signup.subtitle")}
       footer={
         <>
-          Déjà inscrit ?{" "}
+          {t("auth.signup.already")}{" "}
           <Link to="/login" className="font-medium text-accent hover:underline">
-            Se connecter
+            {t("auth.signup.login")}
           </Link>
         </>
       }
     >
       <form onSubmit={soumettre} className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t("auth.email")}</Label>
           <Input
             id="email"
             type="email"
@@ -95,7 +98,7 @@ function Signup() {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="password">Mot de passe</Label>
+          <Label htmlFor="password">{t("auth.password")}</Label>
           <Input
             id="password"
             type="password"
@@ -106,15 +109,16 @@ function Signup() {
             onChange={(event) => setMotDePasse(event.target.value)}
             className="h-11 border-slate-300 focus-visible:ring-2 focus-visible:ring-accent/30"
           />
-          <p className="text-xs text-slate-500">6 caractères minimum.</p>
+          <p className="text-xs text-slate-500">{t("auth.signup.minChars")}</p>
         </div>
         <Button
           type="submit"
           className="h-12 w-full text-base font-medium transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
           disabled={enCours}
         >
-          {enCours ? "Création…" : "Créer mon compte"}
+          {enCours ? t("auth.signup.submitting") : t("auth.signup.submit")}
         </Button>
+
       </form>
     </AuthLayout>
   );

@@ -13,9 +13,11 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Layout } from "@/components/Layout";
+import { useLangue } from "@/hooks/useLangue";
 import { registerServiceWorker } from "@/lib/pwa";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+
 
 function NotFoundComponent() {
   return (
@@ -164,6 +166,8 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
+  // Applique la langue détectée/persistée et dir="rtl" pour l'arabe.
+  useLangue();
   const dansEspace = (base: string) =>
     pathname === base || pathname.startsWith(`${base}/`);
   // Ces espaces fournissent leur propre header/footer : pas de Layout global.
@@ -174,6 +178,7 @@ function RootComponent() {
   useEffect(() => {
     registerServiceWorker();
   }, []);
+
 
   return (
     <QueryClientProvider client={queryClient}>

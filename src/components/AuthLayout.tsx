@@ -1,8 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { ShieldCheck } from "lucide-react";
 
 import { Logo } from "@/components/Logo";
+
 
 /**
  * Écran d'authentification en deux colonnes : formulaire à gauche,
@@ -19,6 +21,8 @@ export function AuthLayout({
   children: ReactNode;
   footer?: ReactNode;
 }) {
+  const { t } = useTranslation();
+
   return (
     <div className="grid min-h-[calc(100vh-5rem)] lg:grid-cols-2">
       <div className="flex items-center justify-center px-4 py-16 sm:px-8">
@@ -33,7 +37,7 @@ export function AuthLayout({
           {footer && <div className="mt-6 text-sm text-muted-foreground">{footer}</div>}
           <p className="mt-10 inline-flex items-center gap-2 text-xs text-muted-foreground">
             <ShieldCheck className="size-4 text-accent" />
-            Vos données restent privées par défaut.
+            {t("auth.privacyNote")}
           </p>
         </div>
       </div>
@@ -48,15 +52,12 @@ export function AuthLayout({
         </Link>
         <div className="relative max-w-md">
           <blockquote className="text-display text-3xl font-bold leading-tight text-white">
-            « Une adresse n'est pas un détail administratif. C'est la condition
-            pour être livré, secouru, visité. »
+            {t("auth.quote")}
           </blockquote>
-          <p className="mt-6 text-sm text-white/70">
-            Adresse GN — système d'adressage guinéen, pilote 2026.
-          </p>
+          <p className="mt-6 text-sm text-white/70">{t("auth.quoteSource")}</p>
         </div>
         <p className="relative font-mono text-xs uppercase tracking-[0.2em] text-white/60">
-          Un lieu · Un numéro · Un itinéraire
+          {t("brand.tagline")}
         </p>
       </div>
     </div>

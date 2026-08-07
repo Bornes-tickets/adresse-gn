@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Bike,
   Building2,
@@ -28,17 +29,18 @@ import { searchBeacon } from "@/lib/search.functions";
 const EXEMPLES = ["GN-CKY-582741", "GN-CKY-152963", "GN-CKY-759482"];
 
 const ATOUTS = [
-  "Fonctionne aussi via QR code",
-  "Compatible avec toutes les apps de navigation",
-  "Aucune installation requise pour rechercher",
+  "home.product.perks.qr",
+  "home.product.perks.apps",
+  "home.product.perks.noInstall",
 ];
 
 const USAGES = [
-  { icone: HomeIcon, titre: "Particuliers", texte: "Recevoir visiteurs et livraisons." },
-  { icone: UtensilsCrossed, titre: "Commerces", texte: "Être trouvés sans expliquer." },
-  { icone: Bike, titre: "Livraisons", texte: "Livrer sans appels d'orientation." },
-  { icone: Building2, titre: "Entreprises", texte: "Intégrer les adresses par API." },
+  { icone: HomeIcon, cle: "individuals" },
+  { icone: UtensilsCrossed, cle: "shops" },
+  { icone: Bike, cle: "delivery" },
+  { icone: Building2, cle: "companies" },
 ];
+
 
 
 export const Route = createFileRoute("/")({
@@ -85,6 +87,7 @@ function Eyebrow({ children }: { children: string }) {
 }
 
 function Home() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [numero, setNumero] = useState("");
   const [erreur, setErreur] = useState<string | null>(null);
@@ -95,9 +98,7 @@ function Home() {
     if (!propre) return;
 
     if (!isValidBeaconNumber(propre)) {
-      setErreur(
-        "Ce numéro semble incomplet — saisissez les 6 chiffres de la balise (ex. 582741) ou le numéro entier GN-CKY-582741.",
-      );
+      setErreur(t("home.errors.incomplete"));
       return;
     }
 
@@ -109,18 +110,14 @@ function Home() {
     setEnCours(false);
 
     if (reponse?.status === "rate_limited") {
-      setErreur(
-        reponse.message ??
-          "Beaucoup de recherches d'un coup — patientez quelques secondes puis réessayez.",
-      );
+      setErreur(reponse.message ?? t("home.errors.rateLimited"));
       return;
     }
     if (reponse?.status === "not_found") {
-      setErreur(
-        "Nous n'avons pas trouvé cette adresse — vérifiez le numéro ou contactez le propriétaire du lieu.",
-      );
+      setErreur(t("home.errors.notFound"));
       return;
     }
+
     navigate({ to: "/a/$number", params: { number: propre } });
   };
 
@@ -133,13 +130,13 @@ function Home() {
             className="text-display text-center text-4xl font-extrabold leading-[1.1] text-white md:whitespace-nowrap md:text-5xl lg:text-6xl"
             style={{ textShadow: "0 1px 12px rgb(15 23 42 / 0.18)" }}
           >
-            Trouvez une adresse en un numéro
+            {t("home.hero.title")}
           </h1>
 
           <p className="mx-auto mt-6 max-w-xl text-center text-base leading-relaxed text-white/85 md:text-lg lg:max-w-none">
-            Chaque lieu en Guinée reçoit un numéro unique. Saisissez-le pour
-            obtenir sa localisation.
+            {t("home.hero.subtitle")}
           </p>
+
 
           <div className="mt-10 rounded-2xl bg-white p-3 shadow-2xl">
             <form
@@ -157,7 +154,7 @@ function Home() {
                     setErreur(null);
                   }}
                   placeholder="GN-CKY-______"
-                  aria-label="Numéro de balise"
+                  aria-label={t("home.hero.inputLabel")}
                   aria-invalid={!!erreur}
                   className="h-14 w-full min-w-0 bg-transparent font-mono text-lg font-semibold tracking-[0.08em] text-slate-900 outline-hidden placeholder:font-normal placeholder:text-slate-400 sm:text-xl"
                 />
@@ -169,13 +166,13 @@ function Home() {
                         variant="ghost"
                         size="icon"
                         disabled
-                        aria-label="Scanner un QR code"
+                        aria-label={t("home.hero.scan")}
                       >
                         <QrCode className="size-5" />
                       </Button>
                     </span>
                   </TooltipTrigger>
-                  <TooltipContent>Bientôt disponible</TooltipContent>
+                  <TooltipContent>{t("home.hero.soon")}</TooltipContent>
                 </Tooltip>
               </div>
 
@@ -185,7 +182,8 @@ function Home() {
                 className="h-14 w-full bg-accent px-8 text-base font-medium text-accent-foreground transition-colors hover:bg-accent-dark sm:w-auto"
               >
                 <Search className="size-5" />
-                {enCours ? "Recherche…" : "Trouver l'adresse"}
+                {enCours ? t("home.hero.searching") : t("home.hero.search")}
+
               </Button>
             </form>
 
@@ -218,20 +216,18 @@ function Home() {
       >
         <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-16 lg:grid-cols-2">
           <Reveal>
-            <Eyebrow>Produit</Eyebrow>
+            <Eyebrow>{t("home.product.eyebrow")}</Eyebrow>
             <h2 className="text-display mt-4 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
-              Un numéro. Une carte. Un itinéraire.
+              {t("home.product.title")}
             </h2>
             <p className="mt-5 text-lg leading-relaxed text-slate-600">
-              Saisissez un numéro de balise, obtenez l'emplacement exact sur la
-              carte, et lancez l'itinéraire dans Google Maps, Waze ou Apple
-              Plans.
+              {t("home.product.text")}
             </p>
             <ul className="mt-8 space-y-3">
               {ATOUTS.map((atout) => (
                 <li key={atout} className="flex items-start gap-3">
                   <Check className="mt-0.5 size-5 shrink-0 text-accent" />
-                  <span className="text-sm text-slate-700">{atout}</span>
+                  <span className="text-sm text-slate-700">{t(atout)}</span>
                 </li>
               ))}
             </ul>
@@ -241,8 +237,9 @@ function Home() {
               className="mt-8 h-12 border-slate-300 bg-transparent px-6 text-base font-medium text-slate-700 transition-colors duration-200 ease-out hover:bg-slate-50"
             >
               <Link to="/a/$number" params={{ number: "GN-CKY-582741" }}>
-                Voir un exemple
+                {t("home.product.example")}
               </Link>
+
             </Button>
           </Reveal>
 
@@ -262,17 +259,17 @@ function Home() {
                 <div className="space-y-3 bg-white p-4">
                   <div className="rounded-xl border border-slate-200 bg-white p-3">
                     <p className="text-sm font-bold text-slate-900">
-                      Restaurant Le Damier
+                      {t("home.product.mockName")}
                     </p>
                     <p className="mt-1 font-mono text-xs text-slate-500">
                       GN-CKY-582741
                     </p>
                     <p className="mt-1 text-xs text-slate-500">
-                      Kaloum · Conakry
+                      {t("home.product.mockZone")}
                     </p>
                   </div>
                   <div className="rounded-xl bg-accent px-4 py-2.5 text-center text-sm font-medium text-accent-foreground">
-                    S'y rendre
+                    {t("home.product.goThere")}
                   </div>
                 </div>
               </div>
@@ -285,25 +282,26 @@ function Home() {
       <section id="usages" className="bg-slate-50 px-6 py-16 md:px-8 md:py-24">
         <div className="mx-auto max-w-6xl">
           <Reveal>
-            <Eyebrow>Usages</Eyebrow>
+            <Eyebrow>{t("home.usages.eyebrow")}</Eyebrow>
             <h2 className="text-display mt-4 text-center text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
-              Pensé pour tous les usages du quotidien.
+              {t("home.usages.title")}
             </h2>
           </Reveal>
 
           <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
             {USAGES.map((item, index) => (
-              <Reveal key={item.titre} delay={index * 80}>
+              <Reveal key={item.cle} delay={index * 80}>
                 <div className="h-full rounded-2xl border border-slate-200 bg-white p-8 transition-all duration-200 ease-out hover:-translate-y-[2px] hover:border-accent/40">
                   <span className="flex size-12 items-center justify-center rounded-xl bg-accent/10 text-accent">
                     <item.icone className="size-8" />
                   </span>
                   <h3 className="text-display mt-5 text-lg font-bold text-slate-900">
-                    {item.titre}
+                    {t(`home.usages.${item.cle}.title`)}
                   </h3>
                   <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                    {item.texte}
+                    {t(`home.usages.${item.cle}.text`)}
                   </p>
+
                 </div>
               </Reveal>
             ))}
@@ -317,29 +315,29 @@ function Home() {
           <div className="grid overflow-hidden rounded-3xl border border-slate-200 shadow-xl lg:grid-cols-5">
             <div className="gradient-signature-soft p-10 md:p-14 lg:col-span-3">
               <p className="text-xs font-medium uppercase tracking-[0.22em] text-white/70">
-                Commencer
+                {t("home.cta.eyebrow")}
               </p>
               <h2 className="text-display mt-4 text-3xl font-bold tracking-tight text-white">
-                Obtenez votre adresse en 15 minutes.
+                {t("home.cta.title")}
               </h2>
               <p className="mt-4 leading-relaxed text-white/85">
-                Un agent vient chez vous, pose la plaque numérique et active
-                votre numéro. Simple, rapide, définitif.
+                {t("home.cta.text")}
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Button
                   asChild
                   className="h-12 bg-white px-8 text-base font-medium text-slate-900 transition-colors duration-200 ease-out hover:bg-white/90"
                 >
-                  <Link to="/tarifs">Voir les tarifs</Link>
+                  <Link to="/tarifs">{t("home.cta.pricing")}</Link>
                 </Button>
                 <Button
                   asChild
                   variant="outline"
                   className="h-12 border-white/40 bg-transparent px-8 text-base font-medium text-white transition-colors duration-200 ease-out hover:bg-white/10 hover:text-white"
                 >
-                  <Link to="/a-propos">Contactez-nous</Link>
+                  <Link to="/a-propos">{t("home.cta.contact")}</Link>
                 </Button>
+
               </div>
             </div>
 
@@ -359,8 +357,9 @@ function Home() {
                 </svg>
               </div>
               <p className="mt-4 text-xs text-slate-500">
-                Plaque physique posée par un agent agréé.
+                {t("home.cta.plate")}
               </p>
+
             </div>
           </div>
         </Reveal>
