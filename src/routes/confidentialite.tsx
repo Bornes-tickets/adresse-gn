@@ -227,7 +227,9 @@ function Confidentialite() {
             . Nous répondons dans un délai de trente jours.
           </p>
         </section>
+        </div>
       </div>
-    </div>
+    </>
+
   );
 }
