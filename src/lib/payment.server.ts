@@ -701,6 +701,28 @@ export async function affecterInstallation(
   return { ok: true };
 }
 
+export const STATUTS_INSTALLATION_ATTENTE = [
+  "pending",
+  "assigned",
+  "planned",
+  "done",
+  "cancelled",
+] as const;
+
+export async function changerStatutInstallationEnAttente(
+  adminId: string,
+  input: { id: string; statut: string; note?: string | null },
+) {
+  const maj: Record<string, unknown> = { status: input.statut };
+  if (input.note != null) maj['note'] = input.note;
+  if (input.statut === "pending" || input.statut === "cancelled") maj['assigned_agent_id'] = null;
+
+  const { error } = await db.from("pending_installations").update(maj).eq("id", input.id);
+  if (error) throw new Error(error.message);
+  await auditer(adminId, "pending_installation.status", "pending_installations", input.id, input);
+  return { ok: true };
+}
+
 /* ------------------------------------------------------------------ */
 /* Facturation récurrente (§G)                                         */
 /* ------------------------------------------------------------------ */
