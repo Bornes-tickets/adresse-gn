@@ -25,7 +25,7 @@ import {
   adminUpdateInstallation,
 } from "@/lib/admin.functions";
 
-export const Route = createFileRoute("/admin/_guard/installations/$id")({
+export const Route = createFileRoute("/admin/_guard/installations_/$id")({
   head: () => ({
     meta: [
       { title: "Édition d'installation — Administration Adresse GN" },
