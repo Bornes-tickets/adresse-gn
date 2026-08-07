@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { AuthLayout } from "@/components/AuthLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -56,26 +57,31 @@ function Signup() {
 
   if (aConfirmer) {
     return (
-      <div className="mx-auto max-w-sm px-4 py-16">
-        <h1 className="text-2xl font-bold text-foreground">
-          Vérifiez votre boîte mail
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Nous avons envoyé un lien de confirmation à {email}. Cliquez sur ce
-          lien pour activer votre compte.
-        </p>
-      </div>
+      <AuthLayout
+        title="Vérifiez votre boîte mail"
+        subtitle={`Nous avons envoyé un lien de confirmation à ${email}. Cliquez sur ce lien pour activer votre compte.`}
+      >
+        <Button asChild variant="outline" className="h-12 w-full text-base">
+          <Link to="/">Retour à l'accueil</Link>
+        </Button>
+      </AuthLayout>
     );
   }
 
   return (
-    <div className="mx-auto max-w-sm px-4 py-16">
-      <h1 className="text-2xl font-bold text-foreground">Créer un compte</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Email et mot de passe.
-      </p>
-
-      <form onSubmit={soumettre} className="mt-8 space-y-4">
+    <AuthLayout
+      title="Créer votre compte"
+      subtitle="Quelques secondes suffisent pour commencer à gérer vos adresses Adresse GN."
+      footer={
+        <>
+          Déjà inscrit ?{" "}
+          <Link to="/login" className="font-medium text-accent hover:underline">
+            Se connecter
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={soumettre} className="space-y-5">
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input
@@ -85,6 +91,7 @@ function Signup() {
             required
             value={email}
             onChange={(event) => setEmail(event.target.value)}
+            className="h-11 border-slate-300 focus-visible:ring-2 focus-visible:ring-accent/30"
           />
         </div>
         <div className="space-y-2">
@@ -97,19 +104,18 @@ function Signup() {
             minLength={6}
             value={motDePasse}
             onChange={(event) => setMotDePasse(event.target.value)}
+            className="h-11 border-slate-300 focus-visible:ring-2 focus-visible:ring-accent/30"
           />
+          <p className="text-xs text-slate-500">6 caractères minimum.</p>
         </div>
-        <Button type="submit" className="w-full" disabled={enCours}>
+        <Button
+          type="submit"
+          className="h-12 w-full text-base font-medium transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
+          disabled={enCours}
+        >
           {enCours ? "Création…" : "Créer mon compte"}
         </Button>
       </form>
-
-      <p className="mt-6 text-sm text-muted-foreground">
-        Déjà inscrit ?{" "}
-        <Link to="/login" className="text-primary underline">
-          Se connecter
-        </Link>
-      </p>
-    </div>
+    </AuthLayout>
   );
 }
