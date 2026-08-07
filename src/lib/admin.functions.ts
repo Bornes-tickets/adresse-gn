@@ -151,6 +151,44 @@ export const adminExportQrPdf = createServerFn({ method: "POST" })
     return { ...pdf, balises: numeros.length, lotCode };
   });
 
+export const adminExportQrZip = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { lotId: string }) => ({ lotId: String(input.lotId) }))
+  .handler(async ({ context, data }) => {
+    const { requireAdmin } = await import("@/lib/admin.server");
+    const { numerosDuLot, codeDuLot } = await import("@/lib/admin-ops.server");
+    const { baseSite } = await import("@/lib/admin-pdf.server");
+    const { genererZipPng } = await import("@/lib/admin-qr-export.server");
+    await requireAdmin(context.userId);
+    const base = baseSite();
+    const [numeros, lotCode] = await Promise.all([
+      numerosDuLot(data.lotId),
+      codeDuLot(data.lotId),
+    ]);
+    if (numeros.length === 0) throw new Error("Aucune balise dans ce lot.");
+    const zip = await genererZipPng(numeros, base);
+    return { ...zip, lotCode };
+  });
+
+export const adminExportQrCsv = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { lotId: string }) => ({ lotId: String(input.lotId) }))
+  .handler(async ({ context, data }) => {
+    const { requireAdmin } = await import("@/lib/admin.server");
+    const { numerosDuLot, codeDuLot } = await import("@/lib/admin-ops.server");
+    const { baseSite } = await import("@/lib/admin-pdf.server");
+    const { genererManifesteCsv } = await import("@/lib/admin-qr-export.server");
+    await requireAdmin(context.userId);
+    const base = baseSite();
+    const [numeros, lotCode] = await Promise.all([
+      numerosDuLot(data.lotId),
+      codeDuLot(data.lotId),
+    ]);
+    if (numeros.length === 0) throw new Error("Aucune balise dans ce lot.");
+    const { base64, lignes } = genererManifesteCsv(numeros, base, lotCode);
+    return { base64, lignes, lotCode };
+  });
+
 /* ------------------------------ ADRESSES ------------------------------ */
 
 export const adminAddresses = createServerFn({ method: "POST" })
