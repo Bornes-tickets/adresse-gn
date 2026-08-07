@@ -89,15 +89,15 @@ export async function genererPdfQr(
       const y0 = A4.h - MARGE - (ligne + 1) * hauteurCase;
 
       // Correction d'erreur H (≈30 % de redondance) pour l'extérieur.
-      const qr = QRCode.create(`${racine}/a/${numero}`, { errorCorrectionLevel: "H" });
-      const taille = qr.modules.size;
+      const { taille, modules } = matriceQr(urlBalise(racine, numero));
       const module = TAILLE_QR / taille;
       const qx = x0 + (largeurCase - TAILLE_QR) / 2;
       const qy = y0 + (hauteurCase - TAILLE_QR) / 2 + 16;
 
       for (let r = 0; r < taille; r += 1) {
         for (let c = 0; c < taille; c += 1) {
-          if (qr.modules.get(r, c)) {
+          if (modules[r]![c]) {
+
             page.drawRectangle({
               x: qx + c * module,
               y: qy + (taille - 1 - r) * module,
