@@ -30,6 +30,8 @@ import {
   adminBeaconDetail,
   adminBeacons,
   adminExportQrPdf,
+  adminExportQrZip,
+  adminExportQrCsv,
   adminGenerateBeaconLot,
   adminLots,
   adminSetBeaconStatus,
@@ -54,6 +56,8 @@ function AdminBeacons() {
   const changerStatut = useServerFn(adminSetBeaconStatus);
   const genererLot = useServerFn(adminGenerateBeaconLot);
   const exporter = useServerFn(adminExportQrPdf);
+  const exporterZip = useServerFn(adminExportQrZip);
+  const exporterCsv = useServerFn(adminExportQrCsv);
   const affecter = useServerFn(adminAssignLot);
   const listerLots = useServerFn(adminLots);
   const listerAgents = useServerFn(adminAgents);
@@ -132,6 +136,24 @@ function AdminBeacons() {
     onSuccess: (r) => {
       downloadBase64(r.base64, `QR_lot_${r.lotCode}.pdf`, "application/pdf");
       toast.success(`${r.balises} QR exportés sur ${r.pages} page(s).`);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const muterZip = useMutation({
+    mutationFn: (id: string) => exporterZip({ data: { lotId: id } }),
+    onSuccess: (r) => {
+      downloadBase64(r.base64, `QR_lot_${r.lotCode}_png.zip`, "application/zip");
+      toast.success(`${r.fichiers} PNG (${r.cote}x${r.cote} px, 600 DPI) exportés.`);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const muterCsv = useMutation({
+    mutationFn: (id: string) => exporterCsv({ data: { lotId: id } }),
+    onSuccess: (r) => {
+      downloadBase64(r.base64, `manifeste_lot_${r.lotCode}.csv`, "text/csv");
+      toast.success(`Manifeste CSV : ${r.lignes} balise(s).`);
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -277,6 +299,20 @@ function AdminBeacons() {
             onClick={() => muterExport.mutate(lotId)}
           >
             {muterExport.isPending ? "Génération…" : "Exporter les QR (PDF)"}
+          </Button>
+          <Button
+            variant="outline"
+            disabled={lotId === "tous" || muterZip.isPending}
+            onClick={() => muterZip.mutate(lotId)}
+          >
+            {muterZip.isPending ? "Génération…" : "Exporter les QR (ZIP individuel)"}
+          </Button>
+          <Button
+            variant="outline"
+            disabled={lotId === "tous" || muterCsv.isPending}
+            onClick={() => muterCsv.mutate(lotId)}
+          >
+            {muterCsv.isPending ? "Génération…" : "Exporter la manifeste (CSV)"}
           </Button>
           <Button variant="outline" onClick={() => setOuvrirAffect(true)}>
             Affecter à un agent
