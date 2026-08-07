@@ -35,6 +35,7 @@ import { Route as AdminGuardBeaconsRouteImport } from './routes/admin/_guard/bea
 import { Route as AdminGuardClaimsRouteImport } from './routes/admin/_guard/claims'
 import { Route as AdminGuardInstallationsRouteImport } from './routes/admin/_guard/installations'
 import { Route as AdminGuardInstallationsAttenteRouteImport } from './routes/admin/_guard/installations-attente'
+import { Route as AdminGuardJustificatifsRouteImport } from './routes/admin/_guard/justificatifs'
 import { Route as AdminGuardLotsRouteImport } from './routes/admin/_guard/lots'
 import { Route as AdminGuardPaymentsRouteImport } from './routes/admin/_guard/payments'
 import { Route as AdminGuardReportsRouteImport } from './routes/admin/_guard/reports'
@@ -195,6 +196,11 @@ const AdminGuardInstallationsAttenteRoute =
     path: '/installations-attente',
     getParentRoute: () => AdminGuardRouteRoute,
   } as any)
+const AdminGuardJustificatifsRoute = AdminGuardJustificatifsRouteImport.update({
+  id: '/justificatifs',
+  path: '/justificatifs',
+  getParentRoute: () => AdminGuardRouteRoute,
+} as any)
 const AdminGuardLotsRoute = AdminGuardLotsRouteImport.update({
   id: '/lots',
   path: '/lots',
@@ -365,6 +371,7 @@ export interface FileRoutesByFullPath {
   '/admin/claims': typeof AdminGuardClaimsRoute
   '/admin/installations': typeof AdminGuardInstallationsRoute
   '/admin/installations-attente': typeof AdminGuardInstallationsAttenteRoute
+  '/admin/justificatifs': typeof AdminGuardJustificatifsRoute
   '/admin/lots': typeof AdminGuardLotsRoute
   '/admin/payments': typeof AdminGuardPaymentsRoute
   '/admin/reports': typeof AdminGuardReportsRoute
@@ -417,6 +424,7 @@ export interface FileRoutesByTo {
   '/admin/claims': typeof AdminGuardClaimsRoute
   '/admin/installations': typeof AdminGuardInstallationsRoute
   '/admin/installations-attente': typeof AdminGuardInstallationsAttenteRoute
+  '/admin/justificatifs': typeof AdminGuardJustificatifsRoute
   '/admin/lots': typeof AdminGuardLotsRoute
   '/admin/payments': typeof AdminGuardPaymentsRoute
   '/admin/reports': typeof AdminGuardReportsRoute
@@ -474,6 +482,7 @@ export interface FileRoutesById {
   '/admin/_guard/claims': typeof AdminGuardClaimsRoute
   '/admin/_guard/installations': typeof AdminGuardInstallationsRoute
   '/admin/_guard/installations-attente': typeof AdminGuardInstallationsAttenteRoute
+  '/admin/_guard/justificatifs': typeof AdminGuardJustificatifsRoute
   '/admin/_guard/lots': typeof AdminGuardLotsRoute
   '/admin/_guard/payments': typeof AdminGuardPaymentsRoute
   '/admin/_guard/reports': typeof AdminGuardReportsRoute
@@ -532,6 +541,7 @@ export interface FileRouteTypes {
     | '/admin/claims'
     | '/admin/installations'
     | '/admin/installations-attente'
+    | '/admin/justificatifs'
     | '/admin/lots'
     | '/admin/payments'
     | '/admin/reports'
@@ -584,6 +594,7 @@ export interface FileRouteTypes {
     | '/admin/claims'
     | '/admin/installations'
     | '/admin/installations-attente'
+    | '/admin/justificatifs'
     | '/admin/lots'
     | '/admin/payments'
     | '/admin/reports'
@@ -640,6 +651,7 @@ export interface FileRouteTypes {
     | '/admin/_guard/claims'
     | '/admin/_guard/installations'
     | '/admin/_guard/installations-attente'
+    | '/admin/_guard/justificatifs'
     | '/admin/_guard/lots'
     | '/admin/_guard/payments'
     | '/admin/_guard/reports'
@@ -878,6 +890,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminGuardInstallationsAttenteRouteImport
       parentRoute: typeof AdminGuardRouteRoute
     }
+    '/admin/_guard/justificatifs': {
+      id: '/admin/_guard/justificatifs'
+      path: '/justificatifs'
+      fullPath: '/admin/justificatifs'
+      preLoaderRoute: typeof AdminGuardJustificatifsRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
     '/admin/_guard/lots': {
       id: '/admin/_guard/lots'
       path: '/lots'
@@ -1087,6 +1106,7 @@ interface AdminGuardRouteRouteChildren {
   AdminGuardClaimsRoute: typeof AdminGuardClaimsRoute
   AdminGuardInstallationsRoute: typeof AdminGuardInstallationsRoute
   AdminGuardInstallationsAttenteRoute: typeof AdminGuardInstallationsAttenteRoute
+  AdminGuardJustificatifsRoute: typeof AdminGuardJustificatifsRoute
   AdminGuardLotsRoute: typeof AdminGuardLotsRoute
   AdminGuardPaymentsRoute: typeof AdminGuardPaymentsRoute
   AdminGuardReportsRoute: typeof AdminGuardReportsRoute
@@ -1106,6 +1126,7 @@ const AdminGuardRouteRouteChildren: AdminGuardRouteRouteChildren = {
   AdminGuardClaimsRoute: AdminGuardClaimsRoute,
   AdminGuardInstallationsRoute: AdminGuardInstallationsRoute,
   AdminGuardInstallationsAttenteRoute: AdminGuardInstallationsAttenteRoute,
+  AdminGuardJustificatifsRoute: AdminGuardJustificatifsRoute,
   AdminGuardLotsRoute: AdminGuardLotsRoute,
   AdminGuardPaymentsRoute: AdminGuardPaymentsRoute,
   AdminGuardReportsRoute: AdminGuardReportsRoute,
