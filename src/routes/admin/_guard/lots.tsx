@@ -62,7 +62,7 @@ function AdminLots() {
       entete: "Changer le statut",
       rendu: (l) => (
         <Select
-          value={l.status ?? "created"}
+          value={l.status ?? "generated"}
           onValueChange={(v) => muter.mutate({ id: l.id, status: v })}
         >
           <SelectTrigger className="w-40">
