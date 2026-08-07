@@ -275,6 +275,59 @@ export const adminReviewInstallation = createServerFn({ method: "POST" })
     return statuerInstallation({ ...data, validatorId: context.userId });
   });
 
+export const adminInstallationDetail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string }) => ({ id: String(input.id) }))
+  .handler(async ({ context, data }) => {
+    const { requireAdmin } = await import("@/lib/admin.server");
+    const { detailInstallation } = await import("@/lib/admin-install-edit.server");
+    await requireAdmin(context.userId);
+    return detailInstallation(data.id);
+  });
+
+export const adminUpdateInstallation = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (input: {
+      id: string;
+      motif?: string | null;
+      patch: Record<string, unknown>;
+    }) => {
+      const brut = input?.patch ?? {};
+      const patch: Record<string, unknown> = {};
+      if ("agent_id" in brut) patch['agent_id'] = brut['agent_id'] ? String(brut['agent_id']) : null;
+      for (const cle of ["gps_lat", "gps_lng", "accuracy_m"]) {
+        if (cle in brut) {
+          const v = brut[cle];
+          patch[cle] = v === "" || v == null ? null : Number(v);
+          if (patch[cle] != null && !Number.isFinite(patch[cle] as number)) {
+            throw new Error("Valeur numérique invalide.");
+          }
+        }
+      }
+      if ("photo_url" in brut) {
+        const v = brut['photo_url'];
+        patch['photo_url'] = v ? String(v).trim() : null;
+      }
+      if ("installed_at" in brut) {
+        const v = brut['installed_at'];
+        patch['installed_at'] = v ? new Date(String(v)).toISOString() : null;
+      }
+      return { id: String(input.id), motif: input.motif ?? null, patch };
+    },
+  )
+  .handler(async ({ context, data }) => {
+    const { requireAdmin } = await import("@/lib/admin.server");
+    const { modifierInstallation } = await import("@/lib/admin-install-edit.server");
+    await requireAdmin(context.userId);
+    return modifierInstallation({
+      id: data.id,
+      actorId: context.userId,
+      patch: data.patch,
+      motif: data.motif,
+    });
+  });
+
 export const adminAgentMetrics = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
