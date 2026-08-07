@@ -86,10 +86,22 @@
     "usages": {
       "eyebrow": "Usages",
       "title": "Pensé pour tous les usages du quotidien.",
-      "individuals": { "title": "Particuliers", "text": "Recevoir visiteurs et livraisons." },
-      "shops": { "title": "Commerces", "text": "Être trouvés sans expliquer." },
-      "delivery": { "title": "Livraisons", "text": "Livrer sans appels d'orientation." },
-      "companies": { "title": "Entreprises", "text": "Intégrer les adresses par API." }
+      "individuals": {
+        "title": "Particuliers",
+        "text": "Recevoir visiteurs et livraisons."
+      },
+      "shops": {
+        "title": "Commerces",
+        "text": "Être trouvés sans expliquer."
+      },
+      "delivery": {
+        "title": "Livraisons",
+        "text": "Livrer sans appels d'orientation."
+      },
+      "companies": {
+        "title": "Entreprises",
+        "text": "Intégrer les adresses par API."
+      }
     },
     "cta": {
       "eyebrow": "Commencer",
@@ -177,9 +189,19 @@
       "technology": "Technologie et données",
       "soon": "Poste présenté prochainement"
     }
-
   },
   "common": {
     "backHome": "Retour à l'accueil"
+  },
+  "notFound": {
+    "title": "Cette page n'existe pas (ou plus)",
+    "text": "Le lien est peut-être incomplet. Revenez à l'accueil pour rechercher une adresse par son numéro.",
+    "home": "Retour à l'accueil"
+  },
+  "error": {
+    "title": "Cette page n'a pas pu s'afficher",
+    "text": "Un incident technique s'est produit de notre côté. Réessayez ou revenez à l'accueil.",
+    "retry": "Réessayer",
+    "home": "Retour à l'accueil"
   }
 }

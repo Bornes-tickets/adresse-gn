@@ -86,10 +86,22 @@
     "usages": {
       "eyebrow": "Use cases",
       "title": "Built for everyday needs.",
-      "individuals": { "title": "Individuals", "text": "Welcome visitors and deliveries." },
-      "shops": { "title": "Shops", "text": "Be found without explaining." },
-      "delivery": { "title": "Deliveries", "text": "Deliver without direction calls." },
-      "companies": { "title": "Companies", "text": "Integrate addresses via API." }
+      "individuals": {
+        "title": "Individuals",
+        "text": "Welcome visitors and deliveries."
+      },
+      "shops": {
+        "title": "Shops",
+        "text": "Be found without explaining."
+      },
+      "delivery": {
+        "title": "Deliveries",
+        "text": "Deliver without direction calls."
+      },
+      "companies": {
+        "title": "Companies",
+        "text": "Integrate addresses via API."
+      }
     },
     "cta": {
       "eyebrow": "Get started",
@@ -177,9 +189,19 @@
       "technology": "Technology and data",
       "soon": "Role announced soon"
     }
-
   },
   "common": {
     "backHome": "Back to home"
+  },
+  "notFound": {
+    "title": "This page doesn't exist (anymore)",
+    "text": "The link may be incomplete. Go back home to look up an address by its number.",
+    "home": "Back to home"
+  },
+  "error": {
+    "title": "This page could not be displayed",
+    "text": "A technical problem occurred on our side. Try again or go back home.",
+    "retry": "Try again",
+    "home": "Back to home"
   }
 }
