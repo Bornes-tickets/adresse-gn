@@ -29,6 +29,26 @@ export const Route = createFileRoute("/agent/_guard/install/$number")({
   component: Install,
 });
 
+/** Brouillon persistant : survit à un remount (retour de l'appareil photo, refresh du jeton). */
+interface Brouillon {
+  etape: number;
+  baliseOk: boolean;
+  mesures: InstallMeasure[];
+  photo: string | null;
+  details: InstallDetails;
+  clientUuid: string;
+}
+
+function lireBrouillon(numero: string): Brouillon | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const brut = window.sessionStorage.getItem(`install-draft:${numero}`);
+    return brut ? (JSON.parse(brut) as Brouillon) : null;
+  } catch {
+    return null;
+  }
+}
+
 function Install() {
   const { number } = Route.useParams();
   const numero = number.toUpperCase();
@@ -37,14 +57,45 @@ function Install() {
   const enregistrer = useServerFn(submitInstallation);
   const isOnline = useOnline();
 
-  const [etape, setEtape] = useState(1);
-  const [baliseOk, setBaliseOk] = useState(false);
-  const [mesures, setMesures] = useState<InstallMeasure[]>([]);
-  const [photo, setPhoto] = useState<string | null>(null);
-  const [details, setDetails] = useState<InstallDetails>(DETAILS_VIDES);
+  const brouillon = useRef<Brouillon | null>(lireBrouillon(numero));
+  const [etape, setEtape] = useState(brouillon.current?.etape ?? 1);
+  const [baliseOk, setBaliseOk] = useState(brouillon.current?.baliseOk ?? false);
+  const [mesures, setMesures] = useState<InstallMeasure[]>(brouillon.current?.mesures ?? []);
+  const [photo, setPhoto] = useState<string | null>(brouillon.current?.photo ?? null);
+  const [details, setDetails] = useState<InstallDetails>(
+    brouillon.current?.details ?? DETAILS_VIDES,
+  );
   const [envoi, setEnvoi] = useState(false);
   const [resultat, setResultat] = useState<"succes" | "local" | string | null>(null);
-  const clientUuid = useRef<string>(crypto.randomUUID());
+  const clientUuid = useRef<string>(brouillon.current?.clientUuid ?? crypto.randomUUID());
+
+  // Sauvegarde du brouillon à chaque changement (aucun reset intempestif du formulaire).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.sessionStorage.setItem(
+        `install-draft:${numero}`,
+        JSON.stringify({
+          etape,
+          baliseOk,
+          mesures,
+          photo,
+          details,
+          clientUuid: clientUuid.current,
+        } satisfies Brouillon),
+      );
+    } catch {
+      /* quota dépassé : le formulaire reste utilisable en mémoire */
+    }
+  }, [numero, etape, baliseOk, mesures, photo, details]);
+
+  const viderBrouillon = () => {
+    try {
+      window.sessionStorage.removeItem(`install-draft:${numero}`);
+    } catch {
+      /* ignoré */
+    }
+  };
 
   const detailsValides =
     details.consent &&
@@ -56,6 +107,7 @@ function Install() {
     (etape === 2 && mesures.length === 3) ||
     (etape === 3 && !!photo) ||
     (etape === 4 && detailsValides);
+
 
   const enfiler = async () => {
     await enfilerInstallation({
