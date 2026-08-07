@@ -181,6 +181,17 @@
   );
 }
 
+/* Version adoucie (20% de blanc) pour le héros de la page d'accueil */
+@utility gradient-signature-soft {
+  background-image: linear-gradient(
+    135deg,
+    #4b5e83 0%,
+    #576e97 60%,
+    #3eb7b6 120%
+  );
+}
+
+
 @utility gradient-accent {
   background-image: linear-gradient(135deg, #0ea5a4 0%, #0b7f7e 100%);
 }
