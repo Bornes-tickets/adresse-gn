@@ -69,7 +69,7 @@ function PaiementsAdminPage() {
 
   const installations = useQuery({
     queryKey: ["admin-installations-planifier"],
-    queryFn: () => adminInstallationsAPlanifier(),
+    queryFn: () => adminInstallationsAPlanifier({ data: {} }),
   });
 
   const rafraichir = () => {
