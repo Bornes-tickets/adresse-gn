@@ -1,1 +1,48 @@
-{}
+{
+  "checkout": {
+    "commander": {
+      "offerUnavailable": {
+        "title": "Offer unavailable",
+        "description": "This offer is quote-only or doesn't exist. Check the pricing list.",
+        "viewPricing": "View pricing"
+      },
+      "title": "Order summary",
+      "total": "Total to pay",
+      "continueToPayment": "Continue to payment",
+      "changeOffer": "Change offer",
+      "disclaimer": "No automatic debit: payment is collected after validation by an Adresse GN advisor. You will receive a PDF invoice upon confirmation."
+    },
+    "paiement": {
+      "orderNotFound": {
+        "title": "Order not found",
+        "description": "This order doesn't exist or doesn't belong to you.",
+        "viewPricing": "View pricing"
+      },
+      "title": "Payment",
+      "orderDetails": "Order details",
+      "total": "Total",
+      "paymentInfo": "Payment {{provider}} — {{status}}",
+      "receipt": " · receipt {{ref}}",
+      "confirmed": {
+        "title": "Payment confirmed",
+        "description": "An agent will schedule your installation. You will be notified.",
+        "downloadInvoice": "Download invoice {{number}}",
+        "goToAccount": "Go to my account"
+      },
+      "chooseMethod": "Choose your payment method",
+      "choose": "Choose",
+      "comingSoon": "Coming soon",
+      "instructions": {
+        "title": "Payment instructions",
+        "contactWhatsapp": "Contact an advisor on WhatsApp",
+        "autoUpdate": "This page updates automatically as soon as the payment is confirmed."
+      },
+      "toasts": {
+        "instructionsGenerated": "Payment instructions generated."
+      }
+    },
+    "logout": {
+      "inProgress": "Signing out…"
+    }
+  }
+}

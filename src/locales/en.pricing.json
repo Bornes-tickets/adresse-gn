@@ -1,1 +1,90 @@
-{}
+{
+  "pricing": {
+    "hero": {
+      "title": "Simple pricing,",
+      "titleAccent": "in Guinean francs",
+      "subtitle": "Choose the plan that fits your home or your business. Pay on site or via Mobile Money, then an approved agent comes to install your beacon."
+    },
+    "tabsAriaLabel": "Offer type",
+    "families": {
+      "residential": "Residential",
+      "pro": "Professional",
+      "quote": "Institutional"
+    },
+    "card": {
+      "popular": "Most popular",
+      "quoteOnly": "On quote",
+      "perMonth": "at installation, then {{amount}} GNF per month",
+      "oneTime": "one-time payment, no subscription",
+      "requestQuote": "Request a quote",
+      "choose": "Choose"
+    },
+    "comparator": {
+      "title": "Compare the plans",
+      "subtitle": "What each plan includes, at a glance.",
+      "featureHeader": "Feature",
+      "included": "Included",
+      "notIncluded": "Not included",
+      "rows": {
+        "uniqueNumber": "Unique address number",
+        "physicalBeacon": "Physical beacon with QR code",
+        "installByAgent": "Installation by an approved agent",
+        "publicListing": "Public business listing",
+        "stats": "Visit statistics",
+        "teamAccounts": "Team accounts",
+        "monthlySubscription": "Monthly subscription"
+      },
+      "values": {
+        "none": "None",
+        "days30": "30 days",
+        "days90": "90 days",
+        "priority72h": "Priority 72 h",
+        "priority": "Priority",
+        "enriched": "Enriched"
+      }
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "items": {
+        "payment": {
+          "q": "How does payment work?",
+          "r": "After your order, an advisor contacts you to collect payment on site or by transfer. Orange Money and MTN Mobile Money are coming soon."
+        },
+        "installation": {
+          "q": "When is my beacon installed?",
+          "r": "As soon as payment is confirmed, an installation request is sent to an agent in your area."
+        },
+        "invoice": {
+          "q": "Can I get an invoice?",
+          "r": "Yes, a PDF invoice is generated automatically after payment confirmation and is available in your customer area."
+        },
+        "visibility": {
+          "q": "Will my address be visible to everyone?",
+          "r": "No. A residential address stays private: only someone who knows your number can display the location. Business listings, on the other hand, are public if the owner chooses to publish them."
+        },
+        "moving": {
+          "q": "What happens if I move?",
+          "r": "Report it from your customer area: we deactivate the old beacon and schedule a new installation at your new address."
+        },
+        "subscription": {
+          "q": "Is there a subscription for individuals?",
+          "r": "No. Residential plans are paid once. Only professional plans include a monthly subscription."
+        }
+      }
+    },
+    "trust": {
+      "data": {
+        "title": "Your data protected",
+        "text": "Private address by default, compliant with Guinean laws L/2016/037 and L/2016/035."
+      },
+      "payment": {
+        "title": "Secure payment",
+        "text": "Collection by an approved agent or Mobile Money, with a systematic PDF invoice."
+      },
+      "support": {
+        "title": "Support in French",
+        "text": "A team reachable by WhatsApp and email, based in Conakry."
+      }
+    }
+  }
+}

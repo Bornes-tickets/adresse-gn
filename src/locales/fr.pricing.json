@@ -1,1 +1,90 @@
-{}
+{
+  "pricing": {
+    "hero": {
+      "title": "Des tarifs simples,",
+      "titleAccent": "en francs guinéens",
+      "subtitle": "Choisissez l'offre adaptée à votre logement ou à votre commerce. Vous réglez sur place ou par Mobile Money, puis un agent agréé vient poser votre balise."
+    },
+    "tabsAriaLabel": "Type d'offre",
+    "families": {
+      "residential": "Résidentiel",
+      "pro": "Professionnel",
+      "quote": "Institutionnel"
+    },
+    "card": {
+      "popular": "Plus populaire",
+      "quoteOnly": "Sur devis",
+      "perMonth": "à l'installation, puis {{amount}} GNF par mois",
+      "oneTime": "paiement unique, sans abonnement",
+      "requestQuote": "Demander un devis",
+      "choose": "Choisir"
+    },
+    "comparator": {
+      "title": "Comparer les offres",
+      "subtitle": "Ce que chaque formule inclut, en un coup d'œil.",
+      "featureHeader": "Fonctionnalité",
+      "included": "Inclus",
+      "notIncluded": "Non inclus",
+      "rows": {
+        "uniqueNumber": "Numéro d'adresse unique",
+        "physicalBeacon": "Balise physique avec QR code",
+        "installByAgent": "Pose par un agent agréé",
+        "publicListing": "Fiche établissement publique",
+        "stats": "Statistiques de consultation",
+        "teamAccounts": "Comptes d'équipe",
+        "monthlySubscription": "Abonnement mensuel"
+      },
+      "values": {
+        "none": "Aucun",
+        "days30": "30 jours",
+        "days90": "90 jours",
+        "priority72h": "Prioritaire 72 h",
+        "priority": "Prioritaire",
+        "enriched": "Enrichie"
+      }
+    },
+    "faq": {
+      "title": "Questions fréquentes",
+      "items": {
+        "payment": {
+          "q": "Comment se déroule le paiement ?",
+          "r": "Après votre commande, un conseiller vous contacte pour encaisser sur place ou par transfert. Orange Money et MTN Mobile Money arrivent prochainement."
+        },
+        "installation": {
+          "q": "Quand ma balise est-elle posée ?",
+          "r": "Dès la confirmation du paiement, une demande d'installation est transmise à un agent de votre zone."
+        },
+        "invoice": {
+          "q": "Puis-je obtenir une facture ?",
+          "r": "Oui, une facture PDF est générée automatiquement après confirmation du paiement et disponible dans votre espace client."
+        },
+        "visibility": {
+          "q": "Mon adresse sera-t-elle visible par tout le monde ?",
+          "r": "Non. Une adresse résidentielle reste privée : seule une personne qui connaît votre numéro peut afficher la position. Les fiches d'établissement, elles, sont publiques par choix du responsable."
+        },
+        "moving": {
+          "q": "Que se passe-t-il si je déménage ?",
+          "r": "Signalez-le depuis votre espace client : nous désactivons l'ancienne balise et planifions une nouvelle pose à votre nouvelle adresse."
+        },
+        "subscription": {
+          "q": "Y a-t-il un abonnement pour les particuliers ?",
+          "r": "Non. Les offres résidentielles se règlent une seule fois. Seules les offres professionnelles comportent un abonnement mensuel."
+        }
+      }
+    },
+    "trust": {
+      "data": {
+        "title": "Vos données protégées",
+        "text": "Adresse privée par défaut, conforme aux lois guinéennes L/2016/037 et L/2016/035."
+      },
+      "payment": {
+        "title": "Paiement sécurisé",
+        "text": "Encaissement par agent agréé ou Mobile Money, avec facture PDF systématique."
+      },
+      "support": {
+        "title": "Support en français",
+        "text": "Une équipe joignable par WhatsApp et par e-mail, basée à Conakry."
+      }
+    }
+  }
+}
