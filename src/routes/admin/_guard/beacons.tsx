@@ -172,11 +172,7 @@ function AdminBeacons() {
   type Ligne = NonNullable<typeof balises.data>["rows"][number];
 
   const exportEnCours = muterExport.isPending || muterZip.isPending || muterCsv.isPending;
-  const libelleExport = muterExport.isPending
-    ? "du PDF"
-    : muterZip.isPending
-      ? "du ZIP"
-      : "du CSV";
+  const etapeExport = muterExport.isPending ? "PDF" : muterZip.isPending ? "ZIP PNG" : "CSV";
   const [progression, setProgression] = useState(0);
 
   useEffect(() => {
