@@ -253,7 +253,7 @@ function CarteOffre({ offre, vedette }: { offre: Offer; vedette: boolean }) {
       </div>
 
       <ul className="mt-8 flex-1 space-y-3 text-sm text-foreground">
-        {offre.includes.map((ligne) => (
+        {textes.features.map((ligne) => (
           <li key={ligne} className="flex gap-2.5">
             <Check className="mt-0.5 size-4 shrink-0 text-accent" />
             <span className="leading-relaxed">{ligne}</span>
