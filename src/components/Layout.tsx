@@ -4,15 +4,15 @@ import { useEffect, useState } from "react";
 import {
   Briefcase,
   Facebook,
-  Heart,
   Instagram,
-  Linkedin,
   LogOut,
   Mail,
   Menu,
   MessageCircle,
+  Twitter,
   User as UserIcon,
 } from "lucide-react";
+
 
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
