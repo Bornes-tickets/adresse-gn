@@ -183,8 +183,24 @@ function gnf(montant: number): string {
   return montant.toLocaleString("fr-FR");
 }
 
+function usePlanTextes(offre: Offer) {
+  const { t } = useTranslation();
+  const features = t(`pricing.plans.${offre.code}.features`, {
+    returnObjects: true,
+    defaultValue: offre.includes,
+  }) as string[];
+  return {
+    label: t(`pricing.plans.${offre.code}.title`, { defaultValue: offre.label }),
+    description: t(`pricing.plans.${offre.code}.description`, {
+      defaultValue: offre.tagline,
+    }),
+    features: Array.isArray(features) ? features : offre.includes,
+  };
+}
+
 function CarteOffre({ offre, vedette }: { offre: Offer; vedette: boolean }) {
   const { t } = useTranslation();
+  const textes = usePlanTextes(offre);
   const Icone = ICONES_OFFRE[offre.code] ?? HomeIcon;
   return (
     <div
@@ -207,9 +223,12 @@ function CarteOffre({ offre, vedette }: { offre: Offer; vedette: boolean }) {
       </div>
 
       <h3 className="text-display mt-6 text-xl font-bold text-foreground">
-        {offre.label}
+        {textes.label}
       </h3>
-      <p className="mt-2 text-sm leading-relaxed text-slate-500">{offre.tagline}</p>
+      <p className="mt-2 text-sm leading-relaxed text-slate-500">
+        {textes.description}
+      </p>
+
 
       <div className="mt-6">
         {offre.quoteOnly ? (
@@ -234,7 +253,7 @@ function CarteOffre({ offre, vedette }: { offre: Offer; vedette: boolean }) {
       </div>
 
       <ul className="mt-8 flex-1 space-y-3 text-sm text-foreground">
-        {offre.includes.map((ligne) => (
+        {textes.features.map((ligne) => (
           <li key={ligne} className="flex gap-2.5">
             <Check className="mt-0.5 size-4 shrink-0 text-accent" />
             <span className="leading-relaxed">{ligne}</span>
@@ -376,7 +395,9 @@ function TarifsPage() {
                   </TableHead>
                   {COLONNES_COMPARATEUR.map((code) => (
                     <TableHead key={code} className="min-w-[120px] text-center">
-                      {OFFERS.find((o) => o.code === code)?.label}
+                      {t(`pricing.plans.${code}.title`, {
+                        defaultValue: OFFERS.find((o) => o.code === code)?.label ?? code,
+                      })}
                     </TableHead>
                   ))}
                 </TableRow>
