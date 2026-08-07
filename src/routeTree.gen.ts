@@ -58,6 +58,7 @@ import { Route as ProGuardEquipeRouteImport } from './routes/pro/_guard/equipe'
 import { Route as ProGuardEtablissementsRouteImport } from './routes/pro/_guard/etablissements'
 import { Route as ProGuardFacturationRouteImport } from './routes/pro/_guard/facturation'
 import { Route as ProGuardStatistiquesRouteImport } from './routes/pro/_guard/statistiques'
+import { Route as AdminGuardInstallationsIdRouteImport } from './routes/admin/_guard/installations_.$id'
 import { Route as AgentGuardInstallNumberRouteImport } from './routes/agent/_guard/install.$number'
 import { Route as ApiPublicHooksRunBillingRouteImport } from './routes/api/public/hooks/run-billing'
 import { Route as ApiPublicWebhooksMtnRouteImport } from './routes/api/public/webhooks/mtn'
@@ -310,6 +311,12 @@ const ProGuardStatistiquesRoute = ProGuardStatistiquesRouteImport.update({
   path: '/statistiques',
   getParentRoute: () => ProGuardRouteRoute,
 } as any)
+const AdminGuardInstallationsIdRoute =
+  AdminGuardInstallationsIdRouteImport.update({
+    id: '/installations_/$id',
+    path: '/installations/$id',
+    getParentRoute: () => AdminGuardRouteRoute,
+  } as any)
 const AgentGuardInstallNumberRoute = AgentGuardInstallNumberRouteImport.update({
   id: '/install/$number',
   path: '/install/$number',
@@ -382,6 +389,7 @@ export interface FileRoutesByFullPath {
   '/agent/': typeof AgentGuardIndexRoute
   '/mon-compte/': typeof MonCompteGuardIndexRoute
   '/pro/': typeof ProGuardIndexRoute
+  '/admin/installations/$id': typeof AdminGuardInstallationsIdRoute
   '/agent/install/$number': typeof AgentGuardInstallNumberRoute
   '/api/public/hooks/run-billing': typeof ApiPublicHooksRunBillingRoute
   '/api/public/webhooks/mtn': typeof ApiPublicWebhooksMtnRoute
@@ -433,6 +441,7 @@ export interface FileRoutesByTo {
   '/agent': typeof AgentGuardIndexRoute
   '/mon-compte': typeof MonCompteGuardIndexRoute
   '/pro': typeof ProGuardIndexRoute
+  '/admin/installations/$id': typeof AdminGuardInstallationsIdRoute
   '/agent/install/$number': typeof AgentGuardInstallNumberRoute
   '/api/public/hooks/run-billing': typeof ApiPublicHooksRunBillingRoute
   '/api/public/webhooks/mtn': typeof ApiPublicWebhooksMtnRoute
@@ -489,6 +498,7 @@ export interface FileRoutesById {
   '/agent/_guard/': typeof AgentGuardIndexRoute
   '/mon-compte/_guard/': typeof MonCompteGuardIndexRoute
   '/pro/_guard/': typeof ProGuardIndexRoute
+  '/admin/_guard/installations_/$id': typeof AdminGuardInstallationsIdRoute
   '/agent/_guard/install/$number': typeof AgentGuardInstallNumberRoute
   '/api/public/hooks/run-billing': typeof ApiPublicHooksRunBillingRoute
   '/api/public/webhooks/mtn': typeof ApiPublicWebhooksMtnRoute
@@ -546,6 +556,7 @@ export interface FileRouteTypes {
     | '/agent/'
     | '/mon-compte/'
     | '/pro/'
+    | '/admin/installations/$id'
     | '/agent/install/$number'
     | '/api/public/hooks/run-billing'
     | '/api/public/webhooks/mtn'
@@ -597,6 +608,7 @@ export interface FileRouteTypes {
     | '/agent'
     | '/mon-compte'
     | '/pro'
+    | '/admin/installations/$id'
     | '/agent/install/$number'
     | '/api/public/hooks/run-billing'
     | '/api/public/webhooks/mtn'
@@ -652,6 +664,7 @@ export interface FileRouteTypes {
     | '/agent/_guard/'
     | '/mon-compte/_guard/'
     | '/pro/_guard/'
+    | '/admin/_guard/installations_/$id'
     | '/agent/_guard/install/$number'
     | '/api/public/hooks/run-billing'
     | '/api/public/webhooks/mtn'
@@ -1026,6 +1039,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProGuardStatistiquesRouteImport
       parentRoute: typeof ProGuardRouteRoute
     }
+    '/admin/_guard/installations_/$id': {
+      id: '/admin/_guard/installations_/$id'
+      path: '/installations/$id'
+      fullPath: '/admin/installations/$id'
+      preLoaderRoute: typeof AdminGuardInstallationsIdRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
     '/agent/_guard/install/$number': {
       id: '/agent/_guard/install/$number'
       path: '/install/$number'
@@ -1073,6 +1093,7 @@ interface AdminGuardRouteRouteChildren {
   AdminGuardUsersRoute: typeof AdminGuardUsersRoute
   AdminGuardZonesRoute: typeof AdminGuardZonesRoute
   AdminGuardIndexRoute: typeof AdminGuardIndexRoute
+  AdminGuardInstallationsIdRoute: typeof AdminGuardInstallationsIdRoute
 }
 
 const AdminGuardRouteRouteChildren: AdminGuardRouteRouteChildren = {
@@ -1091,6 +1112,7 @@ const AdminGuardRouteRouteChildren: AdminGuardRouteRouteChildren = {
   AdminGuardUsersRoute: AdminGuardUsersRoute,
   AdminGuardZonesRoute: AdminGuardZonesRoute,
   AdminGuardIndexRoute: AdminGuardIndexRoute,
+  AdminGuardInstallationsIdRoute: AdminGuardInstallationsIdRoute,
 }
 
 const AdminGuardRouteRouteWithChildren = AdminGuardRouteRoute._addFileChildren(

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -147,22 +147,30 @@ function AdminInstallations() {
     {
       cle: "actions",
       entete: "Actions",
-      rendu: (l) =>
-        l.validated_at ? null : (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() =>
-              muterDecision.mutate({
-                installationId: l.id,
-                reportId: null,
-                decision: "valider",
-              })
-            }
-          >
-            Valider
+      rendu: (l) => (
+        <div className="flex gap-2">
+          {l.validated_at ? null : (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() =>
+                muterDecision.mutate({
+                  installationId: l.id,
+                  reportId: null,
+                  decision: "valider",
+                })
+              }
+            >
+              Valider
+            </Button>
+          )}
+          <Button asChild size="sm" variant="ghost">
+            <Link to="/admin/installations/$id" params={{ id: l.id }}>
+              Modifier
+            </Link>
           </Button>
-        ),
+        </div>
+      ),
     },
   ];
 
