@@ -183,8 +183,24 @@ function gnf(montant: number): string {
   return montant.toLocaleString("fr-FR");
 }
 
+function usePlanTextes(offre: Offer) {
+  const { t } = useTranslation();
+  const features = t(`pricing.plans.${offre.code}.features`, {
+    returnObjects: true,
+    defaultValue: offre.includes,
+  }) as string[];
+  return {
+    label: t(`pricing.plans.${offre.code}.title`, { defaultValue: offre.label }),
+    description: t(`pricing.plans.${offre.code}.description`, {
+      defaultValue: offre.tagline,
+    }),
+    features: Array.isArray(features) ? features : offre.includes,
+  };
+}
+
 function CarteOffre({ offre, vedette }: { offre: Offer; vedette: boolean }) {
   const { t } = useTranslation();
+  const textes = usePlanTextes(offre);
   const Icone = ICONES_OFFRE[offre.code] ?? HomeIcon;
   return (
     <div
@@ -207,9 +223,12 @@ function CarteOffre({ offre, vedette }: { offre: Offer; vedette: boolean }) {
       </div>
 
       <h3 className="text-display mt-6 text-xl font-bold text-foreground">
-        {offre.label}
+        {textes.label}
       </h3>
-      <p className="mt-2 text-sm leading-relaxed text-slate-500">{offre.tagline}</p>
+      <p className="mt-2 text-sm leading-relaxed text-slate-500">
+        {textes.description}
+      </p>
+
 
       <div className="mt-6">
         {offre.quoteOnly ? (
