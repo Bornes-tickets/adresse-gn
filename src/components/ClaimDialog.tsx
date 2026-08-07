@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -28,11 +29,11 @@ interface ClaimDialogProps {
   isMine: boolean;
 }
 
-async function fichierEnBase64(fichier: File): Promise<string> {
+async function fichierEnBase64(fichier: File, fileReadError: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const lecteur = new FileReader();
     lecteur.onload = () => resolve(String(lecteur.result));
-    lecteur.onerror = () => reject(new Error("Lecture du fichier impossible."));
+    lecteur.onerror = () => reject(new Error(fileReadError));
     lecteur.readAsDataURL(fichier);
   });
 }
@@ -44,6 +45,7 @@ export function ClaimDialog({
   claimStatus,
   isMine,
 }: ClaimDialogProps) {
+  const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
   const [nom, setNom] = useState("");
@@ -53,10 +55,10 @@ export function ClaimDialog({
 
   const envoyer = useMutation({
     mutationFn: async () => {
-      const base64 = fichier ? await fichierEnBase64(fichier) : null;
+      const base64 = fichier ? await fichierEnBase64(fichier, t("claim.fileReadError")) : null;
       const explication = [
-        nom.trim() ? `Propriétaire déclaré : ${nom.trim()}` : "",
-        tel.trim() ? `Téléphone : ${tel.trim()}` : "",
+        nom.trim() ? t("claim.declaredOwner", { name: nom.trim() }) : "",
+        tel.trim() ? t("claim.phoneLabel", { phone: tel.trim() }) : "",
         details.trim(),
       ]
         .filter(Boolean)
@@ -67,7 +69,7 @@ export function ClaimDialog({
     },
 
     onSuccess: () => {
-      toast.success("Demande envoyée. Notre équipe vérifie sous 48 h.");
+      toast.success(t("claim.success"));
       setDetails("");
       setFichier(null);
       queryClient.invalidateQueries({ queryKey: ["beacon-context", number] });
@@ -82,35 +84,35 @@ export function ClaimDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ShieldCheck className="size-5 text-primary" />
-            Réclamer cette adresse
+            {t("claim.title")}
           </DialogTitle>
           <DialogDescription className="font-mono">{number}</DialogDescription>
         </DialogHeader>
 
         {isMine ? (
           <p className="text-sm text-muted-foreground">
-            Cette adresse vous appartient déjà.{" "}
+            {t("claim.alreadyMine")}{" "}
             <Link to="/mon-compte/beacons" className="text-primary underline">
-              Gérer mes balises
+              {t("claim.manageBeacons")}
             </Link>
           </p>
         ) : !isAuthenticated ? (
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Connectez-vous pour déclarer que ce lieu est le vôtre.
+              {t("claim.loginPrompt")}
             </p>
             <Button asChild size="lg" className="w-full">
-              <Link to="/login">Se connecter</Link>
+              <Link to="/login">{t("claim.login")}</Link>
             </Button>
           </div>
         ) : claimStatus === "pending" ? (
           <p className="text-sm text-muted-foreground">
-            Votre demande est en cours d'examen ({CLAIM_STATUS_LABELS['pending']}).
+            {t("claim.underReview", { status: CLAIM_STATUS_LABELS['pending'] })}
           </p>
         ) : (
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="claim-nom">Nom du propriétaire ou de l'occupant</Label>
+              <Label htmlFor="claim-nom">{t("claim.ownerName")}</Label>
               <Input
                 id="claim-nom"
                 className="h-11 text-base"
@@ -120,18 +122,18 @@ export function ClaimDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="claim-tel">Téléphone de contact</Label>
+              <Label htmlFor="claim-tel">{t("claim.phone")}</Label>
               <Input
                 id="claim-tel"
                 className="h-11 text-base"
                 value={tel}
                 onChange={(e) => setTel(e.target.value)}
                 maxLength={30}
-                placeholder="+224 ..."
+                placeholder={t("claim.phonePlaceholder")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="claim-details">Justification</Label>
+              <Label htmlFor="claim-details">{t("claim.justification")}</Label>
               <Textarea
                 id="claim-details"
                 className="text-base"
@@ -139,11 +141,11 @@ export function ClaimDialog({
                 onChange={(e) => setDetails(e.target.value)}
                 rows={3}
                 maxLength={1000}
-                placeholder="Bail, facture, titre foncier, lien avec le lieu…"
+                placeholder={t("claim.justificationPlaceholder")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="claim-fichier">Pièce justificative (photo ou PDF)</Label>
+              <Label htmlFor="claim-fichier">{t("claim.proofFile")}</Label>
               <Input
                 id="claim-fichier"
                 type="file"
@@ -158,14 +160,14 @@ export function ClaimDialog({
                 className="h-11 w-full sm:w-auto"
                 onClick={() => onOpenChange(false)}
               >
-                Annuler
+                {t("claim.cancel")}
               </Button>
               <Button
                 className="h-11 w-full sm:w-auto"
                 onClick={() => envoyer.mutate()}
                 disabled={envoyer.isPending}
               >
-                {envoyer.isPending ? "Envoi…" : "Envoyer la demande"}
+                {envoyer.isPending ? t("claim.submitting") : t("claim.submit")}
               </Button>
             </DialogFooter>
           </div>
