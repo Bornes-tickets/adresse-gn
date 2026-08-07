@@ -139,9 +139,9 @@ export const adminExportQrPdf = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     const { requireAdmin } = await import("@/lib/admin.server");
     const { numerosDuLot, codeDuLot } = await import("@/lib/admin-ops.server");
-    const { genererPdfQr } = await import("@/lib/admin-pdf.server");
+    const { genererPdfQr, baseSite } = await import("@/lib/admin-pdf.server");
     await requireAdmin(context.userId);
-    const base = process.env["PUBLIC_SITE_URL"] || "https://adresse-gn.lovable.app";
+    const base = baseSite();
     const [numeros, lotCode] = await Promise.all([
       numerosDuLot(data.lotId),
       codeDuLot(data.lotId),
