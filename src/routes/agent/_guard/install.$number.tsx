@@ -124,8 +124,10 @@ function Install() {
       consent: true,
       created_at: new Date().toISOString(),
     });
+    viderBrouillon();
     setResultat("local");
   };
+
 
   const envoyer = async () => {
     console.log("Bouton validation cliqué");
