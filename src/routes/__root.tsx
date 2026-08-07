@@ -156,7 +156,9 @@ function RootComponent() {
   const dansEspace = (base: string) =>
     pathname === base || pathname.startsWith(`${base}/`);
   // Ces espaces fournissent leur propre header/footer : pas de Layout global.
-  const sansLayout = ["/agent", "/admin", "/mon-compte", "/pro"].some(dansEspace);
+  const sansLayout =
+    ["/agent", "/admin", "/mon-compte", "/pro"].some(dansEspace) &&
+    pathname !== "/pro/onboarding";
 
   useEffect(() => {
     registerServiceWorker();
