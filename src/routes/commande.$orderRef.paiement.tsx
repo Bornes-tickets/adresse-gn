@@ -2,6 +2,7 @@ import { Link, createFileRoute, useParams } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Download, Loader2, Smartphone, Wallet } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,7 @@ const ICONES: Record<string, typeof Wallet> = {
 };
 
 function PaiementPage() {
+  const { t } = useTranslation();
   const { orderRef } = useParams({ from: "/commande/$orderRef/paiement" });
   const queryClient = useQueryClient();
 
@@ -66,7 +68,7 @@ function PaiementPage() {
         window.location.href = resultat.action.url;
         return;
       }
-      toast.success("Instructions de paiement générées.");
+      toast.success(t("checkout.paiement.toasts.instructionsGenerated"));
       queryClient.invalidateQueries({ queryKey: ["commande", orderRef] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -86,12 +88,12 @@ function PaiementPage() {
     return (
       <>
         <div className="mx-auto max-w-lg px-4 py-20 text-center">
-          <h1 className="text-2xl font-semibold text-foreground">Commande introuvable</h1>
+          <h1 className="text-2xl font-semibold text-foreground">{t("checkout.paiement.orderNotFound.title")}</h1>
           <p className="mt-3 text-sm text-muted-foreground">
-            Cette commande n'existe pas ou ne vous appartient pas.
+            {t("checkout.paiement.orderNotFound.description")}
           </p>
           <Button asChild className="mt-6">
-            <Link to="/tarifs">Voir les tarifs</Link>
+            <Link to="/tarifs">{t("checkout.paiement.orderNotFound.viewPricing")}</Link>
           </Button>
         </div>
       </>
@@ -107,7 +109,7 @@ function PaiementPage() {
       <div className="mx-auto max-w-2xl space-y-6 px-4 py-12">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 sm:flex sm:flex-wrap sm:justify-between">
           <div className="min-w-0">
-            <h1 className="text-2xl font-semibold text-foreground">Paiement</h1>
+            <h1 className="text-2xl font-semibold text-foreground">{t("checkout.paiement.title")}</h1>
             <p className="truncate font-mono text-sm text-muted-foreground">{c.order_ref}</p>
           </div>
           <Badge className="shrink-0" variant={payee ? "default" : "secondary"}>
@@ -117,7 +119,7 @@ function PaiementPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Détail de la commande</CardTitle>
+            <CardTitle className="text-base">{t("checkout.paiement.orderDetails")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {c.items.map((item) => (
@@ -127,16 +129,20 @@ function PaiementPage() {
               </div>
             ))}
             <div className="flex items-center justify-between border-t border-border pt-3">
-              <span className="font-medium text-foreground">Total</span>
+              <span className="font-medium text-foreground">{t("checkout.paiement.total")}</span>
               <span className="font-mono text-lg font-bold text-primary">
                 {gnf(c.amount_gnf)}
               </span>
             </div>
             {c.payment && (
               <p className="text-xs text-muted-foreground">
-                Paiement {PAYMENT_PROVIDER_LABELS[c.payment.provider ?? "manual"]} —{" "}
-                {PAYMENT_STATUS_LABELS[c.payment.status] ?? c.payment.status}
-                {c.payment.external_ref ? ` · reçu ${c.payment.external_ref}` : ""}
+                {t("checkout.paiement.paymentInfo", {
+                  provider: PAYMENT_PROVIDER_LABELS[c.payment.provider ?? "manual"],
+                  status: PAYMENT_STATUS_LABELS[c.payment.status] ?? c.payment.status,
+                })}
+                {c.payment.external_ref
+                  ? t("checkout.paiement.receipt", { ref: c.payment.external_ref })
+                  : ""}
               </p>
             )}
           </CardContent>
@@ -148,30 +154,29 @@ function PaiementPage() {
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="size-6 text-accent" />
                 <div>
-                  <p className="font-medium text-foreground">Paiement confirmé</p>
+                  <p className="font-medium text-foreground">{t("checkout.paiement.confirmed.title")}</p>
                   <p className="text-sm text-muted-foreground">
-                    Un agent va planifier votre installation. Vous serez prévenu par
-                    notification.
+                    {t("checkout.paiement.confirmed.description")}
                   </p>
                 </div>
               </div>
               {c.invoice?.pdf_url && (
                 <Button asChild variant="outline">
                   <a href={c.invoice.pdf_url} target="_blank" rel="noreferrer">
-                    <Download className="mr-2 size-4" />
-                    Télécharger la facture {c.invoice.number}
+                    <Download className="mr-2 size-4 rtl:mr-0 rtl:ml-2" />
+                    {t("checkout.paiement.confirmed.downloadInvoice", { number: c.invoice.number })}
                   </a>
                 </Button>
               )}
               <Button asChild>
-                <Link to="/mon-compte">Aller à mon espace</Link>
+                <Link to="/mon-compte">{t("checkout.paiement.confirmed.goToAccount")}</Link>
               </Button>
             </CardContent>
           </Card>
         ) : (
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Choisissez votre moyen de paiement</CardTitle>
+              <CardTitle className="text-base">{t("checkout.paiement.chooseMethod")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {(moyens.data ?? []).map((m) => {
@@ -192,10 +197,10 @@ function PaiementPage() {
                       initier.isPending ? (
                         <Loader2 className="size-4 animate-spin" />
                       ) : (
-                        <span className="text-xs text-primary">Choisir</span>
+                        <span className="text-xs text-primary">{t("checkout.paiement.choose")}</span>
                       )
                     ) : (
-                      <Badge variant="secondary">Bientôt disponible</Badge>
+                      <Badge variant="secondary">{t("checkout.paiement.comingSoon")}</Badge>
                     )}
                   </button>
                 );
@@ -207,7 +212,7 @@ function PaiementPage() {
         {action && !payee && (
           <Card className="border-primary">
             <CardHeader>
-              <CardTitle className="text-base">Instructions de paiement</CardTitle>
+              <CardTitle className="text-base">{t("checkout.paiement.instructions.title")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               {action.type === "manual" && (
@@ -215,7 +220,7 @@ function PaiementPage() {
                   <p className="whitespace-pre-line text-foreground">{action.instructions}</p>
                   <Button asChild variant="outline">
                     <a href={action.whatsapp} target="_blank" rel="noreferrer">
-                      Contacter un conseiller sur WhatsApp
+                      {t("checkout.paiement.instructions.contactWhatsapp")}
                     </a>
                   </Button>
                 </>
@@ -227,7 +232,7 @@ function PaiementPage() {
                 </>
               )}
               <p className="text-xs text-muted-foreground">
-                Cette page se met à jour automatiquement dès que le paiement est confirmé.
+                {t("checkout.paiement.instructions.autoUpdate")}
               </p>
             </CardContent>
           </Card>

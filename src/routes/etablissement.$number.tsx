@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { BadgeCheck, Clock, Navigation, Phone, Share2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { BeaconMap } from "@/components/BeaconMap";
 import { DirectionsSheet } from "@/components/DirectionsSheet";
@@ -34,6 +35,7 @@ export const Route = createFileRoute("/etablissement/$number")({
 });
 
 function EstablishmentPage() {
+  const { t } = useTranslation();
   const { number } = Route.useParams();
   const [directionsOpen, setDirectionsOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
@@ -71,11 +73,11 @@ function EstablishmentPage() {
       <div className="mx-auto max-w-md p-6 text-center">
         <p className="font-mono text-lg text-primary">{number}</p>
         <p className="mt-2 text-muted-foreground">
-          Aucun établissement n'est associé à ce numéro.
+          {t("establishment.notFound")}
         </p>
         <Button asChild variant="outline" className="mt-4">
           <Link to="/a/$number" params={{ number }}>
-            Voir l'adresse
+            {t("establishment.viewAddress")}
           </Link>
         </Button>
       </div>
@@ -90,7 +92,7 @@ function EstablishmentPage() {
         {cover ? (
           <img
             src={cover}
-            alt={`Devanture de ${etablissement.business_name}`}
+            alt={t("establishment.storefrontAlt", { name: etablissement.business_name })}
             className="size-full object-cover"
           />
         ) : (
@@ -109,7 +111,7 @@ function EstablishmentPage() {
               {adresse.verification_level === "verified" && (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-medium text-accent-foreground">
                   <BadgeCheck className="size-3.5" />
-                  Vérifié
+                  {t("establishment.verified")}
                 </span>
               )}
               <span className="font-mono text-sm text-white/80">
@@ -131,13 +133,13 @@ function EstablishmentPage() {
             onClick={() => setDirectionsOpen(true)}
           >
             <Navigation className="size-5" />
-            S'y rendre
+            {t("establishment.goThere")}
           </Button>
           {etablissement.phone && (
             <Button asChild variant="outline" size="lg" className="h-12 flex-1">
               <a href={`tel:${etablissement.phone}`}>
                 <Phone className="size-4" />
-                Appeler
+                {t("establishment.call")}
               </a>
             </Button>
           )}
@@ -148,7 +150,7 @@ function EstablishmentPage() {
             onClick={() => setShareOpen(true)}
           >
             <Share2 className="size-4" />
-            Partager
+            {t("establishment.share")}
           </Button>
         </div>
 
@@ -163,7 +165,7 @@ function EstablishmentPage() {
             {photos.length > 0 && (
               <section>
                 <h2 className="text-display text-2xl font-bold text-foreground">
-                  Photos
+                  {t("establishment.photos")}
                 </h2>
                 <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {photos.map((photo) => (
@@ -175,7 +177,7 @@ function EstablishmentPage() {
                     >
                       <img
                         src={photo.url}
-                        alt={`Photo de ${etablissement.business_name}`}
+                        alt={t("establishment.photoAlt", { name: etablissement.business_name })}
                         loading="lazy"
                         className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-105"
                       />
@@ -188,7 +190,7 @@ function EstablishmentPage() {
             {adresse.lat !== null && adresse.lng !== null && (
               <section>
                 <h2 className="text-display text-2xl font-bold text-foreground">
-                  Localisation
+                  {t("establishment.location")}
                 </h2>
                 <div className="shadow-brand mt-5 h-[60vh] overflow-hidden rounded-2xl border border-slate-200/60 md:h-[70vh]">
                   <BeaconMap
@@ -207,7 +209,7 @@ function EstablishmentPage() {
               <div className="rounded-2xl border border-slate-200/60 bg-card p-6">
                 <h2 className="text-display flex items-center gap-2 text-lg font-bold text-foreground">
                   <Clock className="size-4 text-accent" />
-                  Horaires
+                  {t("establishment.openingHours")}
                 </h2>
                 <ul className="mt-4 divide-y divide-border text-sm">
                   {DAYS_FR.map((day) => (
@@ -220,7 +222,7 @@ function EstablishmentPage() {
                       }`}
                     >
                       <span>{day.label}</span>
-                      <span className="font-mono">{horaires[day.key] ?? "Fermé"}</span>
+                      <span className="font-mono">{horaires[day.key] ?? t("establishment.closed")}</span>
                     </li>
                   ))}
                 </ul>
@@ -252,7 +254,7 @@ function EstablishmentPage() {
           {photoActive && (
             <img
               src={photoActive}
-              alt={`Photo de ${etablissement.business_name}`}
+              alt={t("establishment.photoAlt", { name: etablissement.business_name })}
               className="max-h-[80vh] w-full rounded-md object-contain"
             />
           )}
