@@ -1,7 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Check } from "lucide-react";
 
-import { Layout } from "@/components/Layout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -92,7 +91,7 @@ function TarifsPage() {
   const devis = OFFERS.filter((o) => o.family === "quote");
 
   return (
-    <Layout>
+    <>
       <div className="mx-auto max-w-5xl space-y-12 px-4 py-12">
         <header className="space-y-3 text-center">
           <h1 className="text-3xl font-bold text-foreground sm:text-4xl">
@@ -163,6 +162,6 @@ function TarifsPage() {
           </dl>
         </section>
       </div>
-    </Layout>
+    </>
   );
 }

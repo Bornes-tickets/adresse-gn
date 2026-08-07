@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import { Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
@@ -56,7 +55,7 @@ function CommanderPage() {
 
   if (!offre || offre.quoteOnly) {
     return (
-      <Layout>
+      <>
         <div className="mx-auto max-w-lg px-4 py-20 text-center">
           <h1 className="text-2xl font-semibold text-foreground">Offre indisponible</h1>
           <p className="mt-3 text-sm text-muted-foreground">
@@ -66,7 +65,7 @@ function CommanderPage() {
             <Link to="/tarifs">Voir les tarifs</Link>
           </Button>
         </div>
-      </Layout>
+      </>
     );
   }
 
@@ -74,7 +73,7 @@ function CommanderPage() {
   const total = itemsTotal(lignes);
 
   return (
-    <Layout>
+    <>
       <div className="mx-auto max-w-2xl space-y-6 px-4 py-12">
         <div>
           <h1 className="text-2xl font-semibold text-foreground">Récapitulatif de commande</h1>
@@ -126,6 +125,6 @@ function CommanderPage() {
           conseiller Adresse GN. Vous recevrez une facture PDF dès confirmation.
         </p>
       </div>
-    </Layout>
+    </>
   );
 }

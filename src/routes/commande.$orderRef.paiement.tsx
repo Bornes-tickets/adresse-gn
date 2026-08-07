@@ -3,7 +3,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Download, Loader2, Smartphone, Wallet } from "lucide-react";
 import { toast } from "sonner";
 
-import { Layout } from "@/components/Layout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -75,17 +74,17 @@ function PaiementPage() {
 
   if (commande.isPending) {
     return (
-      <Layout>
+      <>
         <div className="mx-auto max-w-2xl px-4 py-12">
           <Skeleton className="h-64 w-full" />
         </div>
-      </Layout>
+      </>
     );
   }
 
   if (commande.isError || !commande.data) {
     return (
-      <Layout>
+      <>
         <div className="mx-auto max-w-lg px-4 py-20 text-center">
           <h1 className="text-2xl font-semibold text-foreground">Commande introuvable</h1>
           <p className="mt-3 text-sm text-muted-foreground">
@@ -95,7 +94,7 @@ function PaiementPage() {
             <Link to="/tarifs">Voir les tarifs</Link>
           </Button>
         </div>
-      </Layout>
+      </>
     );
   }
 
@@ -104,7 +103,7 @@ function PaiementPage() {
   const action = initier.data?.action;
 
   return (
-    <Layout>
+    <>
       <div className="mx-auto max-w-2xl space-y-6 px-4 py-12">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -234,6 +233,6 @@ function PaiementPage() {
           </Card>
         )}
       </div>
-    </Layout>
+    </>
   );
 }
