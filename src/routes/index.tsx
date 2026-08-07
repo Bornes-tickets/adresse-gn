@@ -174,18 +174,15 @@ function Home() {
         />
 
         <div className="relative mx-auto w-full max-w-[900px] px-4 md:px-8 lg:px-12">
-          <h1 className="text-display text-center text-4xl font-extrabold leading-[1.05] text-white md:text-5xl lg:text-6xl xl:text-7xl">
-            Envoyez votre adresse
-            <span className="mt-2 block text-white/80">
-              comme un numéro de téléphone.
-            </span>
+          <h1 className="text-display text-center text-3xl font-extrabold leading-[1.08] text-white sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl">
+            Trouvez une adresse en un numéro
           </h1>
 
-          <p className="mx-auto mt-7 max-w-2xl text-center text-base leading-relaxed text-white/75">
-            Une balise numérique unique pour chaque lieu en Guinée. Vos
-            livreurs, taxis et visiteurs arrivent directement — plus besoin
-            d'expliquer le chemin.
+          <p className="mx-auto mt-6 max-w-2xl text-center text-base leading-relaxed text-white/75">
+            Chaque lieu en Guinée reçoit un numéro unique. Saisissez-le pour
+            obtenir sa localisation exacte et votre itinéraire.
           </p>
+
 
           <div className="mt-12 rounded-2xl border border-white/20 bg-card p-4 shadow-brand-lg sm:p-8">
             <form
