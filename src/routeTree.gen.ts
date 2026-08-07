@@ -34,6 +34,7 @@ import { Route as AdminGuardAuditRouteImport } from './routes/admin/_guard/audit
 import { Route as AdminGuardBeaconsRouteImport } from './routes/admin/_guard/beacons'
 import { Route as AdminGuardClaimsRouteImport } from './routes/admin/_guard/claims'
 import { Route as AdminGuardInstallationsRouteImport } from './routes/admin/_guard/installations'
+import { Route as AdminGuardInstallationsAttenteRouteImport } from './routes/admin/_guard/installations-attente'
 import { Route as AdminGuardLotsRouteImport } from './routes/admin/_guard/lots'
 import { Route as AdminGuardPaymentsRouteImport } from './routes/admin/_guard/payments'
 import { Route as AdminGuardReportsRouteImport } from './routes/admin/_guard/reports'
@@ -187,6 +188,12 @@ const AdminGuardInstallationsRoute = AdminGuardInstallationsRouteImport.update({
   path: '/installations',
   getParentRoute: () => AdminGuardRouteRoute,
 } as any)
+const AdminGuardInstallationsAttenteRoute =
+  AdminGuardInstallationsAttenteRouteImport.update({
+    id: '/installations-attente',
+    path: '/installations-attente',
+    getParentRoute: () => AdminGuardRouteRoute,
+  } as any)
 const AdminGuardLotsRoute = AdminGuardLotsRouteImport.update({
   id: '/lots',
   path: '/lots',
@@ -350,6 +357,7 @@ export interface FileRoutesByFullPath {
   '/admin/beacons': typeof AdminGuardBeaconsRoute
   '/admin/claims': typeof AdminGuardClaimsRoute
   '/admin/installations': typeof AdminGuardInstallationsRoute
+  '/admin/installations-attente': typeof AdminGuardInstallationsAttenteRoute
   '/admin/lots': typeof AdminGuardLotsRoute
   '/admin/payments': typeof AdminGuardPaymentsRoute
   '/admin/reports': typeof AdminGuardReportsRoute
@@ -400,6 +408,7 @@ export interface FileRoutesByTo {
   '/admin/beacons': typeof AdminGuardBeaconsRoute
   '/admin/claims': typeof AdminGuardClaimsRoute
   '/admin/installations': typeof AdminGuardInstallationsRoute
+  '/admin/installations-attente': typeof AdminGuardInstallationsAttenteRoute
   '/admin/lots': typeof AdminGuardLotsRoute
   '/admin/payments': typeof AdminGuardPaymentsRoute
   '/admin/reports': typeof AdminGuardReportsRoute
@@ -455,6 +464,7 @@ export interface FileRoutesById {
   '/admin/_guard/beacons': typeof AdminGuardBeaconsRoute
   '/admin/_guard/claims': typeof AdminGuardClaimsRoute
   '/admin/_guard/installations': typeof AdminGuardInstallationsRoute
+  '/admin/_guard/installations-attente': typeof AdminGuardInstallationsAttenteRoute
   '/admin/_guard/lots': typeof AdminGuardLotsRoute
   '/admin/_guard/payments': typeof AdminGuardPaymentsRoute
   '/admin/_guard/reports': typeof AdminGuardReportsRoute
@@ -511,6 +521,7 @@ export interface FileRouteTypes {
     | '/admin/beacons'
     | '/admin/claims'
     | '/admin/installations'
+    | '/admin/installations-attente'
     | '/admin/lots'
     | '/admin/payments'
     | '/admin/reports'
@@ -561,6 +572,7 @@ export interface FileRouteTypes {
     | '/admin/beacons'
     | '/admin/claims'
     | '/admin/installations'
+    | '/admin/installations-attente'
     | '/admin/lots'
     | '/admin/payments'
     | '/admin/reports'
@@ -615,6 +627,7 @@ export interface FileRouteTypes {
     | '/admin/_guard/beacons'
     | '/admin/_guard/claims'
     | '/admin/_guard/installations'
+    | '/admin/_guard/installations-attente'
     | '/admin/_guard/lots'
     | '/admin/_guard/payments'
     | '/admin/_guard/reports'
@@ -845,6 +858,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminGuardInstallationsRouteImport
       parentRoute: typeof AdminGuardRouteRoute
     }
+    '/admin/_guard/installations-attente': {
+      id: '/admin/_guard/installations-attente'
+      path: '/installations-attente'
+      fullPath: '/admin/installations-attente'
+      preLoaderRoute: typeof AdminGuardInstallationsAttenteRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
     '/admin/_guard/lots': {
       id: '/admin/_guard/lots'
       path: '/lots'
@@ -1046,6 +1066,7 @@ interface AdminGuardRouteRouteChildren {
   AdminGuardBeaconsRoute: typeof AdminGuardBeaconsRoute
   AdminGuardClaimsRoute: typeof AdminGuardClaimsRoute
   AdminGuardInstallationsRoute: typeof AdminGuardInstallationsRoute
+  AdminGuardInstallationsAttenteRoute: typeof AdminGuardInstallationsAttenteRoute
   AdminGuardLotsRoute: typeof AdminGuardLotsRoute
   AdminGuardPaymentsRoute: typeof AdminGuardPaymentsRoute
   AdminGuardReportsRoute: typeof AdminGuardReportsRoute
@@ -1063,6 +1084,7 @@ const AdminGuardRouteRouteChildren: AdminGuardRouteRouteChildren = {
   AdminGuardBeaconsRoute: AdminGuardBeaconsRoute,
   AdminGuardClaimsRoute: AdminGuardClaimsRoute,
   AdminGuardInstallationsRoute: AdminGuardInstallationsRoute,
+  AdminGuardInstallationsAttenteRoute: AdminGuardInstallationsAttenteRoute,
   AdminGuardLotsRoute: AdminGuardLotsRoute,
   AdminGuardPaymentsRoute: AdminGuardPaymentsRoute,
   AdminGuardReportsRoute: AdminGuardReportsRoute,
@@ -1165,13 +1187,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

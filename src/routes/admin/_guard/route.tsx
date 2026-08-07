@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import {
   Activity,
   BarChart3,
+  CalendarClock,
   ClipboardCheck,
   CreditCard,
   FileClock,
@@ -35,6 +36,7 @@ const SECTIONS = [
   { to: "/admin/beacons", label: "Balises", icon: QrCode },
   { to: "/admin/addresses", label: "Adresses", icon: MapPin },
   { to: "/admin/installations", label: "Installations & QC", icon: ClipboardCheck },
+  { to: "/admin/installations-attente", label: "Installations à planifier", icon: CalendarClock },
   { to: "/admin/payments", label: "Paiements", icon: CreditCard },
   { to: "/admin/abonnements", label: "Abonnements", icon: Repeat },
   { to: "/admin/reports", label: "Signalements", icon: Flag },

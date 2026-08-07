@@ -637,16 +637,23 @@ export interface PendingInstallationRow {
   client: string;
 }
 
-export async function listerInstallationsEnAttente(): Promise<{
+export async function listerInstallationsEnAttente(filtre?: {
+  statut?: string | null;
+  agentId?: string | null;
+}): Promise<{
   lignes: PendingInstallationRow[];
   agents: { id: string; label: string }[];
 }> {
-
-  const { data, error } = await db
+  let requete = db
     .from("pending_installations")
     .select(
       "id, beacon_id, order_id, customer_id, phone, note, status, assigned_agent_id, created_at, beacons(public_number), orders(order_ref, offer_code)",
-    )
+    );
+  if (filtre?.statut) requete = requete.eq("status", filtre.statut);
+  if (filtre?.agentId === "aucun") requete = requete.is("assigned_agent_id", null);
+  else if (filtre?.agentId) requete = requete.eq("assigned_agent_id", filtre.agentId);
+
+  const { data, error } = await requete
     .order("created_at", { ascending: false })
     .limit(200);
   if (error) throw new Error(error.message);
@@ -691,6 +698,28 @@ export async function affecterInstallation(
     .eq("id", input.id);
   if (error) throw new Error(error.message);
   await auditer(adminId, "pending_installation.assign", "pending_installations", input.id, input);
+  return { ok: true };
+}
+
+export const STATUTS_INSTALLATION_ATTENTE = [
+  "pending",
+  "assigned",
+  "planned",
+  "done",
+  "cancelled",
+] as const;
+
+export async function changerStatutInstallationEnAttente(
+  adminId: string,
+  input: { id: string; statut: string; note?: string | null },
+) {
+  const maj: Record<string, unknown> = { status: input.statut };
+  if (input.note != null) maj['note'] = input.note;
+  if (input.statut === "pending" || input.statut === "cancelled") maj['assigned_agent_id'] = null;
+
+  const { error } = await db.from("pending_installations").update(maj).eq("id", input.id);
+  if (error) throw new Error(error.message);
+  await auditer(adminId, "pending_installation.status", "pending_installations", input.id, input);
   return { ok: true };
 }
 
