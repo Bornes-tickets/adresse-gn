@@ -64,7 +64,7 @@ function FacturationPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {PLANS.map((offre) => (
           <Card key={offre.code} className={offre.code === offreActuelle ? "border-primary" : ""}>
             <CardHeader>
@@ -89,6 +89,7 @@ function FacturationPage() {
                 variant={offre.code === offreActuelle ? "outline" : "default"}
                 disabled={offre.code === offreActuelle || changer.isPending}
                 onClick={() => changer.mutate(offre.code)}
+                className="w-full sm:w-auto"
               >
                 {offre.code === offreActuelle ? "Offre en cours" : `Passer à ${offre.label}`}
               </Button>

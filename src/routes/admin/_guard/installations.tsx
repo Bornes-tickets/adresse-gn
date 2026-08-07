@@ -183,8 +183,8 @@ function AdminInstallations() {
       </TabsList>
 
       <TabsContent value="liste" className="space-y-4">
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="w-52">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+          <div className="w-full sm:w-52">
             <Label className="text-xs">Agent</Label>
             <Select
               value={agentId}
@@ -206,7 +206,7 @@ function AdminInstallations() {
               </SelectContent>
             </Select>
           </div>
-          <div className="w-40">
+          <div className="w-full sm:w-40">
             <Label className="text-xs">Validation</Label>
             <Select
               value={validation}
@@ -225,7 +225,7 @@ function AdminInstallations() {
               </SelectContent>
             </Select>
           </div>
-          <div className="w-40">
+          <div className="w-full sm:w-40">
             <Label className="text-xs">Précision max (m)</Label>
             <Input
               type="number"
@@ -236,7 +236,7 @@ function AdminInstallations() {
               }}
             />
           </div>
-          <div className="ml-auto flex items-end gap-2">
+          <div className="flex w-full flex-wrap items-end gap-2 sm:ml-auto sm:w-auto">
             <div className="w-28">
               <Label className="text-xs">Tirage QC (%)</Label>
               <Input

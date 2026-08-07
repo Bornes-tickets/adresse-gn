@@ -187,8 +187,8 @@ function AdminInstallationsAttente() {
         balise. Assignez un agent puis suivez l'avancement jusqu'à la pose.
       </p>
 
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="w-44">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+        <div className="w-full sm:w-44">
           <Label className="text-xs">Statut</Label>
           <Select value={statut} onValueChange={setStatut}>
             <SelectTrigger>
@@ -204,7 +204,7 @@ function AdminInstallationsAttente() {
             </SelectContent>
           </Select>
         </div>
-        <div className="w-64">
+        <div className="w-full sm:w-64">
           <Label className="text-xs">Agent</Label>
           <Select value={agent} onValueChange={setAgent}>
             <SelectTrigger>
@@ -221,7 +221,7 @@ function AdminInstallationsAttente() {
             </SelectContent>
           </Select>
         </div>
-        <Button variant="outline" onClick={rafraichir} className="ml-auto">
+        <Button variant="outline" onClick={rafraichir} className="w-full sm:ml-auto sm:w-auto">
           Rafraîchir
         </Button>
       </div>

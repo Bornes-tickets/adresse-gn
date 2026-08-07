@@ -85,8 +85,8 @@ function Tasks() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="text-xl font-bold text-foreground">Tâches</h1>
           <p className="text-sm text-muted-foreground">
             {total} balise{total > 1 ? "s" : ""} à installer
@@ -95,6 +95,7 @@ function Tasks() {
         <Button
           size="sm"
           variant="outline"
+          className="h-11 min-h-11"
           onClick={() => void refetch()}
           disabled={isFetching || !isOnline}
         >

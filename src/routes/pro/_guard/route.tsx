@@ -64,9 +64,9 @@ function ProShell() {
     <div className="flex min-h-[100dvh] flex-col bg-background">
       <header className="sticky top-0 z-20 border-b border-border bg-card">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
-          <div className="leading-tight">
+          <div className="min-w-0 leading-tight">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">Espace pro</p>
-            <p className="font-semibold text-foreground">
+            <p className="truncate font-semibold text-foreground">
               {business.data?.trade_name ?? "Mon entreprise"}
             </p>
           </div>

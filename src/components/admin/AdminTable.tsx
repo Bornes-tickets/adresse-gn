@@ -32,7 +32,7 @@ interface Props<T> {
   cle?: (ligne: T) => string;
 }
 
-/** Table admin générique avec pagination serveur. */
+/** Table admin générique avec pagination serveur : table dès md, cartes empilées en mobile. */
 export function AdminTable<T extends Record<string, any>>({
   colonnes,
   lignes,
@@ -48,7 +48,8 @@ export function AdminTable<T extends Record<string, any>>({
 
   return (
     <div className="space-y-3">
-      <div className="overflow-x-auto rounded-lg border border-border bg-card">
+      {/* Vue tableau (md et plus) */}
+      <div className="hidden overflow-x-auto rounded-lg border border-border bg-card md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -94,15 +95,51 @@ export function AdminTable<T extends Record<string, any>>({
         </Table>
       </div>
 
+      {/* Vue cartes (mobile, sous md) */}
+      <div className="space-y-3 md:hidden">
+        {chargement ? (
+          Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="space-y-2 rounded-lg border border-border bg-card p-4">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+            </div>
+          ))
+        ) : lignes.length === 0 ? (
+          <div className="rounded-lg border border-border bg-card py-10 text-center text-sm text-muted-foreground">
+            {vide}
+          </div>
+        ) : (
+          lignes.map((ligne, i) => (
+            <div
+              key={cle ? cle(ligne) : (ligne['id'] ?? i)}
+              className="space-y-2 rounded-lg border border-border bg-card p-4"
+            >
+              {colonnes.map((c) => (
+                <div key={c.cle} className="flex items-start justify-between gap-3 text-sm">
+                  <span className="shrink-0 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    {c.entete}
+                  </span>
+                  <span className="min-w-0 flex-1 break-words text-right text-foreground">
+                    {c.rendu(ligne)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ))
+        )}
+      </div>
+
       {total != null && onPage && (
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <div className="flex flex-col items-center gap-2 text-sm text-muted-foreground sm:flex-row sm:justify-between">
           <span>
             {total} résultat{total > 1 ? "s" : ""} — page {page} / {pages}
           </span>
-          <div className="flex gap-2">
+          <div className="flex w-full gap-2 sm:w-auto">
             <Button
               variant="outline"
               size="sm"
+              className="flex-1 sm:flex-none"
               disabled={page <= 1}
               onClick={() => onPage(page - 1)}
             >
@@ -111,6 +148,7 @@ export function AdminTable<T extends Record<string, any>>({
             <Button
               variant="outline"
               size="sm"
+              className="flex-1 sm:flex-none"
               disabled={page >= pages}
               onClick={() => onPage(page + 1)}
             >

@@ -70,7 +70,7 @@ function ApiKeysPage() {
             Interrogez les adresses publiques depuis vos applications.
           </p>
         </div>
-        <Button onClick={() => creer.mutate()} disabled={creer.isPending}>
+        <Button onClick={() => creer.mutate()} disabled={creer.isPending} className="w-full sm:w-auto">
           <Plus className="size-4" />
           Générer une clé
         </Button>
@@ -124,7 +124,7 @@ Header: x-api-key: <votre clé>`}
       </Card>
 
       <Dialog open={!!nouvelleCle} onOpenChange={(o) => !o && setNouvelleCle(null)}>
-        <DialogContent>
+        <DialogContent className="max-h-[90dvh] w-[calc(100vw-2rem)] max-w-lg overflow-y-auto sm:w-full">
           <DialogHeader>
             <DialogTitle>Votre nouvelle clé API</DialogTitle>
             <DialogDescription>
@@ -132,13 +132,14 @@ Header: x-api-key: <votre clé>`}
             </DialogDescription>
           </DialogHeader>
           <p className="break-all rounded-md bg-muted p-3 font-mono text-sm">{nouvelleCle}</p>
-          <DialogFooter>
+          <DialogFooter className="flex-col gap-2 sm:flex-row">
             <Button
               onClick={async () => {
                 if (!nouvelleCle) return;
                 await navigator.clipboard.writeText(nouvelleCle);
                 toast.success("Clé copiée.");
               }}
+              className="w-full sm:w-auto"
             >
               <Copy className="size-4" />
               Copier

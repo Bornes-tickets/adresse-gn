@@ -173,12 +173,12 @@ function AdminUsers() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="w-64">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+        <div className="w-full sm:w-64">
           <Label className="text-xs">Recherche (email, nom, téléphone)</Label>
           <Input value={recherche} onChange={(e) => setRecherche(e.target.value)} />
         </div>
-        <Button className="ml-auto" onClick={() => setOuvrir(true)}>
+        <Button className="w-full sm:ml-auto sm:w-auto" onClick={() => setOuvrir(true)}>
           Créer un compte
         </Button>
       </div>
@@ -189,7 +189,7 @@ function AdminUsers() {
         chargement={utilisateurs.isLoading}
       />
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
         <Button variant="outline" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
           Précédent
         </Button>
@@ -204,7 +204,7 @@ function AdminUsers() {
       </div>
 
       <Dialog open={ouvrir} onOpenChange={setOuvrir}>
-        <DialogContent>
+        <DialogContent className="max-h-[90dvh] w-[calc(100vw-2rem)] max-w-lg overflow-y-auto sm:w-full">
           <DialogHeader>
             <DialogTitle>Créer un compte</DialogTitle>
           </DialogHeader>

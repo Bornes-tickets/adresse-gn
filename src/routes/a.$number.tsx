@@ -135,7 +135,7 @@ function BeaconResult() {
       : null;
 
   return (
-    <div className="relative h-[calc(100vh-8rem)] min-h-[520px] w-full">
+    <div className="relative h-[60vh] min-h-[420px] w-full md:h-[70vh]">
       {isPending && <Skeleton className="h-full w-full rounded-none" />}
 
       {!isPending && lat !== null && lng !== null && resultat && (
@@ -172,8 +172,8 @@ function BeaconResult() {
 
       {resultat && lat !== null && lng !== null && (
         <>
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[500] p-3 sm:inset-x-auto sm:bottom-6 sm:left-6 sm:p-0">
-            <div className="shadow-brand-lg pointer-events-auto mx-auto w-full max-w-md rounded-2xl border border-slate-200/60 bg-card p-6 sm:p-7">
+          <div className="absolute inset-x-0 bottom-0 z-[500] md:inset-x-auto md:bottom-auto md:left-6 md:top-6">
+            <div className="shadow-brand-lg mx-auto w-full max-w-md rounded-t-2xl border border-slate-200/60 bg-card p-6 sm:p-7 md:mx-0 md:max-w-sm md:rounded-2xl">
               <div className="space-y-4">
                 <div className="flex items-center justify-between gap-3">
                   <span className="font-mono text-lg font-semibold tracking-tight text-primary sm:text-xl">

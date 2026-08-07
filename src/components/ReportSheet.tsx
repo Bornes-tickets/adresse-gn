@@ -61,7 +61,7 @@ export function ReportSheet({ open, onOpenChange, beaconId, number }: ReportShee
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="rounded-t-2xl">
+      <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto rounded-t-2xl">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <Flag className="size-5 text-destructive" />

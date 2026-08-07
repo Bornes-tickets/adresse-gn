@@ -93,7 +93,7 @@ function ParametresPage() {
               placeholder="+224 ..."
             />
           </div>
-          <Button onClick={() => enregistrer.mutate()} disabled={enregistrer.isPending}>
+          <Button onClick={() => enregistrer.mutate()} disabled={enregistrer.isPending} className="w-full sm:w-auto">
             {enregistrer.isPending ? "Enregistrement…" : "Enregistrer"}
           </Button>
         </CardContent>
@@ -118,6 +118,7 @@ function ParametresPage() {
             variant="destructive"
             disabled={confirmation !== "DESACTIVER" || desactiver.isPending}
             onClick={() => desactiver.mutate()}
+            className="w-full sm:w-auto"
           >
             Désactiver définitivement
           </Button>

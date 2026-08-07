@@ -245,7 +245,7 @@ function EditionDrawer({
 
   return (
     <Dialog open={!!balise} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent>
+      <DialogContent className="max-h-[90dvh] w-[calc(100vw-2rem)] max-w-lg overflow-y-auto sm:w-full">
         <DialogHeader>
           <DialogTitle>Modifier {balise?.public_number}</DialogTitle>
         </DialogHeader>
@@ -292,11 +292,11 @@ function EditionDrawer({
             />
           </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+        <DialogFooter className="flex-col gap-2 sm:flex-row">
+          <Button variant="outline" onClick={onClose} className="w-full sm:w-auto">
             Annuler
           </Button>
-          <Button onClick={() => enregistrer.mutate()} disabled={enregistrer.isPending}>
+          <Button onClick={() => enregistrer.mutate()} disabled={enregistrer.isPending} className="w-full sm:w-auto">
             {enregistrer.isPending ? "Enregistrement…" : "Enregistrer"}
           </Button>
         </DialogFooter>
@@ -317,7 +317,7 @@ function QrDialog({ balise, onClose }: { balise: OwnerBeacon | null; onClose: ()
 
   return (
     <Dialog open={!!balise} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-sm">
+      <DialogContent className="max-h-[90dvh] w-[calc(100vw-2rem)] max-w-sm overflow-y-auto sm:w-full">
         <DialogHeader>
           <DialogTitle>QR code · {balise?.public_number}</DialogTitle>
         </DialogHeader>
@@ -330,8 +330,8 @@ function QrDialog({ balise, onClose }: { balise: OwnerBeacon | null; onClose: ()
             />
           )}
         </div>
-        <DialogFooter>
-          <Button onClick={telecharger}>Télécharger en PNG</Button>
+        <DialogFooter className="flex-col gap-2 sm:flex-row">
+          <Button onClick={telecharger} className="w-full sm:w-auto">Télécharger en PNG</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -366,7 +366,7 @@ function DemenagementDialog({
 
   return (
     <Dialog open={!!balise} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent>
+      <DialogContent className="max-h-[90dvh] w-[calc(100vw-2rem)] max-w-lg overflow-y-auto sm:w-full">
         <DialogHeader>
           <DialogTitle>Signaler un déménagement</DialogTitle>
         </DialogHeader>
@@ -377,11 +377,11 @@ function DemenagementDialog({
           placeholder="Nouvelle localisation, date prévue…"
           maxLength={1000}
         />
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+        <DialogFooter className="flex-col gap-2 sm:flex-row">
+          <Button variant="outline" onClick={onClose} className="w-full sm:w-auto">
             Annuler
           </Button>
-          <Button onClick={() => envoyer.mutate()} disabled={envoyer.isPending}>
+          <Button onClick={() => envoyer.mutate()} disabled={envoyer.isPending} className="w-full sm:w-auto">
             Envoyer
           </Button>
         </DialogFooter>

@@ -43,8 +43,8 @@ function Section({
 function Ligne({ label, valeur }: { label: string; valeur: string }) {
   return (
     <div className="flex items-start justify-between gap-4 text-sm">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="text-right font-medium text-foreground">{valeur}</span>
+      <span className="shrink-0 text-muted-foreground">{label}</span>
+      <span className="min-w-0 break-words text-right font-medium text-foreground">{valeur}</span>
     </div>
   );
 }

@@ -78,7 +78,7 @@ export function ClaimDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[90dvh] w-[calc(100vw-2rem)] max-w-lg overflow-y-auto sm:w-full">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ShieldCheck className="size-5 text-primary" />
@@ -113,6 +113,7 @@ export function ClaimDialog({
               <Label htmlFor="claim-nom">Nom du propriétaire ou de l'occupant</Label>
               <Input
                 id="claim-nom"
+                className="h-11 text-base"
                 value={nom}
                 onChange={(e) => setNom(e.target.value)}
                 maxLength={120}
@@ -122,6 +123,7 @@ export function ClaimDialog({
               <Label htmlFor="claim-tel">Téléphone de contact</Label>
               <Input
                 id="claim-tel"
+                className="h-11 text-base"
                 value={tel}
                 onChange={(e) => setTel(e.target.value)}
                 maxLength={30}
@@ -132,6 +134,7 @@ export function ClaimDialog({
               <Label htmlFor="claim-details">Justification</Label>
               <Textarea
                 id="claim-details"
+                className="text-base"
                 value={details}
                 onChange={(e) => setDetails(e.target.value)}
                 rows={3}
@@ -144,15 +147,24 @@ export function ClaimDialog({
               <Input
                 id="claim-fichier"
                 type="file"
+                className="h-11 text-base file:h-full"
                 accept="image/*,application/pdf"
                 onChange={(e) => setFichier(e.target.files?.[0] ?? null)}
               />
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => onOpenChange(false)}>
+            <DialogFooter className="flex-col gap-2 sm:flex-row">
+              <Button
+                variant="outline"
+                className="h-11 w-full sm:w-auto"
+                onClick={() => onOpenChange(false)}
+              >
                 Annuler
               </Button>
-              <Button onClick={() => envoyer.mutate()} disabled={envoyer.isPending}>
+              <Button
+                className="h-11 w-full sm:w-auto"
+                onClick={() => envoyer.mutate()}
+                disabled={envoyer.isPending}
+              >
                 {envoyer.isPending ? "Envoi…" : "Envoyer la demande"}
               </Button>
             </DialogFooter>

@@ -72,9 +72,9 @@ function StatistiquesPage() {
           <h1 className="text-2xl font-semibold text-foreground">Statistiques</h1>
           <p className="text-sm text-muted-foreground">Fréquentation de vos fiches publiques.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <Select value={idActif} onValueChange={setFiche}>
-            <SelectTrigger className="w-52">
+            <SelectTrigger className="w-full sm:w-52">
               <SelectValue placeholder="Établissement" />
             </SelectTrigger>
             <SelectContent>
@@ -86,7 +86,7 @@ function StatistiquesPage() {
             </SelectContent>
           </Select>
           <Select value={jours} onValueChange={setJours}>
-            <SelectTrigger className="w-32">
+            <SelectTrigger className="w-full sm:w-32">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -108,7 +108,7 @@ function StatistiquesPage() {
 
       {stats.data && (
         <>
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Card>
               <CardContent className="pt-6">
                 <p className="text-2xl font-semibold text-foreground">

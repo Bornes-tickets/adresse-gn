@@ -105,12 +105,12 @@ function PaiementPage() {
   return (
     <>
       <div className="mx-auto max-w-2xl space-y-6 px-4 py-12">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 sm:flex sm:flex-wrap sm:justify-between">
+          <div className="min-w-0">
             <h1 className="text-2xl font-semibold text-foreground">Paiement</h1>
-            <p className="font-mono text-sm text-muted-foreground">{c.order_ref}</p>
+            <p className="truncate font-mono text-sm text-muted-foreground">{c.order_ref}</p>
           </div>
-          <Badge variant={payee ? "default" : "secondary"}>
+          <Badge className="shrink-0" variant={payee ? "default" : "secondary"}>
             {ORDER_STATUS_LABELS[c.status] ?? c.status}
           </Badge>
         </div>
@@ -182,7 +182,7 @@ function PaiementPage() {
                     type="button"
                     disabled={!m.enabled || initier.isPending}
                     onClick={() => initier.mutate(m.code)}
-                    className="flex w-full items-center justify-between gap-3 rounded-lg border border-border px-4 py-3 text-left transition-colors enabled:hover:border-primary disabled:opacity-50"
+                    className="flex min-h-11 w-full items-center justify-between gap-3 rounded-lg border border-border px-4 py-3 text-left transition-colors enabled:hover:border-primary disabled:opacity-50"
                   >
                     <span className="flex items-center gap-3">
                       <Icone className="size-5 text-primary" />

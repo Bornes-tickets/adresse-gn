@@ -36,9 +36,9 @@ function SyncIssues() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-bold text-foreground">Synchronisation</h1>
-        <Button size="sm" variant="outline" onClick={() => void syncQueue({ force: true })}>
+        <Button size="sm" variant="outline" className="h-11 min-h-11" onClick={() => void syncQueue({ force: true })}>
           <RefreshCw className="size-4" />
           Tout réessayer
         </Button>
@@ -77,6 +77,7 @@ function SyncIssues() {
                 <div className="flex flex-wrap gap-2">
                   <Button
                     size="sm"
+                    className="h-11 min-h-11"
                     onClick={async () => {
                       if (item.id) await agentDb.install_queue.update(item.id, {
                         status: "pending",
@@ -88,10 +89,10 @@ function SyncIssues() {
                     <RefreshCw className="size-4" />
                     Réessayer
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => setDetails(item)}>
+                  <Button size="sm" variant="outline" className="h-11 min-h-11" onClick={() => setDetails(item)}>
                     Voir détails
                   </Button>
-                  <Button size="sm" variant="ghost" onClick={() => setASupprimer(item)}>
+                  <Button size="sm" variant="ghost" className="h-11 min-h-11" onClick={() => setASupprimer(item)}>
                     <Trash2 className="size-4 text-destructive" />
                     Supprimer
                   </Button>
@@ -102,12 +103,12 @@ function SyncIssues() {
         ))}
       </ul>
 
-      <Button variant="outline" className="w-full" onClick={() => navigate({ to: "/agent/tasks" })}>
+      <Button variant="outline" className="h-12 w-full" onClick={() => navigate({ to: "/agent/tasks" })}>
         Retour aux tâches
       </Button>
 
       <AlertDialog open={!!details} onOpenChange={(ouvert) => !ouvert && setDetails(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-h-[90dvh] w-[calc(100vw-2rem)] max-w-lg overflow-y-auto sm:w-full">
           <AlertDialogHeader>
             <AlertDialogTitle className="font-mono">{details?.beacon_number}</AlertDialogTitle>
             <AlertDialogDescription asChild>
@@ -124,14 +125,14 @@ function SyncIssues() {
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
+          <AlertDialogFooter className="flex-col gap-2 sm:flex-row">
             <AlertDialogCancel>Fermer</AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
       <AlertDialog open={!!aSupprimer} onOpenChange={(ouvert) => !ouvert && setASupprimer(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-h-[90dvh] w-[calc(100vw-2rem)] max-w-lg overflow-y-auto sm:w-full">
           <AlertDialogHeader>
             <AlertDialogTitle>Supprimer cette installation locale ?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -139,7 +140,7 @@ function SyncIssues() {
               devront être ressaisies sur le terrain.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
+          <AlertDialogFooter className="flex-col gap-2 sm:flex-row">
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction
               onClick={async () => {

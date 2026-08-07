@@ -166,7 +166,7 @@ function EtablissementsPage() {
             Une fiche par adresse dont vous êtes propriétaire.
           </p>
         </div>
-        <Button onClick={ouvrirCreation}>
+        <Button onClick={ouvrirCreation} className="w-full sm:w-auto">
           <Plus className="size-4" />
           Nouvelle fiche
         </Button>
@@ -203,14 +203,14 @@ function EtablissementsPage() {
                 <p className="line-clamp-3 text-sm text-muted-foreground">{f.description}</p>
               )}
               {!!f.photos.length && (
-                <div className="flex flex-wrap gap-2">
+                <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
                   {f.photos.map((p) => (
                     <div key={p.id} className="relative">
                       <img
                         src={p.url}
                         alt={`Photo de ${f.business_name}`}
                         loading="lazy"
-                        className="size-16 rounded-md object-cover"
+                        className="aspect-square w-full rounded-md object-cover"
                       />
                       <button
                         type="button"
@@ -238,7 +238,7 @@ function EtablissementsPage() {
       </div>
 
       <Dialog open={ouvert} onOpenChange={setOuvert}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90dvh] w-[calc(100vw-2rem)] max-w-lg overflow-y-auto sm:w-full">
           <DialogHeader>
             <DialogTitle>{edite ? "Modifier la fiche" : "Nouvelle fiche établissement"}</DialogTitle>
           </DialogHeader>
@@ -304,8 +304,8 @@ function EtablissementsPage() {
             <div className="space-y-2">
               <Label>Horaires d'ouverture</Label>
               {JOURS.map((jour) => (
-                <div key={jour.key} className="flex items-center gap-2">
-                  <span className="w-20 text-sm text-muted-foreground">{jour.label}</span>
+                <div key={jour.key} className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
+                  <span className="text-sm text-muted-foreground sm:w-20">{jour.label}</span>
                   <Input
                     value={form.openingHours[jour.key] ?? ""}
                     onChange={(e) =>
@@ -356,8 +356,8 @@ function EtablissementsPage() {
             </div>
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOuvert(false)}>
+          <DialogFooter className="flex-col gap-2 sm:flex-row">
+            <Button variant="outline" onClick={() => setOuvert(false)} className="w-full sm:w-auto">
               Annuler
             </Button>
             <Button
@@ -365,6 +365,7 @@ function EtablissementsPage() {
               disabled={
                 enregistrer.isPending || !form.businessName.trim() || (!edite && !form.addressId)
               }
+              className="w-full sm:w-auto"
             >
               {enregistrer.isPending ? "Enregistrement…" : "Enregistrer"}
             </Button>

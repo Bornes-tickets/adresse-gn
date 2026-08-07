@@ -183,7 +183,7 @@ function OnboardingPage() {
                 maxLength={400}
               />
             </div>
-            <Button disabled={!form.tradeName.trim()} onClick={() => setEtape(2)}>
+            <Button disabled={!form.tradeName.trim()} onClick={() => setEtape(2)} className="w-full sm:w-auto">
               Continuer
             </Button>
           </CardContent>
@@ -223,11 +223,11 @@ function OnboardingPage() {
               </Card>
             ))}
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setEtape(1)}>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button variant="outline" onClick={() => setEtape(1)} className="w-full sm:w-auto">
               Retour
             </Button>
-            <Button onClick={() => setEtape(3)}>Continuer</Button>
+            <Button onClick={() => setEtape(3)} className="w-full sm:w-auto">Continuer</Button>
           </div>
         </div>
       )}
@@ -260,11 +260,11 @@ function OnboardingPage() {
               Paiement à finaliser sur place : un conseiller Adresse GN vous contactera pour
               encaisser l'abonnement et activer votre fiche.
             </p>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setEtape(2)}>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Button variant="outline" onClick={() => setEtape(2)} className="w-full sm:w-auto">
                 Retour
               </Button>
-              <Button onClick={() => creer.mutate()} disabled={creer.isPending}>
+              <Button onClick={() => creer.mutate()} disabled={creer.isPending} className="w-full sm:w-auto">
                 {creer.isPending ? "Création…" : "Créer mon espace pro"}
               </Button>
             </div>
