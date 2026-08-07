@@ -176,23 +176,19 @@ function Install() {
   };
 
 
+  const allerAuxTaches = () => {
+    console.log("Avant navigate", "/agent/tasks");
+    navigate({ to: "/agent/tasks", replace: true });
+  };
+
   if (resultat === "succes") {
-    return (
-      <InstallSuccess
-        numero={numero}
-        onSuivante={() => navigate({ to: "/agent/tasks", replace: true })}
-      />
-    );
+    return <InstallSuccess numero={numero} onSuivante={allerAuxTaches} />;
   }
 
   if (resultat === "local") {
-    return (
-      <InstallSuccessLocal
-        numero={numero}
-        onSuivante={() => navigate({ to: "/agent/tasks", replace: true })}
-      />
-    );
+    return <InstallSuccessLocal numero={numero} onSuivante={allerAuxTaches} />;
   }
+
 
   if (resultat) {
     return <InstallError message={resultat} onReessayer={() => setResultat(null)} />;
