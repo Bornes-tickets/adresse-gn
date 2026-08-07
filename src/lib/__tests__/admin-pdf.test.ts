@@ -59,6 +59,46 @@ describe("base du site", () => {
     process.env["PUBLIC_SITE_URL"] = "https://adresse.gn/";
     expect(baseSite()).toBe("https://adresse.gn");
   });
+
+  it("retombe sur le défaut quand la valeur est vide ou blanche", () => {
+    for (const v of ["", "   ", "\n"]) {
+      process.env["PUBLIC_SITE_URL"] = v;
+      expect(baseSite()).toBe(SITE_PAR_DEFAUT);
+    }
+  });
+
+  it("retombe sur le défaut quand la valeur est mal formée", () => {
+    for (const v of ["adresse-gn.lovable.app", "http://", "://oops", "ftp://adresse.gn", "javascript:alert(1)", "hello world"]) {
+      process.env["PUBLIC_SITE_URL"] = v;
+      expect(baseSite(), `mal formé accepté : ${v}`).toBe(SITE_PAR_DEFAUT);
+    }
+  });
+
+  it("tolère espaces et slashes multiples autour d'une URL valide", () => {
+    process.env["PUBLIC_SITE_URL"] = "  https://adresse.gn///  ";
+    expect(baseSite()).toBe("https://adresse.gn");
+  });
+});
+
+describe("QR décodé avec fallback", () => {
+  const initial = process.env["PUBLIC_SITE_URL"];
+  afterEach(() => {
+    if (initial === undefined) delete process.env["PUBLIC_SITE_URL"];
+    else process.env["PUBLIC_SITE_URL"] = initial;
+  });
+
+  it("encode l'URL de secours quand PUBLIC_SITE_URL est absent, vide ou invalide", () => {
+    const cas: (string | undefined)[] = [undefined, "", "   ", "adresse-gn.lovable.app", "ftp://adresse.gn"];
+    for (const v of cas) {
+      if (v === undefined) delete process.env["PUBLIC_SITE_URL"];
+      else process.env["PUBLIC_SITE_URL"] = v;
+      for (const numero of NUMEROS) {
+        const url = urlBalise(baseSite(), numero);
+        expect(url).toBe(`${SITE_PAR_DEFAUT}/a/${numero}`);
+        expect(decoder(url).data).toBe(`${SITE_PAR_DEFAUT}/a/${numero}`);
+      }
+    }
+  });
 });
 
 describe("contenu des QR exportés", () => {
