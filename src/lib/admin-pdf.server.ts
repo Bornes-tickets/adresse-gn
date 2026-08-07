@@ -31,7 +31,16 @@ function pointilles(
 export const SITE_PAR_DEFAUT = "https://adresse-gn.lovable.app";
 
 export function baseSite(): string {
-  return (process.env["PUBLIC_SITE_URL"] || SITE_PAR_DEFAUT).replace(/\/+$/, "");
+  const brut = (process.env["PUBLIC_SITE_URL"] ?? "").trim();
+  if (!brut) return SITE_PAR_DEFAUT;
+  try {
+    const u = new URL(brut);
+    if (u.protocol !== "http:" && u.protocol !== "https:") return SITE_PAR_DEFAUT;
+    if (!u.hostname) return SITE_PAR_DEFAUT;
+    return `${u.origin}${u.pathname}`.replace(/\/+$/, "");
+  } catch {
+    return SITE_PAR_DEFAUT;
+  }
 }
 
 /** URL absolue encodée dans le QR d'une balise. */
