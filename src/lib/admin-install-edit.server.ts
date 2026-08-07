@@ -147,7 +147,7 @@ export async function modifierInstallation(input: {
     return { success: true, modifies: 0 as number };
   }
 
-  const { error } = await supabaseAdmin.from("installations").update(patch).eq("id", input.id);
+  const { error } = await supabaseAdmin.from("installations").update(patch as never).eq("id", input.id);
   if (error) throw new Error(error.message);
 
   await supabaseAdmin.from("audit_logs").insert({
@@ -155,8 +155,8 @@ export async function modifierInstallation(input: {
     action: "admin_edit_installation",
     entity: "installations",
     entity_id: input.id,
-    before: diffAvant,
-    after: { ...diffApres, motif: input.motif?.trim() || null },
+    before: diffAvant as never,
+    after: { ...diffApres, motif: input.motif?.trim() || null } as never,
   });
 
   return { success: true, modifies: Object.keys(patch).length };
