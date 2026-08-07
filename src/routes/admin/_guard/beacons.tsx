@@ -172,11 +172,7 @@ function AdminBeacons() {
   type Ligne = NonNullable<typeof balises.data>["rows"][number];
 
   const exportEnCours = muterExport.isPending || muterZip.isPending || muterCsv.isPending;
-  const libelleExport = muterExport.isPending
-    ? "du PDF"
-    : muterZip.isPending
-      ? "du ZIP"
-      : "du CSV";
+  const etapeExport = muterExport.isPending ? "PDF" : muterZip.isPending ? "ZIP PNG" : "CSV";
   const [progression, setProgression] = useState(0);
 
   useEffect(() => {
@@ -346,12 +342,24 @@ function AdminBeacons() {
       {exportEnCours ? (
         <div className="space-y-2 rounded-lg border border-border bg-card p-4">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">
-              Génération {libelleExport} en cours… merci de patienter.
-            </span>
+            <div>
+              <p className="font-medium">Étape en cours : {etapeExport}</p>
+              <p className="text-muted-foreground">
+                Génération du fichier {etapeExport} en cours… merci de patienter.
+              </p>
+            </div>
             <span className="font-mono text-xs tabular-nums">{Math.round(progression)}%</span>
           </div>
-          <Progress value={progression} />
+          <div className="relative">
+            <Progress
+              className="h-6"
+              value={progression}
+              aria-label={`Progression de la génération ${etapeExport}`}
+            />
+            <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs font-medium text-foreground">
+              {etapeExport}
+            </span>
+          </div>
         </div>
       ) : null}
 
