@@ -350,10 +350,16 @@ function AdminBeacons() {
             </div>
             <span className="font-mono text-xs tabular-nums">{Math.round(progression)}%</span>
           </div>
-          <Progress
-            value={progression}
-            aria-label={`Progression de la génération ${etapeExport}`}
-          />
+          <div className="relative">
+            <Progress
+              className="h-6"
+              value={progression}
+              aria-label={`Progression de la génération ${etapeExport}`}
+            />
+            <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs font-medium text-foreground">
+              {etapeExport}
+            </span>
+          </div>
         </div>
       ) : null}
 
