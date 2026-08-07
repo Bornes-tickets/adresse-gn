@@ -105,7 +105,7 @@ function EquipePage() {
               <SelectItem value="viewer">Lecteur</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={() => inviter.mutate()} disabled={!email || inviter.isPending}>
+          <Button onClick={() => inviter.mutate()} disabled={!email || inviter.isPending} className="w-full sm:w-auto">
             <UserPlus className="size-4" />
             Inviter
           </Button>
