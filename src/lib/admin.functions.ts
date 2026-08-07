@@ -135,19 +135,20 @@ export const adminAssignLot = createServerFn({ method: "POST" })
 
 export const adminExportQrPdf = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { lotId: string; origin: string }) => ({
-    lotId: String(input.lotId),
-    origin: String(input.origin ?? "").replace(/\/$/, ""),
-  }))
+  .inputValidator((input: { lotId: string }) => ({ lotId: String(input.lotId) }))
   .handler(async ({ context, data }) => {
     const { requireAdmin } = await import("@/lib/admin.server");
-    const { numerosDuLot } = await import("@/lib/admin-ops.server");
+    const { numerosDuLot, codeDuLot } = await import("@/lib/admin-ops.server");
     const { genererPdfQr } = await import("@/lib/admin-pdf.server");
     await requireAdmin(context.userId);
-    const numeros = await numerosDuLot(data.lotId);
+    const base = process.env["PUBLIC_SITE_URL"] || "https://adresse-gn.lovable.app";
+    const [numeros, lotCode] = await Promise.all([
+      numerosDuLot(data.lotId),
+      codeDuLot(data.lotId),
+    ]);
     if (numeros.length === 0) throw new Error("Aucune balise dans ce lot.");
-    const pdf = await genererPdfQr(numeros, data.origin);
-    return { ...pdf, balises: numeros.length };
+    const pdf = await genererPdfQr(numeros, base);
+    return { ...pdf, balises: numeros.length, lotCode };
   });
 
 /* ------------------------------ ADRESSES ------------------------------ */

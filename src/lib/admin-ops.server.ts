@@ -178,6 +178,11 @@ export async function numerosDuLot(lotId: string, limite = 600) {
   return (data ?? []).map((b) => b.public_number);
 }
 
+export async function codeDuLot(lotId: string) {
+  const { data } = await supabaseAdmin.from("lots").select("code").eq("id", lotId).maybeSingle();
+  return data?.code ?? "INCONNU";
+}
+
 /* ------------------------------ ADRESSES ------------------------------ */
 
 export async function listerAdresses(f: {
