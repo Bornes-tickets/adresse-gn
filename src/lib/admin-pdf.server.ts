@@ -126,7 +126,16 @@ export async function genererPdfQr(
       const y0 = A4.h - MARGE - (ligne + 1) * hauteurCase;
 
       // Correction d'erreur H (≈30 % de redondance) pour l'extérieur.
-      const { taille, modules } = matriceQr(urlBalise(racine, numero));
+      let brute: MatriceQr | null = null;
+      try {
+        brute = fabriquerMatrice(urlBalise(racine, numero));
+      } catch (e) {
+        throw new Error(
+          `QR illisible pour la balise ${numero} : ${e instanceof Error ? e.message : "encodage impossible"}. Export PDF annulé.`,
+        );
+      }
+      const { taille, modules } = validerMatrice(brute, numero);
+
       const module = TAILLE_QR / taille;
       const qx = x0 + (largeurCase - TAILLE_QR) / 2;
       const qy = y0 + (hauteurCase - TAILLE_QR) / 2 + 16;
