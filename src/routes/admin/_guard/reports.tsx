@@ -118,7 +118,7 @@ function AdminReports() {
 
   return (
     <div className="space-y-4">
-      <div className="w-44">
+      <div className="w-full sm:w-44">
         <Label className="text-xs">Statut</Label>
         <Select value={statut} onValueChange={setStatut}>
           <SelectTrigger>

@@ -171,7 +171,7 @@ function AdminDashboard() {
             Adresses actives — Conakry ({data.points.length} points)
           </CardTitle>
         </CardHeader>
-        <CardContent className="h-[420px] p-0">
+        <CardContent className="h-[60vh] p-0 md:h-[70vh]">
           <AdminPointsMap points={data.points} />
         </CardContent>
       </Card>

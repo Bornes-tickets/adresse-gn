@@ -165,8 +165,8 @@ function AdminAddresses() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="w-56">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+        <div className="w-full sm:w-56">
           <Label className="text-xs">Recherche (nom)</Label>
           <Input
             value={recherche}
@@ -184,7 +184,7 @@ function AdminAddresses() {
           set={setVerification}
           options={[...VERIFICATION_LEVELS]}
         />
-        <div className="w-44">
+        <div className="w-full sm:w-44">
           <Label className="text-xs">Catégorie</Label>
           <Select value={categorie} onValueChange={setCategorie}>
             <SelectTrigger>
@@ -200,7 +200,7 @@ function AdminAddresses() {
             </SelectContent>
           </Select>
         </div>
-        <div className="w-44">
+        <div className="w-full sm:w-44">
           <Label className="text-xs">Commune</Label>
           <Select value={commune} onValueChange={setCommune}>
             <SelectTrigger>
@@ -329,7 +329,7 @@ function AdminAddresses() {
       </Sheet>
 
       <Dialog open={ouvrirProprio} onOpenChange={setOuvrirProprio}>
-        <DialogContent>
+        <DialogContent className="max-h-[90dvh] w-[calc(100vw-2rem)] max-w-lg overflow-y-auto sm:w-full">
           <DialogHeader>
             <DialogTitle>Réassigner le propriétaire</DialogTitle>
           </DialogHeader>
@@ -360,7 +360,7 @@ function Filtre({
   options: string[];
 }) {
   return (
-    <div className="w-40">
+    <div className="w-full sm:w-40">
       <Label className="text-xs">{label}</Label>
       <Select value={valeur} onValueChange={set}>
         <SelectTrigger>

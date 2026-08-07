@@ -107,7 +107,7 @@ function FavorisPage() {
             placeholder="Alias (Maison, Bureau…)"
             maxLength={60}
           />
-          <Button onClick={() => ajouter.mutate()} disabled={!numero || ajouter.isPending}>
+          <Button onClick={() => ajouter.mutate()} disabled={!numero || ajouter.isPending} className="w-full sm:w-auto">
             <Heart className="size-4" />
             Ajouter
           </Button>

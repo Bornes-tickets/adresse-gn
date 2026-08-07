@@ -56,9 +56,9 @@ function History() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-bold text-foreground">Historique</h1>
-        <Button size="sm" variant="outline" onClick={() => void refetch()} disabled={isFetching}>
+        <Button size="sm" variant="outline" className="h-11 min-h-11" onClick={() => void refetch()} disabled={isFetching}>
           <RefreshCw className={`size-4 ${isFetching ? "animate-spin" : ""}`} />
           Actualiser
         </Button>

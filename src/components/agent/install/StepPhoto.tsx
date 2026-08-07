@@ -48,7 +48,7 @@ export function StepPhoto({ photo, onPhoto }: Props) {
           <img
             src={photo}
             alt="Aperçu de l'entrée photographiée"
-            className="w-full rounded-lg border border-border object-cover"
+            className="max-h-64 w-full rounded-lg border border-border object-cover sm:max-h-80"
           />
         )}
 

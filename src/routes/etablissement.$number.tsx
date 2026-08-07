@@ -165,7 +165,7 @@ function EstablishmentPage() {
                 <h2 className="text-display text-2xl font-bold text-foreground">
                   Photos
                 </h2>
-                <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {photos.map((photo) => (
                     <button
                       key={photo.id}
@@ -190,7 +190,7 @@ function EstablishmentPage() {
                 <h2 className="text-display text-2xl font-bold text-foreground">
                   Localisation
                 </h2>
-                <div className="shadow-brand mt-5 h-72 overflow-hidden rounded-2xl border border-slate-200/60">
+                <div className="shadow-brand mt-5 h-[60vh] overflow-hidden rounded-2xl border border-slate-200/60 md:h-[70vh]">
                   <BeaconMap
                     lat={adresse.lat}
                     lng={adresse.lng}
@@ -248,7 +248,7 @@ function EstablishmentPage() {
       />
 
       <Dialog open={!!photoActive} onOpenChange={(open) => !open && setPhotoActive(null)}>
-        <DialogContent className="max-w-3xl p-2">
+        <DialogContent className="max-h-[90dvh] w-[calc(100vw-2rem)] max-w-3xl overflow-y-auto p-2 sm:w-full">
           {photoActive && (
             <img
               src={photoActive}

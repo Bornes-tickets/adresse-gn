@@ -159,7 +159,7 @@ function AdminAgents() {
       />
 
       <Dialog open={ouvrir} onOpenChange={setOuvrir}>
-        <DialogContent>
+        <DialogContent className="max-h-[90dvh] w-[calc(100vw-2rem)] max-w-lg overflow-y-auto sm:w-full">
           <DialogHeader>
             <DialogTitle>Créer un agent</DialogTitle>
           </DialogHeader>

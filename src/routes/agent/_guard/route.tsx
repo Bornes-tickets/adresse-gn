@@ -70,12 +70,12 @@ function AgentShell() {
         className="sticky top-0 z-20 border-b border-border bg-card"
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
-        <div className="flex items-center justify-between gap-3 px-4 py-3">
-          <div className="flex items-center gap-2">
-            <span className="rounded-md bg-primary px-2 py-1 text-sm font-bold text-primary-foreground">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-4 py-3">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="shrink-0 rounded-md bg-primary px-2 py-1 text-sm font-bold text-primary-foreground">
               AGN
             </span>
-            <span className="max-w-[9rem] truncate text-sm font-medium text-foreground">
+            <span className="min-w-0 truncate text-sm font-medium text-foreground">
               {agent?.full_name ?? agent?.badge_number}
             </span>
           </div>

@@ -201,8 +201,8 @@ function AdminBeacons() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="w-56">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+        <div className="w-full sm:w-56">
           <Label className="text-xs">Recherche par numéro</Label>
           <Input
             value={recherche}
@@ -213,7 +213,7 @@ function AdminBeacons() {
             placeholder="GN-CKY-…"
           />
         </div>
-        <div className="w-44">
+        <div className="w-full sm:w-44">
           <Label className="text-xs">Statut</Label>
           <Select
             value={statut}
@@ -235,7 +235,7 @@ function AdminBeacons() {
             </SelectContent>
           </Select>
         </div>
-        <div className="w-52">
+        <div className="w-full sm:w-52">
           <Label className="text-xs">Lot</Label>
           <Select
             value={lotId}
@@ -257,7 +257,7 @@ function AdminBeacons() {
             </SelectContent>
           </Select>
         </div>
-        <div className="w-40">
+        <div className="w-full sm:w-40">
           <Label className="text-xs">Depuis le</Label>
           <Input
             type="date"
@@ -269,7 +269,7 @@ function AdminBeacons() {
           />
         </div>
 
-        <div className="ml-auto flex flex-wrap gap-2">
+        <div className="flex w-full flex-col gap-2 sm:ml-auto sm:w-auto sm:flex-row sm:flex-wrap">
           <Button onClick={() => setOuvrirGen(true)}>Générer un lot</Button>
           <Button
             variant="outline"
@@ -341,7 +341,7 @@ function AdminBeacons() {
       </Sheet>
 
       <Dialog open={ouvrirGen} onOpenChange={setOuvrirGen}>
-        <DialogContent>
+        <DialogContent className="max-h-[90dvh] w-[calc(100vw-2rem)] max-w-lg overflow-y-auto sm:w-full">
           <DialogHeader>
             <DialogTitle>Générer un lot de balises</DialogTitle>
             <DialogDescription>
@@ -395,7 +395,7 @@ function AdminBeacons() {
       </Dialog>
 
       <Dialog open={ouvrirAffect} onOpenChange={setOuvrirAffect}>
-        <DialogContent>
+        <DialogContent className="max-h-[90dvh] w-[calc(100vw-2rem)] max-w-lg overflow-y-auto sm:w-full">
           <DialogHeader>
             <DialogTitle>Affecter un lot à un agent</DialogTitle>
           </DialogHeader>

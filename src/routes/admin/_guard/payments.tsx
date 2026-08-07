@@ -123,7 +123,7 @@ function PaiementsAdminPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <div>
           <h2 className="text-xl font-semibold text-foreground">Paiements</h2>
           <p className="text-sm text-muted-foreground">
@@ -131,9 +131,9 @@ function PaiementsAdminPage() {
             planifier.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <Select value={statut} onValueChange={setStatut}>
-            <SelectTrigger className="w-44">
+            <SelectTrigger className="w-full sm:w-44">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -262,7 +262,7 @@ function PaiementsAdminPage() {
       </Card>
 
       <Dialog open={!!cible} onOpenChange={(o) => !o && setCible(null)}>
-        <DialogContent>
+        <DialogContent className="max-h-[90dvh] w-[calc(100vw-2rem)] max-w-lg overflow-y-auto sm:w-full">
           <DialogHeader>
             <DialogTitle>Confirmer le paiement</DialogTitle>
             <DialogDescription>
@@ -300,7 +300,7 @@ function PaiementsAdminPage() {
       </Dialog>
 
       <Dialog open={!!rejet} onOpenChange={(o) => !o && setRejet(null)}>
-        <DialogContent>
+        <DialogContent className="max-h-[90dvh] w-[calc(100vw-2rem)] max-w-lg overflow-y-auto sm:w-full">
           <DialogHeader>
             <DialogTitle>Rejeter le paiement</DialogTitle>
             <DialogDescription>

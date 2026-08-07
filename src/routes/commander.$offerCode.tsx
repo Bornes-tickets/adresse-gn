@@ -110,12 +110,16 @@ function CommanderPage() {
           </CardContent>
         </Card>
 
-        <div className="flex flex-wrap gap-3">
-          <Button onClick={() => creer.mutate()} disabled={creer.isPending || !user}>
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <Button
+            className="h-12 w-full sm:w-auto"
+            onClick={() => creer.mutate()}
+            disabled={creer.isPending || !user}
+          >
             {creer.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
             Continuer vers le paiement
           </Button>
-          <Button variant="outline" asChild>
+          <Button variant="outline" className="h-12 w-full sm:w-auto" asChild>
             <Link to="/tarifs">Changer d'offre</Link>
           </Button>
         </div>

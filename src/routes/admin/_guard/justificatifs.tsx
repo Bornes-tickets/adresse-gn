@@ -135,14 +135,14 @@ function AdminJustificatifs() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-end justify-between gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
         <div>
           <h1 className="text-xl font-semibold">Justificatifs d'installation</h1>
           <p className="text-sm text-muted-foreground">
             Déposez, consultez et validez les photos et pièces liées aux installations en attente.
           </p>
         </div>
-        <div className="w-48">
+        <div className="w-full sm:w-48">
           <Label className="text-xs">Statut installation</Label>
           <Select value={statut} onValueChange={setStatut}>
             <SelectTrigger>
@@ -288,7 +288,7 @@ function AdminJustificatifs() {
                       Aucun justificatif pour cette installation.
                     </p>
                   ) : (
-                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                       {(docs.data ?? []).map((d) => {
                         const estImage = (d.mime_type ?? "").startsWith("image/");
                         return (

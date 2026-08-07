@@ -56,7 +56,7 @@ function AdminAnalytics() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center">
         <Select value={jours} onValueChange={setJours}>
           <SelectTrigger className="w-40">
             <SelectValue />
@@ -154,7 +154,7 @@ function AdminAnalytics() {
         <CardHeader>
           <CardTitle className="text-base">Densité des adresses actives</CardTitle>
         </CardHeader>
-        <CardContent className="h-[420px] p-0">
+        <CardContent className="h-[60vh] p-0 md:h-[70vh]">
           <AdminPointsMap
             points={data.chaleur.map((p) => ({
               lat: p.lat,

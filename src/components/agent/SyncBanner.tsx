@@ -90,7 +90,7 @@ function Cadre({
 }) {
   return (
     <div
-      className={`flex items-center gap-2 rounded-full px-2 py-1 text-xs font-medium ${classe}`}
+      className={`flex min-w-0 max-w-full flex-wrap items-center gap-2 rounded-full px-2 py-1 text-xs font-medium ${classe}`}
     >
       {icone}
       {children}
@@ -111,7 +111,7 @@ function Bouton({
     <Button
       size="sm"
       variant="secondary"
-      className="h-6 px-2 text-xs"
+      className="h-8 min-h-8 px-2 text-xs"
       disabled={enCours}
       onClick={() => void onClick()}
     >

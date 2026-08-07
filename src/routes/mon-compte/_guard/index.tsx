@@ -49,7 +49,7 @@ function OwnerDashboardPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {kpis.map(({ label, value, icon: Icone }) => (
           <Card key={label}>
             <CardContent className="flex items-center gap-3 pt-6">
@@ -86,13 +86,13 @@ function OwnerDashboardPage() {
           {data?.activities.map((a, index) => (
             <div
               key={`${a.at}-${index}`}
-              className="flex items-center justify-between gap-3 border-b border-border pb-2 last:border-0"
+              className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-border pb-2 last:border-0"
             >
-              <div>
-                <p className="text-sm font-medium text-foreground">{a.label}</p>
-                <p className="font-mono text-xs text-muted-foreground">{a.detail}</p>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium text-foreground">{a.label}</p>
+                <p className="truncate font-mono text-xs text-muted-foreground">{a.detail}</p>
               </div>
-              <span className="text-xs text-muted-foreground">
+              <span className="shrink-0 text-xs text-muted-foreground">
                 {new Date(a.at).toLocaleString("fr-FR")}
               </span>
             </div>

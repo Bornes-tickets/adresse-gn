@@ -160,7 +160,7 @@ function AdminClaimsPage() {
       </div>
 
       <Dialog open={!!decision} onOpenChange={(o) => !o && setDecision(null)}>
-        <DialogContent>
+        <DialogContent className="max-h-[90dvh] w-[calc(100vw-2rem)] max-w-lg overflow-y-auto sm:w-full">
           <DialogHeader>
             <DialogTitle>
               {decision?.decision === "approved"

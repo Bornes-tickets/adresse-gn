@@ -75,8 +75,8 @@ function AdminAudit() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="w-44">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+        <div className="w-full sm:w-44">
           <Label className="text-xs">Entité</Label>
           <Input
             value={entite}
@@ -87,7 +87,7 @@ function AdminAudit() {
             placeholder="addresses"
           />
         </div>
-        <div className="w-44">
+        <div className="w-full sm:w-44">
           <Label className="text-xs">Action</Label>
           <Input
             value={action}
@@ -98,17 +98,17 @@ function AdminAudit() {
             placeholder="UPDATE"
           />
         </div>
-        <div className="w-40">
+        <div className="w-full sm:w-40">
           <Label className="text-xs">Du</Label>
           <Input type="date" value={du} onChange={(e) => setDu(e.target.value)} />
         </div>
-        <div className="w-40">
+        <div className="w-full sm:w-40">
           <Label className="text-xs">Au</Label>
           <Input type="date" value={au} onChange={(e) => setAu(e.target.value)} />
         </div>
         <Button
           variant="outline"
-          className="ml-auto"
+          className="w-full sm:ml-auto sm:w-auto"
           disabled={!journal.data?.rows.length}
           onClick={() =>
             downloadCsv(
