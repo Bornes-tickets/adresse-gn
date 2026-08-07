@@ -3,10 +3,12 @@ import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import {
   Briefcase,
+  ChevronDown,
   Facebook,
   Instagram,
   LogOut,
   Mail,
+  MapPin,
   Menu,
   MessageCircle,
   Twitter,
@@ -194,77 +196,178 @@ function Header() {
   );
 }
 
+const FOCUS =
+  "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950";
+
+type FooterLink = { label: string; to?: string; href?: string; disabled?: boolean };
+
+const FOOTER_COLS: { title: string; links: FooterLink[] }[] = [
+  {
+    title: "Produit",
+    links: [
+      { label: "Tarifs", to: "/tarifs" },
+      { label: "Pour les particuliers", href: "/a-propos#particuliers" },
+      { label: "Pour les pros", href: "/a-propos#pros" },
+      { label: "API", href: "/a-propos#api" },
+    ],
+  },
+  {
+    title: "Ressources",
+    links: [
+      { label: "Comment ça marche", to: "/a-propos" },
+      { label: "Aide", href: "mailto:contact@adresse.gn" },
+      { label: "FAQ", href: "/a-propos#faq" },
+      { label: "État du service", disabled: true },
+    ],
+  },
+  {
+    title: "Entreprise",
+    links: [
+      { label: "À propos", to: "/a-propos" },
+      { label: "Contact", href: "mailto:contact@adresse.gn" },
+      { label: "Presse", disabled: true },
+      { label: "Partenaires", disabled: true },
+    ],
+  },
+  {
+    title: "Légal",
+    links: [
+      { label: "Mentions légales", to: "/confidentialite" },
+      { label: "Confidentialité", to: "/confidentialite" },
+      { label: "CGU", to: "/confidentialite" },
+      { label: "Cookies", to: "/confidentialite" },
+    ],
+  },
+];
+
+function FooterLinkItem({ link }: { link: FooterLink }) {
+  const base = cn("text-sm transition-colors rounded-sm", FOCUS);
+  if (link.disabled) {
+    return (
+      <span
+        aria-disabled="true"
+        className={cn(base, "cursor-not-allowed text-slate-300 opacity-40")}
+      >
+        {link.label}
+      </span>
+    );
+  }
+  if (link.href) {
+    return (
+      <a href={link.href} className={cn(base, "text-slate-300 hover:text-white")}>
+        {link.label}
+      </a>
+    );
+  }
+  return (
+    <Link
+      to={link.to as "/tarifs"}
+      className={cn(base, "text-slate-300 hover:text-white")}
+    >
+      {link.label}
+    </Link>
+  );
+}
+
 function Footer() {
   return (
     <footer className="bg-slate-950 text-slate-300">
-      <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="space-y-4">
+      <div className="mx-auto max-w-7xl px-6 pt-20 pb-10 md:px-8">
+        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-12">
+          {/* Bloc marque */}
+          <div className="space-y-5 lg:col-span-4">
             <Logo tone="light" />
-            <p className="text-sm text-slate-400">
-              Un numéro unique par lieu, en Guinée.
+            <p className="max-w-xs text-sm text-slate-400">
+              L'adresse numérique de la Guinée.
             </p>
-            <a
-              href={`https://wa.me/${WHATSAPP_SERVICE}`}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 text-sm font-medium text-accent hover:underline"
-            >
-              <MessageCircle className="size-4" />
-              WhatsApp
-            </a>
-          </div>
-
-          <div className="space-y-4">
-            <h2 className="text-sm font-semibold text-white">Produit</h2>
-            <nav className="flex flex-col gap-2.5 text-sm text-slate-400">
-              <Link to="/tarifs" className="hover:text-white">
-                Tarifs
-              </Link>
-              <Link to="/pro" className="hover:text-white">
-                Pour les pros
-              </Link>
-              <Link to="/pro/api" className="hover:text-white">
-                API
-              </Link>
-            </nav>
-          </div>
-
-          <div className="space-y-4">
-            <h2 className="text-sm font-semibold text-white">Informations</h2>
-            <nav className="flex flex-col gap-2.5 text-sm text-slate-400">
-              <Link to="/a-propos" className="hover:text-white">
-                À propos
-              </Link>
-              <Link to="/confidentialite" className="hover:text-white">
-                Confidentialité
-              </Link>
+            <div className="flex flex-col gap-2.5">
+              <span className="flex items-center gap-2 text-sm text-slate-400">
+                <MapPin className="size-3.5 shrink-0" />
+                Conakry · Guinée
+              </span>
               <a
                 href="mailto:contact@adresse.gn"
-                className="inline-flex items-center gap-2 hover:text-white"
+                className={cn(
+                  "flex items-center gap-2 rounded-sm text-sm text-slate-300 transition-colors hover:text-accent",
+                  FOCUS,
+                )}
               >
-                <Mail className="size-4" />
+                <Mail className="size-3.5 shrink-0" />
                 contact@adresse.gn
               </a>
-            </nav>
+              <a
+                href={`https://wa.me/${WHATSAPP_SERVICE}`}
+                target="_blank"
+                rel="noreferrer"
+                className={cn(
+                  "flex items-center gap-2 rounded-sm text-sm text-slate-300 transition-colors hover:text-accent",
+                  FOCUS,
+                )}
+              >
+                <MessageCircle className="size-3.5 shrink-0" />
+                WhatsApp
+              </a>
+            </div>
+            <span className="inline-flex rounded-full border border-accent/20 bg-accent/10 px-3 py-1 text-xs text-accent">
+              Pilote 2026 en cours
+            </span>
+          </div>
+
+          {/* Colonnes de liens — desktop */}
+          {FOOTER_COLS.map((col) => (
+            <div key={col.title} className="hidden lg:col-span-2 lg:block">
+              <h2 className="mb-4 text-xs font-semibold tracking-widest text-slate-500 uppercase">
+                {col.title}
+              </h2>
+              <nav className="flex flex-col space-y-3">
+                {col.links.map((link) => (
+                  <FooterLinkItem key={link.label} link={link} />
+                ))}
+              </nav>
+            </div>
+          ))}
+
+          {/* Colonnes de liens — accordéons mobile/tablette */}
+          <div className="divide-y divide-slate-800 border-y border-slate-800 lg:hidden">
+            {FOOTER_COLS.map((col) => (
+              <details key={col.title} className="group py-3">
+                <summary
+                  className={cn(
+                    "flex cursor-pointer list-none items-center justify-between rounded-sm text-xs font-semibold tracking-widest text-slate-500 uppercase",
+                    FOCUS,
+                  )}
+                >
+                  {col.title}
+                  <ChevronDown className="size-4 transition-transform group-open:rotate-180" />
+                </summary>
+                <nav className="mt-3 flex flex-col space-y-3">
+                  {col.links.map((link) => (
+                    <FooterLinkItem key={link.label} link={link} />
+                  ))}
+                </nav>
+              </details>
+            ))}
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col gap-4 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-slate-500">
-            © {new Date().getFullYear()} Adresse GN · Tous droits réservés.
-          </p>
+        <div className="mt-16 mb-8 border-t border-slate-800" />
+
+        <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
+          <div className="flex flex-wrap items-center justify-center gap-2 text-xs text-slate-500">
+            <span>© 2026 Adresse GN. Tous droits réservés.</span>
+            <span aria-hidden="true">·</span>
+            <span className="transition-colors hover:text-slate-300">🇫🇷 Français</span>
+          </div>
           <div className="flex items-center gap-3">
             {[
               { Icon: Facebook, label: "Facebook" },
               { Icon: Instagram, label: "Instagram" },
-              { Icon: Twitter, label: "Twitter" },
+              { Icon: Twitter, label: "X" },
             ].map(({ Icon, label }) => (
               <span
                 key={label}
-                title={`${label} — bientôt`}
-                aria-label={`${label} — bientôt`}
-                className="grid size-9 place-items-center rounded-full border border-white/10 text-slate-500"
+                aria-label={label}
+                className="grid size-9 place-items-center rounded-lg border border-slate-800 text-slate-400 transition-colors hover:border-slate-600 hover:text-white"
               >
                 <Icon className="size-4" />
               </span>
@@ -275,6 +378,7 @@ function Footer() {
     </footer>
   );
 }
+
 
 
 export function Layout({ children }: { children: ReactNode }) {
