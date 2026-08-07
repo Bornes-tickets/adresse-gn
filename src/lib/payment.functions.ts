@@ -109,11 +109,30 @@ export const adminRejeterPaiement = createServerFn({ method: "POST" })
 
 export const adminInstallationsAPlanifier = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .inputValidator((input?: { statut?: string | null; agentId?: string | null }) => ({
+    statut: input?.statut ? String(input.statut) : null,
+    agentId: input?.agentId ? String(input.agentId) : null,
+  }))
+  .handler(async ({ context, data }) => {
     const { requireAdmin } = await import("@/lib/admin.server");
     const { listerInstallationsEnAttente } = await import("@/lib/payment.server");
     await requireAdmin(context.userId);
-    return listerInstallationsEnAttente();
+    return listerInstallationsEnAttente(data);
+  });
+
+export const adminStatutInstallationAttente = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string; statut: string; note?: string | null }) => {
+    const statuts = ["pending", "assigned", "planned", "done", "cancelled"];
+    if (!input?.id) throw new Error("Demande manquante.");
+    if (!statuts.includes(String(input?.statut))) throw new Error("Statut invalide.");
+    return { id: String(input.id), statut: String(input.statut), note: input.note ?? null };
+  })
+  .handler(async ({ context, data }) => {
+    const { requireAdmin } = await import("@/lib/admin.server");
+    const { changerStatutInstallationEnAttente } = await import("@/lib/payment.server");
+    await requireAdmin(context.userId);
+    return changerStatutInstallationEnAttente(context.userId, data);
   });
 
 export const adminAffecterInstallation = createServerFn({ method: "POST" })
