@@ -81,22 +81,26 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Adresse GN — Un lieu · Un numéro · Un itinéraire" },
+      {
+        name: "viewport",
+        content: "width=device-width, initial-scale=1, viewport-fit=cover",
+      },
+      { title: "ADRESSE GN — Un lieu, un numéro, un itinéraire" },
       {
         name: "description",
         content:
-          "Adresse GN : le système d'adressage guinéen. Un numéro unique par lieu, une localisation vérifiée, un itinéraire immédiat.",
+          "Trouvez ou partagez n'importe quelle adresse en Guinée grâce à un simple numéro unique. Pour les livraisons, les visites, les taxis. Une balise, un numéro, une position GPS, un itinéraire immédiat.",
       },
       { name: "author", content: "Adresse GN" },
+      { property: "og:site_name", content: "ADRESSE GN" },
       {
         property: "og:title",
-        content: "Adresse GN — Un lieu · Un numéro · Un itinéraire",
+        content: "ADRESSE GN — Un lieu, un numéro, un itinéraire",
       },
       {
         property: "og:description",
         content:
-          "Recherchez une adresse en Guinée à partir de son numéro de balise.",
+          "Trouvez ou partagez n'importe quelle adresse en Guinée grâce à un simple numéro unique. Pour les livraisons, les visites, les taxis. Une balise, un numéro, une position GPS, un itinéraire immédiat.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -124,11 +128,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap",
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+      { rel: "icon", href: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
+      { rel: "icon", href: "/favicon-16x16.png", type: "image/png", sizes: "16x16" },
       { rel: "manifest", href: "/manifest.json" },
-      { rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png", sizes: "180x180" },
     ],
   }),
+
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,

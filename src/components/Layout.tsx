@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { Briefcase, LogOut, User as UserIcon } from "lucide-react";
+import { Briefcase, LogOut, Mail, MessageCircle, User as UserIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +16,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
+
+const WHATSAPP_SERVICE = "224620000000";
 
 export function Layout({ children }: { children: ReactNode }) {
   const { user, isAuthenticated } = useAuth();
@@ -34,9 +36,12 @@ export function Layout({ children }: { children: ReactNode }) {
             </span>
           </Link>
 
-          <nav className="ml-auto mr-2 hidden sm:block">
+          <nav className="ml-auto mr-2 hidden items-center gap-4 sm:flex">
             <Link to="/tarifs" className="text-sm text-muted-foreground hover:text-primary">
               Tarifs
+            </Link>
+            <Link to="/a-propos" className="text-sm text-muted-foreground hover:text-primary">
+              À propos
             </Link>
           </nav>
 
@@ -95,19 +100,78 @@ export function Layout({ children }: { children: ReactNode }) {
       <main className="flex-1">{children}</main>
 
       <footer className="border-t border-border bg-card">
-        <div className="mx-auto flex max-w-5xl flex-col gap-2 px-4 py-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} Adresse GN · Mentions légales</p>
-          <nav className="flex gap-4">
-            <Link to="/tarifs" className="hover:text-primary">
-              Tarifs
-            </Link>
-            <Link to="/a-propos" className="hover:text-primary">
-              À propos
-            </Link>
-            <Link to="/confidentialite" className="hover:text-primary">
-              Confidentialité
-            </Link>
-          </nav>
+        <div className="mx-auto max-w-5xl px-4 py-12">
+          <div className="grid gap-10 sm:grid-cols-3">
+            <div className="space-y-3">
+              <span className="block text-lg font-bold tracking-tight text-primary">
+                ADRESSE GN
+              </span>
+              <p className="text-sm text-muted-foreground">
+                Un lieu · Un numéro · Un itinéraire. Le système d'adressage
+                national guinéen.
+              </p>
+              <address className="text-sm not-italic text-muted-foreground">
+                Immeuble Adresse GN, Kaloum
+                <br />
+                Conakry, République de Guinée
+              </address>
+              <a
+                href={`https://wa.me/${WHATSAPP_SERVICE}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+              >
+                <MessageCircle className="size-4" />
+                Service client WhatsApp
+              </a>
+            </div>
+
+            <div className="space-y-3">
+              <h2 className="text-sm font-semibold text-foreground">Produit</h2>
+              <nav className="flex flex-col gap-2 text-sm text-muted-foreground">
+                <Link to="/tarifs" className="hover:text-primary">
+                  Tarifs
+                </Link>
+                <Link to="/" hash="comment-ca-marche" className="hover:text-primary">
+                  Comment ça marche
+                </Link>
+                <Link to="/pro" className="hover:text-primary">
+                  Pour les pros
+                </Link>
+                <Link to="/" hash="pour-qui" className="hover:text-primary">
+                  Pour les livreurs
+                </Link>
+              </nav>
+            </div>
+
+            <div className="space-y-3">
+              <h2 className="text-sm font-semibold text-foreground">
+                Informations légales
+              </h2>
+              <nav className="flex flex-col gap-2 text-sm text-muted-foreground">
+                <Link to="/a-propos" className="hover:text-primary">
+                  À propos
+                </Link>
+                <Link to="/a-propos" className="hover:text-primary">
+                  Mentions légales
+                </Link>
+                <Link to="/confidentialite" className="hover:text-primary">
+                  Confidentialité
+                </Link>
+                <a
+                  href="mailto:contact@adresse.gn"
+                  className="inline-flex items-center gap-2 hover:text-primary"
+                >
+                  <Mail className="size-4" />
+                  Contact
+                </a>
+              </nav>
+            </div>
+          </div>
+
+          <p className="mt-10 border-t border-border pt-6 text-xs text-muted-foreground">
+            © {new Date().getFullYear()} ADRESSE GN · Tous droits réservés.
+          </p>
         </div>
       </footer>
     </div>
