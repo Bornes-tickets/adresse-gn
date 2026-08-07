@@ -153,9 +153,12 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
-  const estAgent = pathname === "/agent" || pathname.startsWith("/agent/");
-  const estAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
-  const sansLayout = estAgent || estAdmin;
+  const dansEspace = (base: string) =>
+    pathname === base || pathname.startsWith(`${base}/`);
+  // Ces espaces fournissent leur propre header/footer : pas de Layout global.
+  const sansLayout =
+    ["/agent", "/admin", "/mon-compte", "/pro"].some(dansEspace) &&
+    pathname !== "/pro/onboarding";
 
   useEffect(() => {
     registerServiceWorker();
