@@ -4,7 +4,6 @@ import {
   ArrowRight,
   Bike,
   Building2,
-  ChevronDown,
   Home as HomeIcon,
   MapPin,
   Navigation,
@@ -162,9 +161,9 @@ function Home() {
   };
 
   return (
-    <div>
+    <div className="overflow-x-hidden">
       {/* Héros */}
-      <section className="gradient-signature relative flex min-h-[85vh] items-center overflow-hidden">
+      <section className="gradient-signature relative flex min-h-[auto] items-center overflow-hidden py-16 md:py-24 lg:py-28">
         <div
           aria-hidden="true"
           className="dot-grid pointer-events-none absolute inset-0 text-white opacity-[0.06]"
@@ -174,27 +173,21 @@ function Home() {
           className="pointer-events-none absolute -top-32 -right-24 size-[520px] rounded-full bg-white/5 blur-3xl"
         />
 
-        <div className="relative mx-auto w-full max-w-[900px] px-4 py-24 sm:px-6">
-          <div className="flex justify-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-medium text-white/90 backdrop-blur-sm">
-              🇬🇳 Fait en Guinée · Pilote 2026
-            </span>
-          </div>
-
-          <h1 className="text-display mt-8 text-center text-[2.5rem] font-extrabold leading-[1.05] text-white sm:text-5xl lg:text-[4.25rem]">
+        <div className="relative mx-auto w-full max-w-[900px] px-4 md:px-8 lg:px-12">
+          <h1 className="text-display text-center text-4xl font-extrabold leading-[1.05] text-white md:text-5xl lg:text-6xl xl:text-7xl">
             Envoyez votre adresse
             <span className="mt-2 block text-white/80">
               comme un numéro de téléphone.
             </span>
           </h1>
 
-          <p className="mx-auto mt-7 max-w-2xl text-center text-base leading-relaxed text-white/75 sm:text-lg">
+          <p className="mx-auto mt-7 max-w-2xl text-center text-base leading-relaxed text-white/75">
             Une balise numérique unique pour chaque lieu en Guinée. Vos
             livreurs, taxis et visiteurs arrivent directement — plus besoin
             d'expliquer le chemin.
           </p>
 
-          <div className="mt-12 rounded-2xl border border-white/20 bg-card p-5 shadow-brand-lg sm:p-8">
+          <div className="mt-12 rounded-2xl border border-white/20 bg-card p-4 shadow-brand-lg sm:p-8">
             <form
               className="flex flex-col gap-3 sm:flex-row"
               onSubmit={(event) => {
@@ -202,7 +195,7 @@ function Home() {
                 void rechercher(numero);
               }}
             >
-              <div className="flex flex-1 items-center gap-2 rounded-xl border border-slate-300 bg-background px-4 focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/30">
+              <div className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-slate-300 bg-background px-4 focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/30">
                 <input
                   value={numero}
                   onChange={(event) => {
@@ -212,11 +205,11 @@ function Home() {
                   placeholder="GN-CKY-______"
                   aria-label="Numéro de balise"
                   aria-invalid={!!erreur}
-                  className="h-14 w-full bg-transparent font-mono text-xl font-semibold tracking-[0.1em] text-foreground outline-hidden placeholder:font-normal placeholder:text-muted-foreground/60 sm:h-16 sm:text-2xl"
+                  className="h-14 w-full min-w-0 bg-transparent font-mono text-xl font-semibold tracking-[0.1em] text-foreground outline-hidden placeholder:font-normal placeholder:text-muted-foreground/60 sm:h-16 sm:text-2xl"
                 />
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span>
+                    <span className="shrink-0">
                       <Button
                         type="button"
                         variant="ghost"
@@ -235,7 +228,7 @@ function Home() {
               <Button
                 type="submit"
                 disabled={enCours}
-                className="h-14 bg-accent px-8 text-base font-medium text-accent-foreground transition-all duration-200 hover:scale-[1.02] hover:bg-accent-dark active:scale-[0.98] sm:h-16"
+                className="h-14 w-full bg-accent px-8 text-base font-medium text-accent-foreground transition-all duration-200 hover:scale-[1.02] hover:bg-accent-dark active:scale-[0.98] sm:h-16 sm:w-auto"
               >
                 <Search className="size-5" />
                 {enCours ? "Recherche…" : "Trouver l'adresse"}
@@ -261,13 +254,6 @@ function Home() {
                 {exemple}
               </Link>
             ))}
-          </div>
-
-          <div className="mt-16 flex justify-center">
-            <ChevronDown
-              aria-hidden="true"
-              className="animate-scroll-hint size-6 text-white/50"
-            />
           </div>
         </div>
       </section>
