@@ -214,14 +214,18 @@ export async function chargerDashboard(): Promise<DashboardData> {
     compte("agents", (q) => q.eq("active", true)),
   ]);
 
+  const il90j = new Date(maintenant.getTime() - 90 * 864e5);
+  const il14j = new Date(maintenant.getTime() - 14 * 864e5).toISOString();
+  const debutMois = new Date(maintenant.getFullYear(), maintenant.getMonth(), 1).toISOString();
+
   const { data: installs } = await supabaseAdmin
     .from("installations")
     .select("installed_at")
-    .gte("installed_at", il30j.toISOString())
-    .limit(5000);
+    .gte("installed_at", il90j.toISOString())
+    .limit(20000);
 
   const parJour = new Map<string, number>();
-  for (let i = 29; i >= 0; i -= 1) {
+  for (let i = 89; i >= 0; i -= 1) {
     parJour.set(jourIso(new Date(maintenant.getTime() - i * 864e5)), 0);
   }
   for (const ligne of installs ?? []) {
@@ -231,14 +235,17 @@ export async function chargerDashboard(): Promise<DashboardData> {
 
   const { data: adresses } = await supabaseAdmin
     .from("addresses")
-    .select("category, visibility, location, beacons(public_number)")
+    .select("category, visibility, location, created_at, communes(name), beacons(public_number)")
     .eq("status", "active")
     .limit(2000);
 
   const cats = new Map<string, number>();
+  const zones = new Map<string, number>();
   const points: DashboardData["points"] = [];
   for (const a of (adresses ?? []) as any[]) {
     cats.set(a.category ?? "autre", (cats.get(a.category ?? "autre") ?? 0) + 1);
+    const zone = a.communes?.name ?? "Non affectée";
+    zones.set(zone, (zones.get(zone) ?? 0) + 1);
     const p = parsePointHex(a.location);
     if (p) {
       points.push({
@@ -248,6 +255,73 @@ export async function chargerDashboard(): Promise<DashboardData> {
       });
     }
   }
+
+  const STATUTS = ["generated", "assigned", "active", "suspended", "cancelled"] as const;
+  const statutsBalises = await Promise.all(
+    STATUTS.map(async (statut) => ({
+      statut,
+      total: await compte("beacons", (q) => q.eq("status", statut)),
+    })),
+  );
+
+  const periode = async (
+    table: "installations" | "addresses" | "orders",
+    colonne: string,
+    debut: string,
+    fin?: string,
+  ) =>
+    compte(table as any, (q) => {
+      let r = q.gte(colonne, debut);
+      if (fin) r = r.lt(colonne, fin);
+      return r;
+    });
+
+  const [
+    adresses7j,
+    adresses7jPrec,
+    commandes7j,
+    commandes7jPrec,
+    installations7jPrec,
+    installationsMois,
+    adressesMois,
+  ] = await Promise.all([
+    periode("addresses", "created_at", il7j),
+    periode("addresses", "created_at", il14j, il7j),
+    periode("orders", "created_at", il7j),
+    periode("orders", "created_at", il14j, il7j),
+    periode("installations", "installed_at", il14j, il7j),
+    periode("installations", "installed_at", debutMois),
+    periode("addresses", "created_at", debutMois),
+  ]);
+
+  const [recentInstalls, recentOrders, recentReports, paiementsMois] = await Promise.all([
+    supabaseAdmin
+      .from("installations")
+      .select("id, installed_at, beacons(public_number)")
+      .order("installed_at", { ascending: false })
+      .limit(6),
+    supabaseAdmin
+      .from("orders")
+      .select("id, order_ref, amount_gnf, status, created_at")
+      .order("created_at", { ascending: false })
+      .limit(6),
+    supabaseAdmin
+      .from("reports")
+      .select("id, reason, status, created_at")
+      .order("created_at", { ascending: false })
+      .limit(6),
+    supabaseAdmin
+      .from("payments")
+      .select("amount_gnf")
+      .eq("status", "paid")
+      .gte("paid_at", debutMois)
+      .limit(5000),
+  ]);
+
+  const revenusMois = (paiementsMois.data ?? []).reduce(
+    (t, p: any) => t + Number(p.amount_gnf ?? 0),
+    0,
+  );
 
   return {
     balisesActives,
@@ -262,8 +336,97 @@ export async function chargerDashboard(): Promise<DashboardData> {
       .map(([categorie, total]) => ({ categorie, total }))
       .sort((a, b) => b.total - a.total),
     points,
+    tendances: {
+      installations: { actuel: installations7j, precedent: installations7jPrec },
+      adresses: { actuel: adresses7j, precedent: adresses7jPrec },
+      commandes: { actuel: commandes7j, precedent: commandes7jPrec },
+    },
+    statutsBalises,
+    topZones: [...zones.entries()]
+      .map(([nom, total]) => ({ nom, total }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 5),
+    activite: {
+      installations: (recentInstalls.data ?? []).map((i: any) => ({
+        id: i.id,
+        numero: i.beacons?.public_number ?? null,
+        date: i.installed_at ?? null,
+      })),
+      commandes: (recentOrders.data ?? []).map((o: any) => ({
+        id: o.id,
+        ref: o.order_ref,
+        montant: Number(o.amount_gnf ?? 0),
+        statut: o.status,
+        date: o.created_at ?? null,
+      })),
+      signalements: (recentReports.data ?? []).map((r: any) => ({
+        id: r.id,
+        raison: r.reason,
+        statut: r.status,
+        date: r.created_at ?? null,
+      })),
+    },
+    objectifs: [
+      { cle: "installations", valeur: installationsMois, cible: 500 },
+      { cle: "adresses", valeur: adressesMois, cible: 800 },
+      { cle: "revenus", valeur: revenusMois, cible: 50_000_000 },
+    ],
   };
 }
+
+/* ------------------------------------------------------------------ */
+/* Recherche globale (palette ⌘K)                                      */
+/* ------------------------------------------------------------------ */
+
+export interface GlobalSearchResult {
+  balises: { id: string; numero: string; statut: string }[];
+  adresses: { id: string; nom: string | null; numero: string | null }[];
+  utilisateurs: { id: string; nom: string | null; telephone: string | null; role: string }[];
+}
+
+export async function rechercheGlobale(terme: string): Promise<GlobalSearchResult> {
+  const q = terme.trim();
+  if (q.length < 2) return { balises: [], adresses: [], utilisateurs: [] };
+  const motif = `%${q}%`;
+
+  const [balises, adresses, utilisateurs] = await Promise.all([
+    supabaseAdmin
+      .from("beacons")
+      .select("id, public_number, status")
+      .ilike("public_number", motif)
+      .limit(6),
+    supabaseAdmin
+      .from("addresses")
+      .select("id, name, beacons(public_number)")
+      .ilike("name", motif)
+      .limit(6),
+    supabaseAdmin
+      .from("profiles")
+      .select("id, full_name, phone, role")
+      .or(`full_name.ilike.${motif},phone.ilike.${motif}`)
+      .limit(6),
+  ]);
+
+  return {
+    balises: (balises.data ?? []).map((b: any) => ({
+      id: b.id,
+      numero: b.public_number,
+      statut: b.status,
+    })),
+    adresses: (adresses.data ?? []).map((a: any) => ({
+      id: a.id,
+      nom: a.name ?? null,
+      numero: a.beacons?.public_number ?? null,
+    })),
+    utilisateurs: (utilisateurs.data ?? []).map((p: any) => ({
+      id: p.id,
+      nom: p.full_name ?? null,
+      telephone: p.phone ?? null,
+      role: p.role,
+    })),
+  };
+}
+
 
 /* ------------------------------------------------------------------ */
 /* Journal d'audit                                                     */
