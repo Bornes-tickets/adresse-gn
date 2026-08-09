@@ -20,7 +20,9 @@
     "order": "Commander",
     "account": "Mon compte",
     "proSpace": "Espace pro",
-    "logout": "Se déconnecter"
+    "logout": "Se déconnecter",
+    "blog": "Blog",
+    "faq": "FAQ"
   },
   "footer": {
     "tagline": "L'adresse numérique de la Guinée.",
@@ -50,7 +52,8 @@
       "legalNotice": "Mentions légales",
       "privacy": "Confidentialité",
       "terms": "CGU",
-      "cookies": "Cookies"
+      "cookies": "Cookies",
+      "blog": "Blog"
     }
   },
   "home": {

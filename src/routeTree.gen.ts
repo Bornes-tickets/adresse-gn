@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AProposRouteImport } from './routes/a-propos'
 import { Route as ConfidentialiteRouteImport } from './routes/confidentialite'
+import { Route as FaqRouteImport } from './routes/faq'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LogoutRouteImport } from './routes/logout'
 import { Route as SignupRouteImport } from './routes/signup'
@@ -21,9 +22,12 @@ import { Route as ANumberRouteImport } from './routes/a.$number'
 import { Route as AdminGuardRouteRouteImport } from './routes/admin/_guard/route'
 import { Route as AgentGuardRouteRouteImport } from './routes/agent/_guard/route'
 import { Route as AgentLoginRouteImport } from './routes/agent/login'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as CommanderOfferCodeRouteImport } from './routes/commander.$offerCode'
 import { Route as EtablissementNumberRouteImport } from './routes/etablissement.$number'
 import { Route as MonCompteGuardRouteRouteImport } from './routes/mon-compte/_guard/route'
+import { Route as PSlugRouteImport } from './routes/p.$slug'
 import { Route as ProGuardRouteRouteImport } from './routes/pro/_guard/route'
 import { Route as ProOnboardingRouteImport } from './routes/pro/onboarding'
 import { Route as AdminGuardIndexRouteImport } from './routes/admin/_guard/index'
@@ -87,6 +91,11 @@ const ConfidentialiteRoute = ConfidentialiteRouteImport.update({
   path: '/confidentialite',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -132,6 +141,16 @@ const AgentLoginRoute = AgentLoginRouteImport.update({
   path: '/agent/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/blog/$slug',
+  path: '/blog/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CommanderOfferCodeRoute = CommanderOfferCodeRouteImport.update({
   id: '/commander/$offerCode',
   path: '/commander/$offerCode',
@@ -145,6 +164,11 @@ const EtablissementNumberRoute = EtablissementNumberRouteImport.update({
 const MonCompteGuardRouteRoute = MonCompteGuardRouteRouteImport.update({
   id: '/mon-compte/_guard',
   path: '/mon-compte',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PSlugRoute = PSlugRouteImport.update({
+  id: '/p/$slug',
+  path: '/p/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProGuardRouteRoute = ProGuardRouteRouteImport.update({
@@ -392,6 +416,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/a-propos': typeof AProposRoute
   '/confidentialite': typeof ConfidentialiteRoute
+  '/faq': typeof FaqRoute
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
   '/signup': typeof SignupRoute
@@ -403,9 +428,12 @@ export interface FileRoutesByFullPath {
   '/pro': typeof ProGuardRouteRouteWithChildren
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/commander/$offerCode': typeof CommanderOfferCodeRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
+  '/p/$slug': typeof PSlugRoute
   '/pro/onboarding': typeof ProOnboardingRoute
+  '/blog/': typeof BlogIndexRoute
   '/admin/abonnements': typeof AdminGuardAbonnementsRoute
   '/admin/addresses': typeof AdminGuardAddressesRoute
   '/admin/agents': typeof AdminGuardAgentsRoute
@@ -456,6 +484,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/a-propos': typeof AProposRoute
   '/confidentialite': typeof ConfidentialiteRoute
+  '/faq': typeof FaqRoute
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
   '/signup': typeof SignupRoute
@@ -463,9 +492,12 @@ export interface FileRoutesByTo {
   '/tarifs': typeof TarifsRoute
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/commander/$offerCode': typeof CommanderOfferCodeRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
+  '/p/$slug': typeof PSlugRoute
   '/pro/onboarding': typeof ProOnboardingRoute
+  '/blog': typeof BlogIndexRoute
   '/admin/abonnements': typeof AdminGuardAbonnementsRoute
   '/admin/addresses': typeof AdminGuardAddressesRoute
   '/admin/agents': typeof AdminGuardAgentsRoute
@@ -517,6 +549,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/a-propos': typeof AProposRoute
   '/confidentialite': typeof ConfidentialiteRoute
+  '/faq': typeof FaqRoute
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
   '/signup': typeof SignupRoute
@@ -528,9 +561,12 @@ export interface FileRoutesById {
   '/pro/_guard': typeof ProGuardRouteRouteWithChildren
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/commander/$offerCode': typeof CommanderOfferCodeRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
+  '/p/$slug': typeof PSlugRoute
   '/pro/onboarding': typeof ProOnboardingRoute
+  '/blog/': typeof BlogIndexRoute
   '/admin/_guard/abonnements': typeof AdminGuardAbonnementsRoute
   '/admin/_guard/addresses': typeof AdminGuardAddressesRoute
   '/admin/_guard/agents': typeof AdminGuardAgentsRoute
@@ -583,6 +619,7 @@ export interface FileRouteTypes {
     | '/'
     | '/a-propos'
     | '/confidentialite'
+    | '/faq'
     | '/login'
     | '/logout'
     | '/signup'
@@ -594,9 +631,12 @@ export interface FileRouteTypes {
     | '/pro'
     | '/a/$number'
     | '/agent/login'
+    | '/blog/$slug'
     | '/commander/$offerCode'
     | '/etablissement/$number'
+    | '/p/$slug'
     | '/pro/onboarding'
+    | '/blog/'
     | '/admin/abonnements'
     | '/admin/addresses'
     | '/admin/agents'
@@ -647,6 +687,7 @@ export interface FileRouteTypes {
     | '/'
     | '/a-propos'
     | '/confidentialite'
+    | '/faq'
     | '/login'
     | '/logout'
     | '/signup'
@@ -654,9 +695,12 @@ export interface FileRouteTypes {
     | '/tarifs'
     | '/a/$number'
     | '/agent/login'
+    | '/blog/$slug'
     | '/commander/$offerCode'
     | '/etablissement/$number'
+    | '/p/$slug'
     | '/pro/onboarding'
+    | '/blog'
     | '/admin/abonnements'
     | '/admin/addresses'
     | '/admin/agents'
@@ -707,6 +751,7 @@ export interface FileRouteTypes {
     | '/'
     | '/a-propos'
     | '/confidentialite'
+    | '/faq'
     | '/login'
     | '/logout'
     | '/signup'
@@ -718,9 +763,12 @@ export interface FileRouteTypes {
     | '/pro/_guard'
     | '/a/$number'
     | '/agent/login'
+    | '/blog/$slug'
     | '/commander/$offerCode'
     | '/etablissement/$number'
+    | '/p/$slug'
     | '/pro/onboarding'
+    | '/blog/'
     | '/admin/_guard/abonnements'
     | '/admin/_guard/addresses'
     | '/admin/_guard/agents'
@@ -772,6 +820,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AProposRoute: typeof AProposRoute
   ConfidentialiteRoute: typeof ConfidentialiteRoute
+  FaqRoute: typeof FaqRoute
   LoginRoute: typeof LoginRoute
   LogoutRoute: typeof LogoutRoute
   SignupRoute: typeof SignupRoute
@@ -783,9 +832,12 @@ export interface RootRouteChildren {
   ProGuardRouteRoute: typeof ProGuardRouteRouteWithChildren
   ANumberRoute: typeof ANumberRoute
   AgentLoginRoute: typeof AgentLoginRoute
+  BlogSlugRoute: typeof BlogSlugRoute
   CommanderOfferCodeRoute: typeof CommanderOfferCodeRoute
   EtablissementNumberRoute: typeof EtablissementNumberRoute
+  PSlugRoute: typeof PSlugRoute
   ProOnboardingRoute: typeof ProOnboardingRoute
+  BlogIndexRoute: typeof BlogIndexRoute
   CommandeOrderRefPaiementRoute: typeof CommandeOrderRefPaiementRoute
   ApiPublicHooksRunBillingRoute: typeof ApiPublicHooksRunBillingRoute
   ApiPublicWebhooksMtnRoute: typeof ApiPublicWebhooksMtnRoute
@@ -813,6 +865,13 @@ declare module '@tanstack/react-router' {
       path: '/confidentialite'
       fullPath: '/confidentialite'
       preLoaderRoute: typeof ConfidentialiteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -878,6 +937,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgentLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog/': {
+      id: '/blog/'
+      path: '/blog'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/blog/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/commander/$offerCode': {
       id: '/commander/$offerCode'
       path: '/commander/$offerCode'
@@ -897,6 +970,13 @@ declare module '@tanstack/react-router' {
       path: '/mon-compte'
       fullPath: '/mon-compte'
       preLoaderRoute: typeof MonCompteGuardRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/p/$slug': {
+      id: '/p/$slug'
+      path: '/p/$slug'
+      fullPath: '/p/$slug'
+      preLoaderRoute: typeof PSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pro/_guard': {
@@ -1356,6 +1436,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AProposRoute: AProposRoute,
   ConfidentialiteRoute: ConfidentialiteRoute,
+  FaqRoute: FaqRoute,
   LoginRoute: LoginRoute,
   LogoutRoute: LogoutRoute,
   SignupRoute: SignupRoute,
@@ -1367,9 +1448,12 @@ const rootRouteChildren: RootRouteChildren = {
   ProGuardRouteRoute: ProGuardRouteRouteWithChildren,
   ANumberRoute: ANumberRoute,
   AgentLoginRoute: AgentLoginRoute,
+  BlogSlugRoute: BlogSlugRoute,
   CommanderOfferCodeRoute: CommanderOfferCodeRoute,
   EtablissementNumberRoute: EtablissementNumberRoute,
+  PSlugRoute: PSlugRoute,
   ProOnboardingRoute: ProOnboardingRoute,
+  BlogIndexRoute: BlogIndexRoute,
   CommandeOrderRefPaiementRoute: CommandeOrderRefPaiementRoute,
   ApiPublicHooksRunBillingRoute: ApiPublicHooksRunBillingRoute,
   ApiPublicWebhooksMtnRoute: ApiPublicWebhooksMtnRoute,
