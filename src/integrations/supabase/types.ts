@@ -89,11 +89,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "addresses_commune_id_fkey"
+            columns: ["commune_id"]
+            isOneToOne: false
+            referencedRelation: "v_geo_current_coverage"
+            referencedColumns: ["commune_id"]
+          },
+          {
+            foreignKeyName: "addresses_commune_id_fkey"
+            columns: ["commune_id"]
+            isOneToOne: false
+            referencedRelation: "v_geo_reference"
+            referencedColumns: ["commune_id"]
+          },
+          {
+            foreignKeyName: "addresses_commune_id_fkey"
+            columns: ["commune_id"]
+            isOneToOne: false
+            referencedRelation: "v_geo_reference_coverage"
+            referencedColumns: ["commune_id"]
+          },
+          {
             foreignKeyName: "addresses_district_id_fkey"
             columns: ["district_id"]
             isOneToOne: false
             referencedRelation: "districts"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "addresses_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "v_geo_reference"
+            referencedColumns: ["district_id"]
           },
           {
             foreignKeyName: "addresses_owner_id_fkey"
@@ -140,6 +168,27 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "communes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agents_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "v_geo_current_coverage"
+            referencedColumns: ["commune_id"]
+          },
+          {
+            foreignKeyName: "agents_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "v_geo_reference"
+            referencedColumns: ["commune_id"]
+          },
+          {
+            foreignKeyName: "agents_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "v_geo_reference_coverage"
+            referencedColumns: ["commune_id"]
           },
         ]
       }
@@ -660,24 +709,65 @@ export type Database = {
       }
       communes: {
         Row: {
+          administrative_type: string | null
           boundary: unknown
+          code: string | null
+          geojson: Json | null
           id: string
+          is_active: boolean
           name: string
+          prefecture_id: string | null
           region_id: string | null
+          slug: string | null
+          source: string | null
+          source_name: string | null
+          stat_code: string | null
         }
         Insert: {
+          administrative_type?: string | null
           boundary?: unknown
+          code?: string | null
+          geojson?: Json | null
           id?: string
+          is_active?: boolean
           name: string
+          prefecture_id?: string | null
           region_id?: string | null
+          slug?: string | null
+          source?: string | null
+          source_name?: string | null
+          stat_code?: string | null
         }
         Update: {
+          administrative_type?: string | null
           boundary?: unknown
+          code?: string | null
+          geojson?: Json | null
           id?: string
+          is_active?: boolean
           name?: string
+          prefecture_id?: string | null
           region_id?: string | null
+          slug?: string | null
+          source?: string | null
+          source_name?: string | null
+          stat_code?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "communes_prefecture_id_fkey"
+            columns: ["prefecture_id"]
+            isOneToOne: false
+            referencedRelation: "prefectures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communes_prefecture_id_fkey"
+            columns: ["prefecture_id"]
+            isOneToOne: false
+            referencedRelation: "v_geo_reference"
+            referencedColumns: ["prefecture_id"]
+          },
           {
             foreignKeyName: "communes_region_id_fkey"
             columns: ["region_id"]
@@ -685,26 +775,93 @@ export type Database = {
             referencedRelation: "regions"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "communes_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "v_geo_reference"
+            referencedColumns: ["region_id"]
+          },
         ]
+      }
+      countries: {
+        Row: {
+          code: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          slug: string | null
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          slug?: string | null
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string | null
+        }
+        Relationships: []
       }
       districts: {
         Row: {
           boundary: unknown
+          code: string | null
           commune_id: string | null
+          geojson: Json | null
           id: string
+          is_active: boolean
+          kind: string
           name: string
+          official_reference: string | null
+          slug: string | null
+          source: string | null
+          source_name: string | null
+          source_year: number | null
+          verification_status: string | null
+          verified_at: string | null
         }
         Insert: {
           boundary?: unknown
+          code?: string | null
           commune_id?: string | null
+          geojson?: Json | null
           id?: string
+          is_active?: boolean
+          kind?: string
           name: string
+          official_reference?: string | null
+          slug?: string | null
+          source?: string | null
+          source_name?: string | null
+          source_year?: number | null
+          verification_status?: string | null
+          verified_at?: string | null
         }
         Update: {
           boundary?: unknown
+          code?: string | null
           commune_id?: string | null
+          geojson?: Json | null
           id?: string
+          is_active?: boolean
+          kind?: string
           name?: string
+          official_reference?: string | null
+          slug?: string | null
+          source?: string | null
+          source_name?: string | null
+          source_year?: number | null
+          verification_status?: string | null
+          verified_at?: string | null
         }
         Relationships: [
           {
@@ -713,6 +870,27 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "communes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "districts_commune_id_fkey"
+            columns: ["commune_id"]
+            isOneToOne: false
+            referencedRelation: "v_geo_current_coverage"
+            referencedColumns: ["commune_id"]
+          },
+          {
+            foreignKeyName: "districts_commune_id_fkey"
+            columns: ["commune_id"]
+            isOneToOne: false
+            referencedRelation: "v_geo_reference"
+            referencedColumns: ["commune_id"]
+          },
+          {
+            foreignKeyName: "districts_commune_id_fkey"
+            columns: ["commune_id"]
+            isOneToOne: false
+            referencedRelation: "v_geo_reference_coverage"
+            referencedColumns: ["commune_id"]
           },
         ]
       }
@@ -828,6 +1006,120 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      geo_import_runs: {
+        Row: {
+          created_at: string
+          id: string
+          imported_by: string | null
+          localities_created: number
+          localities_updated: number
+          rows_received: number
+          rows_skipped: number
+          rows_valid: number
+          sectors_created: number
+          sectors_updated: number
+          source_reference: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          imported_by?: string | null
+          localities_created?: number
+          localities_updated?: number
+          rows_received?: number
+          rows_skipped?: number
+          rows_valid?: number
+          sectors_created?: number
+          sectors_updated?: number
+          source_reference: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          imported_by?: string | null
+          localities_created?: number
+          localities_updated?: number
+          rows_received?: number
+          rows_skipped?: number
+          rows_valid?: number
+          sectors_created?: number
+          sectors_updated?: number
+          source_reference?: string
+        }
+        Relationships: []
+      }
+      geo_reference_gaps: {
+        Row: {
+          commune_name: string
+          commune_stat_code: string
+          created_at: string
+          gap_reason: string
+          is_resolved: boolean
+          prefecture_name: string
+          region_name: string
+          source_required: string
+          updated_at: string
+        }
+        Insert: {
+          commune_name: string
+          commune_stat_code: string
+          created_at?: string
+          gap_reason: string
+          is_resolved?: boolean
+          prefecture_name: string
+          region_name: string
+          source_required?: string
+          updated_at?: string
+        }
+        Update: {
+          commune_name?: string
+          commune_stat_code?: string
+          created_at?: string
+          gap_reason?: string
+          is_resolved?: boolean
+          prefecture_name?: string
+          region_name?: string
+          source_required?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      geo_reference_targets: {
+        Row: {
+          basis: string
+          expected_count: number
+          label: string
+          level: string
+          notes: string | null
+          official_reference: string | null
+          reference_key: string
+          source_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          basis: string
+          expected_count: number
+          label: string
+          level: string
+          notes?: string | null
+          official_reference?: string | null
+          reference_key: string
+          source_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          basis?: string
+          expected_count?: number
+          label?: string
+          level?: string
+          notes?: string | null
+          official_reference?: string | null
+          reference_key?: string
+          source_date?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       installation_measures: {
         Row: {
@@ -1422,6 +1714,66 @@ export type Database = {
           },
         ]
       }
+      prefectures: {
+        Row: {
+          code: string | null
+          created_at: string
+          geojson: Json | null
+          id: string
+          is_active: boolean
+          is_special_zone: boolean
+          name: string
+          region_id: string
+          slug: string
+          source: string | null
+          source_name: string | null
+          stat_code: string | null
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          geojson?: Json | null
+          id?: string
+          is_active?: boolean
+          is_special_zone?: boolean
+          name: string
+          region_id: string
+          slug: string
+          source?: string | null
+          source_name?: string | null
+          stat_code?: string | null
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          geojson?: Json | null
+          id?: string
+          is_active?: boolean
+          is_special_zone?: boolean
+          name?: string
+          region_id?: string
+          slug?: string
+          source?: string | null
+          source_name?: string | null
+          stat_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prefectures_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "regions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prefectures_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "v_geo_reference"
+            referencedColumns: ["region_id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -1468,22 +1820,51 @@ export type Database = {
         Row: {
           code: string
           country_code: string
+          country_id: string | null
+          geojson: Json | null
           id: string
+          is_active: boolean
           name: string
+          slug: string | null
+          source: string | null
+          source_name: string | null
+          stat_code: string | null
         }
         Insert: {
           code: string
           country_code?: string
+          country_id?: string | null
+          geojson?: Json | null
           id?: string
+          is_active?: boolean
           name: string
+          slug?: string | null
+          source?: string | null
+          source_name?: string | null
+          stat_code?: string | null
         }
         Update: {
           code?: string
           country_code?: string
+          country_id?: string | null
+          geojson?: Json | null
           id?: string
+          is_active?: boolean
           name?: string
+          slug?: string | null
+          source?: string | null
+          source_name?: string | null
+          stat_code?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "regions_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reports: {
         Row: {
@@ -1652,6 +2033,72 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      sectors: {
+        Row: {
+          code: string | null
+          created_at: string
+          district_id: string
+          geojson: Json | null
+          id: string
+          is_active: boolean
+          name: string
+          official_reference: string | null
+          slug: string
+          source: string | null
+          source_name: string | null
+          source_year: number | null
+          verification_status: string | null
+          verified_at: string | null
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          district_id: string
+          geojson?: Json | null
+          id?: string
+          is_active?: boolean
+          name: string
+          official_reference?: string | null
+          slug: string
+          source?: string | null
+          source_name?: string | null
+          source_year?: number | null
+          verification_status?: string | null
+          verified_at?: string | null
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          district_id?: string
+          geojson?: Json | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          official_reference?: string | null
+          slug?: string
+          source?: string | null
+          source_name?: string | null
+          source_year?: number | null
+          verification_status?: string | null
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sectors_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sectors_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "v_geo_reference"
+            referencedColumns: ["district_id"]
+          },
+        ]
       }
       spatial_ref_sys: {
         Row: {
@@ -1884,6 +2331,57 @@ export type Database = {
         }
         Relationships: []
       }
+      v_geo_current_coverage: {
+        Row: {
+          commune_id: string | null
+          commune_name: string | null
+          commune_stat_code: string | null
+          coverage_status: string | null
+          current_quartiers_districts: number | null
+          current_sectors: number | null
+          prefecture_name: string | null
+          region_name: string | null
+        }
+        Relationships: []
+      }
+      v_geo_reference: {
+        Row: {
+          administrative_type: string | null
+          commune: string | null
+          commune_id: string | null
+          commune_official_code: string | null
+          commune_stat_code: string | null
+          district_id: string | null
+          local_type: string | null
+          prefecture: string | null
+          prefecture_id: string | null
+          prefecture_stat_code: string | null
+          quartier_district: string | null
+          region: string | null
+          region_code: string | null
+          region_id: string | null
+          region_stat_code: string | null
+          secteur: string | null
+          sector_id: string | null
+        }
+        Relationships: []
+      }
+      v_geo_reference_coverage: {
+        Row: {
+          administrative_type: string | null
+          commune: string | null
+          commune_id: string | null
+          commune_stat_code: string | null
+          coverage_status: string | null
+          localites_courantes_verifiees: number | null
+          localites_historiques: number | null
+          prefecture: string | null
+          quartiers_districts: number | null
+          region: string | null
+          secteurs: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       _postgis_deprecate: {
@@ -2013,6 +2511,27 @@ export type Database = {
             }
             Returns: string
           }
+      admin_delete_geo_zone: {
+        Args: { p_id: string; p_niveau: string }
+        Returns: undefined
+      }
+      admin_geo_zones: { Args: never; Returns: Json }
+      admin_import_current_geo_rows: {
+        Args: { p_rows: Json; p_source_reference?: string }
+        Returns: Json
+      }
+      admin_import_geo_rows: { Args: { p_rows: Json }; Returns: Json }
+      admin_save_geo_zone: {
+        Args: {
+          p_code?: string
+          p_geojson?: Json
+          p_kind?: string
+          p_name: string
+          p_niveau: string
+          p_parent_id?: string
+        }
+        Returns: string
+      }
       disablelongtransactions: { Args: never; Returns: string }
       dropgeometrycolumn:
         | {
@@ -2046,6 +2565,9 @@ export type Database = {
         | { Args: { table_name: string }; Returns: string }
       enablelongtransactions: { Args: never; Returns: string }
       equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      geo_current_summary: { Args: never; Returns: Json }
+      geo_is_admin: { Args: never; Returns: boolean }
+      geo_slug: { Args: { p_value: string }; Returns: string }
       geometry: { Args: { "": string }; Returns: unknown }
       geometry_above: {
         Args: { geom1: unknown; geom2: unknown }
