@@ -846,7 +846,9 @@ function ImportCsvDialog({
     // Ignorer l'en-tête si présent
     const debut = lignes[0]?.toLowerCase().includes("commune") ? 1 : 0;
     for (let i = debut; i < lignes.length; i++) {
-      const cols = lignes[i].split(",").map((c) => c.trim());
+      const ligne = lignes[i];
+      if (!ligne) continue;
+      const cols = ligne.split(",").map((c) => c.trim());
       if (cols.length >= 2 && cols[0] && cols[1]) {
         resultat.push({ commune: cols[0], quartier: cols[1] });
       }
