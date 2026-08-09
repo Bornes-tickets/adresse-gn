@@ -3,7 +3,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { Reveal } from "@/components/Reveal";
 import { Badge } from "@/components/ui/badge";
 import { useLangueCms } from "@/hooks/useLangueCms";
-import { texte } from "@/lib/cms";
+import { texte, type CmsPost } from "@/lib/cms";
 import { publicListPosts } from "@/lib/cms-public.functions";
 
 const BASE = "https://adresse-gn.lovable.app";
