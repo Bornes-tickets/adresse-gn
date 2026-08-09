@@ -194,7 +194,7 @@ function gnf(montant: number): string {
 }
 
 /** Textes de l'offre : le CMS prime, sinon les traductions, sinon le catalogue. */
-function usePlanTextes(offre: Offer, planCms?: CmsPlan) {
+function usePlanTextes(offre: Offer, planCms?: CmsPlan | undefined) {
   const { t } = useTranslation();
   const langue = useLangueCms();
   const features = t(`pricing.plans.${offre.code}.features`, {
@@ -227,7 +227,7 @@ function CarteOffre({
 }: {
   offre: Offer;
   vedette: boolean;
-  planCms?: CmsPlan;
+  planCms?: CmsPlan | undefined;
 }) {
   const { t } = useTranslation();
   const textes = usePlanTextes(offre, planCms);
