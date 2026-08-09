@@ -1909,8 +1909,11 @@ function parseGeoCsv(text: string): ImportRow[] {
 
   if (lines.length < 2) return [];
 
-  const delimiter = detectDelimiter(lines[0]);
-  const headers = parseCsvLine(lines[0], delimiter).map((header) =>
+  const headerLine = lines[0];
+  if (!headerLine) return [];
+
+  const delimiter = detectDelimiter(headerLine);
+  const headers = parseCsvLine(headerLine, delimiter).map((header) =>
     normalizeHeader(header),
   );
 
@@ -1948,7 +1951,9 @@ function parseGeoCsv(text: string): ImportRow[] {
   const result: ImportRow[] = [];
 
   for (let i = 1; i < lines.length; i += 1) {
-    const columns = parseCsvLine(lines[i], delimiter);
+    const line = lines[i];
+    if (!line) continue;
+    const columns = parseCsvLine(line, delimiter);
     const get = (index: number) =>
       index >= 0 ? (columns[index] ?? "").trim() : "";
 
