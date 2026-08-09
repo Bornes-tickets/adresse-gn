@@ -74,7 +74,19 @@ export async function enregistrerPage(entree: EntreePage, auteur: string) {
   return { id: data.id as string };
 }
 
+/** Page par slug, quel que soit son statut (aperçu admin). */
+export async function pageParSlug(slug: string): Promise<CmsPage | null> {
+  const { data, error } = await db
+    .from("cms_pages")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle();
+  verifier(error);
+  return (data ?? null) as CmsPage | null;
+}
+
 export async function supprimerPage(id: string) {
+
   const { error } = await db.from("cms_pages").delete().eq("id", id);
   verifier(error);
   return { ok: true };
