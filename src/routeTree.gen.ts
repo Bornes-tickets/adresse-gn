@@ -22,6 +22,7 @@ import { Route as AdminGuardRouteRouteImport } from './routes/admin/_guard/route
 import { Route as AgentGuardRouteRouteImport } from './routes/agent/_guard/route'
 import { Route as AgentLoginRouteImport } from './routes/agent/login'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as CommanderOfferCodeRouteImport } from './routes/commander.$offerCode'
 import { Route as EtablissementNumberRouteImport } from './routes/etablissement.$number'
 import { Route as MonCompteGuardRouteRouteImport } from './routes/mon-compte/_guard/route'
@@ -137,6 +138,11 @@ const AgentLoginRoute = AgentLoginRouteImport.update({
 const BlogIndexRoute = BlogIndexRouteImport.update({
   id: '/blog/',
   path: '/blog/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/blog/$slug',
+  path: '/blog/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CommanderOfferCodeRoute = CommanderOfferCodeRouteImport.update({
@@ -415,6 +421,7 @@ export interface FileRoutesByFullPath {
   '/pro': typeof ProGuardRouteRouteWithChildren
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/commander/$offerCode': typeof CommanderOfferCodeRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/p/$slug': typeof PSlugRoute
@@ -477,6 +484,7 @@ export interface FileRoutesByTo {
   '/tarifs': typeof TarifsRoute
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/commander/$offerCode': typeof CommanderOfferCodeRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/p/$slug': typeof PSlugRoute
@@ -544,6 +552,7 @@ export interface FileRoutesById {
   '/pro/_guard': typeof ProGuardRouteRouteWithChildren
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/commander/$offerCode': typeof CommanderOfferCodeRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/p/$slug': typeof PSlugRoute
@@ -612,6 +621,7 @@ export interface FileRouteTypes {
     | '/pro'
     | '/a/$number'
     | '/agent/login'
+    | '/blog/$slug'
     | '/commander/$offerCode'
     | '/etablissement/$number'
     | '/p/$slug'
@@ -674,6 +684,7 @@ export interface FileRouteTypes {
     | '/tarifs'
     | '/a/$number'
     | '/agent/login'
+    | '/blog/$slug'
     | '/commander/$offerCode'
     | '/etablissement/$number'
     | '/p/$slug'
@@ -740,6 +751,7 @@ export interface FileRouteTypes {
     | '/pro/_guard'
     | '/a/$number'
     | '/agent/login'
+    | '/blog/$slug'
     | '/commander/$offerCode'
     | '/etablissement/$number'
     | '/p/$slug'
@@ -807,6 +819,7 @@ export interface RootRouteChildren {
   ProGuardRouteRoute: typeof ProGuardRouteRouteWithChildren
   ANumberRoute: typeof ANumberRoute
   AgentLoginRoute: typeof AgentLoginRoute
+  BlogSlugRoute: typeof BlogSlugRoute
   CommanderOfferCodeRoute: typeof CommanderOfferCodeRoute
   EtablissementNumberRoute: typeof EtablissementNumberRoute
   PSlugRoute: typeof PSlugRoute
@@ -909,6 +922,13 @@ declare module '@tanstack/react-router' {
       path: '/blog'
       fullPath: '/blog/'
       preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/blog/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/commander/$offerCode': {
@@ -1407,6 +1427,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProGuardRouteRoute: ProGuardRouteRouteWithChildren,
   ANumberRoute: ANumberRoute,
   AgentLoginRoute: AgentLoginRoute,
+  BlogSlugRoute: BlogSlugRoute,
   CommanderOfferCodeRoute: CommanderOfferCodeRoute,
   EtablissementNumberRoute: EtablissementNumberRoute,
   PSlugRoute: PSlugRoute,
