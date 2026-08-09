@@ -71,6 +71,16 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-admin-blue: var(--admin-blue);
+  --color-admin-green: var(--admin-green);
+  --color-admin-orange: var(--admin-orange);
+  --color-admin-violet: var(--admin-violet);
+  --color-admin-pink: var(--admin-pink);
+  --color-admin-cyan: var(--admin-cyan);
+  --color-admin-amber: var(--admin-amber);
+  --color-admin-red: var(--admin-red);
+  --color-admin-slate: var(--admin-slate);
+  --color-admin-lime: var(--admin-lime);
 }
 
 :root {
@@ -120,6 +130,16 @@
   --sidebar-accent-foreground: oklch(0.412 0.089 260.89);
   --sidebar-border: oklch(0.929 0.013 255.51);
   --sidebar-ring: oklch(0.412 0.089 260.89);
+  --admin-blue: oklch(0.546 0.19 262.3);
+  --admin-green: oklch(0.588 0.163 149.2);
+  --admin-orange: oklch(0.67 0.18 45);
+  --admin-violet: oklch(0.55 0.24 297);
+  --admin-pink: oklch(0.62 0.22 350);
+  --admin-cyan: oklch(0.654 0.11 194.03);
+  --admin-amber: oklch(0.75 0.16 78);
+  --admin-red: oklch(0.577 0.215 27.33);
+  --admin-slate: oklch(0.554 0.041 257.42);
+  --admin-lime: oklch(0.68 0.17 130);
 }
 
 
@@ -156,6 +176,16 @@
   --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.551 0.027 264.364);
+  --admin-blue: oklch(0.68 0.16 262.3);
+  --admin-green: oklch(0.7 0.15 152);
+  --admin-orange: oklch(0.75 0.15 50);
+  --admin-violet: oklch(0.7 0.18 297);
+  --admin-pink: oklch(0.73 0.17 350);
+  --admin-cyan: oklch(0.75 0.11 194);
+  --admin-amber: oklch(0.82 0.14 82);
+  --admin-red: oklch(0.7 0.19 22);
+  --admin-slate: oklch(0.704 0.04 256.788);
+  --admin-lime: oklch(0.78 0.15 130);
 }
 
 @layer base {
