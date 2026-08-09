@@ -41,6 +41,8 @@ const WHATSAPP_SERVICE = "224620000000";
 const NAV = [
   { to: "/tarifs" as const, cle: "nav.pricing" },
   { to: "/pro" as const, cle: "nav.pros" },
+  { to: "/blog" as const, cle: "nav.blog" },
+  { to: "/faq" as const, cle: "nav.faq" },
   { to: "/a-propos" as const, cle: "nav.about" },
 ];
 function useScrolled() {
@@ -208,7 +210,8 @@ const FOOTER_COLS: { cle: string; links: FooterLink[] }[] = [
     links: [
       { cle: "footer.links.howItWorks", to: "/a-propos" },
       { cle: "footer.links.help", href: "mailto:contact@adresse.gn" },
-      { cle: "footer.links.faq", href: "/a-propos#faq" },
+      { cle: "footer.links.faq", to: "/faq" },
+      { cle: "footer.links.blog", to: "/blog" },
       { cle: "footer.links.status", disabled: true },
     ],
   },
