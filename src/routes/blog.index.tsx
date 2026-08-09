@@ -9,7 +9,9 @@ import { publicListPosts } from "@/lib/cms-public.functions";
 const BASE = "https://adresse-gn.lovable.app";
 
 export const Route = createFileRoute("/blog/")({
-  loader: async () => ({ articles: await publicListPosts() }),
+  loader: async (): Promise<{ articles: CmsPost[] }> => ({
+    articles: (await publicListPosts()) as CmsPost[],
+  }),
   head: () => ({
     meta: [
       { title: "Blog — ADRESSE GN" },

@@ -21,6 +21,7 @@ import { Route as ANumberRouteImport } from './routes/a.$number'
 import { Route as AdminGuardRouteRouteImport } from './routes/admin/_guard/route'
 import { Route as AgentGuardRouteRouteImport } from './routes/agent/_guard/route'
 import { Route as AgentLoginRouteImport } from './routes/agent/login'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as CommanderOfferCodeRouteImport } from './routes/commander.$offerCode'
 import { Route as EtablissementNumberRouteImport } from './routes/etablissement.$number'
 import { Route as MonCompteGuardRouteRouteImport } from './routes/mon-compte/_guard/route'
@@ -131,6 +132,11 @@ const AgentGuardRouteRoute = AgentGuardRouteRouteImport.update({
 const AgentLoginRoute = AgentLoginRouteImport.update({
   id: '/agent/login',
   path: '/agent/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CommanderOfferCodeRoute = CommanderOfferCodeRouteImport.update({
@@ -413,6 +419,7 @@ export interface FileRoutesByFullPath {
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/p/$slug': typeof PSlugRoute
   '/pro/onboarding': typeof ProOnboardingRoute
+  '/blog/': typeof BlogIndexRoute
   '/admin/abonnements': typeof AdminGuardAbonnementsRoute
   '/admin/addresses': typeof AdminGuardAddressesRoute
   '/admin/agents': typeof AdminGuardAgentsRoute
@@ -474,6 +481,7 @@ export interface FileRoutesByTo {
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/p/$slug': typeof PSlugRoute
   '/pro/onboarding': typeof ProOnboardingRoute
+  '/blog': typeof BlogIndexRoute
   '/admin/abonnements': typeof AdminGuardAbonnementsRoute
   '/admin/addresses': typeof AdminGuardAddressesRoute
   '/admin/agents': typeof AdminGuardAgentsRoute
@@ -540,6 +548,7 @@ export interface FileRoutesById {
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/p/$slug': typeof PSlugRoute
   '/pro/onboarding': typeof ProOnboardingRoute
+  '/blog/': typeof BlogIndexRoute
   '/admin/_guard/abonnements': typeof AdminGuardAbonnementsRoute
   '/admin/_guard/addresses': typeof AdminGuardAddressesRoute
   '/admin/_guard/agents': typeof AdminGuardAgentsRoute
@@ -607,6 +616,7 @@ export interface FileRouteTypes {
     | '/etablissement/$number'
     | '/p/$slug'
     | '/pro/onboarding'
+    | '/blog/'
     | '/admin/abonnements'
     | '/admin/addresses'
     | '/admin/agents'
@@ -668,6 +678,7 @@ export interface FileRouteTypes {
     | '/etablissement/$number'
     | '/p/$slug'
     | '/pro/onboarding'
+    | '/blog'
     | '/admin/abonnements'
     | '/admin/addresses'
     | '/admin/agents'
@@ -733,6 +744,7 @@ export interface FileRouteTypes {
     | '/etablissement/$number'
     | '/p/$slug'
     | '/pro/onboarding'
+    | '/blog/'
     | '/admin/_guard/abonnements'
     | '/admin/_guard/addresses'
     | '/admin/_guard/agents'
@@ -799,6 +811,7 @@ export interface RootRouteChildren {
   EtablissementNumberRoute: typeof EtablissementNumberRoute
   PSlugRoute: typeof PSlugRoute
   ProOnboardingRoute: typeof ProOnboardingRoute
+  BlogIndexRoute: typeof BlogIndexRoute
   CommandeOrderRefPaiementRoute: typeof CommandeOrderRefPaiementRoute
   ApiPublicHooksRunBillingRoute: typeof ApiPublicHooksRunBillingRoute
   ApiPublicWebhooksMtnRoute: typeof ApiPublicWebhooksMtnRoute
@@ -889,6 +902,13 @@ declare module '@tanstack/react-router' {
       path: '/agent/login'
       fullPath: '/agent/login'
       preLoaderRoute: typeof AgentLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/': {
+      id: '/blog/'
+      path: '/blog'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/commander/$offerCode': {
@@ -1391,6 +1411,7 @@ const rootRouteChildren: RootRouteChildren = {
   EtablissementNumberRoute: EtablissementNumberRoute,
   PSlugRoute: PSlugRoute,
   ProOnboardingRoute: ProOnboardingRoute,
+  BlogIndexRoute: BlogIndexRoute,
   CommandeOrderRefPaiementRoute: CommandeOrderRefPaiementRoute,
   ApiPublicHooksRunBillingRoute: ApiPublicHooksRunBillingRoute,
   ApiPublicWebhooksMtnRoute: ApiPublicWebhooksMtnRoute,
