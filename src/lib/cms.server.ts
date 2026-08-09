@@ -137,7 +137,19 @@ export async function enregistrerArticle(entree: EntreeArticle, auteur: string) 
   return { id: data.id as string };
 }
 
+/** Article par slug, quel que soit son statut (aperçu admin). */
+export async function articleParSlug(slug: string): Promise<CmsPost | null> {
+  const { data, error } = await db
+    .from("cms_posts")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle();
+  verifier(error);
+  return (data ?? null) as CmsPost | null;
+}
+
 export async function supprimerArticle(id: string) {
+
   const { error } = await db.from("cms_posts").delete().eq("id", id);
   verifier(error);
   return { ok: true };
