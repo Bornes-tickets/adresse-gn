@@ -18,6 +18,17 @@ export const adminDashboard = createServerFn({ method: "POST" })
     return chargerDashboard();
   });
 
+export const adminGlobalSearch = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { terme?: string }) => ({ terme: String(input?.terme ?? "").slice(0, 80) }))
+  .handler(async ({ context, data }) => {
+    const { requireAdmin, rechercheGlobale } = await import("@/lib/admin.server");
+    await requireAdmin(context.userId);
+    return rechercheGlobale(data.terme);
+  });
+
+
+
 export const adminAnalytics = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { jours?: number }) => ({
