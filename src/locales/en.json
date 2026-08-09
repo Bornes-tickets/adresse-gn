@@ -20,7 +20,9 @@
     "order": "Order now",
     "account": "My account",
     "proSpace": "Business space",
-    "logout": "Sign out"
+    "logout": "Sign out",
+    "blog": "Blog",
+    "faq": "FAQ"
   },
   "footer": {
     "tagline": "Guinea's digital address.",
@@ -50,7 +52,8 @@
       "legalNotice": "Legal notice",
       "privacy": "Privacy",
       "terms": "Terms of use",
-      "cookies": "Cookies"
+      "cookies": "Cookies",
+      "blog": "Blog"
     }
   },
   "home": {
