@@ -762,7 +762,7 @@ function AdminAddresses() {
                         <MapPin className="size-3" />
                         OpenStreetMap
                       </a>
-                      
+                      <a
                         className="inline-flex items-center gap-1 rounded-md bg-white px-2.5 py-1 text-xs font-medium text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
                         href={`https://www.google.com/maps?q=${fiche.data.adresse.point.lat},${fiche.data.adresse.point.lng}`}
                         target="_blank"
