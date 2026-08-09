@@ -1,9 +1,10 @@
 /** Bandeau d'aperçu admin : rappelle que le contenu n'est pas public. */
-import { Link } from "@tanstack/react-router";
 import { Eye } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { CMS_STATUS_LABELS } from "@/lib/cms";
+
+
 
 export function CmsPreviewBanner({
   statut,
