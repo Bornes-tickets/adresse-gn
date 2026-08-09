@@ -94,7 +94,7 @@ export const Route = createFileRoute("/admin/_guard/beacons")({
 /*  Helpers visuels                                                    */
 /* ------------------------------------------------------------------ */
 
-const STATUS_STYLES: Record
+const STATUS_STYLES: Record<
   string,
   { bg: string; text: string; ring: string; icon: React.ElementType; libelle?: string }
 > = {
