@@ -168,7 +168,18 @@ export interface DashboardData {
   installationsParJour: { jour: string; total: number }[];
   parCategorie: { categorie: string; total: number }[];
   points: { lat: number; lng: number; visibility: string; number: string | null }[];
+  /* Enrichissements Phase 1 */
+  tendances: Record<"installations" | "adresses" | "commandes", { actuel: number; precedent: number }>;
+  statutsBalises: { statut: string; total: number }[];
+  topZones: { nom: string; total: number }[];
+  activite: {
+    installations: { id: string; numero: string | null; date: string | null }[];
+    commandes: { id: string; ref: string; montant: number; statut: string; date: string | null }[];
+    signalements: { id: string; raison: string; statut: string; date: string | null }[];
+  };
+  objectifs: { cle: string; valeur: number; cible: number }[];
 }
+
 
 export async function chargerDashboard(): Promise<DashboardData> {
   const maintenant = new Date();
