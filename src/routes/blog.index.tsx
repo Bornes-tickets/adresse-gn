@@ -56,7 +56,7 @@ function dateCourte(valeur: string | null, langue: string): string {
 }
 
 function BlogIndex() {
-  const { articles } = Route.useLoaderData();
+  const { articles } = Route.useLoaderData() as { articles: CmsPost[] };
   const langue = useLangueCms();
 
   return (
