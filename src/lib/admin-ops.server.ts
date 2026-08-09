@@ -509,7 +509,7 @@ export async function metriquesAgents() {
     .select("id, description")
     .eq("reason", "qc_reject")
     .limit(2000);
-  const parAgent = new Map
+  const parAgent = new Map<
     string,
     { total: number; valides: number; precision: number; nbPrecision: number }
   >();
