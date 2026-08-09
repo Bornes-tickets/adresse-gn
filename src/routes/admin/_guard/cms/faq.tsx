@@ -154,9 +154,17 @@ function CmsFaqPage() {
       <Card className="overflow-hidden">
         <CardHeader className="flex-row items-center justify-between gap-3">
           <CardTitle className="text-base">Questions ({faq.data?.length ?? 0})</CardTitle>
-          <Button size="sm" variant="outline" onClick={() => setForm({ ...VIDE })}>
-            <Plus className="mr-2 size-4" /> Nouvelle question
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="ghost" asChild>
+              <a href="/faq?preview=1" target="_blank" rel="noreferrer">
+                Aperçu
+              </a>
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setForm({ ...VIDE })}>
+              <Plus className="mr-2 size-4" /> Nouvelle question
+            </Button>
+          </div>
+
         </CardHeader>
         <CardContent>
           <AdminTable
