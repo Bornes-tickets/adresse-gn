@@ -93,7 +93,7 @@ export const Route = createFileRoute("/admin/_guard/addresses")({
 /*  Helpers visuels                                                    */
 /* ------------------------------------------------------------------ */
 
-const STATUS_STYLES: Record
+const STATUS_STYLES: Record<
   string,
   { bg: string; text: string; ring: string; icon: React.ElementType }
 > = {
@@ -166,7 +166,7 @@ function StatutColore({ valeur }: { valeur: string }) {
 }
 
 type KpiTone = "sky" | "emerald" | "amber" | "violet" | "rose" | "slate";
-const KPI_TONES: Record
+const KPI_TONES: Record<
   KpiTone,
   { bg: string; ring: string; iconBg: string; iconText: string }
 > = {
@@ -753,7 +753,7 @@ function AdminAddresses() {
                       {fiche.data.adresse.point.lng.toFixed(6)}
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      
+                      <a
                         className="inline-flex items-center gap-1 rounded-md bg-white px-2.5 py-1 text-xs font-medium text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
                         href={`https://www.openstreetmap.org/?mlat=${fiche.data.adresse.point.lat}&mlon=${fiche.data.adresse.point.lng}#map=18/${fiche.data.adresse.point.lat}/${fiche.data.adresse.point.lng}`}
                         target="_blank"
@@ -762,7 +762,7 @@ function AdminAddresses() {
                         <MapPin className="size-3" />
                         OpenStreetMap
                       </a>
-                      
+                      <a
                         className="inline-flex items-center gap-1 rounded-md bg-white px-2.5 py-1 text-xs font-medium text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
                         href={`https://www.google.com/maps?q=${fiche.data.adresse.point.lat},${fiche.data.adresse.point.lng}`}
                         target="_blank"
