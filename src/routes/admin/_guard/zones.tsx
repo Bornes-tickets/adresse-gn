@@ -147,12 +147,22 @@ type GeoData = {
 };
 
 type ImportRow = {
+  commune_stat_code: string;
   region: string;
   prefecture: string;
   commune: string;
   quartier: string;
   type_quartier: DistrictKind;
   secteur: string;
+  official_reference: string;
+};
+
+type CurrentGeoSummary = {
+  target_quartiers_districts: number;
+  current_quartiers_districts: number;
+  remaining_quartiers_districts: number;
+  current_sectors: number;
+  communities_with_current_localities: number;
 };
 
 const EMPTY_GEO: GeoData = {
@@ -227,11 +237,14 @@ async function deleteGeoZone(niveau: Niveau, id: string): Promise<void> {
 async function importGeoRows(rows: ImportRow[]): Promise<{
   rows_received: number;
   quartiers_created: number;
+  quartiers_updated: number;
   sectors_created: number;
+  sectors_updated: number;
   rows_skipped: number;
 }> {
-  const { data, error } = await database.rpc("admin_import_geo_rows", {
+  const { data, error } = await database.rpc("admin_import_current_geo_rows", {
     p_rows: rows,
+    p_source_reference: "Arrêté A/2025/447/MATD/CAB/SGG — annexe vérifiée",
   });
 
   if (error) {
@@ -241,8 +254,28 @@ async function importGeoRows(rows: ImportRow[]): Promise<{
   return {
     rows_received: Number(data?.rows_received ?? rows.length),
     quartiers_created: Number(data?.quartiers_created ?? 0),
+    quartiers_updated: Number(data?.quartiers_updated ?? 0),
     sectors_created: Number(data?.sectors_created ?? 0),
+    sectors_updated: Number(data?.sectors_updated ?? 0),
     rows_skipped: Number(data?.rows_skipped ?? 0),
+  };
+}
+
+async function fetchCurrentGeoSummary(): Promise<CurrentGeoSummary> {
+  const { data, error } = await database.rpc("geo_current_summary");
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return {
+    target_quartiers_districts: Number(data?.target_quartiers_districts ?? 4865),
+    current_quartiers_districts: Number(data?.current_quartiers_districts ?? 0),
+    remaining_quartiers_districts: Number(data?.remaining_quartiers_districts ?? 4865),
+    current_sectors: Number(data?.current_sectors ?? 0),
+    communities_with_current_localities: Number(
+      data?.communities_with_current_localities ?? 0,
+    ),
   };
 }
 
@@ -282,11 +315,19 @@ function AdminZones() {
     queryFn: fetchGeoZones,
   });
 
+  const currentSummary = useQuery({
+    queryKey: ["admin", "geo-current-summary"],
+    queryFn: fetchCurrentGeoSummary,
+  });
+
   const data = zones.data ?? EMPTY_GEO;
   const { regions, prefectures, communes, districts, sectors } = data;
 
   const invalider = async () => {
-    await queryClient.invalidateQueries({ queryKey: ["admin", "geo-zones"] });
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["admin", "geo-zones"] }),
+      queryClient.invalidateQueries({ queryKey: ["admin", "geo-current-summary"] }),
+    ]);
   };
 
   const mutationSave = useMutation({
@@ -642,6 +683,15 @@ function AdminZones() {
         sectors.filter((s) => s.district_id === row.id).length,
     },
     {
+      cle: "source",
+      entete: "Source",
+      rendu: (row: DistrictRow) => (
+        <Badge variant="outline" className="whitespace-nowrap text-[10px]">
+          {row.source || "Non renseignée"}
+        </Badge>
+      ),
+    },
+    {
       cle: "actions",
       entete: "",
       rendu: (row: DistrictRow) => (
@@ -675,6 +725,15 @@ function AdminZones() {
       cle: "code",
       entete: "Code",
       rendu: (row: SectorRow) => <CodeBadge value={row.code} />,
+    },
+    {
+      cle: "source",
+      entete: "Source",
+      rendu: (row: SectorRow) => (
+        <Badge variant="outline" className="whitespace-nowrap text-[10px]">
+          {row.source || "Non renseignée"}
+        </Badge>
+      ),
     },
     {
       cle: "actions",
@@ -756,13 +815,21 @@ function AdminZones() {
         <Kpi
           label="Quartiers / districts"
           valeur={districts.length}
-          aide="Référentiel local"
+          aide={
+            currentSummary.data
+              ? `${currentSummary.data.current_quartiers_districts.toLocaleString("fr-FR")} / ${currentSummary.data.target_quartiers_districts.toLocaleString("fr-FR")} actuels`
+              : "Cible nationale : 4 865"
+          }
           ton="emerald"
         />
         <Kpi
           label="Secteurs"
           valeur={sectors.length}
-          aide="Niveau d'adressage fin"
+          aide={
+            currentSummary.data
+              ? `${currentSummary.data.communities_with_current_localities} commune(s) couvertes`
+              : "Niveau d'adressage fin"
+          }
           ton="rose"
         />
       </div>
@@ -1082,10 +1149,12 @@ function AdminZones() {
           <div className="text-xs text-slate-700">
             <p className="font-semibold text-slate-900">À propos du référentiel</p>
             <p className="mt-1 leading-5 text-slate-600">
-              Le seed national charge 8 régions, 34 préfectures/zones spéciales et
-              378 unités communales issues du référentiel RGPH-4 2025. Les quartiers,
-              districts et secteurs sont ensuite importés depuis la nomenclature
-              territoriale officielle, sans créer de localités fictives.
+              Le référentiel actuel vise 8 régions, 34 préfectures/zones spéciales,
+              378 unités communales et une cible opérationnelle nationale de 4 865
+              quartiers/districts. Les données historiques MATD 2017 sont archivées et
+              exclues du compteur actuel. Seules les localités importées depuis une
+              source 2025 vérifiée ou validées par l’administration sont affichées comme
+              actuelles. Aucun quartier, district ou secteur manquant n’est fabriqué.
             </p>
           </div>
         </CardContent>
@@ -1492,6 +1561,12 @@ function ImportCsvDialog({
   const [erreurCsv, setErreurCsv] = useState("");
 
   const hierarchieExiste = (row: ImportRow) => {
+    if (row.commune_stat_code) {
+      return data.communes.some(
+        (item) => String(item.stat_code ?? "") === row.commune_stat_code,
+      );
+    }
+
     const region = data.regions.find(
       (item) => normalize(item.name) === normalize(row.region),
     );
@@ -1534,7 +1609,7 @@ function ImportCsvDialog({
     if (parsed.length === 0) {
       setApercu([]);
       setErreurCsv(
-        "Aucune ligne exploitable. Colonnes attendues : region,prefecture,commune,quartier,type_quartier,secteur",
+        "Aucune ligne exploitable. Colonnes recommandées : commune_stat_code,quartier,type_quartier,secteur,official_reference",
       );
       return;
     }
@@ -1544,9 +1619,9 @@ function ImportCsvDialog({
 
   const telechargerModele = () => {
     const csv = [
-      "region,prefecture,commune,quartier,type_quartier,secteur",
-      "Conakry,Conakry,Kaloum,EXEMPLE_QUARTIER,quartier,EXEMPLE_SECTEUR",
-      "Kindia,Kindia,Kindia,EXEMPLE_DISTRICT,district,EXEMPLE_SECTEUR",
+      "commune_stat_code,region,prefecture,commune,quartier,type_quartier,secteur,official_reference",
+      "2101,Conakry,Conakry,Kaloum,EXEMPLE_QUARTIER,quartier,EXEMPLE_SECTEUR,A/2025/447/MATD/CAB/SGG",
+      "5401,Kindia,Kindia,Kindia,EXEMPLE_DISTRICT,district,EXEMPLE_SECTEUR,A/2025/447/MATD/CAB/SGG",
     ].join("\n");
 
     const blob = new Blob(["\uFEFF", csv], {
@@ -1576,9 +1651,10 @@ function ImportCsvDialog({
             Importer quartiers, districts et secteurs
           </DialogTitle>
           <DialogDescription>
-            Utilise la hiérarchie complète pour éviter les homonymes :
-            <strong> région, préfecture, commune, quartier/district, secteur</strong>.
-            Les régions, préfectures et communes doivent déjà exister dans le seed.
+            Pour le référentiel actuel, utilise de préférence le
+            <strong> code statistique de la commune</strong>, puis le quartier/district
+            et le secteur. Les noms de région/préfecture/commune restent acceptés pour
+            contrôle visuel, mais le rattachement SQL se fait par code communal.
           </DialogDescription>
         </DialogHeader>
 
@@ -1642,6 +1718,7 @@ function ImportCsvDialog({
                 <table className="min-w-[900px] w-full text-xs">
                   <thead className="sticky top-0 bg-slate-100 text-slate-600">
                     <tr>
+                      <th className="p-2 text-left font-medium">Code commune</th>
                       <th className="p-2 text-left font-medium">Région</th>
                       <th className="p-2 text-left font-medium">Préfecture</th>
                       <th className="p-2 text-left font-medium">Commune</th>
@@ -1659,8 +1736,9 @@ function ImportCsvDialog({
                           key={`${row.region}-${row.commune}-${row.quartier}-${row.secteur}-${index}`}
                           className="border-t"
                         >
-                          <td className="p-2">{row.region}</td>
-                          <td className="p-2">{row.prefecture}</td>
+                          <td className="p-2 font-mono">{row.commune_stat_code || "—"}</td>
+                          <td className="p-2">{row.region || "—"}</td>
+                          <td className="p-2">{row.prefecture || "—"}</td>
                           <td className="p-2">{row.commune}</td>
                           <td className="p-2">{row.quartier || "—"}</td>
                           <td className="p-2">{row.type_quartier}</td>
@@ -1681,7 +1759,7 @@ function ImportCsvDialog({
                     })}
                     {apercu.length > 200 ? (
                       <tr>
-                        <td colSpan={7} className="p-2 text-center text-slate-500">
+                        <td colSpan={8} className="p-2 text-center text-slate-500">
                           … et {apercu.length - 200} autres lignes.
                         </td>
                       </tr>
@@ -1705,7 +1783,7 @@ function ImportCsvDialog({
                 const result = await importGeoRows(valides);
                 await onImported();
                 toast.success(
-                  `${result.quartiers_created} quartier(s)/district(s) et ${result.sectors_created} secteur(s) créés.`,
+                  `${result.quartiers_created} quartier(s)/district(s) créé(s), ${result.quartiers_updated} actualisé(s), ${result.sectors_created} secteur(s) créé(s) et ${result.sectors_updated} actualisé(s).`,
                 );
                 if (result.rows_skipped > 0) {
                   toast.warning(`${result.rows_skipped} ligne(s) ignorée(s).`);
@@ -1748,15 +1826,30 @@ function parseGeoCsv(text: string): ImportRow[] {
     headers.findIndex((header) => names.includes(header));
 
   const indexes = {
+    communeStatCode: indexOf(
+      "commune_stat_code",
+      "code_commune",
+      "stat_code",
+      "code_statistique_commune",
+    ),
     region: indexOf("region"),
     prefecture: indexOf("prefecture", "préfecture"),
     commune: indexOf("commune"),
     quartier: indexOf("quartier", "district", "quartier_district"),
     type: indexOf("type_quartier", "type", "nature"),
     secteur: indexOf("secteur", "sector"),
+    officialReference: indexOf(
+      "official_reference",
+      "reference_officielle",
+      "source_reference",
+    ),
   };
 
-  if (indexes.region < 0 || indexes.prefecture < 0 || indexes.commune < 0) {
+  if (indexes.communeStatCode < 0 && indexes.commune < 0) {
+    return [];
+  }
+
+  if (indexes.quartier < 0) {
     return [];
   }
 
@@ -1767,26 +1860,30 @@ function parseGeoCsv(text: string): ImportRow[] {
     const get = (index: number) =>
       index >= 0 ? (columns[index] ?? "").trim() : "";
 
+    const commune_stat_code = get(indexes.communeStatCode);
     const region = get(indexes.region);
     const prefecture = get(indexes.prefecture);
     const commune = get(indexes.commune);
     const quartier = get(indexes.quartier);
     const secteur = get(indexes.secteur);
+    const official_reference = get(indexes.officialReference);
 
-    if (!region || !prefecture || !commune) continue;
-    if (!quartier && !secteur) continue;
+    if (!commune_stat_code && !commune) continue;
+    if (!quartier) continue;
 
     const rawType = normalize(get(indexes.type));
     const type_quartier: DistrictKind =
       rawType === "district" ? "district" : "quartier";
 
     result.push({
+      commune_stat_code,
       region,
       prefecture,
       commune,
       quartier,
       type_quartier,
       secteur,
+      official_reference,
     });
   }
 
