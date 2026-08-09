@@ -74,7 +74,7 @@ type Niveau = "region" | "commune" | "district";
 /* ------------------------------------------------------------------ */
 
 type KpiTone = "sky" | "emerald" | "amber" | "violet" | "rose" | "slate";
-const KPI_TONES: Record
+const KPI_TONES: Record<
   KpiTone,
   { bg: string; ring: string; iconBg: string; iconText: string }
 > = {
