@@ -257,6 +257,7 @@ export type Database = {
       beacons: {
         Row: {
           activated_at: string | null
+          assigned_agent_id: string | null
           created_at: string | null
           id: string
           lot_id: string | null
@@ -266,6 +267,7 @@ export type Database = {
         }
         Insert: {
           activated_at?: string | null
+          assigned_agent_id?: string | null
           created_at?: string | null
           id?: string
           lot_id?: string | null
@@ -275,6 +277,7 @@ export type Database = {
         }
         Update: {
           activated_at?: string | null
+          assigned_agent_id?: string | null
           created_at?: string | null
           id?: string
           lot_id?: string | null
