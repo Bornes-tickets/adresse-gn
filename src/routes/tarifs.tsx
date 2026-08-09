@@ -30,10 +30,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useLangueCms } from "@/hooks/useLangueCms";
+import { texte, type CmsFaq, type CmsPlan } from "@/lib/cms";
+import { publicListFaq, publicListPlans } from "@/lib/cms-public.functions";
 import { OFFERS, type Offer, type OfferFamily } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/tarifs")({
+  loader: async (): Promise<{ offresCms: CmsPlan[]; faqCms: CmsFaq[] }> => {
+    const [offresCms, faqCms] = await Promise.all([
+      publicListPlans() as Promise<CmsPlan[]>,
+      publicListFaq() as Promise<CmsFaq[]>,
+    ]);
+    return { offresCms, faqCms };
+  },
   head: () => ({
     meta: [
       { title: "Tarifs — ADRESSE GN" },
@@ -183,24 +193,45 @@ function gnf(montant: number): string {
   return montant.toLocaleString("fr-FR");
 }
 
-function usePlanTextes(offre: Offer) {
+/** Textes de l'offre : le CMS prime, sinon les traductions, sinon le catalogue. */
+function usePlanTextes(offre: Offer, planCms?: CmsPlan) {
   const { t } = useTranslation();
+  const langue = useLangueCms();
   const features = t(`pricing.plans.${offre.code}.features`, {
     returnObjects: true,
     defaultValue: offre.includes,
   }) as string[];
+  const featuresCms = planCms?.features?.[langue] ?? planCms?.features?.fr;
   return {
-    label: t(`pricing.plans.${offre.code}.title`, { defaultValue: offre.label }),
-    description: t(`pricing.plans.${offre.code}.description`, {
-      defaultValue: offre.tagline,
-    }),
-    features: Array.isArray(features) ? features : offre.includes,
+    label:
+      texte(planCms?.name, langue) ||
+      t(`pricing.plans.${offre.code}.title`, { defaultValue: offre.label }),
+    description:
+      texte(planCms?.description, langue) ||
+      t(`pricing.plans.${offre.code}.description`, {
+        defaultValue: offre.tagline,
+      }),
+    features:
+      Array.isArray(featuresCms) && featuresCms.length > 0
+        ? featuresCms
+        : Array.isArray(features)
+          ? features
+          : offre.includes,
   };
 }
 
-function CarteOffre({ offre, vedette }: { offre: Offer; vedette: boolean }) {
+function CarteOffre({
+  offre,
+  vedette,
+  planCms,
+}: {
+  offre: Offer;
+  vedette: boolean;
+  planCms?: CmsPlan;
+}) {
   const { t } = useTranslation();
-  const textes = usePlanTextes(offre);
+  const textes = usePlanTextes(offre, planCms);
+  const prix = planCms?.price_gnf ?? offre.setup_gnf;
   const Icone = ICONES_OFFRE[offre.code] ?? HomeIcon;
   return (
     <div
@@ -239,7 +270,7 @@ function CarteOffre({ offre, vedette }: { offre: Offer; vedette: boolean }) {
           <>
             <p className="text-display flex items-baseline gap-2 text-primary">
               <span className="font-mono text-4xl font-extrabold tracking-tight">
-                {gnf(offre.setup_gnf)}
+                {gnf(prix)}
               </span>
               <span className="text-sm font-semibold text-slate-500">GNF</span>
             </p>
@@ -314,8 +345,18 @@ function CelluleComparateur({ valeur }: { valeur: string | boolean | undefined }
 
 function TarifsPage() {
   const { t } = useTranslation();
+  const langue = useLangueCms();
+  const { offresCms, faqCms } = Route.useLoaderData() as {
+    offresCms: CmsPlan[];
+    faqCms: CmsFaq[];
+  };
   const [famille, setFamille] = useState<OfferFamily>("residential");
   const offres = OFFERS.filter((o) => o.family === famille);
+  const cmsParCode = new Map(offresCms.map((p) => [p.code, p]));
+  const faqTarifs = faqCms.filter(
+    (q) => !q.category || /tarif|pricing|paiement|payment/i.test(q.category),
+  );
+  const faqAffichee = faqTarifs.length > 0 ? faqTarifs : faqCms;
 
   return (
     <>
@@ -371,7 +412,11 @@ function TarifsPage() {
             <Reveal key={offre.code} delay={index * 90} className="h-full">
               <CarteOffre
                 offre={offre}
-                vedette={offre.code === RECOMMANDEES[famille]}
+                planCms={cmsParCode.get(offre.code)}
+                vedette={
+                  cmsParCode.get(offre.code)?.popular ??
+                  offre.code === RECOMMANDEES[famille]
+                }
               />
             </Reveal>
           ))}
@@ -431,16 +476,27 @@ function TarifsPage() {
             collapsible
             className="mx-auto mt-10 max-w-3xl rounded-2xl border border-slate-200/60 bg-card px-6"
           >
-            {FAQ_KEYS.map((key, index) => (
-              <AccordionItem key={key} value={`faq-${index}`}>
-                <AccordionTrigger className="text-left text-base font-medium">
-                  {t(`pricing.faq.items.${key}.q`)}
-                </AccordionTrigger>
-                <AccordionContent className="text-sm leading-relaxed text-slate-500">
-                  {t(`pricing.faq.items.${key}.r`)}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
+            {faqAffichee.length > 0
+              ? faqAffichee.map((question, index) => (
+                  <AccordionItem key={question.id} value={`faq-${index}`}>
+                    <AccordionTrigger className="text-left text-base font-medium rtl:text-right">
+                      {texte(question.question, langue)}
+                    </AccordionTrigger>
+                    <AccordionContent className="text-sm leading-relaxed text-slate-500">
+                      {texte(question.answer, langue)}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))
+              : FAQ_KEYS.map((key, index) => (
+                  <AccordionItem key={key} value={`faq-${index}`}>
+                    <AccordionTrigger className="text-left text-base font-medium">
+                      {t(`pricing.faq.items.${key}.q`)}
+                    </AccordionTrigger>
+                    <AccordionContent className="text-sm leading-relaxed text-slate-500">
+                      {t(`pricing.faq.items.${key}.r`)}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
           </Accordion>
         </section>
 
