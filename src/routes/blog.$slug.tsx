@@ -1,17 +1,32 @@
 import { Link, createFileRoute, notFound } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 
+import { CmsPreviewBanner, CmsPreviewEtat } from "@/components/CmsPreviewBanner";
 import { CmsRichText } from "@/components/CmsRichText";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useLangueCms } from "@/hooks/useLangueCms";
 import { texte, type CmsPost } from "@/lib/cms";
 import { publicGetPost } from "@/lib/cms-public.functions";
+import { previewGetPost } from "@/lib/cms-preview.functions";
 
 const BASE = "https://adresse-gn.lovable.app";
 
 export const Route = createFileRoute("/blog/$slug")({
-  loader: async ({ params }): Promise<{ article: CmsPost }> => {
+  validateSearch: (search: Record<string, unknown>) => ({
+    preview:
+      search['preview'] === true ||
+      search['preview'] === 1 ||
+      search['preview'] === "1" ||
+      search['preview'] === "true"
+        ? true
+        : undefined,
+  }),
+  loaderDeps: ({ search }) => ({ preview: !!search.preview }),
+  loader: async ({ params, deps }): Promise<{ article: CmsPost | null }> => {
+    if (deps.preview) return { article: null };
     const article = (await publicGetPost({
       data: { slug: params.slug },
     })) as CmsPost | null;
@@ -19,7 +34,7 @@ export const Route = createFileRoute("/blog/$slug")({
     return { article };
   },
   head: ({ params, loaderData }) => {
-    if (!loaderData) {
+    if (!loaderData?.article) {
       return {
         meta: [
           { title: "Article indisponible — ADRESSE GN" },
@@ -64,7 +79,7 @@ export const Route = createFileRoute("/blog/$slug")({
       ],
     };
   },
-  component: ArticlePublic,
+  component: ArticleRoute,
   notFoundComponent: ArticleIntrouvable,
   errorComponent: ArticleIntrouvable,
 });
@@ -85,8 +100,41 @@ function ArticleIntrouvable() {
   );
 }
 
-function ArticlePublic() {
-  const { article } = Route.useLoaderData() as { article: CmsPost };
+function ArticleRoute() {
+  const { preview } = Route.useSearch();
+  return preview ? (
+    <ArticleApercu />
+  ) : (
+    <ArticlePublic article={Route.useLoaderData().article!} />
+  );
+}
+
+function ArticleApercu() {
+  const { slug } = Route.useParams();
+  const charger = useServerFn(previewGetPost);
+  const { data, isPending, isError } = useQuery({
+    queryKey: ["cms-preview-post", slug],
+    queryFn: () => charger({ data: { slug } }) as Promise<CmsPost | null>,
+    staleTime: 0,
+  });
+
+  if (isPending) return <CmsPreviewEtat message="Chargement de l'aperçu…" />;
+  if (isError)
+    return (
+      <CmsPreviewEtat message="Aperçu réservé aux administrateurs connectés au back-office." />
+    );
+  if (!data)
+    return <CmsPreviewEtat message="Aucun article ne correspond à cet identifiant." />;
+
+  return (
+    <>
+      <CmsPreviewBanner statut={data.status} retour="/admin/cms/blog" />
+      <ArticlePublic article={data} />
+    </>
+  );
+}
+
+function ArticlePublic({ article }: { article: CmsPost }) {
   const langue = useLangueCms();
   const date = article.published_at ?? article.updated_at;
 

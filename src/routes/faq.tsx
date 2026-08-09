@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 
+import { CmsPreviewBanner, CmsPreviewEtat } from "@/components/CmsPreviewBanner";
 import { Reveal } from "@/components/Reveal";
 import {
   Accordion,
@@ -11,17 +14,30 @@ import {
 import { useLangueCms } from "@/hooks/useLangueCms";
 import { texte, type CmsFaq } from "@/lib/cms";
 import { publicListFaq } from "@/lib/cms-public.functions";
+import { previewListFaq } from "@/lib/cms-preview.functions";
 import { cn } from "@/lib/utils";
 
 const BASE = "https://adresse-gn.lovable.app";
 
 export const Route = createFileRoute("/faq")({
-  loader: async (): Promise<{ questions: CmsFaq[] }> => ({
-    questions: (await publicListFaq()) as CmsFaq[],
+  validateSearch: (search: Record<string, unknown>) => ({
+    preview:
+      search['preview'] === true ||
+      search['preview'] === 1 ||
+      search['preview'] === "1" ||
+      search['preview'] === "true"
+        ? true
+        : undefined,
   }),
+  loaderDeps: ({ search }) => ({ preview: !!search.preview }),
+  loader: async ({ deps }): Promise<{ questions: CmsFaq[]; preview: boolean }> =>
+    deps.preview
+      ? { questions: [], preview: true }
+      : { questions: (await publicListFaq()) as CmsFaq[], preview: false },
   head: ({ loaderData }) => ({
     meta: [
       { title: "Questions fréquentes — ADRESSE GN" },
+      ...(loaderData?.preview ? [{ name: "robots", content: "noindex" }] : []),
       {
         name: "description",
         content:
@@ -55,7 +71,7 @@ export const Route = createFileRoute("/faq")({
         ]
       : [],
   }),
-  component: FaqPage,
+  component: FaqRoute,
   errorComponent: FaqVide,
   notFoundComponent: FaqVide,
 });
@@ -71,8 +87,34 @@ function FaqVide() {
   );
 }
 
-function FaqPage() {
-  const { questions } = Route.useLoaderData() as { questions: CmsFaq[] };
+function FaqRoute() {
+  const { preview } = Route.useSearch();
+  return preview ? <FaqApercu /> : <FaqPage questions={Route.useLoaderData().questions} />;
+}
+
+function FaqApercu() {
+  const charger = useServerFn(previewListFaq);
+  const { data, isPending, isError } = useQuery({
+    queryKey: ["cms-preview-faq"],
+    queryFn: () => charger({}) as Promise<CmsFaq[]>,
+    staleTime: 0,
+  });
+
+  if (isPending) return <CmsPreviewEtat message="Chargement de l'aperçu…" />;
+  if (isError)
+    return (
+      <CmsPreviewEtat message="Aperçu réservé aux administrateurs connectés au back-office." />
+    );
+
+  return (
+    <>
+      <CmsPreviewBanner retour="/admin/cms/faq" />
+      <FaqPage questions={data ?? []} apercu />
+    </>
+  );
+}
+
+function FaqPage({ questions, apercu }: { questions: CmsFaq[]; apercu?: boolean }) {
   const langue = useLangueCms();
   const [categorie, setCategorie] = useState<string>("toutes");
 
@@ -139,7 +181,14 @@ function FaqPage() {
               {liste.map((q, index) => (
                 <AccordionItem key={q.id} value={`faq-${index}`}>
                   <AccordionTrigger className="text-left text-base font-medium rtl:text-right">
-                    {texte(q.question, langue)}
+                    <span className="flex items-center gap-2">
+                      {apercu && !q.published && (
+                        <span className="rounded-full border border-amber-400/60 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-900">
+                          Masquée
+                        </span>
+                      )}
+                      {texte(q.question, langue)}
+                    </span>
                   </AccordionTrigger>
                   <AccordionContent className="text-sm leading-relaxed text-slate-500">
                     {texte(q.answer, langue)}

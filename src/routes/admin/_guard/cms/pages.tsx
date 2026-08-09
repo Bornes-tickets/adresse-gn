@@ -128,9 +128,15 @@ function CmsPages() {
       entete: "",
       rendu: (l) => (
         <div className="flex justify-end gap-1">
+          <Button size="sm" variant="ghost" asChild>
+            <a href={`/p/${l.slug}?preview=true`} target="_blank" rel="noreferrer">
+              Aperçu
+            </a>
+          </Button>
           <Button size="sm" variant="ghost" onClick={() => editer(l)}>
             Éditer
           </Button>
+
           <Button
             size="sm"
             variant="ghost"

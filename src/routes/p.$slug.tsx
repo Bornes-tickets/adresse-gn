@@ -1,21 +1,36 @@
 import { Link, createFileRoute, notFound } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
 
+import { CmsPreviewBanner, CmsPreviewEtat } from "@/components/CmsPreviewBanner";
 import { CmsRichText } from "@/components/CmsRichText";
 import { Button } from "@/components/ui/button";
 import { useLangueCms } from "@/hooks/useLangueCms";
-import { texte } from "@/lib/cms";
+import { texte, type CmsPage } from "@/lib/cms";
 import { publicGetPage } from "@/lib/cms-public.functions";
+import { previewGetPage } from "@/lib/cms-preview.functions";
 
 const BASE = "https://adresse-gn.lovable.app";
 
 export const Route = createFileRoute("/p/$slug")({
-  loader: async ({ params }) => {
-    const page = await publicGetPage({ data: { slug: params.slug } });
+  validateSearch: (search: Record<string, unknown>) => ({
+    preview:
+      search['preview'] === true ||
+      search['preview'] === 1 ||
+      search['preview'] === "1" ||
+      search['preview'] === "true"
+        ? true
+        : undefined,
+  }),
+  loaderDeps: ({ search }) => ({ preview: !!search.preview }),
+  loader: async ({ params, deps }): Promise<{ page: CmsPage | null }> => {
+    if (deps.preview) return { page: null };
+    const page = (await publicGetPage({ data: { slug: params.slug } })) as CmsPage | null;
     if (!page) throw notFound();
     return { page };
   },
   head: ({ params, loaderData }) => {
-    if (!loaderData) {
+    if (!loaderData?.page) {
       return {
         meta: [{ title: "Page indisponible — ADRESSE GN" }, { name: "robots", content: "noindex" }],
       };
@@ -43,7 +58,7 @@ export const Route = createFileRoute("/p/$slug")({
       links: [{ rel: "canonical", href: url }],
     };
   },
-  component: PagePublique,
+  component: PageRoute,
   notFoundComponent: PageIntrouvable,
   errorComponent: PageIntrouvable,
 });
@@ -64,8 +79,36 @@ function PageIntrouvable() {
   );
 }
 
-function PagePublique() {
-  const { page } = Route.useLoaderData();
+function PageRoute() {
+  const { preview } = Route.useSearch();
+  return preview ? <PageApercu /> : <PagePublique page={Route.useLoaderData().page!} />;
+}
+
+function PageApercu() {
+  const { slug } = Route.useParams();
+  const charger = useServerFn(previewGetPage);
+  const { data, isPending, isError } = useQuery({
+    queryKey: ["cms-preview-page", slug],
+    queryFn: () => charger({ data: { slug } }) as Promise<CmsPage | null>,
+    staleTime: 0,
+  });
+
+  if (isPending) return <CmsPreviewEtat message="Chargement de l'aperçu…" />;
+  if (isError)
+    return (
+      <CmsPreviewEtat message="Aperçu réservé aux administrateurs connectés au back-office." />
+    );
+  if (!data) return <CmsPreviewEtat message="Aucune page ne correspond à cet identifiant." />;
+
+  return (
+    <>
+      <CmsPreviewBanner statut={data.status} retour="/admin/cms/pages" />
+      <PagePublique page={data} />
+    </>
+  );
+}
+
+function PagePublique({ page }: { page: CmsPage }) {
   const langue = useLangueCms();
 
   return (
