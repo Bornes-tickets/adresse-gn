@@ -26,9 +26,10 @@ export function CmsPreviewBanner({
         <span className="text-amber-800/80">
           Ce contenu n'est pas visible par le public tant qu'il n'est pas publié.
         </span>
-        <Link to={retour} className="ms-auto font-medium underline">
+        <a href={retour} className="ms-auto font-medium underline">
           Retour au back-office
-        </Link>
+        </a>
+
       </div>
     </div>
   );
