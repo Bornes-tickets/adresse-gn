@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ElementType } from "react";
 import { toast } from "sonner";
 import {
   AlertTriangle,
@@ -22,7 +21,8 @@ import {
   Upload,
   X,
 } from "lucide-react";
-import { AdminTable, type Colonne } from "@/components/admin/AdminTable";
+
+import { AdminTable } from "@/components/admin/AdminTable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,7 +50,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { adminDeleteZone, adminSaveZone, adminZones } from "@/lib/admin.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/_guard/zones")({
@@ -59,7 +59,8 @@ export const Route = createFileRoute("/admin/_guard/zones")({
       { title: "Zones administratives — Administration Adresse GN" },
       {
         name: "description",
-        content: "Régions, communes et quartiers du référentiel Adresse GN.",
+        content:
+          "Référentiel national Adresse GN : régions, préfectures, communes, quartiers/districts et secteurs.",
       },
       { name: "robots", content: "noindex" },
     ],
@@ -67,205 +68,477 @@ export const Route = createFileRoute("/admin/_guard/zones")({
   component: AdminZones,
 });
 
-type Niveau = "region" | "commune" | "district";
+type Niveau = "region" | "prefecture" | "commune" | "district" | "sector";
+type DistrictKind = "quartier" | "district";
+type CommuneType = "urban" | "rural";
 
-/* ------------------------------------------------------------------ */
-/*  KPI                                                                */
-/* ------------------------------------------------------------------ */
-
-type KpiTone = "sky" | "emerald" | "amber" | "violet" | "rose" | "slate";
-const KPI_TONES: Record<
-  KpiTone,
-  { bg: string; ring: string; iconBg: string; iconText: string }
-> = {
-  sky: { bg: "bg-gradient-to-br from-sky-50 to-white", ring: "ring-sky-100", iconBg: "bg-sky-100", iconText: "text-sky-600" },
-  emerald: { bg: "bg-gradient-to-br from-emerald-50 to-white", ring: "ring-emerald-100", iconBg: "bg-emerald-100", iconText: "text-emerald-600" },
-  amber: { bg: "bg-gradient-to-br from-amber-50 to-white", ring: "ring-amber-100", iconBg: "bg-amber-100", iconText: "text-amber-600" },
-  violet: { bg: "bg-gradient-to-br from-violet-50 to-white", ring: "ring-violet-100", iconBg: "bg-violet-100", iconText: "text-violet-600" },
-  rose: { bg: "bg-gradient-to-br from-rose-50 to-white", ring: "ring-rose-100", iconBg: "bg-rose-100", iconText: "text-rose-600" },
-  slate: { bg: "bg-gradient-to-br from-slate-50 to-white", ring: "ring-slate-200", iconBg: "bg-slate-100", iconText: "text-slate-600" },
+type RegionRow = {
+  id: string;
+  name: string;
+  slug: string | null;
+  code: string | null;
+  stat_code: string | null;
+  source: string | null;
+  source_name: string | null;
+  geojson: unknown;
+  is_active: boolean;
 };
 
-function Kpi({
-  label,
-  valeur,
-  aide,
-  icone: Icone,
-  ton = "slate",
-}: {
-  label: string;
-  valeur: string | number;
-  aide?: string;
-  icone: React.ElementType;
-  ton?: KpiTone;
-}) {
-  const t = KPI_TONES[ton];
-  return (
-    <div
-      className={cn(
-        "flex items-start justify-between rounded-xl p-4 ring-1 transition-all hover:shadow-sm",
-        t.bg,
-        t.ring,
-      )}
-    >
-      <div className="min-w-0">
-        <p className="truncate text-xs font-medium uppercase tracking-wider text-slate-500">
-          {label}
-        </p>
-        <p className="mt-1 text-2xl font-bold tabular-nums text-slate-900">{valeur}</p>
-        {aide ? <p className="mt-1 text-xs text-slate-500">{aide}</p> : null}
-      </div>
-      <div className={cn("grid size-10 shrink-0 place-items-center rounded-lg", t.iconBg, t.iconText)}>
-        <Icone className="size-5" />
-      </div>
-    </div>
-  );
+type PrefectureRow = {
+  id: string;
+  region_id: string;
+  name: string;
+  slug: string;
+  code: string | null;
+  stat_code: string | null;
+  is_special_zone: boolean;
+  source: string | null;
+  source_name: string | null;
+  geojson: unknown;
+  is_active: boolean;
+};
+
+type CommuneRow = {
+  id: string;
+  region_id: string | null;
+  prefecture_id: string | null;
+  name: string;
+  slug: string | null;
+  code: string | null;
+  stat_code: string | null;
+  administrative_type: "urban" | "rural" | null;
+  source: string | null;
+  source_name: string | null;
+  geojson: unknown;
+  is_active: boolean;
+};
+
+type DistrictRow = {
+  id: string;
+  commune_id: string;
+  name: string;
+  slug: string | null;
+  kind: DistrictKind;
+  code: string | null;
+  source: string | null;
+  source_name: string | null;
+  geojson: unknown;
+  is_active: boolean;
+};
+
+type SectorRow = {
+  id: string;
+  district_id: string;
+  name: string;
+  slug: string;
+  code: string | null;
+  source: string | null;
+  source_name: string | null;
+  geojson: unknown;
+  is_active: boolean;
+};
+
+type GeoData = {
+  regions: RegionRow[];
+  prefectures: PrefectureRow[];
+  communes: CommuneRow[];
+  districts: DistrictRow[];
+  sectors: SectorRow[];
+};
+
+type ImportRow = {
+  region: string;
+  prefecture: string;
+  commune: string;
+  quartier: string;
+  type_quartier: DistrictKind;
+  secteur: string;
+};
+
+const EMPTY_GEO: GeoData = {
+  regions: [],
+  prefectures: [],
+  communes: [],
+  districts: [],
+  sectors: [],
+};
+
+/**
+ * Les RPC sont créées par la migration Supabase fournie avec ce fichier.
+ * Le cast garde ce fichier utilisable avant la régénération des types Supabase.
+ * Après `supabase gen types`, tu peux remplacer `database` par `supabase`.
+ */
+const database = supabase as any;
+
+async function fetchGeoZones(): Promise<GeoData> {
+  const { data, error } = await database.rpc("admin_geo_zones");
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!data || typeof data !== "object") {
+    return EMPTY_GEO;
+  }
+
+  return {
+    regions: Array.isArray(data.regions) ? data.regions : [],
+    prefectures: Array.isArray(data.prefectures) ? data.prefectures : [],
+    communes: Array.isArray(data.communes) ? data.communes : [],
+    districts: Array.isArray(data.districts) ? data.districts : [],
+    sectors: Array.isArray(data.sectors) ? data.sectors : [],
+  };
 }
 
-/* ------------------------------------------------------------------ */
-/*  Composant principal                                                */
-/* ------------------------------------------------------------------ */
+async function saveGeoZone(input: {
+  niveau: Niveau;
+  name: string;
+  parentId: string | null;
+  code: string | null;
+  kind: DistrictKind | CommuneType | null;
+}): Promise<string> {
+  const { data, error } = await database.rpc("admin_save_geo_zone", {
+    p_niveau: input.niveau,
+    p_name: input.name,
+    p_parent_id: input.parentId,
+    p_code: input.code,
+    p_kind: input.kind,
+    p_geojson: null,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data as string;
+}
+
+async function deleteGeoZone(niveau: Niveau, id: string): Promise<void> {
+  const { error } = await database.rpc("admin_delete_geo_zone", {
+    p_niveau: niveau,
+    p_id: id,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+async function importGeoRows(rows: ImportRow[]): Promise<{
+  rows_received: number;
+  quartiers_created: number;
+  sectors_created: number;
+  rows_skipped: number;
+}> {
+  const { data, error } = await database.rpc("admin_import_geo_rows", {
+    p_rows: rows,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return {
+    rows_received: Number(data?.rows_received ?? rows.length),
+    quartiers_created: Number(data?.quartiers_created ?? 0),
+    sectors_created: Number(data?.sectors_created ?? 0),
+    rows_skipped: Number(data?.rows_skipped ?? 0),
+  };
+}
+
+function normalize(value: string | null | undefined): string {
+  return (value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
 
 function AdminZones() {
-  const lister = useServerFn(adminZones);
-  const enregistrer = useServerFn(adminSaveZone);
-  const supprimer = useServerFn(adminDeleteZone);
-  const qc = useQueryClient();
+  const queryClient = useQueryClient();
 
   const [vue, setVue] = useState<"liste" | "arbre">("liste");
   const [niveau, setNiveau] = useState<Niveau>("commune");
   const [nom, setNom] = useState("");
   const [code, setCode] = useState("");
   const [parent, setParent] = useState("");
-
-  const [rechRegion, setRechRegion] = useState("");
-  const [rechCommune, setRechCommune] = useState("");
-  const [rechDistrict, setRechDistrict] = useState("");
-  const [rechArbre, setRechArbre] = useState("");
-
+  const [kind, setKind] = useState<DistrictKind>("quartier");
+  const [communeType, setCommuneType] = useState<CommuneType>("urban");
   const [ouvrirImport, setOuvrirImport] = useState(false);
 
-  const zones = useQuery({ queryKey: ["admin", "zones"], queryFn: () => lister() });
-  const invalider = () => void qc.invalidateQueries({ queryKey: ["admin", "zones"] });
+  const [recherches, setRecherches] = useState<Record<Niveau, string>>({
+    region: "",
+    prefecture: "",
+    commune: "",
+    district: "",
+    sector: "",
+  });
+  const [rechArbre, setRechArbre] = useState("");
 
-  const muter = useMutation({
+  const zones = useQuery({
+    queryKey: ["admin", "geo-zones"],
+    queryFn: fetchGeoZones,
+  });
+
+  const data = zones.data ?? EMPTY_GEO;
+  const { regions, prefectures, communes, districts, sectors } = data;
+
+  const invalider = async () => {
+    await queryClient.invalidateQueries({ queryKey: ["admin", "geo-zones"] });
+  };
+
+  const mutationSave = useMutation({
     mutationFn: () =>
-      enregistrer({
-        data: {
-          niveau,
-          name: nom.trim(),
-          code: code.trim() || null,
-          parentId: parent || null,
-          geojson: null,
-        },
+      saveGeoZone({
+        niveau,
+        name: nom.trim(),
+        parentId: parent || null,
+        code: code.trim() || null,
+        kind:
+          niveau === "district"
+            ? kind
+            : niveau === "commune"
+              ? communeType
+              : null,
       }),
-    onSuccess: () => {
-      toast.success(`${labelNiveau(niveau)} enregistrée avec succès.`);
+    onSuccess: async () => {
+      toast.success(`${labelNiveau(niveau)} enregistré(e) avec succès.`);
       setNom("");
       setCode("");
-      invalider();
+      await invalider();
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (error: Error) => toast.error(error.message),
   });
 
-  const muterSuppression = useMutation({
-    mutationFn: (v: { niveau: Niveau; id: string }) => supprimer({ data: v }),
-    onSuccess: (_, v) => {
-      toast.success(`${labelNiveau(v.niveau)} supprimée.`);
-      invalider();
+  const mutationDelete = useMutation({
+    mutationFn: (value: { niveau: Niveau; id: string }) =>
+      deleteGeoZone(value.niveau, value.id),
+    onSuccess: async (_, value) => {
+      toast.success(`${labelNiveau(value.niveau)} supprimé(e).`);
+      await invalider();
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (error: Error) => toast.error(error.message),
   });
 
-  const nomRegion = (id: string | null) =>
-    (zones.data?.regions ?? []).find((r) => r.id === id)?.name ?? "—";
-  const nomCommune = (id: string | null) =>
-    (zones.data?.communes ?? []).find((c) => c.id === id)?.name ?? "—";
+  const nomRegion = (id: string | null | undefined) =>
+    regions.find((row) => row.id === id)?.name ?? "—";
 
-  const regions = zones.data?.regions ?? [];
-  const communes = zones.data?.communes ?? [];
-  const districts = zones.data?.districts ?? [];
+  const nomPrefecture = (id: string | null | undefined) =>
+    prefectures.find((row) => row.id === id)?.name ?? "—";
 
-  const regionsFiltrees = useMemo(
-    () =>
-      regions.filter((r) =>
-        [r.name, r.code].some((v) =>
-          (v ?? "").toLowerCase().includes(rechRegion.toLowerCase()),
-        ),
-      ),
-    [regions, rechRegion],
-  );
-  const communesFiltrees = useMemo(
-    () =>
-      communes.filter((c: any) =>
-        [c.name, nomRegion(c.region_id)].some((v: string) =>
-          (v ?? "").toLowerCase().includes(rechCommune.toLowerCase()),
-        ),
-      ),
-    [communes, rechCommune, regions],
-  );
-  const districtsFiltres = useMemo(
-    () =>
-      districts.filter((d: any) =>
-        [d.name, nomCommune(d.commune_id)].some((v: string) =>
-          (v ?? "").toLowerCase().includes(rechDistrict.toLowerCase()),
-        ),
-      ),
-    [districts, rechDistrict, communes],
-  );
+  const nomCommune = (id: string | null | undefined) =>
+    communes.find((row) => row.id === id)?.name ?? "—";
 
-  const colonnesRegion: Colonne<{ id: string; name: string; code: string }>[] = [
+  const nomDistrict = (id: string | null | undefined) =>
+    districts.find((row) => row.id === id)?.name ?? "—";
+
+  const regionDeCommune = (commune: CommuneRow) =>
+    commune.region_id ??
+    prefectures.find((p) => p.id === commune.prefecture_id)?.region_id ??
+    null;
+
+  const regionDeDistrict = (district: DistrictRow) => {
+    const commune = communes.find((c) => c.id === district.commune_id);
+    return commune ? regionDeCommune(commune) : null;
+  };
+
+  const prefectureDeDistrict = (district: DistrictRow) =>
+    communes.find((c) => c.id === district.commune_id)?.prefecture_id ?? null;
+
+  const communeDeSector = (sector: SectorRow) =>
+    districts.find((d) => d.id === sector.district_id)?.commune_id ?? null;
+
+  const q = (n: Niveau) => normalize(recherches[n]);
+
+  const regionsFiltrees = useMemo(() => {
+    const search = q("region");
+    if (!search) return regions;
+    return regions.filter((r) =>
+      [r.name, r.code, r.stat_code].some((v) => normalize(v).includes(search)),
+    );
+  }, [regions, recherches.region]);
+
+  const prefecturesFiltrees = useMemo(() => {
+    const search = q("prefecture");
+    if (!search) return prefectures;
+    return prefectures.filter((p) =>
+      [p.name, p.code, p.stat_code, nomRegion(p.region_id)].some((v) =>
+        normalize(v).includes(search),
+      ),
+    );
+  }, [prefectures, regions, recherches.prefecture]);
+
+  const communesFiltrees = useMemo(() => {
+    const search = q("commune");
+    if (!search) return communes;
+    return communes.filter((c) =>
+      [
+        c.name,
+        c.code,
+        c.stat_code,
+        nomPrefecture(c.prefecture_id),
+        nomRegion(regionDeCommune(c)),
+      ].some((v) => normalize(v).includes(search)),
+    );
+  }, [communes, prefectures, regions, recherches.commune]);
+
+  const districtsFiltres = useMemo(() => {
+    const search = q("district");
+    if (!search) return districts;
+    return districts.filter((d) =>
+      [
+        d.name,
+        d.kind,
+        d.code,
+        nomCommune(d.commune_id),
+        nomPrefecture(prefectureDeDistrict(d)),
+        nomRegion(regionDeDistrict(d)),
+      ].some((v) => normalize(v).includes(search)),
+    );
+  }, [districts, communes, prefectures, regions, recherches.district]);
+
+  const sectorsFiltres = useMemo(() => {
+    const search = q("sector");
+    if (!search) return sectors;
+    return sectors.filter((s) => {
+      const communeId = communeDeSector(s);
+      const district = districts.find((d) => d.id === s.district_id);
+      return [
+        s.name,
+        s.code,
+        nomDistrict(s.district_id),
+        nomCommune(communeId),
+        district ? nomPrefecture(prefectureDeDistrict(district)) : "",
+      ].some((v) => normalize(v).includes(search));
+    });
+  }, [sectors, districts, communes, prefectures, recherches.sector]);
+
+  const demanderSuppression = (niveauASupprimer: Niveau, id: string, name: string) => {
+    const cascade =
+      niveauASupprimer === "region"
+        ? "Toutes les préfectures, communes, quartiers/districts et secteurs enfants seront également supprimés."
+        : niveauASupprimer === "prefecture"
+          ? "Toutes les communes, quartiers/districts et secteurs enfants seront également supprimés."
+          : niveauASupprimer === "commune"
+            ? "Tous les quartiers/districts et secteurs enfants seront également supprimés."
+            : niveauASupprimer === "district"
+              ? "Tous les secteurs enfants seront également supprimés."
+              : "";
+
+    if (!window.confirm(`Supprimer « ${name} » ?${cascade ? `\n\n${cascade}` : ""}`)) {
+      return;
+    }
+
+    mutationDelete.mutate({ niveau: niveauASupprimer, id });
+  };
+
+  const parentOptions =
+    niveau === "prefecture"
+      ? regions
+      : niveau === "commune"
+        ? prefectures
+        : niveau === "district"
+          ? communes
+          : niveau === "sector"
+            ? districts
+            : [];
+
+  const parentLabel =
+    niveau === "prefecture"
+      ? "Région parente"
+      : niveau === "commune"
+        ? "Préfecture / zone spéciale parente"
+        : niveau === "district"
+          ? "Commune parente"
+          : niveau === "sector"
+            ? "Quartier / district parent"
+            : "";
+
+  const colonnesRegion = [
     {
       cle: "nom",
-      entete: "Nom",
-      rendu: (l) => (
-        <div className="flex items-center gap-2">
-          <div className="grid size-7 place-items-center rounded-md bg-violet-100 text-violet-600">
-            <Globe2 className="size-3.5" />
-          </div>
-          <span className="font-medium text-slate-900">{l.name}</span>
-        </div>
+      entete: "Région",
+      rendu: (row: RegionRow) => (
+        <ZoneName icon={Globe2} tone="violet" name={row.name} />
       ),
     },
     {
       cle: "code",
-      entete: "Code",
-      rendu: (l) =>
-        l.code ? (
-          <Badge variant="outline" className="font-mono text-xs">{l.code}</Badge>
+      entete: "Code Adresse GN",
+      rendu: (row: RegionRow) => <CodeBadge value={row.code} />,
+    },
+    {
+      cle: "stat",
+      entete: "Code statistique",
+      rendu: (row: RegionRow) => <CodeBadge value={row.stat_code} />,
+    },
+    {
+      cle: "prefectures",
+      entete: "Préfectures",
+      rendu: (row: RegionRow) =>
+        prefectures.filter((p) => p.region_id === row.id).length,
+    },
+    {
+      cle: "communes",
+      entete: "Communes",
+      rendu: (row: RegionRow) =>
+        communes.filter((c) => regionDeCommune(c) === row.id).length,
+    },
+    {
+      cle: "actions",
+      entete: "",
+      rendu: (row: RegionRow) => (
+        <ActionSuppression
+          disabled={mutationDelete.isPending}
+          onClick={() => demanderSuppression("region", row.id, row.name)}
+        />
+      ),
+    },
+  ];
+
+  const colonnesPrefecture = [
+    {
+      cle: "nom",
+      entete: "Préfecture / zone",
+      rendu: (row: PrefectureRow) => (
+        <ZoneName icon={Building} tone="amber" name={row.name} />
+      ),
+    },
+    {
+      cle: "region",
+      entete: "Région",
+      rendu: (row: PrefectureRow) => nomRegion(row.region_id),
+    },
+    {
+      cle: "stat",
+      entete: "Code statistique",
+      rendu: (row: PrefectureRow) => <CodeBadge value={row.stat_code} />,
+    },
+    {
+      cle: "type",
+      entete: "Type",
+      rendu: (row: PrefectureRow) =>
+        row.is_special_zone ? (
+          <Badge variant="outline">Zone spéciale</Badge>
         ) : (
-          <span className="text-slate-400">—</span>
+          <span className="text-xs text-slate-600">Préfecture</span>
         ),
     },
     {
       cle: "communes",
       entete: "Communes",
-      rendu: (l) => (
-        <span className="text-xs text-slate-600">
-          {communes.filter((c: any) => c.region_id === l.id).length}
-        </span>
-      ),
-    },
-    {
-      cle: "quartiers",
-      entete: "Quartiers",
-      rendu: (l) => {
-        const ids = communes
-          .filter((c: any) => c.region_id === l.id)
-          .map((c: any) => c.id);
-        return (
-          <span className="text-xs text-slate-600">
-            {districts.filter((d: any) => ids.includes(d.commune_id)).length}
-          </span>
-        );
-      },
+      rendu: (row: PrefectureRow) =>
+        communes.filter((c) => c.prefecture_id === row.id).length,
     },
     {
       cle: "actions",
       entete: "",
-      rendu: (l) => (
+      rendu: (row: PrefectureRow) => (
         <ActionSuppression
-          onClick={() => muterSuppression.mutate({ niveau: "region", id: l.id })}
+          disabled={mutationDelete.isPending}
+          onClick={() => demanderSuppression("prefecture", row.id, row.name)}
         />
       ),
     },
@@ -274,41 +547,62 @@ function AdminZones() {
   const colonnesCommune = [
     {
       cle: "nom",
-      entete: "Nom",
-      rendu: (l: any) => (
-        <div className="flex items-center gap-2">
-          <div className="grid size-7 place-items-center rounded-md bg-sky-100 text-sky-600">
-            <Building className="size-3.5" />
-          </div>
-          <span className="font-medium text-slate-900">{l.name}</span>
-        </div>
+      entete: "Commune",
+      rendu: (row: CommuneRow) => (
+        <ZoneName icon={Building} tone="sky" name={row.name} />
       ),
+    },
+    {
+      cle: "prefecture",
+      entete: "Préfecture",
+      rendu: (row: CommuneRow) => nomPrefecture(row.prefecture_id),
     },
     {
       cle: "region",
       entete: "Région",
-      rendu: (l: any) => (
-        <span className="inline-flex items-center gap-1 text-xs text-slate-600">
-          <Globe2 className="size-3 text-violet-400" />
-          {nomRegion(l.region_id)}
-        </span>
+      rendu: (row: CommuneRow) => nomRegion(regionDeCommune(row)),
+    },
+    {
+      cle: "type",
+      entete: "Type",
+      rendu: (row: CommuneRow) => (
+        <Badge variant="outline">
+          {row.administrative_type === "urban"
+            ? "Urbaine"
+            : row.administrative_type === "rural"
+              ? "Rurale"
+              : "—"}
+        </Badge>
       ),
     },
     {
+      cle: "stat",
+      entete: "Code stat.",
+      rendu: (row: CommuneRow) => <CodeBadge value={row.stat_code} />,
+    },
+    {
       cle: "quartiers",
-      entete: "Quartiers",
-      rendu: (l: any) => (
-        <span className="text-xs text-slate-600">
-          {districts.filter((d: any) => d.commune_id === l.id).length}
-        </span>
-      ),
+      entete: "Quartiers / districts",
+      rendu: (row: CommuneRow) =>
+        districts.filter((d) => d.commune_id === row.id).length,
+    },
+    {
+      cle: "secteurs",
+      entete: "Secteurs",
+      rendu: (row: CommuneRow) => {
+        const localIds = districts
+          .filter((d) => d.commune_id === row.id)
+          .map((d) => d.id);
+        return sectors.filter((s) => localIds.includes(s.district_id)).length;
+      },
     },
     {
       cle: "actions",
       entete: "",
-      rendu: (l: any) => (
+      rendu: (row: CommuneRow) => (
         <ActionSuppression
-          onClick={() => muterSuppression.mutate({ niveau: "commune", id: l.id })}
+          disabled={mutationDelete.isPending}
+          onClick={() => demanderSuppression("commune", row.id, row.name)}
         />
       ),
     },
@@ -317,45 +611,78 @@ function AdminZones() {
   const colonnesDistrict = [
     {
       cle: "nom",
-      entete: "Nom",
-      rendu: (l: any) => (
-        <div className="flex items-center gap-2">
-          <div className="grid size-7 place-items-center rounded-md bg-emerald-100 text-emerald-600">
-            <MapPin className="size-3.5" />
-          </div>
-          <span className="font-medium text-slate-900">{l.name}</span>
-        </div>
+      entete: "Quartier / district",
+      rendu: (row: DistrictRow) => (
+        <ZoneName icon={MapPin} tone="emerald" name={row.name} />
+      ),
+    },
+    {
+      cle: "type",
+      entete: "Type",
+      rendu: (row: DistrictRow) => (
+        <Badge variant="outline">
+          {row.kind === "district" ? "District" : "Quartier"}
+        </Badge>
       ),
     },
     {
       cle: "commune",
       entete: "Commune",
-      rendu: (l: any) => (
-        <span className="inline-flex items-center gap-1 text-xs text-slate-600">
-          <Building className="size-3 text-sky-400" />
-          {nomCommune(l.commune_id)}
-        </span>
-      ),
+      rendu: (row: DistrictRow) => nomCommune(row.commune_id),
     },
     {
-      cle: "region",
-      entete: "Région",
-      rendu: (l: any) => {
-        const c = communes.find((x: any) => x.id === l.commune_id) as any;
-        return (
-          <span className="inline-flex items-center gap-1 text-xs text-slate-600">
-            <Globe2 className="size-3 text-violet-400" />
-            {c ? nomRegion(c.region_id) : "—"}
-          </span>
-        );
-      },
+      cle: "prefecture",
+      entete: "Préfecture",
+      rendu: (row: DistrictRow) => nomPrefecture(prefectureDeDistrict(row)),
+    },
+    {
+      cle: "secteurs",
+      entete: "Secteurs",
+      rendu: (row: DistrictRow) =>
+        sectors.filter((s) => s.district_id === row.id).length,
     },
     {
       cle: "actions",
       entete: "",
-      rendu: (l: any) => (
+      rendu: (row: DistrictRow) => (
         <ActionSuppression
-          onClick={() => muterSuppression.mutate({ niveau: "district", id: l.id })}
+          disabled={mutationDelete.isPending}
+          onClick={() => demanderSuppression("district", row.id, row.name)}
+        />
+      ),
+    },
+  ];
+
+  const colonnesSector = [
+    {
+      cle: "nom",
+      entete: "Secteur",
+      rendu: (row: SectorRow) => (
+        <ZoneName icon={MapPin} tone="rose" name={row.name} />
+      ),
+    },
+    {
+      cle: "quartier",
+      entete: "Quartier / district",
+      rendu: (row: SectorRow) => nomDistrict(row.district_id),
+    },
+    {
+      cle: "commune",
+      entete: "Commune",
+      rendu: (row: SectorRow) => nomCommune(communeDeSector(row)),
+    },
+    {
+      cle: "code",
+      entete: "Code",
+      rendu: (row: SectorRow) => <CodeBadge value={row.code} />,
+    },
+    {
+      cle: "actions",
+      entete: "",
+      rendu: (row: SectorRow) => (
+        <ActionSuppression
+          disabled={mutationDelete.isPending}
+          onClick={() => demanderSuppression("sector", row.id, row.name)}
         />
       ),
     },
@@ -363,29 +690,25 @@ function AdminZones() {
 
   return (
     <div className="space-y-6">
-      {/* En-tête */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-center gap-2">
-          <div className="grid size-9 place-items-center rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-600 text-white shadow-sm">
+          <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-600 text-white shadow-sm">
             <Compass className="size-5" />
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-              Zones administratives
+              Référentiel géographique Adresse GN
             </h1>
             <p className="text-sm text-slate-500">
-              Découpage géographique de la Guinée : régions, communes et quartiers.
+              Région → préfecture/zone spéciale → commune → quartier/district → secteur.
             </p>
           </div>
         </div>
+
         <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setOuvrirImport(true)}
-          >
+          <Button variant="outline" size="sm" onClick={() => setOuvrirImport(true)}>
             <Upload className="size-4" />
-            Importer des quartiers
+            Importer quartiers / secteurs
           </Button>
           <Button
             variant="outline"
@@ -393,29 +716,66 @@ function AdminZones() {
             onClick={() => void zones.refetch()}
             disabled={zones.isFetching}
           >
-            <RefreshCw className={cn("size-4", zones.isFetching && "animate-spin")} />
+            <RefreshCw
+              className={cn("size-4", zones.isFetching && "animate-spin")}
+            />
             Actualiser
           </Button>
         </div>
       </div>
 
-      {/* KPI */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Kpi label="Régions" valeur={regions.length} aide="Découpage national" icone={Globe2} ton="violet" />
-        <Kpi label="Communes" valeur={communes.length} aide="Subdivisions régionales" icone={Building} ton="sky" />
-        <Kpi label="Quartiers" valeur={districts.length} aide="Découpage local" icone={MapPin} ton="emerald" />
+      {zones.isError ? (
+        <Card className="border-rose-200 bg-rose-50">
+          <CardContent className="flex items-start gap-3 py-4 text-sm text-rose-800">
+            <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+            <div>
+              <p className="font-semibold">Impossible de charger le référentiel.</p>
+              <p className="mt-1">
+                {(zones.error as Error)?.message ??
+                  "Vérifie que la migration Supabase a bien été exécutée."}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+        <Kpi label="Régions" valeur={regions.length} aide="Référentiel national" ton="violet" />
+        <Kpi
+          label="Préfectures / zone"
+          valeur={prefectures.length}
+          aide="33 + Conakry"
+          ton="amber"
+        />
+        <Kpi
+          label="Communes"
+          valeur={communes.length}
+          aide="Seed RGPH-4 2025"
+          ton="sky"
+        />
+        <Kpi
+          label="Quartiers / districts"
+          valeur={districts.length}
+          aide="Référentiel local"
+          ton="emerald"
+        />
+        <Kpi
+          label="Secteurs"
+          valeur={sectors.length}
+          aide="Niveau d'adressage fin"
+          ton="rose"
+        />
       </div>
 
-      {/* Layout principal */}
-      <div className="grid gap-6 xl:grid-cols-[1fr_380px]">
-        <Card className="overflow-hidden">
-          {/* Toggle vue liste / arbre */}
-          <div className="flex items-center justify-between border-b bg-slate-50/50 px-4 py-2">
-            <div className="inline-flex rounded-lg border bg-white p-0.5">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_390px]">
+        <Card className="min-w-0 overflow-hidden">
+          <div className="flex flex-col gap-2 border-b bg-slate-50/50 px-4 py-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="inline-flex w-fit rounded-lg border bg-white p-0.5">
               <button
+                type="button"
                 onClick={() => setVue("liste")}
                 className={cn(
-                  "inline-flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors",
+                  "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
                   vue === "liste"
                     ? "bg-slate-900 text-white"
                     : "text-slate-600 hover:bg-slate-100",
@@ -425,9 +785,10 @@ function AdminZones() {
                 Liste
               </button>
               <button
+                type="button"
                 onClick={() => setVue("arbre")}
                 className={cn(
-                  "inline-flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors",
+                  "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
                   vue === "arbre"
                     ? "bg-slate-900 text-white"
                     : "text-slate-600 hover:bg-slate-100",
@@ -437,81 +798,115 @@ function AdminZones() {
                 Arborescence
               </button>
             </div>
-            {vue === "arbre" && (
-              <div className="w-64">
+
+            {vue === "arbre" ? (
+              <div className="w-full sm:w-72">
                 <BarreRecherche
                   placeholder="Rechercher une zone…"
                   valeur={rechArbre}
                   set={setRechArbre}
                 />
               </div>
-            )}
+            ) : null}
           </div>
 
           {vue === "liste" ? (
-            <Tabs defaultValue="regions" className="space-y-0">
-              <div className="border-b bg-white px-4 py-3">
-                <TabsList className="bg-slate-100">
+            <Tabs defaultValue="communes">
+              <div className="overflow-x-auto border-b bg-white px-4 py-3">
+                <TabsList className="h-auto w-max min-w-full justify-start bg-slate-100">
                   <TabsTrigger value="regions" className="gap-1.5">
-                    <Globe2 className="size-3.5" />
                     Régions
-                    <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-[10px]">{regions.length}</Badge>
+                    <CountBadge value={regions.length} />
+                  </TabsTrigger>
+                  <TabsTrigger value="prefectures" className="gap-1.5">
+                    Préfectures
+                    <CountBadge value={prefectures.length} />
                   </TabsTrigger>
                   <TabsTrigger value="communes" className="gap-1.5">
-                    <Building className="size-3.5" />
                     Communes
-                    <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-[10px]">{communes.length}</Badge>
+                    <CountBadge value={communes.length} />
                   </TabsTrigger>
                   <TabsTrigger value="districts" className="gap-1.5">
-                    <MapPin className="size-3.5" />
-                    Quartiers
-                    <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-[10px]">{districts.length}</Badge>
+                    Quartiers / districts
+                    <CountBadge value={districts.length} />
+                  </TabsTrigger>
+                  <TabsTrigger value="sectors" className="gap-1.5">
+                    Secteurs
+                    <CountBadge value={sectors.length} />
                   </TabsTrigger>
                 </TabsList>
               </div>
 
-              <TabsContent value="regions" className="mt-0 space-y-3 p-4">
-                <BarreRecherche placeholder="Rechercher une région…" valeur={rechRegion} set={setRechRegion} />
-                <AdminTable
-                  colonnes={colonnesRegion}
-                  lignes={regionsFiltrees as any[]}
-                  chargement={zones.isLoading}
-                  cle={(l) => l.id}
-                />
-              </TabsContent>
+              <ZoneTab
+                value="regions"
+                search={recherches.region}
+                onSearch={(value) =>
+                  setRecherches((current) => ({ ...current, region: value }))
+                }
+                placeholder="Rechercher une région ou un code…"
+                columns={colonnesRegion}
+                rows={regionsFiltrees}
+                loading={zones.isLoading}
+              />
 
-              <TabsContent value="communes" className="mt-0 space-y-3 p-4">
-                <BarreRecherche placeholder="Rechercher une commune ou une région…" valeur={rechCommune} set={setRechCommune} />
-                <AdminTable
-                  colonnes={colonnesCommune as any}
-                  lignes={communesFiltrees as any[]}
-                  chargement={zones.isLoading}
-                  cle={(l) => l.id}
-                />
-              </TabsContent>
+              <ZoneTab
+                value="prefectures"
+                search={recherches.prefecture}
+                onSearch={(value) =>
+                  setRecherches((current) => ({ ...current, prefecture: value }))
+                }
+                placeholder="Rechercher une préfecture, région ou code…"
+                columns={colonnesPrefecture}
+                rows={prefecturesFiltrees}
+                loading={zones.isLoading}
+              />
 
-              <TabsContent value="districts" className="mt-0 space-y-3 p-4">
-                <BarreRecherche placeholder="Rechercher un quartier ou une commune…" valeur={rechDistrict} set={setRechDistrict} />
-                <AdminTable
-                  colonnes={colonnesDistrict as any}
-                  lignes={districtsFiltres as any[]}
-                  chargement={zones.isLoading}
-                  cle={(l) => l.id}
-                />
-              </TabsContent>
+              <ZoneTab
+                value="communes"
+                search={recherches.commune}
+                onSearch={(value) =>
+                  setRecherches((current) => ({ ...current, commune: value }))
+                }
+                placeholder="Rechercher une commune, préfecture, région ou code…"
+                columns={colonnesCommune}
+                rows={communesFiltrees}
+                loading={zones.isLoading}
+              />
+
+              <ZoneTab
+                value="districts"
+                search={recherches.district}
+                onSearch={(value) =>
+                  setRecherches((current) => ({ ...current, district: value }))
+                }
+                placeholder="Rechercher un quartier/district ou sa commune…"
+                columns={colonnesDistrict}
+                rows={districtsFiltres}
+                loading={zones.isLoading}
+              />
+
+              <ZoneTab
+                value="sectors"
+                search={recherches.sector}
+                onSearch={(value) =>
+                  setRecherches((current) => ({ ...current, sector: value }))
+                }
+                placeholder="Rechercher un secteur, quartier ou commune…"
+                columns={colonnesSector}
+                rows={sectorsFiltres}
+                loading={zones.isLoading}
+              />
             </Tabs>
           ) : (
             <VueArbre
-              regions={regions}
-              communes={communes}
-              districts={districts}
+              data={data}
               recherche={rechArbre}
-              onSupprimer={(niveau, id) => muterSuppression.mutate({ niveau, id })}
+              onSupprimer={demanderSuppression}
+              suppressionEnCours={mutationDelete.isPending}
             />
           )}
         </Card>
 
-        {/* Formulaire d'ajout */}
         <Card className="h-fit overflow-hidden">
           <CardHeader className="border-b bg-gradient-to-br from-violet-50 via-white to-fuchsia-50 pb-4">
             <CardTitle className="flex items-center gap-2 text-base">
@@ -521,102 +916,164 @@ function AdminZones() {
               Ajouter une zone
             </CardTitle>
             <p className="text-xs text-slate-500">
-              Choisis un niveau puis renseigne le nom de la zone.
+              Ajout manuel. Pour les volumes importants, utilise l'import CSV.
             </p>
           </CardHeader>
+
           <CardContent className="space-y-4 pt-5">
             <div>
               <Label className="text-xs text-slate-600">Type de zone</Label>
-              <div className="mt-1.5 grid grid-cols-3 gap-1.5">
+              <div className="mt-1.5 grid grid-cols-2 gap-1.5 sm:grid-cols-3">
                 <BoutonNiveau
                   actif={niveau === "region"}
-                  onClick={() => { setNiveau("region"); setParent(""); }}
-                  icone={Globe2}
+                  onClick={() => {
+                    setNiveau("region");
+                    setParent("");
+                  }}
                   label="Région"
                   ton="violet"
                 />
                 <BoutonNiveau
+                  actif={niveau === "prefecture"}
+                  onClick={() => {
+                    setNiveau("prefecture");
+                    setParent("");
+                  }}
+                  label="Préfecture"
+                  ton="amber"
+                />
+                <BoutonNiveau
                   actif={niveau === "commune"}
-                  onClick={() => { setNiveau("commune"); setParent(""); }}
-                  icone={Building}
+                  onClick={() => {
+                    setNiveau("commune");
+                    setParent("");
+                  }}
                   label="Commune"
                   ton="sky"
                 />
                 <BoutonNiveau
                   actif={niveau === "district"}
-                  onClick={() => { setNiveau("district"); setParent(""); }}
-                  icone={MapPin}
+                  onClick={() => {
+                    setNiveau("district");
+                    setParent("");
+                  }}
                   label="Quartier"
                   ton="emerald"
                 />
+                <BoutonNiveau
+                  actif={niveau === "sector"}
+                  onClick={() => {
+                    setNiveau("sector");
+                    setParent("");
+                  }}
+                  label="Secteur"
+                  ton="rose"
+                />
               </div>
             </div>
+
+            {niveau === "district" ? (
+              <div>
+                <Label className="text-xs text-slate-600">Nature locale</Label>
+                <Select
+                  value={kind}
+                  onValueChange={(value) => setKind(value as DistrictKind)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="quartier">Quartier — zone urbaine</SelectItem>
+                    <SelectItem value="district">District — zone rurale</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : null}
+
+            {niveau === "commune" ? (
+              <div>
+                <Label className="text-xs text-slate-600">Nature de la commune</Label>
+                <Select
+                  value={communeType}
+                  onValueChange={(value) => setCommuneType(value as CommuneType)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="urban">Commune urbaine</SelectItem>
+                    <SelectItem value="rural">Commune rurale</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : null}
 
             <div>
               <Label className="text-xs text-slate-600">Nom</Label>
               <Input
                 value={nom}
-                onChange={(e) => setNom(e.target.value)}
+                onChange={(event) => setNom(event.target.value)}
                 className="mt-1"
-                placeholder={
-                  niveau === "region"
-                    ? "Ex : Conakry"
-                    : niveau === "commune"
-                      ? "Ex : Kaloum"
-                      : "Ex : Sandervalia"
-                }
+                placeholder={placeholderNom(niveau)}
               />
             </div>
 
-            {niveau === "region" && (
-              <div>
-                <Label className="text-xs text-slate-600">Code court (3 lettres)</Label>
-                <Input
-                  value={code}
-                  onChange={(e) => setCode(e.target.value.toUpperCase())}
-                  className="mt-1 font-mono"
-                  placeholder="Ex : CKY"
-                  maxLength={5}
-                />
+            <div>
+              <Label className="text-xs text-slate-600">
+                Code {niveau === "region" ? "Adresse GN" : "(optionnel)"}
+              </Label>
+              <Input
+                value={code}
+                onChange={(event) => setCode(event.target.value.toUpperCase())}
+                className="mt-1 font-mono"
+                placeholder={niveau === "region" ? "Ex : CKY" : "Code officiel si connu"}
+                maxLength={20}
+              />
+              {niveau === "region" ? (
                 <p className="mt-1 text-[11px] text-slate-500">
-                  Ce code apparaît dans les numéros de balises : GN-<b>CKY</b>-XXXXXX.
+                  Ce code peut être utilisé dans les identifiants Adresse GN :
+                  GN-<b>CKY</b>-XXXXXX.
                 </p>
-              </div>
-            )}
+              ) : null}
+            </div>
 
-            {niveau !== "region" && (
+            {niveau !== "region" ? (
               <div>
-                <Label className="text-xs text-slate-600">
-                  {niveau === "commune" ? "Région parente" : "Commune parente"}
-                </Label>
+                <Label className="text-xs text-slate-600">{parentLabel}</Label>
                 <Select value={parent} onValueChange={setParent}>
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Sélectionner" />
                   </SelectTrigger>
                   <SelectContent>
-                    {(niveau === "commune" ? regions : communes).map((z: any) => (
-                      <SelectItem key={z.id} value={z.id}>
-                        {z.name}
+                    {parentOptions.map((row: any) => (
+                      <SelectItem key={row.id} value={row.id}>
+                        {row.name}
+                        {"stat_code" in row && row.stat_code
+                          ? ` — ${row.stat_code}`
+                          : ""}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-            )}
+            ) : null}
 
             <Button
               className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:from-violet-700 hover:to-fuchsia-700"
-              disabled={!nom || (niveau !== "region" && !parent) || muter.isPending}
-              onClick={() => muter.mutate()}
+              disabled={
+                !nom.trim() ||
+                (niveau !== "region" && !parent) ||
+                mutationSave.isPending
+              }
+              onClick={() => mutationSave.mutate()}
             >
               <Save className="size-4" />
-              {muter.isPending ? "Enregistrement…" : "Enregistrer"}
+              {mutationSave.isPending ? "Enregistrement…" : "Enregistrer"}
             </Button>
           </CardContent>
         </Card>
       </div>
 
-      {/* Bloc information */}
       <Card className="border-slate-200 bg-slate-50/50">
         <CardContent className="flex items-start gap-3 py-4">
           <div className="grid size-8 shrink-0 place-items-center rounded-lg bg-slate-200 text-slate-600">
@@ -624,195 +1081,320 @@ function AdminZones() {
           </div>
           <div className="text-xs text-slate-700">
             <p className="font-semibold text-slate-900">À propos du référentiel</p>
-            <p className="mt-1 text-slate-600">
-              La Guinée compte <strong>8 régions administratives</strong> et
-              <strong> 33 préfectures</strong>, auxquelles s'ajoutent les{" "}
-              <strong>5 communes urbaines de Conakry</strong>. Les quartiers hors
-              Conakry peuvent être importés en lot via un fichier CSV.
+            <p className="mt-1 leading-5 text-slate-600">
+              Le seed national charge 8 régions, 34 préfectures/zones spéciales et
+              378 unités communales issues du référentiel RGPH-4 2025. Les quartiers,
+              districts et secteurs sont ensuite importés depuis la nomenclature
+              territoriale officielle, sans créer de localités fictives.
             </p>
           </div>
         </CardContent>
       </Card>
 
-      {/* Dialogue import CSV */}
       <ImportCsvDialog
         ouvert={ouvrirImport}
         onFerme={() => setOuvrirImport(false)}
-        communes={communes}
-        onImporter={async (paires) => {
-          let ok = 0;
-          let echec = 0;
-          for (const p of paires) {
-            const commune = communes.find(
-              (c: any) => c.name.toLowerCase() === p.commune.toLowerCase(),
-            ) as any;
-            if (!commune) {
-              echec++;
-              continue;
-            }
-            try {
-              await enregistrer({
-                data: {
-                  niveau: "district",
-                  name: p.quartier,
-                  code: null,
-                  parentId: commune.id,
-                  geojson: null,
-                },
-              });
-              ok++;
-            } catch {
-              echec++;
-            }
-          }
-          invalider();
-          if (ok > 0) toast.success(`${ok} quartier(s) importé(s).`);
-          if (echec > 0) toast.error(`${echec} ligne(s) ignorée(s) (commune introuvable).`);
-        }}
+        data={data}
+        onImported={invalider}
       />
     </div>
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Vue arborescente                                                   */
-/* ------------------------------------------------------------------ */
+function ZoneTab({
+  value,
+  search,
+  onSearch,
+  placeholder,
+  columns,
+  rows,
+  loading,
+}: {
+  value: string;
+  search: string;
+  onSearch: (value: string) => void;
+  placeholder: string;
+  columns: any[];
+  rows: any[];
+  loading: boolean;
+}) {
+  return (
+    <TabsContent value={value} className="mt-0 space-y-3 p-4">
+      <BarreRecherche
+        placeholder={placeholder}
+        valeur={search}
+        set={onSearch}
+      />
+      <AdminTable
+        colonnes={columns as any}
+        lignes={rows as any[]}
+        chargement={loading}
+        cle={(row: any) => row.id}
+      />
+    </TabsContent>
+  );
+}
 
 function VueArbre({
-  regions,
-  communes,
-  districts,
+  data,
   recherche,
   onSupprimer,
+  suppressionEnCours,
 }: {
-  regions: any[];
-  communes: any[];
-  districts: any[];
+  data: GeoData;
   recherche: string;
-  onSupprimer: (niveau: Niveau, id: string) => void;
+  onSupprimer: (niveau: Niveau, id: string, name: string) => void;
+  suppressionEnCours: boolean;
 }) {
-  const [regionsOuvertes, setRegionsOuvertes] = useState<Set<string>>(new Set());
-  const [communesOuvertes, setCommunesOuvertes] = useState<Set<string>>(new Set());
+  const { regions, prefectures, communes, districts, sectors } = data;
 
-  const q = recherche.toLowerCase().trim();
-  const filtrer = (nom: string) => !q || nom.toLowerCase().includes(q);
+  const [openRegions, setOpenRegions] = useState<Set<string>>(new Set());
+  const [openPrefectures, setOpenPrefectures] = useState<Set<string>>(new Set());
+  const [openCommunes, setOpenCommunes] = useState<Set<string>>(new Set());
+  const [openDistricts, setOpenDistricts] = useState<Set<string>>(new Set());
 
-  const toggle = (set: Set<string>, id: string, setter: (s: Set<string>) => void) => {
-    const nv = new Set(set);
-    nv.has(id) ? nv.delete(id) : nv.add(id);
-    setter(nv);
+  const search = normalize(recherche);
+
+  const toggle = (
+    current: Set<string>,
+    id: string,
+    setter: (value: Set<string>) => void,
+  ) => {
+    const next = new Set(current);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setter(next);
   };
+
+  const textMatches = (value: string | null | undefined) =>
+    !search || normalize(value).includes(search);
+
+  const subtreeMatchesDistrict = (district: DistrictRow) =>
+    textMatches(district.name) ||
+    sectors.some(
+      (sector) =>
+        sector.district_id === district.id && textMatches(sector.name),
+    );
+
+  const subtreeMatchesCommune = (commune: CommuneRow) =>
+    textMatches(commune.name) ||
+    districts.some(
+      (district) =>
+        district.commune_id === commune.id && subtreeMatchesDistrict(district),
+    );
+
+  const subtreeMatchesPrefecture = (prefecture: PrefectureRow) =>
+    textMatches(prefecture.name) ||
+    communes.some(
+      (commune) =>
+        commune.prefecture_id === prefecture.id && subtreeMatchesCommune(commune),
+    );
+
+  const subtreeMatchesRegion = (region: RegionRow) =>
+    textMatches(region.name) ||
+    prefectures.some(
+      (prefecture) =>
+        prefecture.region_id === region.id &&
+        subtreeMatchesPrefecture(prefecture),
+    );
 
   if (regions.length === 0) {
     return (
       <div className="p-8 text-center text-sm text-slate-500">
-        Aucune zone enregistrée. Utilise le formulaire à droite pour commencer.
+        Aucune zone enregistrée. Exécute d'abord la migration Supabase.
       </div>
     );
   }
 
   return (
-    <div className="max-h-[70vh] overflow-y-auto p-2">
-      {regions.map((r) => {
-        const communesR = communes.filter((c: any) => c.region_id === r.id);
-        const ouvert = regionsOuvertes.has(r.id) || !!q;
-        const visible =
-          filtrer(r.name) ||
-          communesR.some((c: any) => filtrer(c.name)) ||
-          districts.some((d: any) => {
-            const c = communesR.find((x: any) => x.id === d.commune_id);
-            return c && filtrer(d.name);
-          });
-        if (!visible) return null;
+    <div className="max-h-[72vh] overflow-y-auto p-2">
+      {regions.filter(subtreeMatchesRegion).map((region) => {
+        const regionOpen = openRegions.has(region.id) || Boolean(search);
+        const regionPrefectures = prefectures.filter(
+          (prefecture) =>
+            prefecture.region_id === region.id &&
+            subtreeMatchesPrefecture(prefecture),
+        );
 
         return (
-          <div key={r.id} className="mb-1">
-            <button
-              onClick={() => toggle(regionsOuvertes, r.id, setRegionsOuvertes)}
-              className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left hover:bg-slate-50"
-            >
-              <ChevronRight
-                className={cn("size-4 text-slate-400 transition-transform", ouvert && "rotate-90")}
-              />
-              <Globe2 className="size-4 text-violet-500" />
-              <span className="font-semibold text-slate-900">{r.name}</span>
-              {r.code && (
-                <Badge variant="outline" className="ml-1 font-mono text-[10px]">
-                  {r.code}
-                </Badge>
-              )}
-              <Badge variant="secondary" className="ml-auto text-[10px]">
-                {communesR.length} communes
-              </Badge>
-            </button>
+          <div key={region.id} className="mb-1">
+            <TreeLine
+              level={0}
+              open={regionOpen}
+              hasChildren={regionPrefectures.length > 0}
+              onToggle={() =>
+                toggle(openRegions, region.id, setOpenRegions)
+              }
+              icon={Globe2}
+              name={region.name}
+              count={`${regionPrefectures.length} préfecture(s)`}
+              badge={region.code}
+              onDelete={() => onSupprimer("region", region.id, region.name)}
+              disabled={suppressionEnCours}
+            />
 
-            {ouvert && (
-              <div className="ml-6 border-l border-slate-100 pl-2">
-                {communesR.map((c: any) => {
-                  const districtsC = districts.filter((d: any) => d.commune_id === c.id);
-                  const ouvertC = communesOuvertes.has(c.id) || !!q;
-                  const visibleC =
-                    filtrer(c.name) ||
-                    districtsC.some((d: any) => filtrer(d.name));
-                  if (!visibleC) return null;
+            {regionOpen ? (
+              <div className="ml-5 border-l border-slate-100 pl-2">
+                {regionPrefectures.map((prefecture) => {
+                  const prefOpen =
+                    openPrefectures.has(prefecture.id) || Boolean(search);
+                  const prefCommunes = communes.filter(
+                    (commune) =>
+                      commune.prefecture_id === prefecture.id &&
+                      subtreeMatchesCommune(commune),
+                  );
 
                   return (
-                    <div key={c.id} className="mt-0.5">
-                      <div className="group flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-slate-50">
-                        <button
-                          onClick={() => toggle(communesOuvertes, c.id, setCommunesOuvertes)}
-                          className="flex flex-1 items-center gap-2"
-                        >
-                          <ChevronRight
-                            className={cn(
-                              "size-3.5 text-slate-400 transition-transform",
-                              ouvertC && "rotate-90",
-                            )}
-                          />
-                          <Building className="size-3.5 text-sky-500" />
-                          <span className="text-sm text-slate-800">{c.name}</span>
-                          {districtsC.length > 0 && (
-                            <Badge variant="secondary" className="ml-1 text-[10px]">
-                              {districtsC.length}
-                            </Badge>
-                          )}
-                        </button>
-                        <button
-                          onClick={() => onSupprimer("commune", c.id)}
-                          className="opacity-0 transition-opacity group-hover:opacity-100"
-                          aria-label="Supprimer"
-                        >
-                          <Trash2 className="size-3.5 text-rose-500 hover:text-rose-700" />
-                        </button>
-                      </div>
+                    <div key={prefecture.id}>
+                      <TreeLine
+                        level={1}
+                        open={prefOpen}
+                        hasChildren={prefCommunes.length > 0}
+                        onToggle={() =>
+                          toggle(
+                            openPrefectures,
+                            prefecture.id,
+                            setOpenPrefectures,
+                          )
+                        }
+                        icon={Building}
+                        name={prefecture.name}
+                        count={`${prefCommunes.length} commune(s)`}
+                        badge={prefecture.stat_code}
+                        onDelete={() =>
+                          onSupprimer(
+                            "prefecture",
+                            prefecture.id,
+                            prefecture.name,
+                          )
+                        }
+                        disabled={suppressionEnCours}
+                      />
 
-                      {ouvertC && districtsC.length > 0 && (
-                        <div className="ml-6 border-l border-slate-100 pl-2">
-                          {districtsC
-                            .filter((d: any) => filtrer(d.name))
-                            .map((d: any) => (
-                              <div
-                                key={d.id}
-                                className="group flex items-center gap-2 rounded-md px-2 py-1 text-xs text-slate-700 hover:bg-slate-50"
-                              >
-                                <MapPin className="size-3 text-emerald-500" />
-                                <span>{d.name}</span>
-                                <button
-                                  onClick={() => onSupprimer("district", d.id)}
-                                  className="ml-auto opacity-0 transition-opacity group-hover:opacity-100"
-                                  aria-label="Supprimer"
-                                >
-                                  <Trash2 className="size-3 text-rose-500 hover:text-rose-700" />
-                                </button>
+                      {prefOpen ? (
+                        <div className="ml-5 border-l border-slate-100 pl-2">
+                          {prefCommunes.map((commune) => {
+                            const communeOpen =
+                              openCommunes.has(commune.id) || Boolean(search);
+                            const communeDistricts = districts.filter(
+                              (district) =>
+                                district.commune_id === commune.id &&
+                                subtreeMatchesDistrict(district),
+                            );
+
+                            return (
+                              <div key={commune.id}>
+                                <TreeLine
+                                  level={2}
+                                  open={communeOpen}
+                                  hasChildren={communeDistricts.length > 0}
+                                  onToggle={() =>
+                                    toggle(
+                                      openCommunes,
+                                      commune.id,
+                                      setOpenCommunes,
+                                    )
+                                  }
+                                  icon={Building}
+                                  name={commune.name}
+                                  count={`${communeDistricts.length} quartier(s)/district(s)`}
+                                  badge={commune.stat_code}
+                                  onDelete={() =>
+                                    onSupprimer(
+                                      "commune",
+                                      commune.id,
+                                      commune.name,
+                                    )
+                                  }
+                                  disabled={suppressionEnCours}
+                                />
+
+                                {communeOpen ? (
+                                  <div className="ml-5 border-l border-slate-100 pl-2">
+                                    {communeDistricts.map((district) => {
+                                      const districtOpen =
+                                        openDistricts.has(district.id) ||
+                                        Boolean(search);
+                                      const districtSectors = sectors.filter(
+                                        (sector) =>
+                                          sector.district_id === district.id &&
+                                          textMatches(sector.name),
+                                      );
+
+                                      return (
+                                        <div key={district.id}>
+                                          <TreeLine
+                                            level={3}
+                                            open={districtOpen}
+                                            hasChildren={
+                                              districtSectors.length > 0
+                                            }
+                                            onToggle={() =>
+                                              toggle(
+                                                openDistricts,
+                                                district.id,
+                                                setOpenDistricts,
+                                              )
+                                            }
+                                            icon={MapPin}
+                                            name={district.name}
+                                            count={`${districtSectors.length} secteur(s)`}
+                                            badge={
+                                              district.kind === "district"
+                                                ? "District"
+                                                : "Quartier"
+                                            }
+                                            onDelete={() =>
+                                              onSupprimer(
+                                                "district",
+                                                district.id,
+                                                district.name,
+                                              )
+                                            }
+                                            disabled={suppressionEnCours}
+                                          />
+
+                                          {districtOpen ? (
+                                            <div className="ml-5 border-l border-slate-100 pl-2">
+                                              {districtSectors.map((sector) => (
+                                                <div key={sector.id}>
+                                                  <TreeLine
+                                                    level={4}
+                                                    open={false}
+                                                    hasChildren={false}
+                                                    onToggle={() => undefined}
+                                                    icon={MapPin}
+                                                    name={sector.name}
+                                                    count=""
+                                                    badge={sector.code}
+                                                    onDelete={() =>
+                                                      onSupprimer(
+                                                        "sector",
+                                                        sector.id,
+                                                        sector.name,
+                                                      )
+                                                    }
+                                                    disabled={suppressionEnCours}
+                                                  />
+                                                </div>
+                                              ))}
+                                            </div>
+                                          ) : null}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                ) : null}
                               </div>
-                            ))}
+                            );
+                          })}
                         </div>
-                      )}
+                      ) : null}
                     </div>
                   );
                 })}
               </div>
-            )}
+            ) : null}
           </div>
         );
       })}
@@ -820,72 +1402,183 @@ function VueArbre({
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Dialogue import CSV                                                */
-/* ------------------------------------------------------------------ */
+function TreeLine({
+  open,
+  hasChildren,
+  onToggle,
+  icon: Icon,
+  name,
+  count,
+  badge,
+  onDelete,
+  disabled,
+}: {
+  level: number;
+  open: boolean;
+  hasChildren: boolean;
+  onToggle: () => void;
+  icon: ElementType;
+  name: string;
+  count: string;
+  badge?: string | null;
+  onDelete: () => void;
+  disabled: boolean;
+}) {
+  return (
+    <div className="group flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-slate-50">
+      <button
+        type="button"
+        onClick={onToggle}
+        disabled={!hasChildren}
+        className="grid size-5 shrink-0 place-items-center"
+        aria-label={hasChildren ? (open ? "Replier" : "Déplier") : undefined}
+      >
+        {hasChildren ? (
+          <ChevronRight
+            className={cn(
+              "size-3.5 text-slate-400 transition-transform",
+              open && "rotate-90",
+            )}
+          />
+        ) : (
+          <span className="size-3.5" />
+        )}
+      </button>
+
+      <Icon className="size-3.5 shrink-0 text-slate-500" />
+      <span className="min-w-0 flex-1 truncate text-sm text-slate-800">
+        {name}
+      </span>
+
+      {badge ? (
+        <Badge variant="outline" className="hidden font-mono text-[10px] sm:inline-flex">
+          {badge}
+        </Badge>
+      ) : null}
+
+      {count ? (
+        <span className="hidden text-[10px] text-slate-400 lg:inline">
+          {count}
+        </span>
+      ) : null}
+
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={onDelete}
+        className="rounded p-1 text-rose-500 opacity-0 transition-opacity hover:bg-rose-50 hover:text-rose-700 group-hover:opacity-100 focus:opacity-100"
+        aria-label={`Supprimer ${name}`}
+      >
+        <Trash2 className="size-3.5" />
+      </button>
+    </div>
+  );
+}
 
 function ImportCsvDialog({
   ouvert,
   onFerme,
-  communes,
-  onImporter,
+  data,
+  onImported,
 }: {
   ouvert: boolean;
   onFerme: () => void;
-  communes: any[];
-  onImporter: (paires: { commune: string; quartier: string }[]) => Promise<void>;
+  data: GeoData;
+  onImported: () => Promise<void>;
 }) {
   const [fichier, setFichier] = useState<File | null>(null);
-  const [aperçu, setAperçu] = useState<{ commune: string; quartier: string }[]>([]);
+  const [apercu, setApercu] = useState<ImportRow[]>([]);
   const [enCours, setEnCours] = useState(false);
+  const [erreurCsv, setErreurCsv] = useState("");
 
-  const analyser = async (f: File) => {
-    const texte = await f.text();
-    const lignes = texte.split(/\r?\n/).filter((l) => l.trim());
-    const resultat: { commune: string; quartier: string }[] = [];
-    // Ignorer l'en-tête si présent
-    const debut = lignes[0]?.toLowerCase().includes("commune") ? 1 : 0;
-    for (let i = debut; i < lignes.length; i++) {
-      const ligne = lignes[i];
-      if (!ligne) continue;
-      const cols = ligne.split(",").map((c) => c.trim());
-      if (cols.length >= 2 && cols[0] && cols[1]) {
-        resultat.push({ commune: cols[0], quartier: cols[1] });
-      }
+  const hierarchieExiste = (row: ImportRow) => {
+    const region = data.regions.find(
+      (item) => normalize(item.name) === normalize(row.region),
+    );
+    if (!region) return false;
+
+    const prefecture = data.prefectures.find(
+      (item) =>
+        item.region_id === region.id &&
+        normalize(item.name) === normalize(row.prefecture),
+    );
+    if (!prefecture) return false;
+
+    return data.communes.some(
+      (item) =>
+        item.prefecture_id === prefecture.id &&
+        normalize(item.name) === normalize(row.commune),
+    );
+  };
+
+  const valides = apercu.filter(hierarchieExiste);
+  const invalides = apercu.filter((row) => !hierarchieExiste(row));
+
+  const reset = () => {
+    setFichier(null);
+    setApercu([]);
+    setErreurCsv("");
+  };
+
+  const fermer = () => {
+    if (enCours) return;
+    reset();
+    onFerme();
+  };
+
+  const analyser = async (file: File) => {
+    setErreurCsv("");
+    const text = await file.text();
+    const parsed = parseGeoCsv(text);
+
+    if (parsed.length === 0) {
+      setApercu([]);
+      setErreurCsv(
+        "Aucune ligne exploitable. Colonnes attendues : region,prefecture,commune,quartier,type_quartier,secteur",
+      );
+      return;
     }
-    setAperçu(resultat);
+
+    setApercu(parsed);
   };
 
   const telechargerModele = () => {
-    const csv = "commune,quartier\nKindia,Kindia Centre\nKindia,Manquepas\nBoké,Kolaboui";
-    const blob = new Blob([csv], { type: "text/csv" });
+    const csv = [
+      "region,prefecture,commune,quartier,type_quartier,secteur",
+      "Conakry,Conakry,Kaloum,EXEMPLE_QUARTIER,quartier,EXEMPLE_SECTEUR",
+      "Kindia,Kindia,Kindia,EXEMPLE_DISTRICT,district,EXEMPLE_SECTEUR",
+    ].join("\n");
+
+    const blob = new Blob(["\uFEFF", csv], {
+      type: "text/csv;charset=utf-8",
+    });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "modele_quartiers.csv";
-    a.click();
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "modele_adresse_gn_quartiers_secteurs.csv";
+    anchor.click();
     URL.revokeObjectURL(url);
   };
 
-  const communesNoms = new Set(communes.map((c: any) => c.name.toLowerCase()));
-  const introuvables = aperçu.filter(
-    (p) => !communesNoms.has(p.commune.toLowerCase()),
-  );
-
   return (
-    <Dialog open={ouvert} onOpenChange={onFerme}>
-      <DialogContent className="max-h-[90dvh] w-[calc(100vw-2rem)] max-w-2xl overflow-y-auto sm:w-full">
+    <Dialog
+      open={ouvert}
+      onOpenChange={(next) => {
+        if (!next) fermer();
+      }}
+    >
+      <DialogContent className="max-h-[90dvh] w-[calc(100vw-2rem)] max-w-4xl overflow-y-auto sm:w-full">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <div className="grid size-8 place-items-center rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
               <Upload className="size-4" />
             </div>
-            Importer des quartiers depuis un fichier CSV
+            Importer quartiers, districts et secteurs
           </DialogTitle>
           <DialogDescription>
-            Le fichier doit contenir deux colonnes : <strong>commune</strong> et{" "}
-            <strong>quartier</strong>. Les communes doivent déjà exister dans le
-            référentiel.
+            Utilise la hiérarchie complète pour éviter les homonymes :
+            <strong> région, préfecture, commune, quartier/district, secteur</strong>.
+            Les régions, préfectures et communes doivent déjà exister dans le seed.
           </DialogDescription>
         </DialogHeader>
 
@@ -893,7 +1586,7 @@ function ImportCsvDialog({
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" onClick={telechargerModele}>
               <Download className="size-4" />
-              Télécharger le modèle
+              Télécharger le modèle CSV
             </Button>
           </div>
 
@@ -901,96 +1594,136 @@ function ImportCsvDialog({
             <input
               type="file"
               accept=".csv,text/csv"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) {
-                  setFichier(f);
-                  void analyser(f);
-                }
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (!file) return;
+                setFichier(file);
+                void analyser(file);
               }}
               className="hidden"
-              id="csv-upload"
+              id="geo-csv-upload"
             />
-            <label htmlFor="csv-upload" className="cursor-pointer">
+            <label htmlFor="geo-csv-upload" className="cursor-pointer">
               <Upload className="mx-auto size-8 text-slate-400" />
               <p className="mt-2 text-sm font-medium text-slate-700">
                 {fichier ? fichier.name : "Cliquer pour choisir un fichier CSV"}
               </p>
-              <p className="mt-1 text-xs text-slate-500">Format .csv uniquement</p>
+              <p className="mt-1 text-xs text-slate-500">
+                Virgule ou point-virgule accepté. UTF-8 recommandé.
+              </p>
             </label>
           </div>
 
-          {aperçu.length > 0 && (
+          {erreurCsv ? (
+            <div className="flex items-start gap-2 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">
+              <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+              {erreurCsv}
+            </div>
+          ) : null}
+
+          {apercu.length > 0 ? (
             <>
-              <div className="rounded-lg bg-slate-50 p-3">
-                <p className="text-sm font-medium text-slate-900">
-                  {aperçu.length} ligne(s) détectée(s)
-                </p>
-                {introuvables.length > 0 && (
-                  <p className="mt-1 flex items-start gap-1 text-xs text-amber-700">
-                    <AlertTriangle className="mt-0.5 size-3 shrink-0" />
-                    {introuvables.length} ligne(s) ignorée(s) — commune introuvable dans le référentiel.
-                  </p>
-                )}
+              <div className="grid gap-2 sm:grid-cols-3">
+                <MiniStat label="Lignes détectées" value={apercu.length} />
+                <MiniStat label="Hiérarchie reconnue" value={valides.length} />
+                <MiniStat label="À corriger" value={invalides.length} />
               </div>
 
-              <div className="max-h-48 overflow-y-auto rounded-lg border">
-                <table className="w-full text-xs">
+              {invalides.length > 0 ? (
+                <p className="flex items-start gap-1 text-xs text-amber-700">
+                  <AlertTriangle className="mt-0.5 size-3 shrink-0" />
+                  Les lignes marquées « hiérarchie introuvable » ne seront pas
+                  importées. Vérifie surtout l'orthographe de la région, de la
+                  préfecture et de la commune.
+                </p>
+              ) : null}
+
+              <div className="max-h-72 overflow-auto rounded-lg border">
+                <table className="min-w-[900px] w-full text-xs">
                   <thead className="sticky top-0 bg-slate-100 text-slate-600">
                     <tr>
+                      <th className="p-2 text-left font-medium">Région</th>
+                      <th className="p-2 text-left font-medium">Préfecture</th>
                       <th className="p-2 text-left font-medium">Commune</th>
-                      <th className="p-2 text-left font-medium">Quartier</th>
+                      <th className="p-2 text-left font-medium">Quartier / district</th>
+                      <th className="p-2 text-left font-medium">Type</th>
+                      <th className="p-2 text-left font-medium">Secteur</th>
                       <th className="p-2 text-left font-medium">Statut</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {aperçu.slice(0, 100).map((p, i) => {
-                      const trouve = communesNoms.has(p.commune.toLowerCase());
+                    {apercu.slice(0, 200).map((row, index) => {
+                      const ok = hierarchieExiste(row);
                       return (
-                        <tr key={i} className="border-t">
-                          <td className="p-2">{p.commune}</td>
-                          <td className="p-2">{p.quartier}</td>
+                        <tr
+                          key={`${row.region}-${row.commune}-${row.quartier}-${row.secteur}-${index}`}
+                          className="border-t"
+                        >
+                          <td className="p-2">{row.region}</td>
+                          <td className="p-2">{row.prefecture}</td>
+                          <td className="p-2">{row.commune}</td>
+                          <td className="p-2">{row.quartier || "—"}</td>
+                          <td className="p-2">{row.type_quartier}</td>
+                          <td className="p-2">{row.secteur || "—"}</td>
                           <td className="p-2">
-                            {trouve ? (
-                              <Badge className="bg-emerald-100 text-emerald-700">OK</Badge>
+                            {ok ? (
+                              <Badge className="bg-emerald-100 text-emerald-700">
+                                Prêt
+                              </Badge>
                             ) : (
-                              <Badge className="bg-rose-100 text-rose-700">Ignoré</Badge>
+                              <Badge className="bg-rose-100 text-rose-700">
+                                Hiérarchie introuvable
+                              </Badge>
                             )}
                           </td>
                         </tr>
                       );
                     })}
-                    {aperçu.length > 100 && (
+                    {apercu.length > 200 ? (
                       <tr>
-                        <td colSpan={3} className="p-2 text-center text-slate-500">
-                          … et {aperçu.length - 100} autres.
+                        <td colSpan={7} className="p-2 text-center text-slate-500">
+                          … et {apercu.length - 200} autres lignes.
                         </td>
                       </tr>
-                    )}
+                    ) : null}
                   </tbody>
                 </table>
               </div>
             </>
-          )}
+          ) : null}
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onFerme}>
+          <Button variant="outline" onClick={fermer} disabled={enCours}>
             Annuler
           </Button>
           <Button
-            disabled={aperçu.length === 0 || enCours}
+            disabled={valides.length === 0 || enCours}
             onClick={async () => {
               setEnCours(true);
-              await onImporter(aperçu.filter((p) => communesNoms.has(p.commune.toLowerCase())));
-              setEnCours(false);
-              setFichier(null);
-              setAperçu([]);
-              onFerme();
+              try {
+                const result = await importGeoRows(valides);
+                await onImported();
+                toast.success(
+                  `${result.quartiers_created} quartier(s)/district(s) et ${result.sectors_created} secteur(s) créés.`,
+                );
+                if (result.rows_skipped > 0) {
+                  toast.warning(`${result.rows_skipped} ligne(s) ignorée(s).`);
+                }
+                fermer();
+              } catch (error) {
+                toast.error(
+                  error instanceof Error
+                    ? error.message
+                    : "Import impossible.",
+                );
+              } finally {
+                setEnCours(false);
+              }
             }}
             className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700"
           >
-            {enCours ? "Import en cours…" : `Importer ${aperçu.filter((p) => communesNoms.has(p.commune.toLowerCase())).length} quartier(s)`}
+            {enCours ? "Import en cours…" : `Importer ${valides.length} ligne(s)`}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -998,9 +1731,114 @@ function ImportCsvDialog({
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Petits composants                                                  */
-/* ------------------------------------------------------------------ */
+function parseGeoCsv(text: string): ImportRow[] {
+  const lines = text
+    .replace(/^\uFEFF/, "")
+    .split(/\r?\n/)
+    .filter((line) => line.trim());
+
+  if (lines.length < 2) return [];
+
+  const delimiter = detectDelimiter(lines[0]);
+  const headers = parseCsvLine(lines[0], delimiter).map((header) =>
+    normalizeHeader(header),
+  );
+
+  const indexOf = (...names: string[]) =>
+    headers.findIndex((header) => names.includes(header));
+
+  const indexes = {
+    region: indexOf("region"),
+    prefecture: indexOf("prefecture", "préfecture"),
+    commune: indexOf("commune"),
+    quartier: indexOf("quartier", "district", "quartier_district"),
+    type: indexOf("type_quartier", "type", "nature"),
+    secteur: indexOf("secteur", "sector"),
+  };
+
+  if (indexes.region < 0 || indexes.prefecture < 0 || indexes.commune < 0) {
+    return [];
+  }
+
+  const result: ImportRow[] = [];
+
+  for (let i = 1; i < lines.length; i += 1) {
+    const columns = parseCsvLine(lines[i], delimiter);
+    const get = (index: number) =>
+      index >= 0 ? (columns[index] ?? "").trim() : "";
+
+    const region = get(indexes.region);
+    const prefecture = get(indexes.prefecture);
+    const commune = get(indexes.commune);
+    const quartier = get(indexes.quartier);
+    const secteur = get(indexes.secteur);
+
+    if (!region || !prefecture || !commune) continue;
+    if (!quartier && !secteur) continue;
+
+    const rawType = normalize(get(indexes.type));
+    const type_quartier: DistrictKind =
+      rawType === "district" ? "district" : "quartier";
+
+    result.push({
+      region,
+      prefecture,
+      commune,
+      quartier,
+      type_quartier,
+      secteur,
+    });
+  }
+
+  return result;
+}
+
+function detectDelimiter(header: string): "," | ";" {
+  const commas = (header.match(/,/g) ?? []).length;
+  const semicolons = (header.match(/;/g) ?? []).length;
+  return semicolons > commas ? ";" : ",";
+}
+
+function parseCsvLine(line: string, delimiter: "," | ";"): string[] {
+  const result: string[] = [];
+  let current = "";
+  let quoted = false;
+
+  for (let index = 0; index < line.length; index += 1) {
+    const char = line[index];
+
+    if (char === '"') {
+      if (quoted && line[index + 1] === '"') {
+        current += '"';
+        index += 1;
+      } else {
+        quoted = !quoted;
+      }
+      continue;
+    }
+
+    if (char === delimiter && !quoted) {
+      result.push(current);
+      current = "";
+      continue;
+    }
+
+    current += char;
+  }
+
+  result.push(current);
+  return result;
+}
+
+function normalizeHeader(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, "_")
+    .replace(/[^a-z0-9_]/g, "");
+}
 
 function BarreRecherche({
   placeholder,
@@ -1009,18 +1847,18 @@ function BarreRecherche({
 }: {
   placeholder: string;
   valeur: string;
-  set: (v: string) => void;
+  set: (value: string) => void;
 }) {
   return (
     <div className="relative">
       <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
       <Input
         value={valeur}
-        onChange={(e) => set(e.target.value)}
+        onChange={(event) => set(event.target.value)}
         placeholder={placeholder}
-        className="pl-8"
+        className="pl-8 pr-8"
       />
-      {valeur && (
+      {valeur ? (
         <button
           type="button"
           onClick={() => set("")}
@@ -1029,19 +1867,27 @@ function BarreRecherche({
         >
           <X className="size-3.5" />
         </button>
-      )}
+      ) : null}
     </div>
   );
 }
 
-function ActionSuppression({ onClick }: { onClick: () => void }) {
+function ActionSuppression({
+  onClick,
+  disabled,
+}: {
+  onClick: () => void;
+  disabled?: boolean;
+}) {
   return (
     <TooltipProvider delayDuration={200}>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
+            type="button"
             size="sm"
             variant="ghost"
+            disabled={disabled}
             className="h-8 gap-1 text-xs text-rose-700 hover:bg-rose-50 hover:text-rose-800"
             onClick={onClick}
           >
@@ -1049,7 +1895,7 @@ function ActionSuppression({ onClick }: { onClick: () => void }) {
             Supprimer
           </Button>
         </TooltipTrigger>
-        <TooltipContent>Supprimer définitivement</TooltipContent>
+        <TooltipContent>Suppression avec cascade des enfants</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
@@ -1058,36 +1904,174 @@ function ActionSuppression({ onClick }: { onClick: () => void }) {
 function BoutonNiveau({
   actif,
   onClick,
-  icone: Icone,
   label,
   ton,
 }: {
   actif: boolean;
   onClick: () => void;
-  icone: React.ElementType;
   label: string;
-  ton: "violet" | "sky" | "emerald";
+  ton: "violet" | "amber" | "sky" | "emerald" | "rose";
 }) {
   const styles = {
-    violet: { actif: "border-violet-500 bg-violet-50 text-violet-700 ring-1 ring-violet-500", icon: "text-violet-600" },
-    sky: { actif: "border-sky-500 bg-sky-50 text-sky-700 ring-1 ring-sky-500", icon: "text-sky-600" },
-    emerald: { actif: "border-emerald-500 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-500", icon: "text-emerald-600" },
+    violet:
+      "border-violet-500 bg-violet-50 text-violet-700 ring-violet-500",
+    amber: "border-amber-500 bg-amber-50 text-amber-700 ring-amber-500",
+    sky: "border-sky-500 bg-sky-50 text-sky-700 ring-sky-500",
+    emerald:
+      "border-emerald-500 bg-emerald-50 text-emerald-700 ring-emerald-500",
+    rose: "border-rose-500 bg-rose-50 text-rose-700 ring-rose-500",
   }[ton];
+
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
-        "flex flex-col items-center gap-1 rounded-lg border p-2.5 text-xs font-medium transition-all",
-        actif ? styles.actif : "border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50",
+        "rounded-lg border px-2 py-2.5 text-xs font-medium transition-all",
+        actif
+          ? `${styles} ring-1`
+          : "border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50",
       )}
     >
-      <Icone className={cn("size-4", actif && styles.icon)} />
       {label}
     </button>
   );
 }
 
-function labelNiveau(n: Niveau): string {
-  return n === "region" ? "Région" : n === "commune" ? "Commune" : "Quartier";
+function ZoneName({
+  icon: Icon,
+  tone,
+  name,
+}: {
+  icon: ElementType;
+  tone: "violet" | "amber" | "sky" | "emerald" | "rose";
+  name: string;
+}) {
+  const styles = {
+    violet: "bg-violet-100 text-violet-600",
+    amber: "bg-amber-100 text-amber-600",
+    sky: "bg-sky-100 text-sky-600",
+    emerald: "bg-emerald-100 text-emerald-600",
+    rose: "bg-rose-100 text-rose-600",
+  }[tone];
+
+  return (
+    <div className="flex items-center gap-2">
+      <div className={cn("grid size-7 place-items-center rounded-md", styles)}>
+        <Icon className="size-3.5" />
+      </div>
+      <span className="font-medium text-slate-900">{name}</span>
+    </div>
+  );
+}
+
+function CodeBadge({ value }: { value: string | null | undefined }) {
+  return value ? (
+    <Badge variant="outline" className="font-mono text-xs">
+      {value}
+    </Badge>
+  ) : (
+    <span className="text-slate-400">—</span>
+  );
+}
+
+function CountBadge({ value }: { value: number }) {
+  return (
+    <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-[10px]">
+      {value}
+    </Badge>
+  );
+}
+
+function MiniStat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-lg bg-slate-50 p-3">
+      <p className="text-[11px] uppercase tracking-wide text-slate-500">{label}</p>
+      <p className="mt-1 text-lg font-bold text-slate-900">{value}</p>
+    </div>
+  );
+}
+
+type KpiTone = "violet" | "amber" | "sky" | "emerald" | "rose";
+
+function Kpi({
+  label,
+  valeur,
+  aide,
+  ton,
+}: {
+  label: string;
+  valeur: string | number;
+  aide?: string;
+  ton: KpiTone;
+}) {
+  const styles = {
+    violet:
+      "from-violet-50 to-white ring-violet-100 text-violet-600 bg-violet-100",
+    amber: "from-amber-50 to-white ring-amber-100 text-amber-600 bg-amber-100",
+    sky: "from-sky-50 to-white ring-sky-100 text-sky-600 bg-sky-100",
+    emerald:
+      "from-emerald-50 to-white ring-emerald-100 text-emerald-600 bg-emerald-100",
+    rose: "from-rose-50 to-white ring-rose-100 text-rose-600 bg-rose-100",
+  }[ton].split(" ");
+
+  const gradient = styles.slice(0, 2).join(" ");
+  const ring = styles[2];
+  const text = styles[3];
+  const iconBg = styles[4];
+
+  return (
+    <div
+      className={cn(
+        "rounded-xl bg-gradient-to-br p-4 ring-1",
+        gradient,
+        ring,
+      )}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-[11px] font-medium uppercase tracking-wider text-slate-500">
+            {label}
+          </p>
+          <p className="mt-1 text-2xl font-bold tabular-nums text-slate-900">
+            {valeur}
+          </p>
+          {aide ? <p className="mt-1 text-xs text-slate-500">{aide}</p> : null}
+        </div>
+        <div className={cn("grid size-9 place-items-center rounded-lg", iconBg, text)}>
+          <MapPin className="size-4" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function labelNiveau(niveau: Niveau): string {
+  switch (niveau) {
+    case "region":
+      return "Région";
+    case "prefecture":
+      return "Préfecture";
+    case "commune":
+      return "Commune";
+    case "district":
+      return "Quartier / district";
+    case "sector":
+      return "Secteur";
+  }
+}
+
+function placeholderNom(niveau: Niveau): string {
+  switch (niveau) {
+    case "region":
+      return "Ex : Conakry";
+    case "prefecture":
+      return "Ex : Kindia";
+    case "commune":
+      return "Ex : Kaloum";
+    case "district":
+      return "Ex : Sandervalia";
+    case "sector":
+      return "Ex : Secteur 1";
+  }
 }
