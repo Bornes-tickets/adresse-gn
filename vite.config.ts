@@ -15,6 +15,7 @@ export default defineConfig({
   },
   plugins: [
     VitePWA({
+      selfDestroying: true,
       registerType: "autoUpdate",
       injectRegister: null,
       filename: "sw.js",
