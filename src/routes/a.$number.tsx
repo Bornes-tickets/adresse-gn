@@ -168,13 +168,22 @@ function BeaconResult() {
               <p className="font-mono text-lg text-primary">{number}</p>
               <p className="text-muted-foreground">
                 {error
-                  ? t("address.searchError")
-                  : data?.status === "rate_limited"
-                    ? (data.message ?? t("address.rateLimited"))
-                    : data?.status === "invalid"
-                      ? t("address.invalidNumber")
-                      : t("address.notFound")}
+                  ? (error instanceof Error ? error.message : String(error))
+                  : data?.status === "error"
+                    ? (data.message ?? t("address.searchError"))
+                    : data?.status === "rate_limited"
+                      ? (data.message ?? t("address.rateLimited"))
+                      : data?.status === "invalid"
+                        ? t("address.invalidNumber")
+                        : t("address.notFound")}
               </p>
+              {(error || data?.status === "error") && (
+                <pre className="max-h-40 overflow-auto whitespace-pre-wrap rounded bg-destructive/10 p-2 text-left text-xs text-destructive">
+                  {error
+                    ? (error instanceof Error ? (error.stack ?? error.message) : String(error))
+                    : data?.message}
+                </pre>
+              )}
               <Button asChild variant="outline">
                 <Link to="/">{t("address.newSearch")}</Link>
               </Button>
