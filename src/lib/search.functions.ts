@@ -10,14 +10,30 @@ export const searchBeacon = createServerFn({ method: "POST" })
     return { number: input.number.slice(0, 32) };
   })
   .handler(async ({ data }): Promise<SearchResponse> => {
-    const { clientIp, runSearch, userIdFromAuthHeader } = await import(
-      "@/lib/search.server"
-    );
-    const headers = new Headers(
-      getRequestHeaders() as unknown as Record<string, string>,
-    );
-    const userId = await userIdFromAuthHeader(getRequestHeader("authorization") ?? null);
-    return runSearch(data.number, clientIp(headers), userId);
+    console.log("[searchBeacon] Paramètre public_number reçu:", data.number);
+    try {
+      const { clientIp, runSearch, userIdFromAuthHeader } = await import(
+        "@/lib/search.server"
+      );
+      const headers = new Headers(
+        getRequestHeaders() as unknown as Record<string, string>,
+      );
+      const userId = await userIdFromAuthHeader(
+        getRequestHeader("authorization") ?? null,
+      );
+      const response = await runSearch(data.number, clientIp(headers), userId);
+      console.log("[searchBeacon] Résultat:", JSON.stringify(response));
+      return response;
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      console.error("[searchBeacon] Échec brut:", message, e);
+      return {
+        status: "error",
+        beacon_id: null,
+        result: null,
+        message,
+      };
+    }
   });
 
 export const logRoute = createServerFn({ method: "POST" })

@@ -17,7 +17,7 @@ export interface BeaconResult {
 }
 
 export interface SearchResponse {
-  status: "found" | "not_found" | "rate_limited" | "invalid";
+  status: "found" | "not_found" | "rate_limited" | "invalid" | "error";
   beacon_id: string | null;
   result: BeaconResult | null;
   retry_after_seconds?: number;
