@@ -60,6 +60,12 @@ import { Route as ProGuardEquipeRouteImport } from './routes/pro/_guard/equipe'
 import { Route as ProGuardEtablissementsRouteImport } from './routes/pro/_guard/etablissements'
 import { Route as ProGuardFacturationRouteImport } from './routes/pro/_guard/facturation'
 import { Route as ProGuardStatistiquesRouteImport } from './routes/pro/_guard/statistiques'
+import { Route as AdminGuardCmsIndexRouteImport } from './routes/admin/_guard/cms/index'
+import { Route as AdminGuardCmsBlogRouteImport } from './routes/admin/_guard/cms/blog'
+import { Route as AdminGuardCmsFaqRouteImport } from './routes/admin/_guard/cms/faq'
+import { Route as AdminGuardCmsPagesRouteImport } from './routes/admin/_guard/cms/pages'
+import { Route as AdminGuardCmsTarifsRouteImport } from './routes/admin/_guard/cms/tarifs'
+import { Route as AdminGuardCmsTraductionsRouteImport } from './routes/admin/_guard/cms/traductions'
 import { Route as AdminGuardInstallationsIdRouteImport } from './routes/admin/_guard/installations_.$id'
 import { Route as AgentGuardInstallNumberRouteImport } from './routes/agent/_guard/install.$number'
 import { Route as ApiPublicHooksRunBillingRouteImport } from './routes/api/public/hooks/run-billing'
@@ -323,6 +329,37 @@ const ProGuardStatistiquesRoute = ProGuardStatistiquesRouteImport.update({
   path: '/statistiques',
   getParentRoute: () => ProGuardRouteRoute,
 } as any)
+const AdminGuardCmsIndexRoute = AdminGuardCmsIndexRouteImport.update({
+  id: '/cms/',
+  path: '/cms/',
+  getParentRoute: () => AdminGuardRouteRoute,
+} as any)
+const AdminGuardCmsBlogRoute = AdminGuardCmsBlogRouteImport.update({
+  id: '/cms/blog',
+  path: '/cms/blog',
+  getParentRoute: () => AdminGuardRouteRoute,
+} as any)
+const AdminGuardCmsFaqRoute = AdminGuardCmsFaqRouteImport.update({
+  id: '/cms/faq',
+  path: '/cms/faq',
+  getParentRoute: () => AdminGuardRouteRoute,
+} as any)
+const AdminGuardCmsPagesRoute = AdminGuardCmsPagesRouteImport.update({
+  id: '/cms/pages',
+  path: '/cms/pages',
+  getParentRoute: () => AdminGuardRouteRoute,
+} as any)
+const AdminGuardCmsTarifsRoute = AdminGuardCmsTarifsRouteImport.update({
+  id: '/cms/tarifs',
+  path: '/cms/tarifs',
+  getParentRoute: () => AdminGuardRouteRoute,
+} as any)
+const AdminGuardCmsTraductionsRoute =
+  AdminGuardCmsTraductionsRouteImport.update({
+    id: '/cms/traductions',
+    path: '/cms/traductions',
+    getParentRoute: () => AdminGuardRouteRoute,
+  } as any)
 const AdminGuardInstallationsIdRoute =
   AdminGuardInstallationsIdRouteImport.update({
     id: '/installations_/$id',
@@ -403,11 +440,17 @@ export interface FileRoutesByFullPath {
   '/agent/': typeof AgentGuardIndexRoute
   '/mon-compte/': typeof MonCompteGuardIndexRoute
   '/pro/': typeof ProGuardIndexRoute
+  '/admin/cms/blog': typeof AdminGuardCmsBlogRoute
+  '/admin/cms/faq': typeof AdminGuardCmsFaqRoute
+  '/admin/cms/pages': typeof AdminGuardCmsPagesRoute
+  '/admin/cms/tarifs': typeof AdminGuardCmsTarifsRoute
+  '/admin/cms/traductions': typeof AdminGuardCmsTraductionsRoute
   '/admin/installations/$id': typeof AdminGuardInstallationsIdRoute
   '/agent/install/$number': typeof AgentGuardInstallNumberRoute
   '/api/public/hooks/run-billing': typeof ApiPublicHooksRunBillingRoute
   '/api/public/webhooks/mtn': typeof ApiPublicWebhooksMtnRoute
   '/api/public/webhooks/orange': typeof ApiPublicWebhooksOrangeRoute
+  '/admin/cms/': typeof AdminGuardCmsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -457,11 +500,17 @@ export interface FileRoutesByTo {
   '/agent': typeof AgentGuardIndexRoute
   '/mon-compte': typeof MonCompteGuardIndexRoute
   '/pro': typeof ProGuardIndexRoute
+  '/admin/cms/blog': typeof AdminGuardCmsBlogRoute
+  '/admin/cms/faq': typeof AdminGuardCmsFaqRoute
+  '/admin/cms/pages': typeof AdminGuardCmsPagesRoute
+  '/admin/cms/tarifs': typeof AdminGuardCmsTarifsRoute
+  '/admin/cms/traductions': typeof AdminGuardCmsTraductionsRoute
   '/admin/installations/$id': typeof AdminGuardInstallationsIdRoute
   '/agent/install/$number': typeof AgentGuardInstallNumberRoute
   '/api/public/hooks/run-billing': typeof ApiPublicHooksRunBillingRoute
   '/api/public/webhooks/mtn': typeof ApiPublicWebhooksMtnRoute
   '/api/public/webhooks/orange': typeof ApiPublicWebhooksOrangeRoute
+  '/admin/cms': typeof AdminGuardCmsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -516,11 +565,17 @@ export interface FileRoutesById {
   '/agent/_guard/': typeof AgentGuardIndexRoute
   '/mon-compte/_guard/': typeof MonCompteGuardIndexRoute
   '/pro/_guard/': typeof ProGuardIndexRoute
+  '/admin/_guard/cms/blog': typeof AdminGuardCmsBlogRoute
+  '/admin/_guard/cms/faq': typeof AdminGuardCmsFaqRoute
+  '/admin/_guard/cms/pages': typeof AdminGuardCmsPagesRoute
+  '/admin/_guard/cms/tarifs': typeof AdminGuardCmsTarifsRoute
+  '/admin/_guard/cms/traductions': typeof AdminGuardCmsTraductionsRoute
   '/admin/_guard/installations_/$id': typeof AdminGuardInstallationsIdRoute
   '/agent/_guard/install/$number': typeof AgentGuardInstallNumberRoute
   '/api/public/hooks/run-billing': typeof ApiPublicHooksRunBillingRoute
   '/api/public/webhooks/mtn': typeof ApiPublicWebhooksMtnRoute
   '/api/public/webhooks/orange': typeof ApiPublicWebhooksOrangeRoute
+  '/admin/_guard/cms/': typeof AdminGuardCmsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -576,11 +631,17 @@ export interface FileRouteTypes {
     | '/agent/'
     | '/mon-compte/'
     | '/pro/'
+    | '/admin/cms/blog'
+    | '/admin/cms/faq'
+    | '/admin/cms/pages'
+    | '/admin/cms/tarifs'
+    | '/admin/cms/traductions'
     | '/admin/installations/$id'
     | '/agent/install/$number'
     | '/api/public/hooks/run-billing'
     | '/api/public/webhooks/mtn'
     | '/api/public/webhooks/orange'
+    | '/admin/cms/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -630,11 +691,17 @@ export interface FileRouteTypes {
     | '/agent'
     | '/mon-compte'
     | '/pro'
+    | '/admin/cms/blog'
+    | '/admin/cms/faq'
+    | '/admin/cms/pages'
+    | '/admin/cms/tarifs'
+    | '/admin/cms/traductions'
     | '/admin/installations/$id'
     | '/agent/install/$number'
     | '/api/public/hooks/run-billing'
     | '/api/public/webhooks/mtn'
     | '/api/public/webhooks/orange'
+    | '/admin/cms'
   id:
     | '__root__'
     | '/'
@@ -688,11 +755,17 @@ export interface FileRouteTypes {
     | '/agent/_guard/'
     | '/mon-compte/_guard/'
     | '/pro/_guard/'
+    | '/admin/_guard/cms/blog'
+    | '/admin/_guard/cms/faq'
+    | '/admin/_guard/cms/pages'
+    | '/admin/_guard/cms/tarifs'
+    | '/admin/_guard/cms/traductions'
     | '/admin/_guard/installations_/$id'
     | '/agent/_guard/install/$number'
     | '/api/public/hooks/run-billing'
     | '/api/public/webhooks/mtn'
     | '/api/public/webhooks/orange'
+    | '/admin/_guard/cms/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1078,6 +1151,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProGuardStatistiquesRouteImport
       parentRoute: typeof ProGuardRouteRoute
     }
+    '/admin/_guard/cms/': {
+      id: '/admin/_guard/cms/'
+      path: '/cms'
+      fullPath: '/admin/cms/'
+      preLoaderRoute: typeof AdminGuardCmsIndexRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
+    '/admin/_guard/cms/blog': {
+      id: '/admin/_guard/cms/blog'
+      path: '/cms/blog'
+      fullPath: '/admin/cms/blog'
+      preLoaderRoute: typeof AdminGuardCmsBlogRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
+    '/admin/_guard/cms/faq': {
+      id: '/admin/_guard/cms/faq'
+      path: '/cms/faq'
+      fullPath: '/admin/cms/faq'
+      preLoaderRoute: typeof AdminGuardCmsFaqRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
+    '/admin/_guard/cms/pages': {
+      id: '/admin/_guard/cms/pages'
+      path: '/cms/pages'
+      fullPath: '/admin/cms/pages'
+      preLoaderRoute: typeof AdminGuardCmsPagesRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
+    '/admin/_guard/cms/tarifs': {
+      id: '/admin/_guard/cms/tarifs'
+      path: '/cms/tarifs'
+      fullPath: '/admin/cms/tarifs'
+      preLoaderRoute: typeof AdminGuardCmsTarifsRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
+    '/admin/_guard/cms/traductions': {
+      id: '/admin/_guard/cms/traductions'
+      path: '/cms/traductions'
+      fullPath: '/admin/cms/traductions'
+      preLoaderRoute: typeof AdminGuardCmsTraductionsRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
     '/admin/_guard/installations_/$id': {
       id: '/admin/_guard/installations_/$id'
       path: '/installations/$id'
@@ -1133,7 +1248,13 @@ interface AdminGuardRouteRouteChildren {
   AdminGuardUsersRoute: typeof AdminGuardUsersRoute
   AdminGuardZonesRoute: typeof AdminGuardZonesRoute
   AdminGuardIndexRoute: typeof AdminGuardIndexRoute
+  AdminGuardCmsBlogRoute: typeof AdminGuardCmsBlogRoute
+  AdminGuardCmsFaqRoute: typeof AdminGuardCmsFaqRoute
+  AdminGuardCmsPagesRoute: typeof AdminGuardCmsPagesRoute
+  AdminGuardCmsTarifsRoute: typeof AdminGuardCmsTarifsRoute
+  AdminGuardCmsTraductionsRoute: typeof AdminGuardCmsTraductionsRoute
   AdminGuardInstallationsIdRoute: typeof AdminGuardInstallationsIdRoute
+  AdminGuardCmsIndexRoute: typeof AdminGuardCmsIndexRoute
 }
 
 const AdminGuardRouteRouteChildren: AdminGuardRouteRouteChildren = {
@@ -1153,7 +1274,13 @@ const AdminGuardRouteRouteChildren: AdminGuardRouteRouteChildren = {
   AdminGuardUsersRoute: AdminGuardUsersRoute,
   AdminGuardZonesRoute: AdminGuardZonesRoute,
   AdminGuardIndexRoute: AdminGuardIndexRoute,
+  AdminGuardCmsBlogRoute: AdminGuardCmsBlogRoute,
+  AdminGuardCmsFaqRoute: AdminGuardCmsFaqRoute,
+  AdminGuardCmsPagesRoute: AdminGuardCmsPagesRoute,
+  AdminGuardCmsTarifsRoute: AdminGuardCmsTarifsRoute,
+  AdminGuardCmsTraductionsRoute: AdminGuardCmsTraductionsRoute,
   AdminGuardInstallationsIdRoute: AdminGuardInstallationsIdRoute,
+  AdminGuardCmsIndexRoute: AdminGuardCmsIndexRoute,
 }
 
 const AdminGuardRouteRouteWithChildren = AdminGuardRouteRoute._addFileChildren(

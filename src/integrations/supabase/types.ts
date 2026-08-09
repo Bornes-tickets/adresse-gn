@@ -429,6 +429,235 @@ export type Database = {
           },
         ]
       }
+      cms_faq: {
+        Row: {
+          answer: Json
+          category: string | null
+          created_at: string
+          id: string
+          position: number
+          published: boolean
+          question: Json
+          updated_at: string
+        }
+        Insert: {
+          answer?: Json
+          category?: string | null
+          created_at?: string
+          id?: string
+          position?: number
+          published?: boolean
+          question?: Json
+          updated_at?: string
+        }
+        Update: {
+          answer?: Json
+          category?: string | null
+          created_at?: string
+          id?: string
+          position?: number
+          published?: boolean
+          question?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cms_pages: {
+        Row: {
+          body: Json
+          cover_url: string | null
+          created_at: string
+          created_by: string | null
+          excerpt: Json
+          id: string
+          position: number
+          published_at: string | null
+          seo_description: Json
+          seo_title: Json
+          slug: string
+          status: string
+          title: Json
+          updated_at: string
+        }
+        Insert: {
+          body?: Json
+          cover_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          excerpt?: Json
+          id?: string
+          position?: number
+          published_at?: string | null
+          seo_description?: Json
+          seo_title?: Json
+          slug: string
+          status?: string
+          title?: Json
+          updated_at?: string
+        }
+        Update: {
+          body?: Json
+          cover_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          excerpt?: Json
+          id?: string
+          position?: number
+          published_at?: string | null
+          seo_description?: Json
+          seo_title?: Json
+          slug?: string
+          status?: string
+          title?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_pages_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_plans: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          description: Json
+          features: Json
+          id: string
+          name: Json
+          period: string
+          popular: boolean
+          position: number
+          price_gnf: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          description?: Json
+          features?: Json
+          id?: string
+          name?: Json
+          period?: string
+          popular?: boolean
+          position?: number
+          price_gnf?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          description?: Json
+          features?: Json
+          id?: string
+          name?: Json
+          period?: string
+          popular?: boolean
+          position?: number
+          price_gnf?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cms_posts: {
+        Row: {
+          body: Json
+          category: string | null
+          cover_url: string | null
+          created_at: string
+          created_by: string | null
+          excerpt: Json
+          id: string
+          published_at: string | null
+          seo_description: Json
+          seo_title: Json
+          slug: string
+          status: string
+          title: Json
+          updated_at: string
+        }
+        Insert: {
+          body?: Json
+          category?: string | null
+          cover_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          excerpt?: Json
+          id?: string
+          published_at?: string | null
+          seo_description?: Json
+          seo_title?: Json
+          slug: string
+          status?: string
+          title?: Json
+          updated_at?: string
+        }
+        Update: {
+          body?: Json
+          category?: string | null
+          cover_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          excerpt?: Json
+          id?: string
+          published_at?: string | null
+          seo_description?: Json
+          seo_title?: Json
+          slug?: string
+          status?: string
+          title?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_posts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_translations: {
+        Row: {
+          ar: string | null
+          created_at: string
+          en: string | null
+          fr: string | null
+          id: string
+          key: string
+          namespace: string
+          updated_at: string
+        }
+        Insert: {
+          ar?: string | null
+          created_at?: string
+          en?: string | null
+          fr?: string | null
+          id?: string
+          key: string
+          namespace?: string
+          updated_at?: string
+        }
+        Update: {
+          ar?: string | null
+          created_at?: string
+          en?: string | null
+          fr?: string | null
+          id?: string
+          key?: string
+          namespace?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       communes: {
         Row: {
           boundary: unknown
