@@ -30,11 +30,14 @@ export const Route = createFileRoute("/faq")({
         : undefined,
   }),
   loaderDeps: ({ search }) => ({ preview: !!search.preview }),
-  loader: async ({ deps }): Promise<{ questions: CmsFaq[] }> =>
-    deps.preview ? { questions: [] } : { questions: (await publicListFaq()) as CmsFaq[] },
+  loader: async ({ deps }): Promise<{ questions: CmsFaq[]; preview: boolean }> =>
+    deps.preview
+      ? { questions: [], preview: true }
+      : { questions: (await publicListFaq()) as CmsFaq[], preview: false },
   head: ({ loaderData }) => ({
     meta: [
       { title: "Questions fréquentes — ADRESSE GN" },
+      ...(loaderData?.preview ? [{ name: "robots", content: "noindex" }] : []),
       {
         name: "description",
         content:
