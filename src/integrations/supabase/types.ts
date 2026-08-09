@@ -75,6 +75,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "addresses_beacon_id_fkey"
+            columns: ["beacon_id"]
+            isOneToOne: true
+            referencedRelation: "beacons_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "addresses_commune_id_fkey"
             columns: ["commune_id"]
             isOneToOne: false
@@ -390,6 +397,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "claim_requests_beacon_id_fkey"
+            columns: ["beacon_id"]
+            isOneToOne: false
+            referencedRelation: "beacons_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "claim_requests_decided_by_fkey"
             columns: ["decided_by"]
             isOneToOne: false
@@ -568,6 +582,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "favorites_beacon_id_fkey"
+            columns: ["beacon_id"]
+            isOneToOne: false
+            referencedRelation: "beacons_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "favorites_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -664,6 +685,13 @@ export type Database = {
             columns: ["beacon_id"]
             isOneToOne: false
             referencedRelation: "beacons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installations_beacon_id_fkey"
+            columns: ["beacon_id"]
+            isOneToOne: false
+            referencedRelation: "beacons_public"
             referencedColumns: ["id"]
           },
           {
@@ -863,6 +891,13 @@ export type Database = {
             columns: ["beacon_id"]
             isOneToOne: false
             referencedRelation: "beacons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_beacon_id_fkey"
+            columns: ["beacon_id"]
+            isOneToOne: false
+            referencedRelation: "beacons_public"
             referencedColumns: ["id"]
           },
           {
@@ -1133,6 +1168,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "pending_installations_beacon_id_fkey"
+            columns: ["beacon_id"]
+            isOneToOne: false
+            referencedRelation: "beacons_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "pending_installations_customer_id_fkey"
             columns: ["customer_id"]
             isOneToOne: false
@@ -1248,6 +1290,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "reports_beacon_id_fkey"
+            columns: ["beacon_id"]
+            isOneToOne: false
+            referencedRelation: "beacons_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "reports_reporter_id_fkey"
             columns: ["reporter_id"]
             isOneToOne: false
@@ -1284,6 +1333,13 @@ export type Database = {
             columns: ["beacon_id"]
             isOneToOne: false
             referencedRelation: "beacons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "route_logs_beacon_id_fkey"
+            columns: ["beacon_id"]
+            isOneToOne: false
+            referencedRelation: "beacons_public"
             referencedColumns: ["id"]
           },
           {
@@ -1326,6 +1382,13 @@ export type Database = {
             columns: ["beacon_id_found"]
             isOneToOne: false
             referencedRelation: "beacons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "search_logs_beacon_id_found_fkey"
+            columns: ["beacon_id_found"]
+            isOneToOne: false
+            referencedRelation: "beacons_public"
             referencedColumns: ["id"]
           },
           {
@@ -1501,10 +1564,52 @@ export type Database = {
             referencedRelation: "beacons"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "unclaimed_owners_beacon_id_fkey"
+            columns: ["beacon_id"]
+            isOneToOne: false
+            referencedRelation: "beacons_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
     Views: {
+      beacons_public: {
+        Row: {
+          activated_at: string | null
+          created_at: string | null
+          id: string | null
+          lot_id: string | null
+          public_number: string | null
+          status: string | null
+        }
+        Insert: {
+          activated_at?: string | null
+          created_at?: string | null
+          id?: string | null
+          lot_id?: string | null
+          public_number?: string | null
+          status?: string | null
+        }
+        Update: {
+          activated_at?: string | null
+          created_at?: string | null
+          id?: string | null
+          lot_id?: string | null
+          public_number?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "beacons_lot_id_fkey"
+            columns: ["lot_id"]
+            isOneToOne: false
+            referencedRelation: "lots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       geography_columns: {
         Row: {
           coord_dimension: number | null
