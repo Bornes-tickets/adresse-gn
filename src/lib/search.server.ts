@@ -137,10 +137,21 @@ export async function runSearch(
     };
   }
 
+  console.log("[runSearch] Avant requête Supabase (rpc search_by_number):", number);
   const { data, error } = await supabaseAdmin.rpc("search_by_number", {
     p_number: number,
   });
-  if (error) throw new Error(error.message);
+  console.log(
+    "[runSearch] Résultat Supabase — data:",
+    JSON.stringify(data),
+    "error:",
+    error ? JSON.stringify(error) : null,
+  );
+  if (error) {
+    throw new Error(
+      `search_by_number: ${error.message}${error.code ? ` (code ${error.code})` : ""}${error.hint ? ` — ${error.hint}` : ""}`,
+    );
+  }
 
   const result = ((data as BeaconResult[] | null) ?? [])[0] ?? null;
   const beaconId = result ? await beaconIdFor(result.public_number) : null;

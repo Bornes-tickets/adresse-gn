@@ -79,7 +79,18 @@ function BeaconResult() {
 
   const { data, error, isPending } = useQuery({
     queryKey: ["search-beacon", number],
-    queryFn: () => searchBeacon({ data: { number } }),
+    queryFn: async () => {
+      console.log("[/a/:number] Paramètre public_number reçu:", number);
+      console.log("[/a/:number] Avant requête Supabase (searchBeacon)");
+      try {
+        const res = await searchBeacon({ data: { number } });
+        console.log("[/a/:number] Résultat Supabase:", res);
+        return res;
+      } catch (e) {
+        console.error("[/a/:number] Erreur brute:", e);
+        throw e;
+      }
+    },
     retry: false,
   });
 
