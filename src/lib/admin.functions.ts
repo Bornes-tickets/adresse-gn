@@ -1,6 +1,5 @@
 /** Points d'entrée serveur du back-office. Chaque handler vérifie le rôle admin. */
 import { createServerFn } from "@tanstack/react-start";
-
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const adminWhoami = createServerFn({ method: "POST" })
@@ -26,8 +25,6 @@ export const adminGlobalSearch = createServerFn({ method: "POST" })
     await requireAdmin(context.userId);
     return rechercheGlobale(data.terme);
   });
-
-
 
 export const adminAnalytics = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -108,6 +105,7 @@ export const adminGenerateBeaconLot = createServerFn({ method: "POST" })
     (input: {
       quantity: number;
       regionId: string;
+      category?: string | null;
       supplier?: string | null;
       unitPriceGnf?: number | null;
     }) => {
@@ -116,9 +114,22 @@ export const adminGenerateBeaconLot = createServerFn({ method: "POST" })
         throw new Error("La quantité doit être comprise entre 1 et 1000.");
       }
       if (!input.regionId) throw new Error("Zone obligatoire.");
+      const CATEGORIES_VALIDES = [
+        "digital_only",
+        "residential",
+        "residential_plus",
+        "professional",
+        "institutional",
+        "custom",
+      ];
+      const category = input.category?.trim() || "residential";
+      if (!CATEGORIES_VALIDES.includes(category)) {
+        throw new Error("Catégorie de balise invalide.");
+      }
       return {
         quantity: quantite,
         regionId: String(input.regionId),
+        category,
         supplier: input.supplier?.trim() || null,
         unitPriceGnf: input.unitPriceGnf != null ? Number(input.unitPriceGnf) : null,
       };
