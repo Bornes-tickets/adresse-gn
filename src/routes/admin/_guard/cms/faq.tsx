@@ -156,7 +156,7 @@ function CmsFaqPage() {
           <CardTitle className="text-base">Questions ({faq.data?.length ?? 0})</CardTitle>
           <div className="flex items-center gap-2">
             <Button size="sm" variant="ghost" asChild>
-              <a href="/faq?preview=1" target="_blank" rel="noreferrer">
+              <a href="/faq?preview=true" target="_blank" rel="noreferrer">
                 Aperçu
               </a>
             </Button>

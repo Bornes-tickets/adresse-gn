@@ -126,7 +126,7 @@ function CmsBlog() {
       rendu: (l) => (
         <div className="flex justify-end gap-1">
           <Button size="sm" variant="ghost" asChild>
-            <a href={`/blog/${l.slug}?preview=1`} target="_blank" rel="noreferrer">
+            <a href={`/blog/${l.slug}?preview=true`} target="_blank" rel="noreferrer">
               Aperçu
             </a>
           </Button>
