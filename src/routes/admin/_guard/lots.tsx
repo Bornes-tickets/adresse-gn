@@ -180,7 +180,7 @@ function CategoryBadge({ code }: { code?: string | null }) {
 /*  Helpers statuts                                                    */
 /* ------------------------------------------------------------------ */
 
-const STATUS_STYLES: Record
+const STATUS_STYLES: Record<
   string,
   { bg: string; text: string; ring: string; icon: React.ElementType }
 > = {
@@ -299,11 +299,10 @@ function AdminLots() {
       cur.balises += l.quantity ?? 0;
       map.set(cat, cur);
     });
-    return Array.from(map.entries()).map(([code, stats]) => ({
-      code,
-      ...stats,
-      conf: CATEGORIES[code],
-    })).filter((x) => x.conf);
+    return Array.from(map.entries()).flatMap(([code, stats]) => {
+      const conf = CATEGORIES[code];
+      return conf ? [{ code, ...stats, conf }] : [];
+    });
   }, [rows]);
 
   const fournisseurs = useMemo(() => {

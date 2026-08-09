@@ -226,7 +226,7 @@ function CategoryBadge({ code }: { code?: string | null }) {
 /*  Helpers visuels                                                    */
 /* ------------------------------------------------------------------ */
 
-const STATUS_STYLES: Record
+const STATUS_STYLES: Record<
   string,
   { bg: string; text: string; ring: string; icon: React.ElementType; libelle?: string }
 > = {

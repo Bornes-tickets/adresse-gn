@@ -331,10 +331,47 @@ export type Database = {
           },
         ]
       }
+      beacon_categories: {
+        Row: {
+          code: string
+          color: string
+          created_at: string
+          description: string | null
+          icon: string
+          is_active: boolean
+          name: string
+          position: number
+          price_gnf: number | null
+        }
+        Insert: {
+          code: string
+          color?: string
+          created_at?: string
+          description?: string | null
+          icon?: string
+          is_active?: boolean
+          name: string
+          position?: number
+          price_gnf?: number | null
+        }
+        Update: {
+          code?: string
+          color?: string
+          created_at?: string
+          description?: string | null
+          icon?: string
+          is_active?: boolean
+          name?: string
+          position?: number
+          price_gnf?: number | null
+        }
+        Relationships: []
+      }
       beacons: {
         Row: {
           activated_at: string | null
           assigned_agent_id: string | null
+          category: string | null
           created_at: string | null
           id: string
           lot_id: string | null
@@ -345,6 +382,7 @@ export type Database = {
         Insert: {
           activated_at?: string | null
           assigned_agent_id?: string | null
+          category?: string | null
           created_at?: string | null
           id?: string
           lot_id?: string | null
@@ -355,6 +393,7 @@ export type Database = {
         Update: {
           activated_at?: string | null
           assigned_agent_id?: string | null
+          category?: string | null
           created_at?: string | null
           id?: string
           lot_id?: string | null
@@ -363,6 +402,13 @@ export type Database = {
           status?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "beacons_category_fkey"
+            columns: ["category"]
+            isOneToOne: false
+            referencedRelation: "beacon_categories"
+            referencedColumns: ["code"]
+          },
           {
             foreignKeyName: "beacons_lot_id_fkey"
             columns: ["lot_id"]
@@ -1348,6 +1394,7 @@ export type Database = {
       }
       lots: {
         Row: {
+          category: string | null
           code: string
           id: string
           quantity: number
@@ -1356,6 +1403,7 @@ export type Database = {
           supplier: string | null
         }
         Insert: {
+          category?: string | null
           code: string
           id?: string
           quantity: number
@@ -1364,6 +1412,7 @@ export type Database = {
           supplier?: string | null
         }
         Update: {
+          category?: string | null
           code?: string
           id?: string
           quantity?: number
@@ -1371,7 +1420,15 @@ export type Database = {
           status?: string
           supplier?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "lots_category_fkey"
+            columns: ["category"]
+            isOneToOne: false
+            referencedRelation: "beacon_categories"
+            referencedColumns: ["code"]
+          },
+        ]
       }
       notifications: {
         Row: {
@@ -2299,6 +2356,7 @@ export type Database = {
       beacons_public: {
         Row: {
           activated_at: string | null
+          category: string | null
           created_at: string | null
           id: string | null
           lot_id: string | null
@@ -2307,6 +2365,7 @@ export type Database = {
         }
         Insert: {
           activated_at?: string | null
+          category?: string | null
           created_at?: string | null
           id?: string | null
           lot_id?: string | null
@@ -2315,6 +2374,7 @@ export type Database = {
         }
         Update: {
           activated_at?: string | null
+          category?: string | null
           created_at?: string | null
           id?: string | null
           lot_id?: string | null
@@ -2322,6 +2382,13 @@ export type Database = {
           status?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "beacons_category_fkey"
+            columns: ["category"]
+            isOneToOne: false
+            referencedRelation: "beacon_categories"
+            referencedColumns: ["code"]
+          },
           {
             foreignKeyName: "beacons_lot_id_fkey"
             columns: ["lot_id"]
