@@ -24,6 +24,7 @@ import { Route as AgentLoginRouteImport } from './routes/agent/login'
 import { Route as CommanderOfferCodeRouteImport } from './routes/commander.$offerCode'
 import { Route as EtablissementNumberRouteImport } from './routes/etablissement.$number'
 import { Route as MonCompteGuardRouteRouteImport } from './routes/mon-compte/_guard/route'
+import { Route as PSlugRouteImport } from './routes/p.$slug'
 import { Route as ProGuardRouteRouteImport } from './routes/pro/_guard/route'
 import { Route as ProOnboardingRouteImport } from './routes/pro/onboarding'
 import { Route as AdminGuardIndexRouteImport } from './routes/admin/_guard/index'
@@ -145,6 +146,11 @@ const EtablissementNumberRoute = EtablissementNumberRouteImport.update({
 const MonCompteGuardRouteRoute = MonCompteGuardRouteRouteImport.update({
   id: '/mon-compte/_guard',
   path: '/mon-compte',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PSlugRoute = PSlugRouteImport.update({
+  id: '/p/$slug',
+  path: '/p/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProGuardRouteRoute = ProGuardRouteRouteImport.update({
@@ -405,6 +411,7 @@ export interface FileRoutesByFullPath {
   '/agent/login': typeof AgentLoginRoute
   '/commander/$offerCode': typeof CommanderOfferCodeRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
+  '/p/$slug': typeof PSlugRoute
   '/pro/onboarding': typeof ProOnboardingRoute
   '/admin/abonnements': typeof AdminGuardAbonnementsRoute
   '/admin/addresses': typeof AdminGuardAddressesRoute
@@ -465,6 +472,7 @@ export interface FileRoutesByTo {
   '/agent/login': typeof AgentLoginRoute
   '/commander/$offerCode': typeof CommanderOfferCodeRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
+  '/p/$slug': typeof PSlugRoute
   '/pro/onboarding': typeof ProOnboardingRoute
   '/admin/abonnements': typeof AdminGuardAbonnementsRoute
   '/admin/addresses': typeof AdminGuardAddressesRoute
@@ -530,6 +538,7 @@ export interface FileRoutesById {
   '/agent/login': typeof AgentLoginRoute
   '/commander/$offerCode': typeof CommanderOfferCodeRoute
   '/etablissement/$number': typeof EtablissementNumberRoute
+  '/p/$slug': typeof PSlugRoute
   '/pro/onboarding': typeof ProOnboardingRoute
   '/admin/_guard/abonnements': typeof AdminGuardAbonnementsRoute
   '/admin/_guard/addresses': typeof AdminGuardAddressesRoute
@@ -596,6 +605,7 @@ export interface FileRouteTypes {
     | '/agent/login'
     | '/commander/$offerCode'
     | '/etablissement/$number'
+    | '/p/$slug'
     | '/pro/onboarding'
     | '/admin/abonnements'
     | '/admin/addresses'
@@ -656,6 +666,7 @@ export interface FileRouteTypes {
     | '/agent/login'
     | '/commander/$offerCode'
     | '/etablissement/$number'
+    | '/p/$slug'
     | '/pro/onboarding'
     | '/admin/abonnements'
     | '/admin/addresses'
@@ -720,6 +731,7 @@ export interface FileRouteTypes {
     | '/agent/login'
     | '/commander/$offerCode'
     | '/etablissement/$number'
+    | '/p/$slug'
     | '/pro/onboarding'
     | '/admin/_guard/abonnements'
     | '/admin/_guard/addresses'
@@ -785,6 +797,7 @@ export interface RootRouteChildren {
   AgentLoginRoute: typeof AgentLoginRoute
   CommanderOfferCodeRoute: typeof CommanderOfferCodeRoute
   EtablissementNumberRoute: typeof EtablissementNumberRoute
+  PSlugRoute: typeof PSlugRoute
   ProOnboardingRoute: typeof ProOnboardingRoute
   CommandeOrderRefPaiementRoute: typeof CommandeOrderRefPaiementRoute
   ApiPublicHooksRunBillingRoute: typeof ApiPublicHooksRunBillingRoute
@@ -897,6 +910,13 @@ declare module '@tanstack/react-router' {
       path: '/mon-compte'
       fullPath: '/mon-compte'
       preLoaderRoute: typeof MonCompteGuardRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/p/$slug': {
+      id: '/p/$slug'
+      path: '/p/$slug'
+      fullPath: '/p/$slug'
+      preLoaderRoute: typeof PSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pro/_guard': {
@@ -1369,6 +1389,7 @@ const rootRouteChildren: RootRouteChildren = {
   AgentLoginRoute: AgentLoginRoute,
   CommanderOfferCodeRoute: CommanderOfferCodeRoute,
   EtablissementNumberRoute: EtablissementNumberRoute,
+  PSlugRoute: PSlugRoute,
   ProOnboardingRoute: ProOnboardingRoute,
   CommandeOrderRefPaiementRoute: CommandeOrderRefPaiementRoute,
   ApiPublicHooksRunBillingRoute: ApiPublicHooksRunBillingRoute,
