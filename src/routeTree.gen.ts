@@ -60,6 +60,7 @@ import { Route as ProGuardEquipeRouteImport } from './routes/pro/_guard/equipe'
 import { Route as ProGuardEtablissementsRouteImport } from './routes/pro/_guard/etablissements'
 import { Route as ProGuardFacturationRouteImport } from './routes/pro/_guard/facturation'
 import { Route as ProGuardStatistiquesRouteImport } from './routes/pro/_guard/statistiques'
+import { Route as AdminGuardCmsBlogRouteImport } from './routes/admin/_guard/cms/blog'
 import { Route as AdminGuardCmsPagesRouteImport } from './routes/admin/_guard/cms/pages'
 import { Route as AdminGuardInstallationsIdRouteImport } from './routes/admin/_guard/installations_.$id'
 import { Route as AgentGuardInstallNumberRouteImport } from './routes/agent/_guard/install.$number'
@@ -324,6 +325,11 @@ const ProGuardStatistiquesRoute = ProGuardStatistiquesRouteImport.update({
   path: '/statistiques',
   getParentRoute: () => ProGuardRouteRoute,
 } as any)
+const AdminGuardCmsBlogRoute = AdminGuardCmsBlogRouteImport.update({
+  id: '/cms/blog',
+  path: '/cms/blog',
+  getParentRoute: () => AdminGuardRouteRoute,
+} as any)
 const AdminGuardCmsPagesRoute = AdminGuardCmsPagesRouteImport.update({
   id: '/cms/pages',
   path: '/cms/pages',
@@ -409,6 +415,7 @@ export interface FileRoutesByFullPath {
   '/agent/': typeof AgentGuardIndexRoute
   '/mon-compte/': typeof MonCompteGuardIndexRoute
   '/pro/': typeof ProGuardIndexRoute
+  '/admin/cms/blog': typeof AdminGuardCmsBlogRoute
   '/admin/cms/pages': typeof AdminGuardCmsPagesRoute
   '/admin/installations/$id': typeof AdminGuardInstallationsIdRoute
   '/agent/install/$number': typeof AgentGuardInstallNumberRoute
@@ -464,6 +471,7 @@ export interface FileRoutesByTo {
   '/agent': typeof AgentGuardIndexRoute
   '/mon-compte': typeof MonCompteGuardIndexRoute
   '/pro': typeof ProGuardIndexRoute
+  '/admin/cms/blog': typeof AdminGuardCmsBlogRoute
   '/admin/cms/pages': typeof AdminGuardCmsPagesRoute
   '/admin/installations/$id': typeof AdminGuardInstallationsIdRoute
   '/agent/install/$number': typeof AgentGuardInstallNumberRoute
@@ -524,6 +532,7 @@ export interface FileRoutesById {
   '/agent/_guard/': typeof AgentGuardIndexRoute
   '/mon-compte/_guard/': typeof MonCompteGuardIndexRoute
   '/pro/_guard/': typeof ProGuardIndexRoute
+  '/admin/_guard/cms/blog': typeof AdminGuardCmsBlogRoute
   '/admin/_guard/cms/pages': typeof AdminGuardCmsPagesRoute
   '/admin/_guard/installations_/$id': typeof AdminGuardInstallationsIdRoute
   '/agent/_guard/install/$number': typeof AgentGuardInstallNumberRoute
@@ -585,6 +594,7 @@ export interface FileRouteTypes {
     | '/agent/'
     | '/mon-compte/'
     | '/pro/'
+    | '/admin/cms/blog'
     | '/admin/cms/pages'
     | '/admin/installations/$id'
     | '/agent/install/$number'
@@ -640,6 +650,7 @@ export interface FileRouteTypes {
     | '/agent'
     | '/mon-compte'
     | '/pro'
+    | '/admin/cms/blog'
     | '/admin/cms/pages'
     | '/admin/installations/$id'
     | '/agent/install/$number'
@@ -699,6 +710,7 @@ export interface FileRouteTypes {
     | '/agent/_guard/'
     | '/mon-compte/_guard/'
     | '/pro/_guard/'
+    | '/admin/_guard/cms/blog'
     | '/admin/_guard/cms/pages'
     | '/admin/_guard/installations_/$id'
     | '/agent/_guard/install/$number'
@@ -1090,6 +1102,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProGuardStatistiquesRouteImport
       parentRoute: typeof ProGuardRouteRoute
     }
+    '/admin/_guard/cms/blog': {
+      id: '/admin/_guard/cms/blog'
+      path: '/cms/blog'
+      fullPath: '/admin/cms/blog'
+      preLoaderRoute: typeof AdminGuardCmsBlogRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
     '/admin/_guard/cms/pages': {
       id: '/admin/_guard/cms/pages'
       path: '/cms/pages'
@@ -1152,6 +1171,7 @@ interface AdminGuardRouteRouteChildren {
   AdminGuardUsersRoute: typeof AdminGuardUsersRoute
   AdminGuardZonesRoute: typeof AdminGuardZonesRoute
   AdminGuardIndexRoute: typeof AdminGuardIndexRoute
+  AdminGuardCmsBlogRoute: typeof AdminGuardCmsBlogRoute
   AdminGuardCmsPagesRoute: typeof AdminGuardCmsPagesRoute
   AdminGuardInstallationsIdRoute: typeof AdminGuardInstallationsIdRoute
 }
@@ -1173,6 +1193,7 @@ const AdminGuardRouteRouteChildren: AdminGuardRouteRouteChildren = {
   AdminGuardUsersRoute: AdminGuardUsersRoute,
   AdminGuardZonesRoute: AdminGuardZonesRoute,
   AdminGuardIndexRoute: AdminGuardIndexRoute,
+  AdminGuardCmsBlogRoute: AdminGuardCmsBlogRoute,
   AdminGuardCmsPagesRoute: AdminGuardCmsPagesRoute,
   AdminGuardInstallationsIdRoute: AdminGuardInstallationsIdRoute,
 }
