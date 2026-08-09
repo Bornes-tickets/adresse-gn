@@ -63,6 +63,7 @@ import { Route as ProGuardStatistiquesRouteImport } from './routes/pro/_guard/st
 import { Route as AdminGuardCmsBlogRouteImport } from './routes/admin/_guard/cms/blog'
 import { Route as AdminGuardCmsFaqRouteImport } from './routes/admin/_guard/cms/faq'
 import { Route as AdminGuardCmsPagesRouteImport } from './routes/admin/_guard/cms/pages'
+import { Route as AdminGuardCmsTarifsRouteImport } from './routes/admin/_guard/cms/tarifs'
 import { Route as AdminGuardCmsTraductionsRouteImport } from './routes/admin/_guard/cms/traductions'
 import { Route as AdminGuardInstallationsIdRouteImport } from './routes/admin/_guard/installations_.$id'
 import { Route as AgentGuardInstallNumberRouteImport } from './routes/agent/_guard/install.$number'
@@ -342,6 +343,11 @@ const AdminGuardCmsPagesRoute = AdminGuardCmsPagesRouteImport.update({
   path: '/cms/pages',
   getParentRoute: () => AdminGuardRouteRoute,
 } as any)
+const AdminGuardCmsTarifsRoute = AdminGuardCmsTarifsRouteImport.update({
+  id: '/cms/tarifs',
+  path: '/cms/tarifs',
+  getParentRoute: () => AdminGuardRouteRoute,
+} as any)
 const AdminGuardCmsTraductionsRoute =
   AdminGuardCmsTraductionsRouteImport.update({
     id: '/cms/traductions',
@@ -431,6 +437,7 @@ export interface FileRoutesByFullPath {
   '/admin/cms/blog': typeof AdminGuardCmsBlogRoute
   '/admin/cms/faq': typeof AdminGuardCmsFaqRoute
   '/admin/cms/pages': typeof AdminGuardCmsPagesRoute
+  '/admin/cms/tarifs': typeof AdminGuardCmsTarifsRoute
   '/admin/cms/traductions': typeof AdminGuardCmsTraductionsRoute
   '/admin/installations/$id': typeof AdminGuardInstallationsIdRoute
   '/agent/install/$number': typeof AgentGuardInstallNumberRoute
@@ -489,6 +496,7 @@ export interface FileRoutesByTo {
   '/admin/cms/blog': typeof AdminGuardCmsBlogRoute
   '/admin/cms/faq': typeof AdminGuardCmsFaqRoute
   '/admin/cms/pages': typeof AdminGuardCmsPagesRoute
+  '/admin/cms/tarifs': typeof AdminGuardCmsTarifsRoute
   '/admin/cms/traductions': typeof AdminGuardCmsTraductionsRoute
   '/admin/installations/$id': typeof AdminGuardInstallationsIdRoute
   '/agent/install/$number': typeof AgentGuardInstallNumberRoute
@@ -552,6 +560,7 @@ export interface FileRoutesById {
   '/admin/_guard/cms/blog': typeof AdminGuardCmsBlogRoute
   '/admin/_guard/cms/faq': typeof AdminGuardCmsFaqRoute
   '/admin/_guard/cms/pages': typeof AdminGuardCmsPagesRoute
+  '/admin/_guard/cms/tarifs': typeof AdminGuardCmsTarifsRoute
   '/admin/_guard/cms/traductions': typeof AdminGuardCmsTraductionsRoute
   '/admin/_guard/installations_/$id': typeof AdminGuardInstallationsIdRoute
   '/agent/_guard/install/$number': typeof AgentGuardInstallNumberRoute
@@ -616,6 +625,7 @@ export interface FileRouteTypes {
     | '/admin/cms/blog'
     | '/admin/cms/faq'
     | '/admin/cms/pages'
+    | '/admin/cms/tarifs'
     | '/admin/cms/traductions'
     | '/admin/installations/$id'
     | '/agent/install/$number'
@@ -674,6 +684,7 @@ export interface FileRouteTypes {
     | '/admin/cms/blog'
     | '/admin/cms/faq'
     | '/admin/cms/pages'
+    | '/admin/cms/tarifs'
     | '/admin/cms/traductions'
     | '/admin/installations/$id'
     | '/agent/install/$number'
@@ -736,6 +747,7 @@ export interface FileRouteTypes {
     | '/admin/_guard/cms/blog'
     | '/admin/_guard/cms/faq'
     | '/admin/_guard/cms/pages'
+    | '/admin/_guard/cms/tarifs'
     | '/admin/_guard/cms/traductions'
     | '/admin/_guard/installations_/$id'
     | '/agent/_guard/install/$number'
@@ -1148,6 +1160,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminGuardCmsPagesRouteImport
       parentRoute: typeof AdminGuardRouteRoute
     }
+    '/admin/_guard/cms/tarifs': {
+      id: '/admin/_guard/cms/tarifs'
+      path: '/cms/tarifs'
+      fullPath: '/admin/cms/tarifs'
+      preLoaderRoute: typeof AdminGuardCmsTarifsRouteImport
+      parentRoute: typeof AdminGuardRouteRoute
+    }
     '/admin/_guard/cms/traductions': {
       id: '/admin/_guard/cms/traductions'
       path: '/cms/traductions'
@@ -1213,6 +1232,7 @@ interface AdminGuardRouteRouteChildren {
   AdminGuardCmsBlogRoute: typeof AdminGuardCmsBlogRoute
   AdminGuardCmsFaqRoute: typeof AdminGuardCmsFaqRoute
   AdminGuardCmsPagesRoute: typeof AdminGuardCmsPagesRoute
+  AdminGuardCmsTarifsRoute: typeof AdminGuardCmsTarifsRoute
   AdminGuardCmsTraductionsRoute: typeof AdminGuardCmsTraductionsRoute
   AdminGuardInstallationsIdRoute: typeof AdminGuardInstallationsIdRoute
 }
@@ -1237,6 +1257,7 @@ const AdminGuardRouteRouteChildren: AdminGuardRouteRouteChildren = {
   AdminGuardCmsBlogRoute: AdminGuardCmsBlogRoute,
   AdminGuardCmsFaqRoute: AdminGuardCmsFaqRoute,
   AdminGuardCmsPagesRoute: AdminGuardCmsPagesRoute,
+  AdminGuardCmsTarifsRoute: AdminGuardCmsTarifsRoute,
   AdminGuardCmsTraductionsRoute: AdminGuardCmsTraductionsRoute,
   AdminGuardInstallationsIdRoute: AdminGuardInstallationsIdRoute,
 }
