@@ -163,6 +163,10 @@ type CurrentGeoSummary = {
   remaining_quartiers_districts: number;
   current_sectors: number;
   communities_with_current_localities: number;
+  archived_quartiers_districts: number;
+  archived_sectors: number;
+  stored_quartiers_districts: number;
+  stored_sectors: number;
 };
 
 const EMPTY_GEO: GeoData = {
@@ -276,6 +280,10 @@ async function fetchCurrentGeoSummary(): Promise<CurrentGeoSummary> {
     communities_with_current_localities: Number(
       data?.communities_with_current_localities ?? 0,
     ),
+    archived_quartiers_districts: Number(data?.archived_quartiers_districts ?? 0),
+    archived_sectors: Number(data?.archived_sectors ?? 0),
+    stored_quartiers_districts: Number(data?.stored_quartiers_districts ?? 0),
+    stored_sectors: Number(data?.stored_sectors ?? 0),
   };
 }
 
@@ -322,6 +330,16 @@ function AdminZones() {
 
   const data = zones.data ?? EMPTY_GEO;
   const { regions, prefectures, communes, districts, sectors } = data;
+
+  const currentDistrictCount =
+    currentSummary.data?.current_quartiers_districts ?? districts.length;
+  const targetDistrictCount =
+    currentSummary.data?.target_quartiers_districts ?? 4865;
+  const currentSectorCount =
+    currentSummary.data?.current_sectors ?? sectors.length;
+  const archivedDistrictCount =
+    currentSummary.data?.archived_quartiers_districts ?? 0;
+  const archivedSectorCount = currentSummary.data?.archived_sectors ?? 0;
 
   const invalider = async () => {
     await Promise.all([
@@ -814,21 +832,21 @@ function AdminZones() {
         />
         <Kpi
           label="Quartiers / districts"
-          valeur={districts.length}
+          valeur={`${currentDistrictCount.toLocaleString("fr-FR")} / ${targetDistrictCount.toLocaleString("fr-FR")}`}
           aide={
-            currentSummary.data
-              ? `${currentSummary.data.current_quartiers_districts.toLocaleString("fr-FR")} / ${currentSummary.data.target_quartiers_districts.toLocaleString("fr-FR")} actuels`
-              : "Cible nationale : 4 865"
+            archivedDistrictCount > 0
+              ? `${archivedDistrictCount.toLocaleString("fr-FR")} historique(s) archivé(s)`
+              : `${Math.max(targetDistrictCount - currentDistrictCount, 0).toLocaleString("fr-FR")} restant(s) à intégrer`
           }
           ton="emerald"
         />
         <Kpi
           label="Secteurs"
-          valeur={sectors.length}
+          valeur={currentSectorCount.toLocaleString("fr-FR")}
           aide={
-            currentSummary.data
-              ? `${currentSummary.data.communities_with_current_localities} commune(s) couvertes`
-              : "Niveau d'adressage fin"
+            archivedSectorCount > 0
+              ? `${archivedSectorCount.toLocaleString("fr-FR")} historique(s) archivé(s)`
+              : "Secteurs actuels vérifiés"
           }
           ton="rose"
         />
@@ -895,11 +913,13 @@ function AdminZones() {
                   </TabsTrigger>
                   <TabsTrigger value="districts" className="gap-1.5">
                     Quartiers / districts
-                    <CountBadge value={districts.length} />
+                    <CountBadge
+                      value={`${currentDistrictCount.toLocaleString("fr-FR")} / ${targetDistrictCount.toLocaleString("fr-FR")}`}
+                    />
                   </TabsTrigger>
                   <TabsTrigger value="sectors" className="gap-1.5">
                     Secteurs
-                    <CountBadge value={sectors.length} />
+                    <CountBadge value={currentSectorCount.toLocaleString("fr-FR")} />
                   </TabsTrigger>
                 </TabsList>
               </div>
@@ -2072,7 +2092,7 @@ function CodeBadge({ value }: { value: string | null | undefined }) {
   );
 }
 
-function CountBadge({ value }: { value: number }) {
+function CountBadge({ value }: { value: number | string }) {
   return (
     <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-[10px]">
       {value}
@@ -2172,3 +2192,4 @@ function placeholderNom(niveau: Niveau): string {
       return "Ex : Secteur 1";
   }
 }
+
