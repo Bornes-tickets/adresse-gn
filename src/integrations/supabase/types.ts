@@ -99,6 +99,20 @@ export type Database = {
             foreignKeyName: "addresses_commune_id_fkey"
             columns: ["commune_id"]
             isOneToOne: false
+            referencedRelation: "v_geo_legacy_district_candidates"
+            referencedColumns: ["canonical_commune_id"]
+          },
+          {
+            foreignKeyName: "addresses_commune_id_fkey"
+            columns: ["commune_id"]
+            isOneToOne: false
+            referencedRelation: "v_geo_legacy_district_candidates"
+            referencedColumns: ["legacy_commune_id"]
+          },
+          {
+            foreignKeyName: "addresses_commune_id_fkey"
+            columns: ["commune_id"]
+            isOneToOne: false
             referencedRelation: "v_geo_reference"
             referencedColumns: ["commune_id"]
           },
@@ -175,6 +189,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_geo_current_coverage"
             referencedColumns: ["commune_id"]
+          },
+          {
+            foreignKeyName: "agents_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "v_geo_legacy_district_candidates"
+            referencedColumns: ["canonical_commune_id"]
+          },
+          {
+            foreignKeyName: "agents_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "v_geo_legacy_district_candidates"
+            referencedColumns: ["legacy_commune_id"]
           },
           {
             foreignKeyName: "agents_zone_id_fkey"
@@ -877,6 +905,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_geo_current_coverage"
             referencedColumns: ["commune_id"]
+          },
+          {
+            foreignKeyName: "districts_commune_id_fkey"
+            columns: ["commune_id"]
+            isOneToOne: false
+            referencedRelation: "v_geo_legacy_district_candidates"
+            referencedColumns: ["canonical_commune_id"]
+          },
+          {
+            foreignKeyName: "districts_commune_id_fkey"
+            columns: ["commune_id"]
+            isOneToOne: false
+            referencedRelation: "v_geo_legacy_district_candidates"
+            referencedColumns: ["legacy_commune_id"]
           },
           {
             foreignKeyName: "districts_commune_id_fkey"
@@ -2343,6 +2385,33 @@ export type Database = {
           region_name: string | null
         }
         Relationships: []
+      }
+      v_geo_legacy_district_candidates: {
+        Row: {
+          candidate_count: number | null
+          canonical_commune_id: string | null
+          canonical_commune_name: string | null
+          canonical_stat_code: string | null
+          legacy_commune_id: string | null
+          legacy_commune_name: string | null
+          region_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "communes_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "regions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communes_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "v_geo_reference"
+            referencedColumns: ["region_id"]
+          },
+        ]
       }
       v_geo_reference: {
         Row: {
