@@ -122,6 +122,10 @@ type DistrictRow = {
   code: string | null;
   source: string | null;
   source_name: string | null;
+  source_year?: number | null;
+  verification_status?: string | null;
+  official_reference?: string | null;
+  verified_at?: string | null;
   geojson: unknown;
   is_active: boolean;
 };
@@ -134,6 +138,10 @@ type SectorRow = {
   code: string | null;
   source: string | null;
   source_name: string | null;
+  source_year?: number | null;
+  verification_status?: string | null;
+  official_reference?: string | null;
+  verified_at?: string | null;
   geojson: unknown;
   is_active: boolean;
 };
@@ -340,6 +348,10 @@ function AdminZones() {
   const archivedDistrictCount =
     currentSummary.data?.archived_quartiers_districts ?? 0;
   const archivedSectorCount = currentSummary.data?.archived_sectors ?? 0;
+  const storedDistrictCount =
+    currentSummary.data?.stored_quartiers_districts ?? districts.length;
+  const storedSectorCount =
+    currentSummary.data?.stored_sectors ?? sectors.length;
 
   const invalider = async () => {
     await Promise.all([
@@ -701,12 +713,47 @@ function AdminZones() {
         sectors.filter((s) => s.district_id === row.id).length,
     },
     {
+      cle: "statut",
+      entete: "Statut",
+      rendu: (row: DistrictRow) => {
+        const current =
+          row.is_active &&
+          (
+            ["MATD-2025", "MATD-2025-ANNEXE", "admin"].includes(row.source ?? "") ||
+            ["current_verified", "current_verified_2025", "admin_verified"].includes(
+              row.verification_status ?? "",
+            )
+          );
+
+        return (
+          <Badge
+            variant={current ? "default" : "outline"}
+            className="whitespace-nowrap text-[10px]"
+          >
+            {current
+              ? "Actuel"
+              : row.verification_status === "historical_archived" ||
+                  (row.source ?? "").startsWith("MATD-2017")
+                ? "Historique"
+                : row.is_active
+                  ? "À vérifier"
+                  : "Archivé"}
+          </Badge>
+        );
+      },
+    },
+    {
       cle: "source",
       entete: "Source",
       rendu: (row: DistrictRow) => (
-        <Badge variant="outline" className="whitespace-nowrap text-[10px]">
-          {row.source || "Non renseignée"}
-        </Badge>
+        <div className="flex flex-col gap-0.5">
+          <Badge variant="outline" className="w-fit whitespace-nowrap text-[10px]">
+            {row.source || "Non renseignée"}
+          </Badge>
+          {row.source_year ? (
+            <span className="text-[10px] text-slate-400">{row.source_year}</span>
+          ) : null}
+        </div>
       ),
     },
     {
@@ -745,12 +792,47 @@ function AdminZones() {
       rendu: (row: SectorRow) => <CodeBadge value={row.code} />,
     },
     {
+      cle: "statut",
+      entete: "Statut",
+      rendu: (row: SectorRow) => {
+        const current =
+          row.is_active &&
+          (
+            ["MATD-2025", "MATD-2025-ANNEXE", "admin"].includes(row.source ?? "") ||
+            ["current_verified", "current_verified_2025", "admin_verified"].includes(
+              row.verification_status ?? "",
+            )
+          );
+
+        return (
+          <Badge
+            variant={current ? "default" : "outline"}
+            className="whitespace-nowrap text-[10px]"
+          >
+            {current
+              ? "Actuel"
+              : row.verification_status === "historical_archived" ||
+                  (row.source ?? "").startsWith("MATD-2017")
+                ? "Historique"
+                : row.is_active
+                  ? "À vérifier"
+                  : "Archivé"}
+          </Badge>
+        );
+      },
+    },
+    {
       cle: "source",
       entete: "Source",
       rendu: (row: SectorRow) => (
-        <Badge variant="outline" className="whitespace-nowrap text-[10px]">
-          {row.source || "Non renseignée"}
-        </Badge>
+        <div className="flex flex-col gap-0.5">
+          <Badge variant="outline" className="w-fit whitespace-nowrap text-[10px]">
+            {row.source || "Non renseignée"}
+          </Badge>
+          {row.source_year ? (
+            <span className="text-[10px] text-slate-400">{row.source_year}</span>
+          ) : null}
+        </div>
       ),
     },
     {
@@ -832,22 +914,14 @@ function AdminZones() {
         />
         <Kpi
           label="Quartiers / districts"
-          valeur={`${currentDistrictCount.toLocaleString("fr-FR")} / ${targetDistrictCount.toLocaleString("fr-FR")}`}
-          aide={
-            archivedDistrictCount > 0
-              ? `${archivedDistrictCount.toLocaleString("fr-FR")} historique(s) archivé(s)`
-              : `${Math.max(targetDistrictCount - currentDistrictCount, 0).toLocaleString("fr-FR")} restant(s) à intégrer`
-          }
+          valeur={storedDistrictCount.toLocaleString("fr-FR")}
+          aide={`${currentDistrictCount.toLocaleString("fr-FR")} actuel(s) sur une cible de ${targetDistrictCount.toLocaleString("fr-FR")} · ${archivedDistrictCount.toLocaleString("fr-FR")} archivé(s)`}
           ton="emerald"
         />
         <Kpi
           label="Secteurs"
-          valeur={currentSectorCount.toLocaleString("fr-FR")}
-          aide={
-            archivedSectorCount > 0
-              ? `${archivedSectorCount.toLocaleString("fr-FR")} historique(s) archivé(s)`
-              : "Secteurs actuels vérifiés"
-          }
+          valeur={storedSectorCount.toLocaleString("fr-FR")}
+          aide={`${currentSectorCount.toLocaleString("fr-FR")} actuel(s) · ${archivedSectorCount.toLocaleString("fr-FR")} archivé(s)`}
           ton="rose"
         />
       </div>
@@ -913,13 +987,11 @@ function AdminZones() {
                   </TabsTrigger>
                   <TabsTrigger value="districts" className="gap-1.5">
                     Quartiers / districts
-                    <CountBadge
-                      value={`${currentDistrictCount.toLocaleString("fr-FR")} / ${targetDistrictCount.toLocaleString("fr-FR")}`}
-                    />
+                    <CountBadge value={districts.length.toLocaleString("fr-FR")} />
                   </TabsTrigger>
                   <TabsTrigger value="sectors" className="gap-1.5">
                     Secteurs
-                    <CountBadge value={currentSectorCount.toLocaleString("fr-FR")} />
+                    <CountBadge value={sectors.length.toLocaleString("fr-FR")} />
                   </TabsTrigger>
                 </TabsList>
               </div>
