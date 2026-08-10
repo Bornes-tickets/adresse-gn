@@ -468,7 +468,7 @@ function StatCard({ label, value, icon: Icon, tone }: { label: string; value: nu
         <div className="text-xs uppercase tracking-wide text-slate-500 font-medium">{label}</div>
         <div className="text-2xl font-bold mt-1">{value.toLocaleString("fr-FR")}</div>
       </div>
-      <div className={cn("h-10 w-10 rounded-lg bg-gradient-to-br text-white flex items-center justify-center shadow-md", tones[tone] ?? tones.slate)}>
+      <div className={cn("h-10 w-10 rounded-lg bg-gradient-to-br text-white flex items-center justify-center shadow-md", tones[tone] ?? tones["slate"])}>
         <Icon className="h-5 w-5" />
       </div>
     </Card>
