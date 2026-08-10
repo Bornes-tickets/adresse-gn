@@ -30,6 +30,8 @@ import { Route as MonCompteGuardRouteRouteImport } from './routes/mon-compte/_gu
 import { Route as PSlugRouteImport } from './routes/p.$slug'
 import { Route as ProGuardRouteRouteImport } from './routes/pro/_guard/route'
 import { Route as ProOnboardingRouteImport } from './routes/pro/onboarding'
+import { Route as SupervisorGuardRouteRouteImport } from './routes/supervisor/_guard/route'
+import { Route as SupervisorGuardRouteImport } from './routes/supervisor/_guard'
 import { Route as AdminGuardIndexRouteImport } from './routes/admin/_guard/index'
 import { Route as AdminGuardAbonnementsRouteImport } from './routes/admin/_guard/abonnements'
 import { Route as AdminGuardAddressesRouteImport } from './routes/admin/_guard/addresses'
@@ -64,6 +66,11 @@ import { Route as ProGuardEquipeRouteImport } from './routes/pro/_guard/equipe'
 import { Route as ProGuardEtablissementsRouteImport } from './routes/pro/_guard/etablissements'
 import { Route as ProGuardFacturationRouteImport } from './routes/pro/_guard/facturation'
 import { Route as ProGuardStatistiquesRouteImport } from './routes/pro/_guard/statistiques'
+import { Route as SupervisorGuardIndexRouteImport } from './routes/supervisor/_guard/index'
+import { Route as SupervisorGuardClaimsRouteImport } from './routes/supervisor/_guard/claims'
+import { Route as SupervisorGuardConsultationsRouteImport } from './routes/supervisor/_guard/consultations'
+import { Route as SupervisorGuardInstallationsRouteImport } from './routes/supervisor/_guard/installations'
+import { Route as SupervisorGuardReportsRouteImport } from './routes/supervisor/_guard/reports'
 import { Route as AdminGuardCmsIndexRouteImport } from './routes/admin/_guard/cms/index'
 import { Route as AdminGuardCmsBlogRouteImport } from './routes/admin/_guard/cms/blog'
 import { Route as AdminGuardCmsFaqRouteImport } from './routes/admin/_guard/cms/faq'
@@ -179,6 +186,16 @@ const ProGuardRouteRoute = ProGuardRouteRouteImport.update({
 const ProOnboardingRoute = ProOnboardingRouteImport.update({
   id: '/pro/onboarding',
   path: '/pro/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SupervisorGuardRouteRoute = SupervisorGuardRouteRouteImport.update({
+  id: '/supervisor/_guard',
+  path: '/supervisor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SupervisorGuardRoute = SupervisorGuardRouteImport.update({
+  id: '/supervisor/_guard',
+  path: '/supervisor',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminGuardIndexRoute = AdminGuardIndexRouteImport.update({
@@ -353,6 +370,33 @@ const ProGuardStatistiquesRoute = ProGuardStatistiquesRouteImport.update({
   path: '/statistiques',
   getParentRoute: () => ProGuardRouteRoute,
 } as any)
+const SupervisorGuardIndexRoute = SupervisorGuardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SupervisorGuardRoute,
+} as any)
+const SupervisorGuardClaimsRoute = SupervisorGuardClaimsRouteImport.update({
+  id: '/claims',
+  path: '/claims',
+  getParentRoute: () => SupervisorGuardRoute,
+} as any)
+const SupervisorGuardConsultationsRoute =
+  SupervisorGuardConsultationsRouteImport.update({
+    id: '/consultations',
+    path: '/consultations',
+    getParentRoute: () => SupervisorGuardRoute,
+  } as any)
+const SupervisorGuardInstallationsRoute =
+  SupervisorGuardInstallationsRouteImport.update({
+    id: '/installations',
+    path: '/installations',
+    getParentRoute: () => SupervisorGuardRoute,
+  } as any)
+const SupervisorGuardReportsRoute = SupervisorGuardReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => SupervisorGuardRoute,
+} as any)
 const AdminGuardCmsIndexRoute = AdminGuardCmsIndexRouteImport.update({
   id: '/cms/',
   path: '/cms/',
@@ -426,6 +470,7 @@ export interface FileRoutesByFullPath {
   '/agent': typeof AgentGuardRouteRouteWithChildren
   '/mon-compte': typeof MonCompteGuardRouteRouteWithChildren
   '/pro': typeof ProGuardRouteRouteWithChildren
+  '/supervisor': typeof SupervisorGuardRouteWithChildren
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -464,10 +509,15 @@ export interface FileRoutesByFullPath {
   '/pro/etablissements': typeof ProGuardEtablissementsRoute
   '/pro/facturation': typeof ProGuardFacturationRoute
   '/pro/statistiques': typeof ProGuardStatistiquesRoute
+  '/supervisor/claims': typeof SupervisorGuardClaimsRoute
+  '/supervisor/consultations': typeof SupervisorGuardConsultationsRoute
+  '/supervisor/installations': typeof SupervisorGuardInstallationsRoute
+  '/supervisor/reports': typeof SupervisorGuardReportsRoute
   '/admin/': typeof AdminGuardIndexRoute
   '/agent/': typeof AgentGuardIndexRoute
   '/mon-compte/': typeof MonCompteGuardIndexRoute
   '/pro/': typeof ProGuardIndexRoute
+  '/supervisor/': typeof SupervisorGuardIndexRoute
   '/admin/cms/blog': typeof AdminGuardCmsBlogRoute
   '/admin/cms/faq': typeof AdminGuardCmsFaqRoute
   '/admin/cms/pages': typeof AdminGuardCmsPagesRoute
@@ -490,6 +540,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tarifs': typeof TarifsRoute
+  '/supervisor': typeof SupervisorGuardIndexRoute
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -528,6 +579,10 @@ export interface FileRoutesByTo {
   '/pro/etablissements': typeof ProGuardEtablissementsRoute
   '/pro/facturation': typeof ProGuardFacturationRoute
   '/pro/statistiques': typeof ProGuardStatistiquesRoute
+  '/supervisor/claims': typeof SupervisorGuardClaimsRoute
+  '/supervisor/consultations': typeof SupervisorGuardConsultationsRoute
+  '/supervisor/installations': typeof SupervisorGuardInstallationsRoute
+  '/supervisor/reports': typeof SupervisorGuardReportsRoute
   '/admin': typeof AdminGuardIndexRoute
   '/agent': typeof AgentGuardIndexRoute
   '/mon-compte': typeof MonCompteGuardIndexRoute
@@ -559,6 +614,7 @@ export interface FileRoutesById {
   '/agent/_guard': typeof AgentGuardRouteRouteWithChildren
   '/mon-compte/_guard': typeof MonCompteGuardRouteRouteWithChildren
   '/pro/_guard': typeof ProGuardRouteRouteWithChildren
+  '/supervisor/_guard': typeof SupervisorGuardRouteWithChildren
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -597,10 +653,15 @@ export interface FileRoutesById {
   '/pro/_guard/etablissements': typeof ProGuardEtablissementsRoute
   '/pro/_guard/facturation': typeof ProGuardFacturationRoute
   '/pro/_guard/statistiques': typeof ProGuardStatistiquesRoute
+  '/supervisor/_guard/claims': typeof SupervisorGuardClaimsRoute
+  '/supervisor/_guard/consultations': typeof SupervisorGuardConsultationsRoute
+  '/supervisor/_guard/installations': typeof SupervisorGuardInstallationsRoute
+  '/supervisor/_guard/reports': typeof SupervisorGuardReportsRoute
   '/admin/_guard/': typeof AdminGuardIndexRoute
   '/agent/_guard/': typeof AgentGuardIndexRoute
   '/mon-compte/_guard/': typeof MonCompteGuardIndexRoute
   '/pro/_guard/': typeof ProGuardIndexRoute
+  '/supervisor/_guard/': typeof SupervisorGuardIndexRoute
   '/admin/_guard/cms/blog': typeof AdminGuardCmsBlogRoute
   '/admin/_guard/cms/faq': typeof AdminGuardCmsFaqRoute
   '/admin/_guard/cms/pages': typeof AdminGuardCmsPagesRoute
@@ -629,6 +690,7 @@ export interface FileRouteTypes {
     | '/agent'
     | '/mon-compte'
     | '/pro'
+    | '/supervisor'
     | '/a/$number'
     | '/agent/login'
     | '/blog/$slug'
@@ -667,10 +729,15 @@ export interface FileRouteTypes {
     | '/pro/etablissements'
     | '/pro/facturation'
     | '/pro/statistiques'
+    | '/supervisor/claims'
+    | '/supervisor/consultations'
+    | '/supervisor/installations'
+    | '/supervisor/reports'
     | '/admin/'
     | '/agent/'
     | '/mon-compte/'
     | '/pro/'
+    | '/supervisor/'
     | '/admin/cms/blog'
     | '/admin/cms/faq'
     | '/admin/cms/pages'
@@ -693,6 +760,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/sitemap.xml'
     | '/tarifs'
+    | '/supervisor'
     | '/a/$number'
     | '/agent/login'
     | '/blog/$slug'
@@ -731,6 +799,10 @@ export interface FileRouteTypes {
     | '/pro/etablissements'
     | '/pro/facturation'
     | '/pro/statistiques'
+    | '/supervisor/claims'
+    | '/supervisor/consultations'
+    | '/supervisor/installations'
+    | '/supervisor/reports'
     | '/admin'
     | '/agent'
     | '/mon-compte'
@@ -761,6 +833,7 @@ export interface FileRouteTypes {
     | '/agent/_guard'
     | '/mon-compte/_guard'
     | '/pro/_guard'
+    | '/supervisor/_guard'
     | '/a/$number'
     | '/agent/login'
     | '/blog/$slug'
@@ -799,10 +872,15 @@ export interface FileRouteTypes {
     | '/pro/_guard/etablissements'
     | '/pro/_guard/facturation'
     | '/pro/_guard/statistiques'
+    | '/supervisor/_guard/claims'
+    | '/supervisor/_guard/consultations'
+    | '/supervisor/_guard/installations'
+    | '/supervisor/_guard/reports'
     | '/admin/_guard/'
     | '/agent/_guard/'
     | '/mon-compte/_guard/'
     | '/pro/_guard/'
+    | '/supervisor/_guard/'
     | '/admin/_guard/cms/blog'
     | '/admin/_guard/cms/faq'
     | '/admin/_guard/cms/pages'
@@ -830,6 +908,7 @@ export interface RootRouteChildren {
   AgentGuardRouteRoute: typeof AgentGuardRouteRouteWithChildren
   MonCompteGuardRouteRoute: typeof MonCompteGuardRouteRouteWithChildren
   ProGuardRouteRoute: typeof ProGuardRouteRouteWithChildren
+  SupervisorGuardRouteRoute: typeof SupervisorGuardRouteRoute
   ANumberRoute: typeof ANumberRoute
   AgentLoginRoute: typeof AgentLoginRoute
   BlogSlugRoute: typeof BlogSlugRoute
@@ -837,6 +916,7 @@ export interface RootRouteChildren {
   EtablissementNumberRoute: typeof EtablissementNumberRoute
   PSlugRoute: typeof PSlugRoute
   ProOnboardingRoute: typeof ProOnboardingRoute
+  SupervisorGuardRoute: typeof SupervisorGuardRouteWithChildren
   BlogIndexRoute: typeof BlogIndexRoute
   CommandeOrderRefPaiementRoute: typeof CommandeOrderRefPaiementRoute
   ApiPublicHooksRunBillingRoute: typeof ApiPublicHooksRunBillingRoute
@@ -991,6 +1071,20 @@ declare module '@tanstack/react-router' {
       path: '/pro/onboarding'
       fullPath: '/pro/onboarding'
       preLoaderRoute: typeof ProOnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/supervisor/_guard': {
+      id: '/supervisor/_guard'
+      path: '/supervisor'
+      fullPath: '/supervisor'
+      preLoaderRoute: typeof SupervisorGuardRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/supervisor/_guard': {
+      id: '/supervisor/_guard'
+      path: '/supervisor'
+      fullPath: '/supervisor'
+      preLoaderRoute: typeof SupervisorGuardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/_guard/': {
@@ -1231,6 +1325,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProGuardStatistiquesRouteImport
       parentRoute: typeof ProGuardRouteRoute
     }
+    '/supervisor/_guard/': {
+      id: '/supervisor/_guard/'
+      path: '/'
+      fullPath: '/supervisor/'
+      preLoaderRoute: typeof SupervisorGuardIndexRouteImport
+      parentRoute: typeof SupervisorGuardRoute
+    }
+    '/supervisor/_guard/claims': {
+      id: '/supervisor/_guard/claims'
+      path: '/claims'
+      fullPath: '/supervisor/claims'
+      preLoaderRoute: typeof SupervisorGuardClaimsRouteImport
+      parentRoute: typeof SupervisorGuardRoute
+    }
+    '/supervisor/_guard/consultations': {
+      id: '/supervisor/_guard/consultations'
+      path: '/consultations'
+      fullPath: '/supervisor/consultations'
+      preLoaderRoute: typeof SupervisorGuardConsultationsRouteImport
+      parentRoute: typeof SupervisorGuardRoute
+    }
+    '/supervisor/_guard/installations': {
+      id: '/supervisor/_guard/installations'
+      path: '/installations'
+      fullPath: '/supervisor/installations'
+      preLoaderRoute: typeof SupervisorGuardInstallationsRouteImport
+      parentRoute: typeof SupervisorGuardRoute
+    }
+    '/supervisor/_guard/reports': {
+      id: '/supervisor/_guard/reports'
+      path: '/reports'
+      fullPath: '/supervisor/reports'
+      preLoaderRoute: typeof SupervisorGuardReportsRouteImport
+      parentRoute: typeof SupervisorGuardRoute
+    }
     '/admin/_guard/cms/': {
       id: '/admin/_guard/cms/'
       path: '/cms'
@@ -1432,6 +1561,26 @@ const ProGuardRouteRouteWithChildren = ProGuardRouteRoute._addFileChildren(
   ProGuardRouteRouteChildren,
 )
 
+interface SupervisorGuardRouteChildren {
+  SupervisorGuardClaimsRoute: typeof SupervisorGuardClaimsRoute
+  SupervisorGuardConsultationsRoute: typeof SupervisorGuardConsultationsRoute
+  SupervisorGuardInstallationsRoute: typeof SupervisorGuardInstallationsRoute
+  SupervisorGuardReportsRoute: typeof SupervisorGuardReportsRoute
+  SupervisorGuardIndexRoute: typeof SupervisorGuardIndexRoute
+}
+
+const SupervisorGuardRouteChildren: SupervisorGuardRouteChildren = {
+  SupervisorGuardClaimsRoute: SupervisorGuardClaimsRoute,
+  SupervisorGuardConsultationsRoute: SupervisorGuardConsultationsRoute,
+  SupervisorGuardInstallationsRoute: SupervisorGuardInstallationsRoute,
+  SupervisorGuardReportsRoute: SupervisorGuardReportsRoute,
+  SupervisorGuardIndexRoute: SupervisorGuardIndexRoute,
+}
+
+const SupervisorGuardRouteWithChildren = SupervisorGuardRoute._addFileChildren(
+  SupervisorGuardRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AProposRoute: AProposRoute,
@@ -1446,6 +1595,7 @@ const rootRouteChildren: RootRouteChildren = {
   AgentGuardRouteRoute: AgentGuardRouteRouteWithChildren,
   MonCompteGuardRouteRoute: MonCompteGuardRouteRouteWithChildren,
   ProGuardRouteRoute: ProGuardRouteRouteWithChildren,
+  SupervisorGuardRouteRoute: SupervisorGuardRouteRoute,
   ANumberRoute: ANumberRoute,
   AgentLoginRoute: AgentLoginRoute,
   BlogSlugRoute: BlogSlugRoute,
@@ -1453,6 +1603,7 @@ const rootRouteChildren: RootRouteChildren = {
   EtablissementNumberRoute: EtablissementNumberRoute,
   PSlugRoute: PSlugRoute,
   ProOnboardingRoute: ProOnboardingRoute,
+  SupervisorGuardRoute: SupervisorGuardRouteWithChildren,
   BlogIndexRoute: BlogIndexRoute,
   CommandeOrderRefPaiementRoute: CommandeOrderRefPaiementRoute,
   ApiPublicHooksRunBillingRoute: ApiPublicHooksRunBillingRoute,
