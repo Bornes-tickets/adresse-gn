@@ -1244,6 +1244,119 @@ export type Database = {
           },
         ]
       }
+      installation_plans: {
+        Row: {
+          address_hint: string | null
+          agent_id: string | null
+          beacon_id: string | null
+          commune_id: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          notes: string | null
+          scheduled_date: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          address_hint?: string | null
+          agent_id?: string | null
+          beacon_id?: string | null
+          commune_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          scheduled_date: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          address_hint?: string | null
+          agent_id?: string | null
+          beacon_id?: string | null
+          commune_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          scheduled_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "installation_plans_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installation_plans_beacon_id_fkey"
+            columns: ["beacon_id"]
+            isOneToOne: false
+            referencedRelation: "beacons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installation_plans_beacon_id_fkey"
+            columns: ["beacon_id"]
+            isOneToOne: false
+            referencedRelation: "beacons_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installation_plans_commune_id_fkey"
+            columns: ["commune_id"]
+            isOneToOne: false
+            referencedRelation: "communes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installation_plans_commune_id_fkey"
+            columns: ["commune_id"]
+            isOneToOne: false
+            referencedRelation: "v_geo_current_coverage"
+            referencedColumns: ["commune_id"]
+          },
+          {
+            foreignKeyName: "installation_plans_commune_id_fkey"
+            columns: ["commune_id"]
+            isOneToOne: false
+            referencedRelation: "v_geo_legacy_district_candidates"
+            referencedColumns: ["canonical_commune_id"]
+          },
+          {
+            foreignKeyName: "installation_plans_commune_id_fkey"
+            columns: ["commune_id"]
+            isOneToOne: false
+            referencedRelation: "v_geo_legacy_district_candidates"
+            referencedColumns: ["legacy_commune_id"]
+          },
+          {
+            foreignKeyName: "installation_plans_commune_id_fkey"
+            columns: ["commune_id"]
+            isOneToOne: false
+            referencedRelation: "v_geo_reference"
+            referencedColumns: ["commune_id"]
+          },
+          {
+            foreignKeyName: "installation_plans_commune_id_fkey"
+            columns: ["commune_id"]
+            isOneToOne: false
+            referencedRelation: "v_geo_reference_coverage"
+            referencedColumns: ["commune_id"]
+          },
+          {
+            foreignKeyName: "installation_plans_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       installations: {
         Row: {
           accuracy_m: number | null
@@ -1436,6 +1549,7 @@ export type Database = {
           id: string
           payload: Json | null
           read: boolean | null
+          read_at: string | null
           type: string
           user_id: string | null
         }
@@ -1444,6 +1558,7 @@ export type Database = {
           id?: string
           payload?: Json | null
           read?: boolean | null
+          read_at?: string | null
           type: string
           user_id?: string | null
         }
@@ -1452,6 +1567,7 @@ export type Database = {
           id?: string
           payload?: Json | null
           read?: boolean | null
+          read_at?: string | null
           type?: string
           user_id?: string | null
         }
@@ -1879,6 +1995,7 @@ export type Database = {
           full_name: string | null
           id: string
           phone: string | null
+          preferences: Json
           role: string
         }
         Insert: {
@@ -1886,6 +2003,7 @@ export type Database = {
           full_name?: string | null
           id: string
           phone?: string | null
+          preferences?: Json
           role?: string
         }
         Update: {
@@ -1893,6 +2011,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           phone?: string | null
+          preferences?: Json
           role?: string
         }
         Relationships: []
