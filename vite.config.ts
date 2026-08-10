@@ -15,12 +15,10 @@ export default defineConfig({
   },
   vite: {
     ssr: {
-      // Force Vite/Nitro à bundler ces libs CJS proprement côté serveur
-      // (sinon esbuild casse l'interop tslib -> __extends undefined sur Netlify).
-      noExternal: ["qrcode", "dijkstrajs", "encode-utf8", "pngjs", "tslib"],
-    },
-    optimizeDeps: {
-      include: ["qrcode"],
+      // tslib doit rester bundlé (interop __extends cassée sinon).
+      // qrcode & co restent externes : ce sont des modules CJS que le runner SSR
+      // de dev n'arrive pas à inliner (require/module non définis).
+      noExternal: ["tslib"],
     },
   },
   plugins: [
