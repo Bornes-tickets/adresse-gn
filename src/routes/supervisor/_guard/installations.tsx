@@ -7,6 +7,7 @@ import {
   supervisorReviewInstallation,
   supervisorQcQueue,
 } from "@/lib/supervisor.functions";
+import { useRealtimeInvalidate } from "@/hooks/useRealtimeInvalidate";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -45,6 +46,17 @@ function SupervisorInstallations() {
     queryFn: () => queueFn(),
   });
 
+  // Auto-refresh temps réel
+  useRealtimeInvalidate({
+    table: "installations",
+    invalidate: [["sup-installations"], ["sup-qc-queue"]],
+  });
+  useRealtimeInvalidate({
+    table: "reports",
+    filter: "reason=eq.qc_recheck",
+    invalidate: [["sup-qc-queue"]],
+  });
+
   const review = useMutation({
     mutationFn: (v: { installationId: string | null; reportId: string | null; decision: "valider" | "rejeter"; motif?: string | null }) =>
       reviewFn({ data: v }),
@@ -71,27 +83,9 @@ function SupervisorInstallations() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant={filter === "pending" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setFilter("pending")}
-          >
-            En attente
-          </Button>
-          <Button
-            variant={filter === "validated" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setFilter("validated")}
-          >
-            Validées
-          </Button>
-          <Button
-            variant={filter === null ? "default" : "outline"}
-            size="sm"
-            onClick={() => setFilter(null)}
-          >
-            Toutes
-          </Button>
+          <Button variant={filter === "pending" ? "default" : "outline"} size="sm" onClick={() => setFilter("pending")}>En attente</Button>
+          <Button variant={filter === "validated" ? "default" : "outline"} size="sm" onClick={() => setFilter("validated")}>Validées</Button>
+          <Button variant={filter === null ? "default" : "outline"} size="sm" onClick={() => setFilter(null)}>Toutes</Button>
         </div>
       </header>
 
@@ -210,9 +204,7 @@ function SupervisorInstallations() {
             <DialogTitle>Rejeter cette installation</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <p className="text-sm text-slate-600">
-              Précisez le motif du rejet. L'agent sera notifié.
-            </p>
+            <p className="text-sm text-slate-600">Précisez le motif du rejet. L'agent sera notifié.</p>
             <Textarea
               placeholder="Ex : GPS hors zone, photo illisible, balise mal fixée…"
               value={motif}
