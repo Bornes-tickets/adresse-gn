@@ -7,6 +7,7 @@ import {
   supervisorAgents,
   supervisorZones,
 } from "@/lib/supervisor.functions";
+import { useRealtimeInvalidate } from "@/hooks/useRealtimeInvalidate";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -46,6 +47,12 @@ function SupervisorInstallationReport() {
 
   const { data: agents } = useQuery({ queryKey: ["sup-agents-list"], queryFn: () => agentsFn() });
   const { data: zones } = useQuery({ queryKey: ["sup-zones-list"], queryFn: () => zonesFn() });
+
+  // Auto-refresh temps réel
+  useRealtimeInvalidate({
+    table: "installations",
+    invalidate: [["sup-install-report"]],
+  });
 
   const csvUrl = useMemo(() => {
     if (!data?.rows.length) return null;
