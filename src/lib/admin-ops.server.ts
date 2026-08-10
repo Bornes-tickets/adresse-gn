@@ -1055,3 +1055,25 @@ export async function marquerToutesLues(userId: string) {
   if (error) throw new Error(error.message);
   return { success: true };
 }
+/* --------------------------- PRÉFÉRENCES UTILISATEUR --------------------------- */
+
+export async function chargerPreferences(userId: string) {
+  const { data, error } = await supabaseAdmin
+    .from("profiles")
+    .select("preferences")
+    .eq("id", userId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return (data?.preferences ?? {}) as Record<string, unknown>;
+}
+
+export async function sauverPreferences(userId: string, patch: Record<string, unknown>) {
+  const actuelles = await chargerPreferences(userId);
+  const merged = { ...actuelles, ...patch };
+  const { error } = await supabaseAdmin
+    .from("profiles")
+    .update({ preferences: merged })
+    .eq("id", userId);
+  if (error) throw new Error(error.message);
+  return merged;
+}
