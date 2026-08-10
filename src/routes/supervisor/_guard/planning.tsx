@@ -11,9 +11,9 @@ import {
   supervisorZones,
   supervisorBeacons,
 } from "@/lib/supervisor.functions";
+import { useRealtimeInvalidate } from "@/hooks/useRealtimeInvalidate";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -61,6 +61,12 @@ function SupervisorPlanning() {
   const { data: beacons } = useQuery({
     queryKey: ["sup-beacons-planning"],
     queryFn: () => beaconsFn({ data: { page: 1, pageSize: 200, statuses: ["generated", "assigned"] } }),
+  });
+
+  // Auto-refresh temps réel
+  useRealtimeInvalidate({
+    table: "installation_plans",
+    invalidate: [["sup-plans"]],
   });
 
   const create = useMutation({
@@ -151,11 +157,7 @@ function SupervisorPlanning() {
               </div>
               <div>
                 <label className="text-xs font-medium text-slate-700 mb-1 block">Date prévue *</label>
-                <Input
-                  type="date"
-                  value={form.scheduledDate}
-                  onChange={(e) => setForm({ ...form, scheduledDate: e.target.value })}
-                />
+                <Input type="date" value={form.scheduledDate} onChange={(e) => setForm({ ...form, scheduledDate: e.target.value })} />
               </div>
               <div>
                 <label className="text-xs font-medium text-slate-700 mb-1 block">Repère d'adresse</label>
@@ -167,11 +169,7 @@ function SupervisorPlanning() {
               </div>
               <div>
                 <label className="text-xs font-medium text-slate-700 mb-1 block">Notes internes</label>
-                <Textarea
-                  rows={2}
-                  value={form.notes}
-                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                />
+                <Textarea rows={2} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
               </div>
             </div>
             <DialogFooter>
@@ -236,9 +234,7 @@ function SupervisorPlanning() {
                   <td className="p-3 font-mono text-xs">{p.beacon_number ?? <span className="text-slate-400 italic">à décider</span>}</td>
                   <td className="p-3">{p.commune_name ?? "—"}</td>
                   <td className="p-3 text-xs text-slate-600 max-w-xs truncate">{p.address_hint ?? "—"}</td>
-                  <td className="p-3">
-                    <StatutBadge s={p.status} />
-                  </td>
+                  <td className="p-3"><StatutBadge s={p.status} /></td>
                   <td className="p-3 text-right">
                     <div className="flex gap-1 justify-end">
                       {p.status === "planned" && (
