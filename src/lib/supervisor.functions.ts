@@ -1,4 +1,4 @@
-/** Points d'entrée serveur du back-office Superviseur. Périmètre : lecture + validations. */
+/** Points d'entrée serveur du back-office Superviseur. Périmètre : lecture + validations + planning. */
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
@@ -153,7 +153,6 @@ export const supervisorDrawQc = createServerFn({ method: "POST" })
     return tirerControleQc(data.percent);
   });
 
-/** Le superviseur valide/rejette une installation posée par un agent. */
 export const supervisorReviewInstallation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
@@ -179,6 +178,92 @@ export const supervisorReviewInstallation = createServerFn({ method: "POST" })
     const { statuerInstallation } = await import("@/lib/admin-ops.server");
     await requireSupervisor(context.userId);
     return statuerInstallation({ ...data, validatorId: context.userId });
+  });
+
+/* --------------------------- PLANIFICATION --------------------------- */
+
+export const supervisorPlans = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: Record<string, unknown>) => input ?? {})
+  .handler(async ({ context, data }) => {
+    const { requireSupervisor } = await import("@/lib/admin.server");
+    const { listerPlanifications } = await import("@/lib/admin-ops.server");
+    await requireSupervisor(context.userId);
+    return listerPlanifications({
+      from: (data['from'] as string | null) ?? null,
+      to: (data['to'] as string | null) ?? null,
+      agentId: (data['agentId'] as string | null) ?? null,
+      status: (data['status'] as string | null) ?? null,
+    });
+  });
+
+export const supervisorCreatePlan = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: {
+    beaconId?: string | null;
+    agentId: string;
+    communeId?: string | null;
+    scheduledDate: string;
+    addressHint?: string | null;
+    notes?: string | null;
+  }) => {
+    if (!input.agentId) throw new Error("Agent obligatoire.");
+    if (!input.scheduledDate) throw new Error("Date obligatoire.");
+    return {
+      beaconId: input.beaconId ?? null,
+      agentId: String(input.agentId),
+      communeId: input.communeId ?? null,
+      scheduledDate: String(input.scheduledDate),
+      addressHint: input.addressHint?.trim() || null,
+      notes: input.notes?.trim() || null,
+    };
+  })
+  .handler(async ({ context, data }) => {
+    const { requireSupervisor } = await import("@/lib/admin.server");
+    const { creerPlanification } = await import("@/lib/admin-ops.server");
+    await requireSupervisor(context.userId);
+    return creerPlanification({ ...data, createdBy: context.userId });
+  });
+
+export const supervisorUpdatePlan = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string; patch: Record<string, unknown> }) => ({
+    id: String(input.id),
+    patch: input.patch ?? {},
+  }))
+  .handler(async ({ context, data }) => {
+    const { requireSupervisor } = await import("@/lib/admin.server");
+    const { majPlanification } = await import("@/lib/admin-ops.server");
+    await requireSupervisor(context.userId);
+    return majPlanification(data.id, data.patch as any);
+  });
+
+export const supervisorDeletePlan = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string }) => ({ id: String(input.id) }))
+  .handler(async ({ context, data }) => {
+    const { requireSupervisor } = await import("@/lib/admin.server");
+    const { supprimerPlanification } = await import("@/lib/admin-ops.server");
+    await requireSupervisor(context.userId);
+    return supprimerPlanification(data.id);
+  });
+
+/* --------------------------- RAPPORT INSTALLATIONS --------------------------- */
+
+export const supervisorInstallationReport = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: Record<string, unknown>) => input ?? {})
+  .handler(async ({ context, data }) => {
+    const { requireSupervisor } = await import("@/lib/admin.server");
+    const { rapportInstallations } = await import("@/lib/admin-ops.server");
+    await requireSupervisor(context.userId);
+    return rapportInstallations({
+      from: (data['from'] as string | null) ?? null,
+      to: (data['to'] as string | null) ?? null,
+      agentId: (data['agentId'] as string | null) ?? null,
+      communeId: (data['communeId'] as string | null) ?? null,
+      validation: (data['validation'] as "validated" | "pending" | "rejected" | null) ?? null,
+    });
   });
 
 /* --------------------------- SIGNALEMENTS --------------------------- */
