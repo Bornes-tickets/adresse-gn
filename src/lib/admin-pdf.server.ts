@@ -1,6 +1,6 @@
 /** Génération du PDF de planches QR (12 par page A4, prêt à l'impression). Serveur uniquement. */
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import QRCode from "qrcode";
+import * as QRCode from "qrcode";
 
 const A4 = { w: 595.28, h: 841.89 };
 const COLS = 3;
@@ -29,7 +29,6 @@ function pointilles(
 
 /** Base absolue du site de production, surchargée par PUBLIC_SITE_URL. */
 export const SITE_PAR_DEFAUT = "https://adresse-gn.lovable.app";
-
 export function baseSite(): string {
   const brut = (process.env["PUBLIC_SITE_URL"] ?? "").trim();
   if (!brut) return SITE_PAR_DEFAUT;
@@ -50,9 +49,23 @@ export function urlBalise(baseUrl: string, numero: string): string {
 
 export type MatriceQr = { taille: number; modules: boolean[][] };
 
+/** Résout l'API `create` de qrcode quelle que soit la forme du module (ESM/CJS/interop). */
+function resoudreCreate(): (contenu: string, opts: any) => any {
+  const mod: any = QRCode as any;
+  const create =
+    (typeof mod.create === "function" && mod.create) ||
+    (mod.default && typeof mod.default.create === "function" && mod.default.create) ||
+    null;
+  if (!create) {
+    throw new Error("Module qrcode indisponible : fonction create() introuvable.");
+  }
+  return create;
+}
+
 /** Matrice de modules du QR réellement dessiné (correction d'erreur H). */
 export function matriceQr(contenu: string): MatriceQr {
-  const qr = QRCode.create(contenu, { errorCorrectionLevel: "H" });
+  const create = resoudreCreate();
+  const qr = create(contenu, { errorCorrectionLevel: "H" });
   const taille = qr.modules.size;
   const modules: boolean[][] = [];
   for (let r = 0; r < taille; r += 1) {
@@ -92,13 +105,10 @@ export async function genererPdfQr(
   baseUrl: string,
   fabriquerMatrice: (contenu: string) => MatriceQr = matriceQr,
 ): Promise<{ base64: string; pages: number; url0: string }> {
-
   const racine = baseUrl.replace(/\/+$/, "");
   const doc = await PDFDocument.create();
   const mono = await doc.embedFont(StandardFonts.CourierBold);
   const petite = await doc.embedFont(StandardFonts.Helvetica);
-
-
   const largeurCase = (A4.w - MARGE * 2) / COLS;
   const hauteurCase = (A4.h - MARGE * 2) / ROWS;
   const parPage = COLS * ROWS;
@@ -135,7 +145,6 @@ export async function genererPdfQr(
         );
       }
       const { taille, modules } = validerMatrice(brute, numero);
-
       const module = TAILLE_QR / taille;
       const qx = x0 + (largeurCase - TAILLE_QR) / 2;
       const qy = y0 + (hauteurCase - TAILLE_QR) / 2 + 16;
@@ -143,7 +152,6 @@ export async function genererPdfQr(
       for (let r = 0; r < taille; r += 1) {
         for (let c = 0; c < taille; c += 1) {
           if (modules[r]![c]) {
-
             page.drawRectangle({
               x: qx + c * module,
               y: qy + (taille - 1 - r) * module,
@@ -164,6 +172,7 @@ export async function genererPdfQr(
         font: mono,
         color: rgb(0.1, 0.12, 0.16),
       });
+
       const legende = "adresse.gn";
       page.drawText(legende, {
         x: x0 + (largeurCase - petite.widthOfTextAtSize(legende, 7)) / 2,
