@@ -1,28 +1,20 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
-  Radio,
-  Package,
-  MapPin,
   ClipboardCheck,
   AlertTriangle,
   MessageSquareWarning,
-  UserCog,
-  Map,
+  Database,
   ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const MENU = [
   { to: "/supervisor", label: "Tableau de bord", icon: LayoutDashboard, exact: true },
-  { to: "/supervisor/installations", label: "Validations installations", icon: ClipboardCheck },
+  { to: "/supervisor/installations", label: "Validations", icon: ClipboardCheck },
   { to: "/supervisor/reports", label: "Signalements", icon: AlertTriangle },
   { to: "/supervisor/claims", label: "Réclamations", icon: MessageSquareWarning },
-  { to: "/supervisor/beacons", label: "Balises", icon: Radio },
-  { to: "/supervisor/lots", label: "Lots", icon: Package },
-  { to: "/supervisor/addresses", label: "Adresses", icon: MapPin },
-  { to: "/supervisor/agents", label: "Agents", icon: UserCog },
-  { to: "/supervisor/zones", label: "Zones", icon: Map },
+  { to: "/supervisor/consultations", label: "Consultations", icon: Database },
 ];
 
 export const Route = createFileRoute("/supervisor/_guard")({
@@ -67,10 +59,7 @@ function SupervisorLayout() {
           })}
         </nav>
         <div className="absolute bottom-0 left-0 right-0 border-t border-slate-200 p-3">
-          <Link
-            to="/"
-            className="block text-xs text-slate-500 hover:text-slate-700"
-          >
+          <Link to="/" className="block text-xs text-slate-500 hover:text-slate-700">
             ← Retour au site
           </Link>
         </div>
