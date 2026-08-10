@@ -3,6 +3,7 @@
  * utilisateurs, agents, lots, zones, planification. Bloqué des bundles navigateur.
  */
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import type { Database, Json } from "@/integrations/supabase/types";
 import { parsePointHex, parsePolygonHex, pointDansAnneaux } from "@/lib/admin.server";
 
 const PAGE_MAX = 100;
@@ -616,7 +617,9 @@ export async function majPlanification(id: string, patch: {
   notes?: string | null;
   communeId?: string | null;
 }) {
-  const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  const update: Database["public"]["Tables"]["installation_plans"]["Update"] = {
+    updated_at: new Date().toISOString(),
+  };
   if (patch.agentId) update['agent_id'] = patch.agentId;
   if (patch.scheduledDate) update['scheduled_date'] = patch.scheduledDate;
   if (patch.status) update['status'] = patch.status;
@@ -1064,16 +1067,39 @@ export async function chargerPreferences(userId: string) {
     .eq("id", userId)
     .maybeSingle();
   if (error) throw new Error(error.message);
-  return (data?.preferences ?? {}) as Record<string, unknown>;
+  const preferences = data?.preferences;
+  if (!preferences || Array.isArray(preferences) || typeof preferences !== "object") {
+    return { theme: null, accent: null };
+  }
+  return {
+    theme: preferences['theme'] === "dark" || preferences['theme'] === "light"
+      ? preferences['theme']
+      : null,
+    accent: typeof preferences['accent'] === "string" ? preferences['accent'] : null,
+  };
 }
 
-export async function sauverPreferences(userId: string, patch: Record<string, unknown>) {
-  const actuelles = await chargerPreferences(userId);
-  const merged = { ...actuelles, ...patch };
+export async function sauverPreferences(
+  userId: string,
+  patch: { theme?: "dark" | "light"; accent?: string },
+) {
+  const { data, error: readError } = await supabaseAdmin
+    .from("profiles")
+    .select("preferences")
+    .eq("id", userId)
+    .maybeSingle();
+  if (readError) throw new Error(readError.message);
+  const current = data?.preferences;
+  const base: { [key: string]: Json | undefined } =
+    current && !Array.isArray(current) && typeof current === "object" ? current : {};
+  const merged: Json = { ...base, ...patch };
   const { error } = await supabaseAdmin
     .from("profiles")
     .update({ preferences: merged })
     .eq("id", userId);
   if (error) throw new Error(error.message);
-  return merged;
+  return {
+    theme: merged['theme'] === "dark" || merged['theme'] === "light" ? merged['theme'] : null,
+    accent: typeof merged['accent'] === "string" ? merged['accent'] : null,
+  };
 }

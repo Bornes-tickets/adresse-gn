@@ -22,6 +22,11 @@ type ThemeCtx = {
   accentInfo: typeof ACCENTS[number];
 };
 
+type SupervisorPreferences = {
+  theme: "dark" | "light" | null;
+  accent: string | null;
+};
+
 const Ctx = createContext<ThemeCtx | null>(null);
 
 export function useTheme() {
@@ -40,12 +45,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const { data: prefs } = useQuery({
     queryKey: ["supervisor-preferences"],
-    queryFn: () => loadFn(),
+    queryFn: () => loadFn() as Promise<SupervisorPreferences>,
     staleTime: 5 * 60 * 1000,
   });
 
   const save = useMutation({
-    mutationFn: (patch: Record<string, unknown>) => saveFn({ data: patch }),
+    mutationFn: (patch: { theme?: "dark" | "light"; accent?: AccentKey }) =>
+      saveFn({ data: patch }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["supervisor-preferences"] }),
   });
 
@@ -62,15 +68,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   // Sync depuis la DB si présent
   useEffect(() => {
     if (!prefs) return;
-    if (prefs['theme'] === "dark" || prefs['theme'] === "light") {
-      const isDark = prefs['theme'] === "dark";
+    if (prefs.theme === "dark" || prefs.theme === "light") {
+      const isDark = prefs.theme === "dark";
       setDarkState(isDark);
       document.documentElement.classList.toggle("dark", isDark);
       localStorage.setItem("sv-theme", isDark ? "dark" : "light");
     }
-    if (prefs['accent'] && ACCENTS.find((a) => a.key === prefs['accent'])) {
-      setAccentState(prefs['accent'] as AccentKey);
-      localStorage.setItem("sv-accent", prefs['accent'] as string);
+    if (prefs.accent && ACCENTS.some((a) => a.key === prefs.accent)) {
+      setAccentState(prefs.accent as AccentKey);
+      localStorage.setItem("sv-accent", prefs.accent);
     }
   }, [prefs]);
 

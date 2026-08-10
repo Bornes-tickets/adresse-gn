@@ -227,7 +227,17 @@ export const supervisorCreatePlan = createServerFn({ method: "POST" })
 
 export const supervisorUpdatePlan = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { id: string; patch: Record<string, unknown> }) => ({
+  .inputValidator((input: {
+    id: string;
+    patch: {
+      agentId?: string;
+      scheduledDate?: string;
+      status?: string;
+      addressHint?: string | null;
+      notes?: string | null;
+      communeId?: string | null;
+    };
+  }) => ({
     id: String(input.id),
     patch: input.patch ?? {},
   }))
@@ -235,7 +245,7 @@ export const supervisorUpdatePlan = createServerFn({ method: "POST" })
     const { requireSupervisor } = await import("@/lib/admin.server");
     const { majPlanification } = await import("@/lib/admin-ops.server");
     await requireSupervisor(context.userId);
-    return majPlanification(data.id, data.patch as any);
+    return majPlanification(data.id, data.patch);
   });
 
 export const supervisorDeletePlan = createServerFn({ method: "POST" })
@@ -362,7 +372,10 @@ export const supervisorPreferences = createServerFn({ method: "POST" })
 
 export const supervisorSavePreferences = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: Record<string, unknown>) => input ?? {})
+  .inputValidator((input: { theme?: "dark" | "light"; accent?: string }) => ({
+    theme: input?.theme,
+    accent: input?.accent,
+  }))
   .handler(async ({ context, data }) => {
     const { requireSupervisor } = await import("@/lib/admin.server");
     const { sauverPreferences } = await import("@/lib/admin-ops.server");

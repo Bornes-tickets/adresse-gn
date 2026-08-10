@@ -88,7 +88,7 @@ function BlogIndex() {
                 <Link
                   to="/blog/$slug"
                   params={{ slug: article.slug }}
-                  search={{}}
+                  search={{ preview: undefined }}
                   className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/60 bg-card transition-all duration-200 hover:-translate-y-1 hover:shadow-brand"
                 >
                   {article.cover_url ? (
