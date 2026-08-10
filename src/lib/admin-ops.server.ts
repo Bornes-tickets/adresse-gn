@@ -1020,3 +1020,38 @@ export async function supprimerZone(niveau: "region" | "commune" | "district", i
   if (error) throw new Error(error.message);
   return { success: true };
 }
+/* --------------------------- NOTIFICATIONS --------------------------- */
+
+export async function listerNotifications(userId: string, limite = 20) {
+  const { data, error } = await supabaseAdmin
+    .from("notifications")
+    .select("id, type, payload, read_at, created_at")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(limite);
+  if (error) throw new Error(error.message);
+  return {
+    rows: data ?? [],
+    nonLues: (data ?? []).filter((n: any) => !n.read_at).length,
+  };
+}
+
+export async function marquerNotificationLue(userId: string, id: string) {
+  const { error } = await supabaseAdmin
+    .from("notifications")
+    .update({ read_at: new Date().toISOString() })
+    .eq("id", id)
+    .eq("user_id", userId);
+  if (error) throw new Error(error.message);
+  return { success: true };
+}
+
+export async function marquerToutesLues(userId: string) {
+  const { error } = await supabaseAdmin
+    .from("notifications")
+    .update({ read_at: new Date().toISOString() })
+    .eq("user_id", userId)
+    .is("read_at", null);
+  if (error) throw new Error(error.message);
+  return { success: true };
+}
