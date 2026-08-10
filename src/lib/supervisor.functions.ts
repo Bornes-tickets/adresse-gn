@@ -349,3 +349,23 @@ export const supervisorMarkAllNotificationsRead = createServerFn({ method: "POST
     await requireSupervisor(context.userId);
     return marquerToutesLues(context.userId);
   });
+/* --------------------------- PRÉFÉRENCES --------------------------- */
+
+export const supervisorPreferences = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { requireSupervisor } = await import("@/lib/admin.server");
+    const { chargerPreferences } = await import("@/lib/admin-ops.server");
+    await requireSupervisor(context.userId);
+    return chargerPreferences(context.userId);
+  });
+
+export const supervisorSavePreferences = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: Record<string, unknown>) => input ?? {})
+  .handler(async ({ context, data }) => {
+    const { requireSupervisor } = await import("@/lib/admin.server");
+    const { sauverPreferences } = await import("@/lib/admin-ops.server");
+    await requireSupervisor(context.userId);
+    return sauverPreferences(context.userId, data);
+  });
