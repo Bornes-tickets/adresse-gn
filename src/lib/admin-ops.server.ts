@@ -648,7 +648,7 @@ export async function rapportInstallations(f: {
 }) {
   let req = supabaseAdmin
     .from("installations")
-    .select("id, beacon_id, agent_id, gps_lat, gps_lng, accuracy_m, photo_url, installed_at, validated_at, validator_id, beacons(public_number, category), addresses(commune_id, communes(name))")
+    .select("id, beacon_id, agent_id, gps_lat, gps_lng, accuracy_m, photo_url, installed_at, validated_at, validator_id, beacons(public_number, category)")
     .order("installed_at", { ascending: false })
     .limit(2000);
   if (f.from) req = req.gte("installed_at", f.from);
@@ -664,14 +664,28 @@ export async function rapportInstallations(f: {
     const { data: ags } = await supabaseAdmin.from("agents").select("id, badge_number").in("id", agents);
     for (const a of ags ?? []) badges.set(a.id, a.badge_number);
   }
+  // installations n'a pas de lien direct vers addresses : on passe par beacon_id
+  const beaconIds = [...new Set((data ?? []).map((i: any) => i.beacon_id).filter(Boolean))] as string[];
+  const communesParBalise = new Map<string, { id: string | null; name: string | null }>();
+  if (beaconIds.length) {
+    const { data: adrs } = await supabaseAdmin
+      .from("addresses")
+      .select("beacon_id, commune_id, communes(name)")
+      .in("beacon_id", beaconIds);
+    for (const a of (adrs ?? []) as any[]) {
+      if (a.beacon_id && !communesParBalise.has(a.beacon_id)) {
+        communesParBalise.set(a.beacon_id, { id: a.commune_id ?? null, name: a.communes?.name ?? null });
+      }
+    }
+  }
   let rows = (data ?? []).map((i: any) => ({
     id: i.id,
     beacon_number: i.beacons?.public_number ?? null,
     beacon_category: i.beacons?.category ?? null,
     agent_id: i.agent_id,
     agent_badge: badges.get(i.agent_id ?? "") ?? null,
-    commune_name: i.addresses?.communes?.name ?? null,
-    commune_id: i.addresses?.commune_id ?? null,
+    commune_name: communesParBalise.get(i.beacon_id ?? "")?.name ?? null,
+    commune_id: communesParBalise.get(i.beacon_id ?? "")?.id ?? null,
     gps_lat: i.gps_lat,
     gps_lng: i.gps_lng,
     accuracy_m: i.accuracy_m,
@@ -680,6 +694,7 @@ export async function rapportInstallations(f: {
     validated_at: i.validated_at,
   }));
   if (f.communeId) rows = rows.filter((r) => r.commune_id === f.communeId);
+
   const stats = {
     total: rows.length,
     validees: rows.filter((r) => r.validated_at).length,
