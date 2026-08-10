@@ -1,6 +1,6 @@
 /**
  * Opérations serveur du back-office : balises, adresses, QC, signalements,
- * utilisateurs, agents, lots, zones. Bloqué des bundles navigateur.
+ * utilisateurs, agents, lots, zones, planification. Bloqué des bundles navigateur.
  */
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { parsePointHex, parsePolygonHex, pointDansAnneaux } from "@/lib/admin.server";
@@ -98,14 +98,12 @@ export async function genererLotBalises(input: {
 }) {
   const quantite = Math.min(Math.max(Math.round(input.quantity), 1), 1000);
   const category = input.category?.trim() || "residential";
-
   const { data: region } = await supabaseAdmin
     .from("regions")
     .select("id, code")
     .eq("id", input.regionId)
     .maybeSingle();
   if (!region) throw new Error("Zone (région) introuvable.");
-
   const prefixe = `GN-${region.code.toUpperCase().slice(0, 3)}-`;
   const { data: derniere } = await supabaseAdmin
     .from("beacons")
@@ -116,7 +114,6 @@ export async function genererLotBalises(input: {
     .maybeSingle();
   let suivant = derniere ? Number(derniere.public_number.slice(-6)) + 1 : 100011;
   if (!Number.isFinite(suivant)) suivant = 100011;
-
   const code = `LOT-${region.code.toUpperCase()}-${Date.now().toString().slice(-8)}`;
   const { data: lot, error: erreurLot } = await supabaseAdmin
     .from("lots")
@@ -131,7 +128,6 @@ export async function genererLotBalises(input: {
     .select("id, code")
     .single();
   if (erreurLot || !lot) throw new Error(erreurLot?.message ?? "Création du lot impossible.");
-
   const balises = Array.from({ length: quantite }, (_, i) => ({
     public_number: `${prefixe}${String(suivant + i).padStart(6, "0")}`,
     qr_token: crypto.randomUUID(),
@@ -139,10 +135,8 @@ export async function genererLotBalises(input: {
     lot_id: lot.id,
     category,
   }));
-
   const { error: erreurBalises } = await supabaseAdmin.from("beacons").insert(balises);
   if (erreurBalises) throw new Error(erreurBalises.message);
-
   return {
     success: true,
     lotId: lot.id,
@@ -349,7 +343,6 @@ export async function listerInstallations(f: {
   };
 }
 
-/** Tire un échantillon d'installations non validées à revérifier. */
 export async function tirerControleQc(pourcentage: number) {
   const taux = Math.min(Math.max(pourcentage, 1), 100) / 100;
   const depuis = new Date(Date.now() - 30 * 864e5).toISOString();
@@ -497,9 +490,7 @@ export async function statuerInstallation(input: {
 }
 
 export async function metriquesAgents() {
-  const { data: agents } = await supabaseAdmin
-    .from("agents")
-    .select("id, badge_number, active");
+  const { data: agents } = await supabaseAdmin.from("agents").select("id, badge_number, active");
   const { data: installations } = await supabaseAdmin
     .from("installations")
     .select("agent_id, accuracy_m, validated_at")
@@ -509,18 +500,10 @@ export async function metriquesAgents() {
     .select("id, description")
     .eq("reason", "qc_reject")
     .limit(2000);
-  const parAgent = new Map<
-    string,
-    { total: number; valides: number; precision: number; nbPrecision: number }
-  >();
+  const parAgent = new Map<string, { total: number; valides: number; precision: number; nbPrecision: number }>();
   for (const i of installations ?? []) {
     if (!i.agent_id) continue;
-    const cur = parAgent.get(i.agent_id) ?? {
-      total: 0,
-      valides: 0,
-      precision: 0,
-      nbPrecision: 0,
-    };
+    const cur = parAgent.get(i.agent_id) ?? { total: 0, valides: 0, precision: 0, nbPrecision: 0 };
     cur.total += 1;
     if (i.validated_at) cur.valides += 1;
     if (i.accuracy_m != null) {
@@ -544,6 +527,167 @@ export async function metriquesAgents() {
       precision_moyenne: m?.nbPrecision ? Math.round(m.precision / m.nbPrecision) : null,
     };
   });
+}
+
+/* --------------------------- PLANIFICATION --------------------------- */
+
+export async function listerPlanifications(f: {
+  from?: string | null;
+  to?: string | null;
+  agentId?: string | null;
+  status?: string | null;
+}) {
+  let req = supabaseAdmin
+    .from("installation_plans")
+    .select("id, beacon_id, agent_id, commune_id, scheduled_date, address_hint, notes, status, created_at, beacons(public_number), communes(name)")
+    .order("scheduled_date", { ascending: true })
+    .limit(500);
+  if (f.from) req = req.gte("scheduled_date", f.from);
+  if (f.to) req = req.lte("scheduled_date", f.to);
+  if (f.agentId) req = req.eq("agent_id", f.agentId);
+  if (f.status) req = req.eq("status", f.status);
+  const { data, error } = await req;
+  if (error) throw new Error(error.message);
+  const agents = [...new Set((data ?? []).map((p: any) => p.agent_id).filter(Boolean))] as string[];
+  const badges = new Map<string, { badge: string; nom: string | null }>();
+  if (agents.length) {
+    const [{ data: ags }, { data: profs }] = await Promise.all([
+      supabaseAdmin.from("agents").select("id, badge_number").in("id", agents),
+      supabaseAdmin.from("profiles").select("id, full_name").in("id", agents),
+    ]);
+    for (const a of ags ?? []) badges.set(a.id, { badge: a.badge_number, nom: null });
+    for (const p of profs ?? []) {
+      const cur = badges.get(p.id) ?? { badge: "—", nom: null };
+      cur.nom = p.full_name ?? null;
+      badges.set(p.id, cur);
+    }
+  }
+  return (data ?? []).map((p: any) => ({
+    id: p.id,
+    beacon_id: p.beacon_id,
+    beacon_number: p.beacons?.public_number ?? null,
+    agent_id: p.agent_id,
+    agent_badge: badges.get(p.agent_id ?? "")?.badge ?? null,
+    agent_name: badges.get(p.agent_id ?? "")?.nom ?? null,
+    commune_id: p.commune_id,
+    commune_name: p.communes?.name ?? null,
+    scheduled_date: p.scheduled_date,
+    address_hint: p.address_hint,
+    notes: p.notes,
+    status: p.status,
+    created_at: p.created_at,
+  }));
+}
+
+export async function creerPlanification(input: {
+  beaconId: string | null;
+  agentId: string;
+  communeId: string | null;
+  scheduledDate: string;
+  addressHint: string | null;
+  notes: string | null;
+  createdBy: string;
+}) {
+  if (!input.agentId) throw new Error("Agent obligatoire.");
+  if (!input.scheduledDate) throw new Error("Date obligatoire.");
+  const { data, error } = await supabaseAdmin
+    .from("installation_plans")
+    .insert({
+      beacon_id: input.beaconId,
+      agent_id: input.agentId,
+      commune_id: input.communeId,
+      scheduled_date: input.scheduledDate,
+      address_hint: input.addressHint,
+      notes: input.notes,
+      status: "planned",
+      created_by: input.createdBy,
+    })
+    .select("id")
+    .single();
+  if (error) throw new Error(error.message);
+  return { success: true, id: data.id };
+}
+
+export async function majPlanification(id: string, patch: {
+  agentId?: string;
+  scheduledDate?: string;
+  status?: string;
+  addressHint?: string | null;
+  notes?: string | null;
+  communeId?: string | null;
+}) {
+  const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (patch.agentId) update['agent_id'] = patch.agentId;
+  if (patch.scheduledDate) update['scheduled_date'] = patch.scheduledDate;
+  if (patch.status) update['status'] = patch.status;
+  if (patch.addressHint !== undefined) update['address_hint'] = patch.addressHint;
+  if (patch.notes !== undefined) update['notes'] = patch.notes;
+  if (patch.communeId !== undefined) update['commune_id'] = patch.communeId;
+  const { error } = await supabaseAdmin.from("installation_plans").update(update).eq("id", id);
+  if (error) throw new Error(error.message);
+  return { success: true };
+}
+
+export async function supprimerPlanification(id: string) {
+  const { error } = await supabaseAdmin.from("installation_plans").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+  return { success: true };
+}
+
+/* --------------------------- RAPPORT D'INSTALLATIONS --------------------------- */
+
+export async function rapportInstallations(f: {
+  from?: string | null;
+  to?: string | null;
+  agentId?: string | null;
+  communeId?: string | null;
+  validation?: "validated" | "pending" | "rejected" | null;
+}) {
+  let req = supabaseAdmin
+    .from("installations")
+    .select("id, beacon_id, agent_id, gps_lat, gps_lng, accuracy_m, photo_url, installed_at, validated_at, validator_id, beacons(public_number, category), addresses(commune_id, communes(name))")
+    .order("installed_at", { ascending: false })
+    .limit(2000);
+  if (f.from) req = req.gte("installed_at", f.from);
+  if (f.to) req = req.lte("installed_at", f.to);
+  if (f.agentId) req = req.eq("agent_id", f.agentId);
+  if (f.validation === "validated") req = req.not("validated_at", "is", null);
+  if (f.validation === "pending") req = req.is("validated_at", null);
+  const { data, error } = await req;
+  if (error) throw new Error(error.message);
+  const agents = [...new Set((data ?? []).map((i: any) => i.agent_id).filter(Boolean))] as string[];
+  const badges = new Map<string, string>();
+  if (agents.length) {
+    const { data: ags } = await supabaseAdmin.from("agents").select("id, badge_number").in("id", agents);
+    for (const a of ags ?? []) badges.set(a.id, a.badge_number);
+  }
+  let rows = (data ?? []).map((i: any) => ({
+    id: i.id,
+    beacon_number: i.beacons?.public_number ?? null,
+    beacon_category: i.beacons?.category ?? null,
+    agent_id: i.agent_id,
+    agent_badge: badges.get(i.agent_id ?? "") ?? null,
+    commune_name: i.addresses?.communes?.name ?? null,
+    commune_id: i.addresses?.commune_id ?? null,
+    gps_lat: i.gps_lat,
+    gps_lng: i.gps_lng,
+    accuracy_m: i.accuracy_m,
+    photo_url: i.photo_url,
+    installed_at: i.installed_at,
+    validated_at: i.validated_at,
+  }));
+  if (f.communeId) rows = rows.filter((r) => r.commune_id === f.communeId);
+  const stats = {
+    total: rows.length,
+    validees: rows.filter((r) => r.validated_at).length,
+    enAttente: rows.filter((r) => !r.validated_at).length,
+    precisionMoyenne: (() => {
+      const avecPrec = rows.filter((r) => r.accuracy_m != null);
+      if (!avecPrec.length) return null;
+      return Math.round(avecPrec.reduce((s, r) => s + Number(r.accuracy_m), 0) / avecPrec.length);
+    })(),
+  };
+  return { rows, stats };
 }
 
 /* --------------------------- SIGNALEMENTS --------------------------- */
@@ -581,12 +725,7 @@ export async function listerSignalements(statut: string | null) {
   }));
 }
 
-export async function majSignalement(input: {
-  id: string;
-  status: string;
-  comment?: string | null;
-  actorId: string;
-}) {
+export async function majSignalement(input: { id: string; status: string; comment?: string | null; actorId: string }) {
   const { data: report } = await supabaseAdmin
     .from("reports")
     .select("id, reporter_id, description")
