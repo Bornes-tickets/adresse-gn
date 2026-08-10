@@ -320,3 +320,32 @@ export const supervisorDecideClaim = createServerFn({ method: "POST" })
     const identite = await requireSupervisor(context.userId);
     return deciderReclamation({ ...data, actorId: identite.userId });
   });
+/* --------------------------- NOTIFICATIONS --------------------------- */
+
+export const supervisorNotifications = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { requireSupervisor } = await import("@/lib/admin.server");
+    const { listerNotifications } = await import("@/lib/admin-ops.server");
+    await requireSupervisor(context.userId);
+    return listerNotifications(context.userId);
+  });
+
+export const supervisorMarkNotificationRead = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string }) => ({ id: String(input.id) }))
+  .handler(async ({ context, data }) => {
+    const { requireSupervisor } = await import("@/lib/admin.server");
+    const { marquerNotificationLue } = await import("@/lib/admin-ops.server");
+    await requireSupervisor(context.userId);
+    return marquerNotificationLue(context.userId, data.id);
+  });
+
+export const supervisorMarkAllNotificationsRead = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { requireSupervisor } = await import("@/lib/admin.server");
+    const { marquerToutesLues } = await import("@/lib/admin-ops.server");
+    await requireSupervisor(context.userId);
+    return marquerToutesLues(context.userId);
+  });
