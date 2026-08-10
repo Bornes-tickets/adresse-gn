@@ -20,7 +20,6 @@ export async function requireAdmin(userId: string): Promise<AdminIdentity> {
     .select("id, role, full_name")
     .eq("id", userId)
     .maybeSingle();
-
   if (error) throw new Error("Impossible de vérifier le rôle administrateur.");
   if (!data || (data.role !== "admin" && data.role !== "super_admin")) {
     throw new Error("Accès refusé : espace réservé à l'administration.");
@@ -36,6 +35,23 @@ export async function requireSuperAdmin(userId: string): Promise<AdminIdentity> 
   return identite;
 }
 
+/**
+ * Autorise Superviseur, Admin et Super Admin.
+ * Utilisé par le back-office /supervisor pour les lectures larges et les validations QC.
+ */
+export async function requireSupervisor(userId: string): Promise<AdminIdentity> {
+  const { data, error } = await supabaseAdmin
+    .from("profiles")
+    .select("id, role, full_name")
+    .eq("id", userId)
+    .maybeSingle();
+  if (error) throw new Error("Impossible de vérifier le rôle.");
+  if (!data || !["supervisor", "admin", "super_admin"].includes(data.role)) {
+    throw new Error("Accès refusé : espace réservé aux superviseurs.");
+  }
+  return { userId, role: data.role, fullName: data.full_name ?? null };
+}
+
 /* ------------------------------------------------------------------ */
 /* Géométries : décodage EWKB hexadécimal renvoyé par PostgREST        */
 /* ------------------------------------------------------------------ */
@@ -46,7 +62,6 @@ class Lecteur {
   private i = 0;
   private readonly vue: DataView;
   private petitBoutien = true;
-
   constructor(hex: string) {
     const octets = new Uint8Array(hex.length / 2);
     for (let k = 0; k < octets.length; k += 1) {
@@ -54,18 +69,15 @@ class Lecteur {
     }
     this.vue = new DataView(octets.buffer);
   }
-
   ordre() {
     this.petitBoutien = this.vue.getUint8(this.i) === 1;
     this.i += 1;
   }
-
   uint32() {
     const v = this.vue.getUint32(this.i, this.petitBoutien);
     this.i += 4;
     return v;
   }
-
   double() {
     const v = this.vue.getFloat64(this.i, this.petitBoutien);
     this.i += 8;
@@ -101,7 +113,6 @@ export function parsePolygonHex(hex: string | null | undefined): LatLng[][] {
     if ((type & 0x20000000) !== 0) l.uint32();
     const base = type & 0xff;
     const anneaux: LatLng[][] = [];
-
     const lirePolygone = () => {
       const nbAnneaux = l.uint32();
       for (let a = 0; a < nbAnneaux; a += 1) {
@@ -115,7 +126,6 @@ export function parsePolygonHex(hex: string | null | undefined): LatLng[][] {
         if (a === 0) anneaux.push(points);
       }
     };
-
     if (base === 3) {
       lirePolygone();
     } else if (base === 6) {
@@ -180,12 +190,10 @@ export interface DashboardData {
   objectifs: { cle: string; valeur: number; cible: number }[];
 }
 
-
 export async function chargerDashboard(): Promise<DashboardData> {
   const maintenant = new Date();
   const il7j = new Date(maintenant.getTime() - 7 * 864e5).toISOString();
   const il30j = new Date(maintenant.getTime() - 30 * 864e5);
-
   const compte = async (
     table: "beacons" | "addresses" | "reports" | "agents" | "installations",
     filtres: (q: any) => any,
@@ -195,7 +203,6 @@ export async function chargerDashboard(): Promise<DashboardData> {
     );
     return count ?? 0;
   };
-
   const [
     balisesActives,
     balisesGenerees,
@@ -213,17 +220,14 @@ export async function chargerDashboard(): Promise<DashboardData> {
     compte("reports", (q) => q.in("status", ["new", "in_review"])),
     compte("agents", (q) => q.eq("active", true)),
   ]);
-
   const il90j = new Date(maintenant.getTime() - 90 * 864e5);
   const il14j = new Date(maintenant.getTime() - 14 * 864e5).toISOString();
   const debutMois = new Date(maintenant.getFullYear(), maintenant.getMonth(), 1).toISOString();
-
   const { data: installs } = await supabaseAdmin
     .from("installations")
     .select("installed_at")
     .gte("installed_at", il90j.toISOString())
     .limit(20000);
-
   const parJour = new Map<string, number>();
   for (let i = 89; i >= 0; i -= 1) {
     parJour.set(jourIso(new Date(maintenant.getTime() - i * 864e5)), 0);
@@ -232,13 +236,11 @@ export async function chargerDashboard(): Promise<DashboardData> {
     const jour = (ligne.installed_at ?? "").slice(0, 10);
     if (parJour.has(jour)) parJour.set(jour, (parJour.get(jour) ?? 0) + 1);
   }
-
   const { data: adresses } = await supabaseAdmin
     .from("addresses")
     .select("category, visibility, location, created_at, communes(name), beacons(public_number)")
     .eq("status", "active")
     .limit(2000);
-
   const cats = new Map<string, number>();
   const zones = new Map<string, number>();
   const points: DashboardData["points"] = [];
@@ -255,7 +257,6 @@ export async function chargerDashboard(): Promise<DashboardData> {
       });
     }
   }
-
   const STATUTS = ["generated", "assigned", "active", "suspended", "cancelled"] as const;
   const statutsBalises = await Promise.all(
     STATUTS.map(async (statut) => ({
@@ -263,7 +264,6 @@ export async function chargerDashboard(): Promise<DashboardData> {
       total: await compte("beacons", (q) => q.eq("status", statut)),
     })),
   );
-
   const periode = async (
     table: "installations" | "addresses" | "orders",
     colonne: string,
@@ -275,7 +275,6 @@ export async function chargerDashboard(): Promise<DashboardData> {
       if (fin) r = r.lt(colonne, fin);
       return r;
     });
-
   const [
     adresses7j,
     adresses7jPrec,
@@ -293,7 +292,6 @@ export async function chargerDashboard(): Promise<DashboardData> {
     periode("installations", "installed_at", debutMois),
     periode("addresses", "created_at", debutMois),
   ]);
-
   const [recentInstalls, recentOrders, recentReports, paiementsMois] = await Promise.all([
     supabaseAdmin
       .from("installations")
@@ -317,12 +315,10 @@ export async function chargerDashboard(): Promise<DashboardData> {
       .gte("paid_at", debutMois)
       .limit(5000),
   ]);
-
   const revenusMois = (paiementsMois.data ?? []).reduce(
     (t, p: any) => t + Number(p.amount_gnf ?? 0),
     0,
   );
-
   return {
     balisesActives,
     balisesGenerees,
@@ -388,7 +384,6 @@ export async function rechercheGlobale(terme: string): Promise<GlobalSearchResul
   const q = terme.trim();
   if (q.length < 2) return { balises: [], adresses: [], utilisateurs: [] };
   const motif = `%${q}%`;
-
   const [balises, adresses, utilisateurs] = await Promise.all([
     supabaseAdmin
       .from("beacons")
@@ -406,7 +401,6 @@ export async function rechercheGlobale(terme: string): Promise<GlobalSearchResul
       .or(`full_name.ilike.${motif},phone.ilike.${motif}`)
       .limit(6),
   ]);
-
   return {
     balises: (balises.data ?? []).map((b: any) => ({
       id: b.id,
@@ -426,7 +420,6 @@ export async function rechercheGlobale(terme: string): Promise<GlobalSearchResul
     })),
   };
 }
-
 
 /* ------------------------------------------------------------------ */
 /* Journal d'audit                                                     */
@@ -449,16 +442,13 @@ export async function listerAudit(f: {
     })
     .order("created_at", { ascending: false })
     .range(debut, debut + f.pageSize - 1);
-
   if (f.actorId) q = q.eq("actor_id", f.actorId);
   if (f.action) q = q.eq("action", f.action);
   if (f.entity) q = q.eq("entity", f.entity);
   if (f.from) q = q.gte("created_at", f.from);
   if (f.to) q = q.lte("created_at", f.to);
-
   const { data, count, error } = await q;
   if (error) throw new Error(error.message);
-
   const acteurs = [...new Set((data ?? []).map((l) => l.actor_id).filter(Boolean))] as string[];
   const noms = new Map<string, string>();
   if (acteurs.length > 0) {
@@ -468,7 +458,6 @@ export async function listerAudit(f: {
       .in("id", acteurs);
     for (const p of profils ?? []) noms.set(p.id, p.full_name ?? "");
   }
-
   return {
     rows: (data ?? []).map((l) => ({ ...l, actor_name: noms.get(l.actor_id ?? "") ?? null })),
     total: count ?? 0,
@@ -494,7 +483,6 @@ export interface AnalyticsData {
 export async function chargerAnalytics(jours: number): Promise<AnalyticsData> {
   const depuis = new Date(Date.now() - jours * 864e5);
   const depuisIso = depuis.toISOString();
-
   const [{ data: recherches }, { data: itineraires }] = await Promise.all([
     supabaseAdmin
       .from("search_logs")
@@ -507,7 +495,6 @@ export async function chargerAnalytics(jours: number): Promise<AnalyticsData> {
       .gte("launched_at", depuisIso)
       .limit(20000),
   ]);
-
   const parJour = new Map<string, number>();
   for (let i = jours - 1; i >= 0; i -= 1) {
     parJour.set(jourIso(new Date(Date.now() - i * 864e5)), 0);
@@ -520,32 +507,26 @@ export async function chargerAnalytics(jours: number): Promise<AnalyticsData> {
       parRequete.set(r.query, (parRequete.get(r.query) ?? 0) + 1);
     }
   }
-
   const providers = new Map<string, number>();
   for (const it of itineraires ?? []) {
     providers.set(it.provider ?? "inconnu", (providers.get(it.provider ?? "inconnu") ?? 0) + 1);
   }
-
   const top = [...parRequete.entries()]
     .map(([numero, total]) => ({ numero, total }))
     .sort((a, b) => b.total - a.total)
     .slice(0, 20);
-
   const { data: adresses } = await supabaseAdmin
     .from("addresses")
     .select("location")
     .eq("status", "active")
     .limit(2000);
-
   const chaleur: AnalyticsData["chaleur"] = [];
   for (const a of (adresses ?? []) as any[]) {
     const p = parsePointHex(a.location);
     if (p) chaleur.push({ ...p, poids: 1 });
   }
-
   const recherchesTotal = recherches?.length ?? 0;
   const itinerairesTotal = itineraires?.length ?? 0;
-
   return {
     recherchesParJour: [...parJour.entries()].map(([jour, total]) => ({ jour, total })),
     recherchesTotal,
