@@ -1,14 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
-  supervisorNotifications,
-  supervisorMarkNotificationRead,
-  supervisorMarkAllNotificationsRead,
+  supervisorNotifications, supervisorMarkNotificationRead, supervisorMarkAllNotificationsRead, supervisorWhoami,
 } from "@/lib/supervisor.functions";
 import { Bell, Check, CheckCheck, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const LIBELLES: Record<string, { titre: string; couleur: string }> = {
   qc_reject: { titre: "Contrôle qualité rejeté", couleur: "text-rose-500" },
@@ -19,14 +19,22 @@ const LIBELLES: Record<string, { titre: string; couleur: string }> = {
 export function NotificationsPanel({ dark }: { dark: boolean }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [pulse, setPulse] = useState(false);
   const listFn = useServerFn(supervisorNotifications);
   const markFn = useServerFn(supervisorMarkNotificationRead);
   const markAllFn = useServerFn(supervisorMarkAllNotificationsRead);
+  const whoamiFn = useServerFn(supervisorWhoami);
+
+  const { data: me } = useQuery({
+    queryKey: ["supervisor-whoami"],
+    queryFn: () => whoamiFn(),
+    staleTime: 5 * 60 * 1000,
+  });
 
   const { data } = useQuery({
     queryKey: ["supervisor-notifications"],
     queryFn: () => listFn(),
-    refetchInterval: 30_000,
+    refetchInterval: 60_000,
   });
 
   const mark = useMutation({
@@ -39,6 +47,29 @@ export function NotificationsPanel({ dark }: { dark: boolean }) {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["supervisor-notifications"] }),
   });
 
+  // Realtime : écoute les INSERT sur notifications pour cet utilisateur
+  useEffect(() => {
+    if (!me?.userId) return;
+    const channel = supabase
+      .channel(`notifications:${me.userId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${me.userId}` },
+        (payload) => {
+          const meta = LIBELLES[(payload.new as any).type] ?? { titre: "Nouvelle notification", couleur: "text-slate-500" };
+          toast(meta.titre, {
+            description: (payload.new as any).payload?.motif ?? "Vous avez une nouvelle notification.",
+            icon: "🔔",
+          });
+          setPulse(true);
+          setTimeout(() => setPulse(false), 2000);
+          qc.invalidateQueries({ queryKey: ["supervisor-notifications"] });
+        },
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [me?.userId, qc]);
+
   const nonLues = data?.nonLues ?? 0;
 
   return (
@@ -48,6 +79,7 @@ export function NotificationsPanel({ dark }: { dark: boolean }) {
         className={cn(
           "relative h-9 w-9 rounded-lg flex items-center justify-center transition",
           dark ? "text-slate-400 hover:text-slate-100 hover:bg-slate-800" : "text-slate-500 hover:text-slate-900 hover:bg-slate-100",
+          pulse && "animate-bounce",
         )}
       >
         <Bell className="h-4 w-4" />
@@ -55,6 +87,9 @@ export function NotificationsPanel({ dark }: { dark: boolean }) {
           <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center animate-in zoom-in duration-200">
             {nonLues > 9 ? "9+" : nonLues}
           </span>
+        )}
+        {pulse && (
+          <span className="absolute inset-0 rounded-lg animate-ping bg-rose-500/30" />
         )}
       </button>
 
@@ -73,7 +108,13 @@ export function NotificationsPanel({ dark }: { dark: boolean }) {
               )}
             >
               <div className={cn("flex items-center justify-between px-4 py-3 border-b", dark ? "border-slate-800" : "border-slate-100")}>
-                <div className="font-semibold text-sm">Notifications</div>
+                <div className="flex items-center gap-2">
+                  <div className="font-semibold text-sm">Notifications</div>
+                  <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Temps réel
+                  </span>
+                </div>
                 <div className="flex items-center gap-1">
                   {nonLues > 0 && (
                     <button
@@ -83,10 +124,7 @@ export function NotificationsPanel({ dark }: { dark: boolean }) {
                       <CheckCheck className="h-3 w-3" /> Tout marquer lu
                     </button>
                   )}
-                  <button
-                    onClick={() => setOpen(false)}
-                    className={cn("p-1 rounded", dark ? "hover:bg-slate-800 text-slate-500" : "hover:bg-slate-100 text-slate-400")}
-                  >
+                  <button onClick={() => setOpen(false)} className={cn("p-1 rounded", dark ? "hover:bg-slate-800 text-slate-500" : "hover:bg-slate-100 text-slate-400")}>
                     <X className="h-3.5 w-3.5" />
                   </button>
                 </div>
