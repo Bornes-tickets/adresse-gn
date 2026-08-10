@@ -1081,7 +1081,10 @@ export async function chargerPreferences(userId: string) {
 
 export async function sauverPreferences(
   userId: string,
-  patch: { theme?: "dark" | "light"; accent?: string },
+  patch: {
+    theme?: "dark" | "light" | undefined;
+    accent?: string | undefined;
+  },
 ) {
   const { data, error: readError } = await supabaseAdmin
     .from("profiles")
