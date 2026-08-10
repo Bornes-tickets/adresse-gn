@@ -69,6 +69,8 @@ import { Route as SupervisorGuardIndexRouteImport } from './routes/supervisor/_g
 import { Route as SupervisorGuardClaimsRouteImport } from './routes/supervisor/_guard/claims'
 import { Route as SupervisorGuardConsultationsRouteImport } from './routes/supervisor/_guard/consultations'
 import { Route as SupervisorGuardInstallationsRouteImport } from './routes/supervisor/_guard/installations'
+import { Route as SupervisorGuardPlanningRouteImport } from './routes/supervisor/_guard/planning'
+import { Route as SupervisorGuardReportInstallationsRouteImport } from './routes/supervisor/_guard/report-installations'
 import { Route as SupervisorGuardReportsRouteImport } from './routes/supervisor/_guard/reports'
 import { Route as AdminGuardCmsIndexRouteImport } from './routes/admin/_guard/cms/index'
 import { Route as AdminGuardCmsBlogRouteImport } from './routes/admin/_guard/cms/blog'
@@ -386,6 +388,17 @@ const SupervisorGuardInstallationsRoute =
     path: '/installations',
     getParentRoute: () => SupervisorGuardRouteRoute,
   } as any)
+const SupervisorGuardPlanningRoute = SupervisorGuardPlanningRouteImport.update({
+  id: '/planning',
+  path: '/planning',
+  getParentRoute: () => SupervisorGuardRouteRoute,
+} as any)
+const SupervisorGuardReportInstallationsRoute =
+  SupervisorGuardReportInstallationsRouteImport.update({
+    id: '/report-installations',
+    path: '/report-installations',
+    getParentRoute: () => SupervisorGuardRouteRoute,
+  } as any)
 const SupervisorGuardReportsRoute = SupervisorGuardReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
@@ -506,6 +519,8 @@ export interface FileRoutesByFullPath {
   '/supervisor/claims': typeof SupervisorGuardClaimsRoute
   '/supervisor/consultations': typeof SupervisorGuardConsultationsRoute
   '/supervisor/installations': typeof SupervisorGuardInstallationsRoute
+  '/supervisor/planning': typeof SupervisorGuardPlanningRoute
+  '/supervisor/report-installations': typeof SupervisorGuardReportInstallationsRoute
   '/supervisor/reports': typeof SupervisorGuardReportsRoute
   '/admin/': typeof AdminGuardIndexRoute
   '/agent/': typeof AgentGuardIndexRoute
@@ -575,6 +590,8 @@ export interface FileRoutesByTo {
   '/supervisor/claims': typeof SupervisorGuardClaimsRoute
   '/supervisor/consultations': typeof SupervisorGuardConsultationsRoute
   '/supervisor/installations': typeof SupervisorGuardInstallationsRoute
+  '/supervisor/planning': typeof SupervisorGuardPlanningRoute
+  '/supervisor/report-installations': typeof SupervisorGuardReportInstallationsRoute
   '/supervisor/reports': typeof SupervisorGuardReportsRoute
   '/admin': typeof AdminGuardIndexRoute
   '/agent': typeof AgentGuardIndexRoute
@@ -650,6 +667,8 @@ export interface FileRoutesById {
   '/supervisor/_guard/claims': typeof SupervisorGuardClaimsRoute
   '/supervisor/_guard/consultations': typeof SupervisorGuardConsultationsRoute
   '/supervisor/_guard/installations': typeof SupervisorGuardInstallationsRoute
+  '/supervisor/_guard/planning': typeof SupervisorGuardPlanningRoute
+  '/supervisor/_guard/report-installations': typeof SupervisorGuardReportInstallationsRoute
   '/supervisor/_guard/reports': typeof SupervisorGuardReportsRoute
   '/admin/_guard/': typeof AdminGuardIndexRoute
   '/agent/_guard/': typeof AgentGuardIndexRoute
@@ -726,6 +745,8 @@ export interface FileRouteTypes {
     | '/supervisor/claims'
     | '/supervisor/consultations'
     | '/supervisor/installations'
+    | '/supervisor/planning'
+    | '/supervisor/report-installations'
     | '/supervisor/reports'
     | '/admin/'
     | '/agent/'
@@ -795,6 +816,8 @@ export interface FileRouteTypes {
     | '/supervisor/claims'
     | '/supervisor/consultations'
     | '/supervisor/installations'
+    | '/supervisor/planning'
+    | '/supervisor/report-installations'
     | '/supervisor/reports'
     | '/admin'
     | '/agent'
@@ -869,6 +892,8 @@ export interface FileRouteTypes {
     | '/supervisor/_guard/claims'
     | '/supervisor/_guard/consultations'
     | '/supervisor/_guard/installations'
+    | '/supervisor/_guard/planning'
+    | '/supervisor/_guard/report-installations'
     | '/supervisor/_guard/reports'
     | '/admin/_guard/'
     | '/agent/_guard/'
@@ -1339,6 +1364,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SupervisorGuardInstallationsRouteImport
       parentRoute: typeof SupervisorGuardRouteRoute
     }
+    '/supervisor/_guard/planning': {
+      id: '/supervisor/_guard/planning'
+      path: '/planning'
+      fullPath: '/supervisor/planning'
+      preLoaderRoute: typeof SupervisorGuardPlanningRouteImport
+      parentRoute: typeof SupervisorGuardRouteRoute
+    }
+    '/supervisor/_guard/report-installations': {
+      id: '/supervisor/_guard/report-installations'
+      path: '/report-installations'
+      fullPath: '/supervisor/report-installations'
+      preLoaderRoute: typeof SupervisorGuardReportInstallationsRouteImport
+      parentRoute: typeof SupervisorGuardRouteRoute
+    }
     '/supervisor/_guard/reports': {
       id: '/supervisor/_guard/reports'
       path: '/reports'
@@ -1551,6 +1590,8 @@ interface SupervisorGuardRouteRouteChildren {
   SupervisorGuardClaimsRoute: typeof SupervisorGuardClaimsRoute
   SupervisorGuardConsultationsRoute: typeof SupervisorGuardConsultationsRoute
   SupervisorGuardInstallationsRoute: typeof SupervisorGuardInstallationsRoute
+  SupervisorGuardPlanningRoute: typeof SupervisorGuardPlanningRoute
+  SupervisorGuardReportInstallationsRoute: typeof SupervisorGuardReportInstallationsRoute
   SupervisorGuardReportsRoute: typeof SupervisorGuardReportsRoute
   SupervisorGuardIndexRoute: typeof SupervisorGuardIndexRoute
 }
@@ -1559,6 +1600,9 @@ const SupervisorGuardRouteRouteChildren: SupervisorGuardRouteRouteChildren = {
   SupervisorGuardClaimsRoute: SupervisorGuardClaimsRoute,
   SupervisorGuardConsultationsRoute: SupervisorGuardConsultationsRoute,
   SupervisorGuardInstallationsRoute: SupervisorGuardInstallationsRoute,
+  SupervisorGuardPlanningRoute: SupervisorGuardPlanningRoute,
+  SupervisorGuardReportInstallationsRoute:
+    SupervisorGuardReportInstallationsRoute,
   SupervisorGuardReportsRoute: SupervisorGuardReportsRoute,
   SupervisorGuardIndexRoute: SupervisorGuardIndexRoute,
 }
