@@ -3,9 +3,9 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supervisorReports, supervisorUpdateReport } from "@/lib/supervisor.functions";
+import { useRealtimeInvalidate } from "@/hooks/useRealtimeInvalidate";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
@@ -44,9 +44,14 @@ function SupervisorReports() {
     queryFn: () => listFn({ data: { status: filter } }),
   });
 
+  // Auto-refresh temps réel
+  useRealtimeInvalidate({
+    table: "reports",
+    invalidate: [["sup-reports"]],
+  });
+
   const update = useMutation({
-    mutationFn: (v: { id: string; status: string; comment?: string | null }) =>
-      updateFn({ data: v }),
+    mutationFn: (v: { id: string; status: string; comment?: string | null }) => updateFn({ data: v }),
     onSuccess: () => {
       toast.success("Signalement mis à jour.");
       qc.invalidateQueries({ queryKey: ["sup-reports"] });
@@ -68,12 +73,7 @@ function SupervisorReports() {
 
       <div className="flex gap-2 flex-wrap">
         {STATUTS.map((s) => (
-          <Button
-            key={s.label}
-            variant={filter === s.key ? "default" : "outline"}
-            size="sm"
-            onClick={() => setFilter(s.key)}
-          >
+          <Button key={s.label} variant={filter === s.key ? "default" : "outline"} size="sm" onClick={() => setFilter(s.key)}>
             {s.label}
           </Button>
         ))}
@@ -110,9 +110,7 @@ function SupervisorReports() {
                   <td className="p-3 text-slate-600 text-xs">
                     {r.created_at ? new Date(r.created_at).toLocaleString("fr-FR") : "—"}
                   </td>
-                  <td className="p-3">
-                    <StatutBadge s={r.status} />
-                  </td>
+                  <td className="p-3"><StatutBadge s={r.status} /></td>
                   <td className="p-3 text-right">
                     <Button size="sm" variant="outline" onClick={() => { setEditing(r); setNewStatus(r.status); }}>
                       Traiter
