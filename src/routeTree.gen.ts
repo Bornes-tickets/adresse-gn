@@ -31,7 +31,6 @@ import { Route as PSlugRouteImport } from './routes/p.$slug'
 import { Route as ProGuardRouteRouteImport } from './routes/pro/_guard/route'
 import { Route as ProOnboardingRouteImport } from './routes/pro/onboarding'
 import { Route as SupervisorGuardRouteRouteImport } from './routes/supervisor/_guard/route'
-import { Route as SupervisorGuardRouteImport } from './routes/supervisor/_guard'
 import { Route as AdminGuardIndexRouteImport } from './routes/admin/_guard/index'
 import { Route as AdminGuardAbonnementsRouteImport } from './routes/admin/_guard/abonnements'
 import { Route as AdminGuardAddressesRouteImport } from './routes/admin/_guard/addresses'
@@ -189,11 +188,6 @@ const ProOnboardingRoute = ProOnboardingRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const SupervisorGuardRouteRoute = SupervisorGuardRouteRouteImport.update({
-  id: '/supervisor/_guard',
-  path: '/supervisor',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SupervisorGuardRoute = SupervisorGuardRouteImport.update({
   id: '/supervisor/_guard',
   path: '/supervisor',
   getParentRoute: () => rootRouteImport,
@@ -373,29 +367,29 @@ const ProGuardStatistiquesRoute = ProGuardStatistiquesRouteImport.update({
 const SupervisorGuardIndexRoute = SupervisorGuardIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => SupervisorGuardRoute,
+  getParentRoute: () => SupervisorGuardRouteRoute,
 } as any)
 const SupervisorGuardClaimsRoute = SupervisorGuardClaimsRouteImport.update({
   id: '/claims',
   path: '/claims',
-  getParentRoute: () => SupervisorGuardRoute,
+  getParentRoute: () => SupervisorGuardRouteRoute,
 } as any)
 const SupervisorGuardConsultationsRoute =
   SupervisorGuardConsultationsRouteImport.update({
     id: '/consultations',
     path: '/consultations',
-    getParentRoute: () => SupervisorGuardRoute,
+    getParentRoute: () => SupervisorGuardRouteRoute,
   } as any)
 const SupervisorGuardInstallationsRoute =
   SupervisorGuardInstallationsRouteImport.update({
     id: '/installations',
     path: '/installations',
-    getParentRoute: () => SupervisorGuardRoute,
+    getParentRoute: () => SupervisorGuardRouteRoute,
   } as any)
 const SupervisorGuardReportsRoute = SupervisorGuardReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
-  getParentRoute: () => SupervisorGuardRoute,
+  getParentRoute: () => SupervisorGuardRouteRoute,
 } as any)
 const AdminGuardCmsIndexRoute = AdminGuardCmsIndexRouteImport.update({
   id: '/cms/',
@@ -470,7 +464,7 @@ export interface FileRoutesByFullPath {
   '/agent': typeof AgentGuardRouteRouteWithChildren
   '/mon-compte': typeof MonCompteGuardRouteRouteWithChildren
   '/pro': typeof ProGuardRouteRouteWithChildren
-  '/supervisor': typeof SupervisorGuardRouteWithChildren
+  '/supervisor': typeof SupervisorGuardRouteRouteWithChildren
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -540,7 +534,6 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tarifs': typeof TarifsRoute
-  '/supervisor': typeof SupervisorGuardIndexRoute
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -587,6 +580,7 @@ export interface FileRoutesByTo {
   '/agent': typeof AgentGuardIndexRoute
   '/mon-compte': typeof MonCompteGuardIndexRoute
   '/pro': typeof ProGuardIndexRoute
+  '/supervisor': typeof SupervisorGuardIndexRoute
   '/admin/cms/blog': typeof AdminGuardCmsBlogRoute
   '/admin/cms/faq': typeof AdminGuardCmsFaqRoute
   '/admin/cms/pages': typeof AdminGuardCmsPagesRoute
@@ -614,7 +608,7 @@ export interface FileRoutesById {
   '/agent/_guard': typeof AgentGuardRouteRouteWithChildren
   '/mon-compte/_guard': typeof MonCompteGuardRouteRouteWithChildren
   '/pro/_guard': typeof ProGuardRouteRouteWithChildren
-  '/supervisor/_guard': typeof SupervisorGuardRouteWithChildren
+  '/supervisor/_guard': typeof SupervisorGuardRouteRouteWithChildren
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -760,7 +754,6 @@ export interface FileRouteTypes {
     | '/signup'
     | '/sitemap.xml'
     | '/tarifs'
-    | '/supervisor'
     | '/a/$number'
     | '/agent/login'
     | '/blog/$slug'
@@ -807,6 +800,7 @@ export interface FileRouteTypes {
     | '/agent'
     | '/mon-compte'
     | '/pro'
+    | '/supervisor'
     | '/admin/cms/blog'
     | '/admin/cms/faq'
     | '/admin/cms/pages'
@@ -908,7 +902,7 @@ export interface RootRouteChildren {
   AgentGuardRouteRoute: typeof AgentGuardRouteRouteWithChildren
   MonCompteGuardRouteRoute: typeof MonCompteGuardRouteRouteWithChildren
   ProGuardRouteRoute: typeof ProGuardRouteRouteWithChildren
-  SupervisorGuardRouteRoute: typeof SupervisorGuardRouteRoute
+  SupervisorGuardRouteRoute: typeof SupervisorGuardRouteRouteWithChildren
   ANumberRoute: typeof ANumberRoute
   AgentLoginRoute: typeof AgentLoginRoute
   BlogSlugRoute: typeof BlogSlugRoute
@@ -916,7 +910,6 @@ export interface RootRouteChildren {
   EtablissementNumberRoute: typeof EtablissementNumberRoute
   PSlugRoute: typeof PSlugRoute
   ProOnboardingRoute: typeof ProOnboardingRoute
-  SupervisorGuardRoute: typeof SupervisorGuardRouteWithChildren
   BlogIndexRoute: typeof BlogIndexRoute
   CommandeOrderRefPaiementRoute: typeof CommandeOrderRefPaiementRoute
   ApiPublicHooksRunBillingRoute: typeof ApiPublicHooksRunBillingRoute
@@ -1078,13 +1071,6 @@ declare module '@tanstack/react-router' {
       path: '/supervisor'
       fullPath: '/supervisor'
       preLoaderRoute: typeof SupervisorGuardRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/supervisor/_guard': {
-      id: '/supervisor/_guard'
-      path: '/supervisor'
-      fullPath: '/supervisor'
-      preLoaderRoute: typeof SupervisorGuardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/_guard/': {
@@ -1330,35 +1316,35 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/supervisor/'
       preLoaderRoute: typeof SupervisorGuardIndexRouteImport
-      parentRoute: typeof SupervisorGuardRoute
+      parentRoute: typeof SupervisorGuardRouteRoute
     }
     '/supervisor/_guard/claims': {
       id: '/supervisor/_guard/claims'
       path: '/claims'
       fullPath: '/supervisor/claims'
       preLoaderRoute: typeof SupervisorGuardClaimsRouteImport
-      parentRoute: typeof SupervisorGuardRoute
+      parentRoute: typeof SupervisorGuardRouteRoute
     }
     '/supervisor/_guard/consultations': {
       id: '/supervisor/_guard/consultations'
       path: '/consultations'
       fullPath: '/supervisor/consultations'
       preLoaderRoute: typeof SupervisorGuardConsultationsRouteImport
-      parentRoute: typeof SupervisorGuardRoute
+      parentRoute: typeof SupervisorGuardRouteRoute
     }
     '/supervisor/_guard/installations': {
       id: '/supervisor/_guard/installations'
       path: '/installations'
       fullPath: '/supervisor/installations'
       preLoaderRoute: typeof SupervisorGuardInstallationsRouteImport
-      parentRoute: typeof SupervisorGuardRoute
+      parentRoute: typeof SupervisorGuardRouteRoute
     }
     '/supervisor/_guard/reports': {
       id: '/supervisor/_guard/reports'
       path: '/reports'
       fullPath: '/supervisor/reports'
       preLoaderRoute: typeof SupervisorGuardReportsRouteImport
-      parentRoute: typeof SupervisorGuardRoute
+      parentRoute: typeof SupervisorGuardRouteRoute
     }
     '/admin/_guard/cms/': {
       id: '/admin/_guard/cms/'
@@ -1561,7 +1547,7 @@ const ProGuardRouteRouteWithChildren = ProGuardRouteRoute._addFileChildren(
   ProGuardRouteRouteChildren,
 )
 
-interface SupervisorGuardRouteChildren {
+interface SupervisorGuardRouteRouteChildren {
   SupervisorGuardClaimsRoute: typeof SupervisorGuardClaimsRoute
   SupervisorGuardConsultationsRoute: typeof SupervisorGuardConsultationsRoute
   SupervisorGuardInstallationsRoute: typeof SupervisorGuardInstallationsRoute
@@ -1569,7 +1555,7 @@ interface SupervisorGuardRouteChildren {
   SupervisorGuardIndexRoute: typeof SupervisorGuardIndexRoute
 }
 
-const SupervisorGuardRouteChildren: SupervisorGuardRouteChildren = {
+const SupervisorGuardRouteRouteChildren: SupervisorGuardRouteRouteChildren = {
   SupervisorGuardClaimsRoute: SupervisorGuardClaimsRoute,
   SupervisorGuardConsultationsRoute: SupervisorGuardConsultationsRoute,
   SupervisorGuardInstallationsRoute: SupervisorGuardInstallationsRoute,
@@ -1577,9 +1563,8 @@ const SupervisorGuardRouteChildren: SupervisorGuardRouteChildren = {
   SupervisorGuardIndexRoute: SupervisorGuardIndexRoute,
 }
 
-const SupervisorGuardRouteWithChildren = SupervisorGuardRoute._addFileChildren(
-  SupervisorGuardRouteChildren,
-)
+const SupervisorGuardRouteRouteWithChildren =
+  SupervisorGuardRouteRoute._addFileChildren(SupervisorGuardRouteRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -1595,7 +1580,7 @@ const rootRouteChildren: RootRouteChildren = {
   AgentGuardRouteRoute: AgentGuardRouteRouteWithChildren,
   MonCompteGuardRouteRoute: MonCompteGuardRouteRouteWithChildren,
   ProGuardRouteRoute: ProGuardRouteRouteWithChildren,
-  SupervisorGuardRouteRoute: SupervisorGuardRouteRoute,
+  SupervisorGuardRouteRoute: SupervisorGuardRouteRouteWithChildren,
   ANumberRoute: ANumberRoute,
   AgentLoginRoute: AgentLoginRoute,
   BlogSlugRoute: BlogSlugRoute,
@@ -1603,7 +1588,6 @@ const rootRouteChildren: RootRouteChildren = {
   EtablissementNumberRoute: EtablissementNumberRoute,
   PSlugRoute: PSlugRoute,
   ProOnboardingRoute: ProOnboardingRoute,
-  SupervisorGuardRoute: SupervisorGuardRouteWithChildren,
   BlogIndexRoute: BlogIndexRoute,
   CommandeOrderRefPaiementRoute: CommandeOrderRefPaiementRoute,
   ApiPublicHooksRunBillingRoute: ApiPublicHooksRunBillingRoute,
@@ -1613,13 +1597,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
