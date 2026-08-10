@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supervisorClaims, supervisorDecideClaim } from "@/lib/supervisor.functions";
+import { useRealtimeInvalidate } from "@/hooks/useRealtimeInvalidate";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -41,9 +42,15 @@ function SupervisorClaims() {
     queryFn: () => listFn({ data: { statut: filter } }),
   });
 
+  // Auto-refresh temps réel
+  // ⚠️ Adapte le nom "address_claims" si ta table s'appelle autrement (ex : claims, reclamations)
+  useRealtimeInvalidate({
+    table: "address_claims",
+    invalidate: [["sup-claims"]],
+  });
+
   const decide = useMutation({
-    mutationFn: (v: { id: string; decision: "approved" | "rejected"; note?: string | null }) =>
-      decideFn({ data: v }),
+    mutationFn: (v: { id: string; decision: "approved" | "rejected"; note?: string | null }) => decideFn({ data: v }),
     onSuccess: () => {
       toast.success("Décision enregistrée.");
       qc.invalidateQueries({ queryKey: ["sup-claims"] });
@@ -65,12 +72,7 @@ function SupervisorClaims() {
 
       <div className="flex gap-2 flex-wrap">
         {STATUTS.map((s) => (
-          <Button
-            key={s.label}
-            variant={filter === s.key ? "default" : "outline"}
-            size="sm"
-            onClick={() => setFilter(s.key)}
-          >
+          <Button key={s.label} variant={filter === s.key ? "default" : "outline"} size="sm" onClick={() => setFilter(s.key)}>
             {s.label}
           </Button>
         ))}
@@ -117,20 +119,10 @@ function SupervisorClaims() {
                   <td className="p-3 text-right">
                     {c.status !== "approved" && c.status !== "rejected" && (
                       <div className="flex gap-1 justify-end">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-emerald-700 border-emerald-300"
-                          onClick={() => setDecision({ id: c.id, d: "approved" })}
-                        >
+                        <Button size="sm" variant="outline" className="text-emerald-700 border-emerald-300" onClick={() => setDecision({ id: c.id, d: "approved" })}>
                           <Check className="h-4 w-4 mr-1" /> Approuver
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-rose-700 border-rose-300"
-                          onClick={() => setDecision({ id: c.id, d: "rejected" })}
-                        >
+                        <Button size="sm" variant="outline" className="text-rose-700 border-rose-300" onClick={() => setDecision({ id: c.id, d: "rejected" })}>
                           <X className="h-4 w-4 mr-1" /> Rejeter
                         </Button>
                       </div>
