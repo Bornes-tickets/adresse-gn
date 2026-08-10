@@ -1,6 +1,6 @@
 /** Génération du PDF de planches QR (12 par page A4, prêt à l'impression). Serveur uniquement. */
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import * as QRCode from "qrcode";
+import * as QRCode from "qrcode/lib/core/qrcode.js";
 
 const A4 = { w: 595.28, h: 841.89 };
 const COLS = 3;
