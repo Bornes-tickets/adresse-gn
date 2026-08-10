@@ -4,20 +4,33 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
-  CalendarClock, Search, RefreshCw, Play, CheckCircle2, XCircle, RotateCcw,
-  User, Phone, Package, Filter, Clock, ArrowRight, AlertCircle, Users,
+  CalendarClock,
+  Search,
+  RefreshCw,
+  Play,
+  CheckCircle2,
+  XCircle,
+  RotateCcw,
+  User,
+  Phone,
+  Package,
+  Filter,
+  Clock,
+  ArrowRight,
+  AlertCircle,
+  Users,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatDateTimeFr } from "@/lib/admin";
 import {
-  adminAffecterInstallation, adminInstallationsAPlanifier, adminStatutInstallationAttente,
+  adminAffecterInstallation,
+  adminInstallationsAPlanifier,
+  adminStatutInstallationAttente,
 } from "@/lib/payment.functions";
 import { cn } from "@/lib/utils";
 
@@ -35,7 +48,12 @@ export const Route = createFileRoute("/admin/_guard/installations-attente")({
 const STATUTS = [
   { valeur: "pending", label: "En attente", cls: "bg-amber-100 text-amber-700 border-amber-200", icon: Clock },
   { valeur: "assigned", label: "Assignée", cls: "bg-sky-100 text-sky-700 border-sky-200", icon: User },
-  { valeur: "planned", label: "Planifiée", cls: "bg-violet-100 text-violet-700 border-violet-200", icon: CalendarClock },
+  {
+    valeur: "planned",
+    label: "Planifiée",
+    cls: "bg-violet-100 text-violet-700 border-violet-200",
+    icon: CalendarClock,
+  },
   { valeur: "done", label: "Terminée", cls: "bg-emerald-100 text-emerald-700 border-emerald-200", icon: CheckCircle2 },
   { valeur: "cancelled", label: "Annulée", cls: "bg-slate-200 text-slate-700 border-slate-300", icon: XCircle },
 ] as const;
@@ -67,13 +85,19 @@ function AdminInstallationsAttente() {
 
   const affecter = useMutation({
     mutationFn: (v: { id: string; agentId: string }) => affecterFn({ data: v }),
-    onSuccess: () => { toast.success("Agent assigné."); rafraichir(); },
+    onSuccess: () => {
+      toast.success("Agent assigné.");
+      rafraichir();
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 
   const statuer = useMutation({
     mutationFn: (v: { id: string; statut: string }) => statuerFn({ data: v }),
-    onSuccess: () => { toast.success("Statut mis à jour."); rafraichir(); },
+    onSuccess: () => {
+      toast.success("Statut mis à jour.");
+      rafraichir();
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -83,11 +107,12 @@ function AdminInstallationsAttente() {
   const filteredLignes = useMemo(() => {
     if (!q.trim()) return lignes;
     const t = q.toLowerCase();
-    return lignes.filter((l: any) =>
-      (l.public_number ?? "").toLowerCase().includes(t) ||
-      (l.client ?? "").toLowerCase().includes(t) ||
-      (l.order_ref ?? "").toLowerCase().includes(t) ||
-      (l.phone ?? "").includes(t),
+    return lignes.filter(
+      (l: any) =>
+        (l.public_number ?? "").toLowerCase().includes(t) ||
+        (l.client ?? "").toLowerCase().includes(t) ||
+        (l.order_ref ?? "").toLowerCase().includes(t) ||
+        (l.phone ?? "").includes(t),
     );
   }, [lignes, q]);
 
@@ -112,7 +137,11 @@ function AdminInstallationsAttente() {
               Demandes générées après paiement — assignez un agent et suivez la pose.
             </p>
           </div>
-          <Button variant="secondary" className="bg-white/15 hover:bg-white/25 text-white border-white/20" onClick={rafraichir}>
+          <Button
+            variant="secondary"
+            className="bg-white/15 hover:bg-white/25 text-white border-white/20"
+            onClick={rafraichir}
+          >
             <RefreshCw className="h-4 w-4 mr-1.5" /> Rafraîchir
           </Button>
         </div>
@@ -150,30 +179,53 @@ function AdminInstallationsAttente() {
         <CardContent className="p-4">
           <div className="flex flex-col lg:flex-row gap-3 items-end">
             <div className="flex-1 min-w-0">
-              <Label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1 block">Recherche</Label>
+              <Label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1 block">
+                Recherche
+              </Label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input placeholder="N° balise, client, commande, téléphone…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" />
+                <Input
+                  placeholder="N° balise, client, commande, téléphone…"
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  className="pl-9"
+                />
               </div>
             </div>
             <div className="w-full lg:w-44">
-              <Label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1 block">Statut</Label>
+              <Label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1 block">
+                Statut
+              </Label>
               <Select value={statut} onValueChange={setStatut}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="tous">Tous</SelectItem>
-                  {STATUTS.map((s) => <SelectItem key={s.valeur} value={s.valeur}>{s.label}</SelectItem>)}
+                  {STATUTS.map((s) => (
+                    <SelectItem key={s.valeur} value={s.valeur}>
+                      {s.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="w-full lg:w-64">
-              <Label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1 block">Agent</Label>
+              <Label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1 block">
+                Agent
+              </Label>
               <Select value={agent} onValueChange={setAgent}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="tous">Tous</SelectItem>
                   <SelectItem value="aucun">Non assignées</SelectItem>
-                  {agents.map((a: any) => <SelectItem key={a.id} value={a.id}>{a.label}</SelectItem>)}
+                  {agents.map((a: any) => (
+                    <SelectItem key={a.id} value={a.id}>
+                      {a.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -212,7 +264,13 @@ function AdminInstallationsAttente() {
               </thead>
               <tbody>
                 {filteredLignes.map((l: any) => (
-                  <LigneAttente key={l.id} l={l} agents={agents} onAssigner={affecter.mutate} onStatuer={statuer.mutate} />
+                  <LigneAttente
+                    key={l.id}
+                    l={l}
+                    agents={agents}
+                    onAssigner={affecter.mutate}
+                    onStatuer={statuer.mutate}
+                  />
                 ))}
               </tbody>
             </table>
@@ -223,8 +281,16 @@ function AdminInstallationsAttente() {
   );
 }
 
-function LigneAttente({ l, agents, onAssigner, onStatuer }: {
-  l: any; agents: any[]; onAssigner: (v: { id: string; agentId: string }) => void; onStatuer: (v: { id: string; statut: string }) => void;
+function LigneAttente({
+  l,
+  agents,
+  onAssigner,
+  onStatuer,
+}: {
+  l: any;
+  agents: any[];
+  onAssigner: (v: { id: string; agentId: string }) => void;
+  onStatuer: (v: { id: string; statut: string }) => void;
 }) {
   const statutInfo = STATUTS.find((s) => s.valeur === l.status) ?? STATUTS[0];
   const StatutIcon = statutInfo.icon;
@@ -237,7 +303,9 @@ function LigneAttente({ l, agents, onAssigner, onStatuer }: {
           <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center">
             <Package className="h-4 w-4 text-orange-600" />
           </div>
-          <span className="font-mono text-xs font-medium">{l.public_number ?? <span className="text-slate-400 italic">Non attribuée</span>}</span>
+          <span className="font-mono text-xs font-medium">
+            {l.public_number ?? <span className="text-slate-400 italic">Non attribuée</span>}
+          </span>
         </div>
       </td>
       <td className="p-3">
@@ -245,7 +313,8 @@ function LigneAttente({ l, agents, onAssigner, onStatuer }: {
           <div className="text-sm font-medium truncate">{l.client}</div>
           {l.phone && (
             <div className="text-xs text-slate-500 flex items-center gap-1">
-              <Phone className="h-3 w-3" />{l.phone}
+              <Phone className="h-3 w-3" />
+              {l.phone}
             </div>
           )}
         </div>
@@ -253,7 +322,11 @@ function LigneAttente({ l, agents, onAssigner, onStatuer }: {
       <td className="p-3">
         <div className="min-w-0">
           <div className="font-mono text-xs">{l.order_ref ?? "—"}</div>
-          {l.offer_code && <Badge variant="outline" className="text-[10px] mt-0.5">{l.offer_code}</Badge>}
+          {l.offer_code && (
+            <Badge variant="outline" className="text-[10px] mt-0.5">
+              {l.offer_code}
+            </Badge>
+          )}
         </div>
       </td>
       <td className="p-3 text-xs text-slate-500">{formatDateTimeFr(l.created_at)}</td>
@@ -263,34 +336,61 @@ function LigneAttente({ l, agents, onAssigner, onStatuer }: {
         </Badge>
       </td>
       <td className="p-3">
-        <Select value={l.assigned_agent_id ?? ""} onValueChange={(agentId) => onAssigner({ id: l.id, agentId })} disabled={isClose}>
+        <Select
+          value={l.assigned_agent_id ?? ""}
+          onValueChange={(agentId) => onAssigner({ id: l.id, agentId })}
+          disabled={isClose}
+        >
           <SelectTrigger className="w-52 h-9 text-xs bg-white">
             <SelectValue placeholder="Assigner un agent…" />
           </SelectTrigger>
           <SelectContent>
-            {agents.map((a: any) => <SelectItem key={a.id} value={a.id}>{a.label}</SelectItem>)}
+            {agents.map((a: any) => (
+              <SelectItem key={a.id} value={a.id}>
+                {a.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </td>
       <td className="p-3">
         <div className="flex flex-wrap gap-1 justify-end opacity-80 group-hover:opacity-100 transition">
           {l.status !== "planned" && l.status !== "done" && l.status !== "cancelled" && (
-            <Button size="sm" variant="ghost" className="h-8 text-violet-600 hover:bg-violet-50" onClick={() => onStatuer({ id: l.id, statut: "planned" })}>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 text-violet-600 hover:bg-violet-50"
+              onClick={() => onStatuer({ id: l.id, statut: "planned" })}
+            >
               <CalendarClock className="h-3.5 w-3.5 mr-1" /> Planifier
             </Button>
           )}
           {l.status !== "done" && (
-            <Button size="sm" className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => onStatuer({ id: l.id, statut: "done" })}>
+            <Button
+              size="sm"
+              className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white"
+              onClick={() => onStatuer({ id: l.id, statut: "done" })}
+            >
               <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Terminer
             </Button>
           )}
           {l.status !== "cancelled" && l.status !== "done" && (
-            <Button size="sm" variant="ghost" className="h-8 text-rose-600 hover:bg-rose-50" onClick={() => onStatuer({ id: l.id, statut: "cancelled" })}>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 text-rose-600 hover:bg-rose-50"
+              onClick={() => onStatuer({ id: l.id, statut: "cancelled" })}
+            >
               <XCircle className="h-3.5 w-3.5" />
             </Button>
           )}
           {(l.status === "cancelled" || l.status === "done") && (
-            <Button size="sm" variant="ghost" className="h-8 text-slate-600 hover:bg-slate-100" onClick={() => onStatuer({ id: l.id, statut: "pending" })}>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 text-slate-600 hover:bg-slate-100"
+              onClick={() => onStatuer({ id: l.id, statut: "pending" })}
+            >
               <RotateCcw className="h-3.5 w-3.5 mr-1" /> Réouvrir
             </Button>
           )}
