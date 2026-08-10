@@ -13,6 +13,16 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  vite: {
+    ssr: {
+      // Force Vite/Nitro à bundler ces libs CJS proprement côté serveur
+      // (sinon esbuild casse l'interop tslib -> __extends undefined sur Netlify).
+      noExternal: ["qrcode", "dijkstrajs", "encode-utf8", "pngjs", "tslib"],
+    },
+    optimizeDeps: {
+      include: ["qrcode"],
+    },
+  },
   plugins: [
     VitePWA({
       selfDestroying: true,
