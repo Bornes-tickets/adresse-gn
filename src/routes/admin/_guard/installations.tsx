@@ -4,27 +4,46 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
-  ClipboardCheck, Search, Download, Zap, MapPin, Camera, User, Filter,
-  CheckCircle2, XCircle, Clock, TrendingUp, AlertTriangle, Award, Target,
-  Sparkles, ArrowUpRight, RefreshCw, Eye, Edit3, Radio, Building2,
+  ClipboardCheck,
+  Search,
+  Download,
+  Zap,
+  MapPin,
+  Camera,
+  User,
+  Filter,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  TrendingUp,
+  AlertTriangle,
+  Award,
+  Target,
+  Sparkles,
+  ArrowUpRight,
+  RefreshCw,
+  Eye,
+  Edit3,
+  Radio,
+  Building2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDateTimeFr } from "@/lib/admin";
 import {
-  adminAgentMetrics, adminAgents, adminDrawQc, adminInstallations,
-  adminQcQueue, adminReviewInstallation,
+  adminAgentMetrics,
+  adminAgents,
+  adminDrawQc,
+  adminInstallations,
+  adminQcQueue,
+  adminReviewInstallation,
 } from "@/lib/admin.functions";
 import { useRealtimeInvalidate } from "@/hooks/useRealtimeInvalidate";
 import { cn } from "@/lib/utils";
@@ -59,7 +78,8 @@ function AdminInstallations() {
   const [motif, setMotif] = useState("");
 
   const filtres = {
-    page, pageSize: 20,
+    page,
+    pageSize: 20,
     agentId: agentId === "tous" ? null : agentId,
     validation: validation === "tous" ? null : validation,
     accuracyMax: precisionMax ? Number(precisionMax) : null,
@@ -76,7 +96,11 @@ function AdminInstallations() {
   // Auto-refresh temps réel
   useRealtimeInvalidate({
     table: "installations",
-    invalidate: [["admin", "installations"], ["admin", "qc-queue"], ["admin", "agent-metrics"]],
+    invalidate: [
+      ["admin", "installations"],
+      ["admin", "qc-queue"],
+      ["admin", "agent-metrics"],
+    ],
   });
   useRealtimeInvalidate({
     table: "reports",
@@ -94,8 +118,12 @@ function AdminInstallations() {
   });
 
   const muterDecision = useMutation({
-    mutationFn: (v: { installationId: string | null; reportId: string | null; decision: "valider" | "rejeter"; motif?: string | null }) =>
-      statuer({ data: { ...v, motif: v.motif ?? null } }),
+    mutationFn: (v: {
+      installationId: string | null;
+      reportId: string | null;
+      decision: "valider" | "rejeter";
+      motif?: string | null;
+    }) => statuer({ data: { ...v, motif: v.motif ?? null } }),
     onSuccess: (_, v) => {
       toast.success(v.decision === "valider" ? "Installation validée." : "Installation rejetée.");
       setRejectFor(null);
@@ -111,9 +139,8 @@ function AdminInstallations() {
   const filteredRows = useMemo(() => {
     if (!q.trim()) return rows;
     const t = q.toLowerCase();
-    return rows.filter((r: any) =>
-      (r.beacon_number ?? "").toLowerCase().includes(t) ||
-      (r.agent_badge ?? "").toLowerCase().includes(t),
+    return rows.filter(
+      (r: any) => (r.beacon_number ?? "").toLowerCase().includes(t) || (r.agent_badge ?? "").toLowerCase().includes(t),
     );
   }, [rows, q]);
 
@@ -132,18 +159,24 @@ function AdminInstallations() {
   const csvUrl = useMemo(() => {
     if (!rows.length) return null;
     const header = "balise,agent,latitude,longitude,precision_m,posee_le,validee_le\n";
-    const lines = rows.map((r: any) => [
-      r.beacon_number ?? "",
-      r.agent_badge ?? "",
-      r.gps_lat ?? "",
-      r.gps_lng ?? "",
-      r.accuracy_m ?? "",
-      r.installed_at ?? "",
-      r.validated_at ?? "",
-    ].map((v) => {
-      const s = String(v);
-      return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-    }).join(",")).join("\n");
+    const lines = rows
+      .map((r: any) =>
+        [
+          r.beacon_number ?? "",
+          r.agent_badge ?? "",
+          r.gps_lat ?? "",
+          r.gps_lng ?? "",
+          r.accuracy_m ?? "",
+          r.installed_at ?? "",
+          r.validated_at ?? "",
+        ]
+          .map((v) => {
+            const s = String(v);
+            return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+          })
+          .join(","),
+      )
+      .join("\n");
     return URL.createObjectURL(new Blob([header + lines], { type: "text/csv;charset=utf-8" }));
   }, [rows]);
 
@@ -158,20 +191,21 @@ function AdminInstallations() {
               <ClipboardCheck className="h-3.5 w-3.5" /> Administration
             </div>
             <h1 className="mt-1 text-3xl font-bold">Installations & Contrôle qualité</h1>
-            <p className="mt-1 text-sm text-white/80">
-              Suivi terrain temps réel, validation QC, performances agents.
-            </p>
+            <p className="mt-1 text-sm text-white/80">Suivi terrain temps réel, validation QC, performances agents.</p>
           </div>
           <div className="hidden md:flex items-center gap-2">
             <Button
               variant="secondary"
               className="bg-white/15 hover:bg-white/25 text-white border-white/20"
-              onClick={() => { void qc.invalidateQueries({ queryKey: ["admin", "installations"] }); toast.success("Actualisé."); }}
+              onClick={() => {
+                void qc.invalidateQueries({ queryKey: ["admin", "installations"] });
+                toast.success("Actualisé.");
+              }}
             >
               <RefreshCw className="h-4 w-4 mr-1.5" /> Actualiser
             </Button>
             {csvUrl && (
-              <a href={csvUrl} download={`installations_${new Date().toISOString().slice(0,10)}.csv`}>
+              <a href={csvUrl} download={`installations_${new Date().toISOString().slice(0, 10)}.csv`}>
                 <Button variant="secondary" className="bg-white text-indigo-700 hover:bg-white/90">
                   <Download className="h-4 w-4 mr-1.5" /> Export CSV
                 </Button>
@@ -184,16 +218,31 @@ function AdminInstallations() {
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <KpiCard label="Total installations" value={stats.total} icon={ClipboardCheck} tone="indigo" trend={null} />
-        <KpiCard label="Validées" value={stats.validees} icon={CheckCircle2} tone="emerald" trend={stats.total > 0 ? `${Math.round((stats.validees / stats.total) * 100)}%` : null} />
+        <KpiCard
+          label="Validées"
+          value={stats.validees}
+          icon={CheckCircle2}
+          tone="emerald"
+          trend={stats.total > 0 ? `${Math.round((stats.validees / stats.total) * 100)}%` : null}
+        />
         <KpiCard label="En attente" value={stats.enAttente} icon={Clock} tone="amber" trend={null} />
-        <KpiCard label="Précision moy." value={stats.precisionMoy ?? "—"} suffix={stats.precisionMoy != null ? " m" : ""} icon={Target} tone={stats.precisionMoy != null && stats.precisionMoy > 15 ? "rose" : "sky"} trend={null} />
+        <KpiCard
+          label="Précision moy."
+          value={stats.precisionMoy ?? "—"}
+          suffix={stats.precisionMoy != null ? " m" : ""}
+          icon={Target}
+          tone={stats.precisionMoy != null && stats.precisionMoy > 15 ? "rose" : "sky"}
+          trend={null}
+        />
       </div>
 
       <Tabs defaultValue="liste" className="space-y-4">
         <TabsList className="bg-slate-100 p-1">
           <TabsTrigger value="liste" className="gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
             <ClipboardCheck className="h-4 w-4" /> Installations
-            <Badge variant="secondary" className="ml-1 bg-indigo-100 text-indigo-700">{stats.total}</Badge>
+            <Badge variant="secondary" className="ml-1 bg-indigo-100 text-indigo-700">
+              {stats.total}
+            </Badge>
           </TabsTrigger>
           <TabsTrigger value="qc" className="gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
             <AlertTriangle className="h-4 w-4" /> File QC
@@ -212,28 +261,57 @@ function AdminInstallations() {
             <div className="bg-gradient-to-r from-slate-50 to-slate-100/50 p-4 border-b border-slate-200">
               <div className="flex flex-col lg:flex-row gap-3 items-start lg:items-end">
                 <div className="flex-1 min-w-0">
-                  <Label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1 block">Recherche</Label>
+                  <Label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1 block">
+                    Recherche
+                  </Label>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <Input placeholder="N° de balise ou badge agent…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9 bg-white" />
+                    <Input
+                      placeholder="N° de balise ou badge agent…"
+                      value={q}
+                      onChange={(e) => setQ(e.target.value)}
+                      className="pl-9 bg-white"
+                    />
                   </div>
                 </div>
                 <div className="w-full lg:w-48">
-                  <Label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1 block">Agent</Label>
-                  <Select value={agentId} onValueChange={(v) => { setAgentId(v); setPage(1); }}>
-                    <SelectTrigger className="bg-white"><SelectValue /></SelectTrigger>
+                  <Label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1 block">
+                    Agent
+                  </Label>
+                  <Select
+                    value={agentId}
+                    onValueChange={(v) => {
+                      setAgentId(v);
+                      setPage(1);
+                    }}
+                  >
+                    <SelectTrigger className="bg-white">
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="tous">Tous les agents</SelectItem>
                       {(agents.data ?? []).map((a: any) => (
-                        <SelectItem key={a.id} value={a.id}>{a.badge_number} — {a.full_name ?? "?"}</SelectItem>
+                        <SelectItem key={a.id} value={a.id}>
+                          {a.badge_number} — {a.full_name ?? "?"}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="w-full lg:w-36">
-                  <Label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1 block">État</Label>
-                  <Select value={validation} onValueChange={(v) => { setValidation(v); setPage(1); }}>
-                    <SelectTrigger className="bg-white"><SelectValue /></SelectTrigger>
+                  <Label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1 block">
+                    État
+                  </Label>
+                  <Select
+                    value={validation}
+                    onValueChange={(v) => {
+                      setValidation(v);
+                      setPage(1);
+                    }}
+                  >
+                    <SelectTrigger className="bg-white">
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="tous">Toutes</SelectItem>
                       <SelectItem value="validated">Validées</SelectItem>
@@ -242,8 +320,19 @@ function AdminInstallations() {
                   </Select>
                 </div>
                 <div className="w-full lg:w-36">
-                  <Label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1 block">Précision max (m)</Label>
-                  <Input type="number" value={precisionMax} onChange={(e) => { setPrecisionMax(e.target.value); setPage(1); }} className="bg-white" placeholder="Ex : 15" />
+                  <Label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1 block">
+                    Précision max (m)
+                  </Label>
+                  <Input
+                    type="number"
+                    value={precisionMax}
+                    onChange={(e) => {
+                      setPrecisionMax(e.target.value);
+                      setPage(1);
+                    }}
+                    className="bg-white"
+                    placeholder="Ex : 15"
+                  />
                 </div>
               </div>
 
@@ -253,13 +342,28 @@ function AdminInstallations() {
                   <Label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1 block flex items-center gap-1">
                     <Sparkles className="h-3 w-3 text-violet-500" /> Contrôle qualité aléatoire
                   </Label>
-                  <p className="text-xs text-slate-600">Verser un échantillon des installations non validées dans la file de contrôle.</p>
+                  <p className="text-xs text-slate-600">
+                    Verser un échantillon des installations non validées dans la file de contrôle.
+                  </p>
                 </div>
                 <div className="w-24">
-                  <Label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1 block">%</Label>
-                  <Input type="number" min={1} max={100} value={pourcentage} onChange={(e) => setPourcentage(e.target.value)} className="bg-white" />
+                  <Label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1 block">
+                    %
+                  </Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={100}
+                    value={pourcentage}
+                    onChange={(e) => setPourcentage(e.target.value)}
+                    className="bg-white"
+                  />
                 </div>
-                <Button onClick={() => muterTirage.mutate()} disabled={muterTirage.isPending} className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white shadow-md">
+                <Button
+                  onClick={() => muterTirage.mutate()}
+                  disabled={muterTirage.isPending}
+                  className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white shadow-md"
+                >
                   <Zap className="h-4 w-4 mr-1.5" /> Lancer le tirage
                 </Button>
               </div>
@@ -313,12 +417,16 @@ function AdminInstallations() {
                               <MapPin className="h-3 w-3 text-emerald-500" />
                               {Number(r.gps_lat).toFixed(5)}, {Number(r.gps_lng).toFixed(5)}
                             </div>
-                          ) : "—"}
+                          ) : (
+                            "—"
+                          )}
                         </td>
                         <td className="p-3">
                           {r.accuracy_m != null ? (
                             <PrecisionBadge acc={Number(r.accuracy_m)} />
-                          ) : <span className="text-slate-400">—</span>}
+                          ) : (
+                            <span className="text-slate-400">—</span>
+                          )}
                         </td>
                         <td className="p-3 text-xs text-slate-500">{formatDateTimeFr(r.installed_at)}</td>
                         <td className="p-3">
@@ -343,12 +451,24 @@ function AdminInstallations() {
                             )}
                             {!r.validated_at && (
                               <>
-                                <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-emerald-600 hover:bg-emerald-50" title="Valider"
-                                  onClick={() => muterDecision.mutate({ installationId: r.id, reportId: null, decision: "valider" })}>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 text-emerald-600 hover:bg-emerald-50"
+                                  title="Valider"
+                                  onClick={() =>
+                                    muterDecision.mutate({ installationId: r.id, reportId: null, decision: "valider" })
+                                  }
+                                >
                                   <CheckCircle2 className="h-4 w-4" />
                                 </Button>
-                                <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-rose-600 hover:bg-rose-50" title="Rejeter"
-                                  onClick={() => setRejectFor({ installationId: r.id, reportId: null })}>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 text-rose-600 hover:bg-rose-50"
+                                  title="Rejeter"
+                                  onClick={() => setRejectFor({ installationId: r.id, reportId: null })}
+                                >
                                   <XCircle className="h-4 w-4" />
                                 </Button>
                               </>
@@ -371,10 +491,26 @@ function AdminInstallations() {
           {/* Pagination */}
           {installations.data && installations.data.total > 20 && (
             <div className="flex items-center justify-between text-sm text-slate-600">
-              <span>Page {page} · {installations.data.total} résultats</span>
+              <span>
+                Page {page} · {installations.data.total} résultats
+              </span>
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>Précédent</Button>
-                <Button size="sm" variant="outline" onClick={() => setPage((p) => p + 1)} disabled={page * 20 >= installations.data.total}>Suivant</Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                >
+                  Précédent
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={page * 20 >= installations.data.total}
+                >
+                  Suivant
+                </Button>
               </div>
             </div>
           )}
@@ -390,7 +526,8 @@ function AdminInstallations() {
                 </div>
                 <h3 className="text-lg font-semibold text-slate-900">File de contrôle vide</h3>
                 <p className="text-sm text-slate-600 mt-1 max-w-md mx-auto">
-                  Aucune installation à revérifier. Lancez un tirage QC depuis l'onglet Installations pour alimenter la file.
+                  Aucune installation à revérifier. Lancez un tirage QC depuis l'onglet Installations pour alimenter la
+                  file.
                 </p>
               </CardContent>
             </Card>
@@ -400,7 +537,13 @@ function AdminInstallations() {
                 <QcCard
                   key={item.report_id}
                   item={item}
-                  onValider={() => muterDecision.mutate({ installationId: item.installation_id, reportId: item.report_id, decision: "valider" })}
+                  onValider={() =>
+                    muterDecision.mutate({
+                      installationId: item.installation_id,
+                      reportId: item.report_id,
+                      decision: "valider",
+                    })
+                  }
                   onRejeter={() => setRejectFor({ installationId: item.installation_id, reportId: item.report_id })}
                 />
               ))}
@@ -424,14 +567,24 @@ function AdminInstallations() {
           </DialogHeader>
           <div className="space-y-3">
             <p className="text-sm text-slate-600">Précisez le motif du rejet. L'agent sera notifié.</p>
-            <Textarea placeholder="Ex : GPS hors zone, photo illisible, balise mal fixée…"
-              value={motif} onChange={(e) => setMotif(e.target.value)} rows={4} />
+            <Textarea
+              placeholder="Ex : GPS hors zone, photo illisible, balise mal fixée…"
+              value={motif}
+              onChange={(e) => setMotif(e.target.value)}
+              rows={4}
+            />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectFor(null)}>Annuler</Button>
-            <Button className="bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700"
+            <Button variant="outline" onClick={() => setRejectFor(null)}>
+              Annuler
+            </Button>
+            <Button
+              className="bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700"
               disabled={!motif.trim() || muterDecision.isPending}
-              onClick={() => rejectFor && muterDecision.mutate({ ...rejectFor, decision: "rejeter", motif: motif.trim() })}>
+              onClick={() =>
+                rejectFor && muterDecision.mutate({ ...rejectFor, decision: "rejeter", motif: motif.trim() })
+              }
+            >
               Confirmer le rejet
             </Button>
           </DialogFooter>
@@ -443,8 +596,20 @@ function AdminInstallations() {
 
 /* ============================== SOUS-COMPOSANTS ============================== */
 
-function KpiCard({ label, value, icon: Icon, tone, trend, suffix }: {
-  label: string; value: number | string; icon: any; tone: string; trend: string | null; suffix?: string;
+function KpiCard({
+  label,
+  value,
+  icon: Icon,
+  tone,
+  trend,
+  suffix,
+}: {
+  label: string;
+  value: number | string;
+  icon: any;
+  tone: string;
+  trend: string | null;
+  suffix?: string;
 }) {
   const tones: Record<string, string> = {
     indigo: "from-indigo-500 to-violet-600",
@@ -455,13 +620,16 @@ function KpiCard({ label, value, icon: Icon, tone, trend, suffix }: {
   };
   return (
     <Card className="relative overflow-hidden border-slate-200 hover:shadow-lg transition-shadow group">
-      <div className={cn("absolute inset-0 bg-gradient-to-br opacity-5 group-hover:opacity-10 transition", tones[tone])} />
+      <div
+        className={cn("absolute inset-0 bg-gradient-to-br opacity-5 group-hover:opacity-10 transition", tones[tone])}
+      />
       <CardContent className="p-5 relative">
         <div className="flex items-start justify-between">
           <div>
             <div className="text-[11px] uppercase tracking-widest text-slate-500 font-semibold">{label}</div>
             <div className="text-3xl font-bold mt-1 text-slate-900">
-              {typeof value === "number" ? value.toLocaleString("fr-FR") : value}{suffix ?? ""}
+              {typeof value === "number" ? value.toLocaleString("fr-FR") : value}
+              {suffix ?? ""}
             </div>
             {trend && (
               <div className="text-xs font-medium text-slate-600 mt-1 flex items-center gap-1">
@@ -469,7 +637,12 @@ function KpiCard({ label, value, icon: Icon, tone, trend, suffix }: {
               </div>
             )}
           </div>
-          <div className={cn("h-11 w-11 rounded-xl bg-gradient-to-br text-white flex items-center justify-center shadow-lg", tones[tone])}>
+          <div
+            className={cn(
+              "h-11 w-11 rounded-xl bg-gradient-to-br text-white flex items-center justify-center shadow-lg",
+              tones[tone],
+            )}
+          >
             <Icon className="h-5 w-5" />
           </div>
         </div>
@@ -479,9 +652,13 @@ function KpiCard({ label, value, icon: Icon, tone, trend, suffix }: {
 }
 
 function PrecisionBadge({ acc }: { acc: number }) {
-  if (acc <= 5) return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">±{Math.round(acc)}m · Excellent</Badge>;
+  if (acc <= 5)
+    return (
+      <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">±{Math.round(acc)}m · Excellent</Badge>
+    );
   if (acc <= 15) return <Badge className="bg-sky-100 text-sky-700 border-sky-200">±{Math.round(acc)}m · Bon</Badge>;
-  if (acc <= 30) return <Badge className="bg-amber-100 text-amber-700 border-amber-200">±{Math.round(acc)}m · Moyen</Badge>;
+  if (acc <= 30)
+    return <Badge className="bg-amber-100 text-amber-700 border-amber-200">±{Math.round(acc)}m · Moyen</Badge>;
   return <Badge className="bg-rose-100 text-rose-700 border-rose-200">±{Math.round(acc)}m · Faible</Badge>;
 }
 
@@ -498,7 +675,12 @@ function QcCard({ item, onValider, onRejeter }: { item: any; onValider: () => vo
     <Card className="overflow-hidden hover:shadow-xl transition-all border-slate-200 group">
       {item.photo_url ? (
         <div className="relative h-40 bg-slate-100 overflow-hidden">
-          <img src={item.photo_url} alt={`Photo balise ${item.beacon_number}`} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+          <img
+            src={item.photo_url}
+            alt={`Photo balise ${item.beacon_number}`}
+            loading="lazy"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
           <div className="absolute top-2 right-2">
             <Badge className={cn("gap-1 shadow-md", coh.cls)}>
               <CohIcon className="h-3 w-3" /> {coh.label}
@@ -530,7 +712,9 @@ function QcCard({ item, onValider, onRejeter }: { item: any; onValider: () => vo
           {item.gps_lat != null && (
             <div className="flex items-center gap-2 text-slate-600">
               <MapPin className="h-3 w-3 text-emerald-500" />
-              <span className="font-mono">{Number(item.gps_lat).toFixed(5)}, {Number(item.gps_lng).toFixed(5)}</span>
+              <span className="font-mono">
+                {Number(item.gps_lat).toFixed(5)}, {Number(item.gps_lng).toFixed(5)}
+              </span>
             </div>
           )}
           <div className="flex items-center gap-2 text-slate-600">
@@ -548,7 +732,12 @@ function QcCard({ item, onValider, onRejeter }: { item: any; onValider: () => vo
           <Button size="sm" className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white" onClick={onValider}>
             <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Valider
           </Button>
-          <Button size="sm" variant="outline" className="flex-1 text-rose-600 border-rose-300 hover:bg-rose-50" onClick={onRejeter}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="flex-1 text-rose-600 border-rose-300 hover:bg-rose-50"
+            onClick={onRejeter}
+          >
             <XCircle className="h-3.5 w-3.5 mr-1" /> Rejeter
           </Button>
         </div>
@@ -592,7 +781,9 @@ function PerfsTable({ data, loading }: { data: any[]; loading: boolean }) {
       <div className="flex items-center gap-2">
         <Label className="text-xs text-slate-600">Trier par :</Label>
         <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
-          <SelectTrigger className="w-56"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-56">
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="total">Nb installations</SelectItem>
             <SelectItem value="taux_validation">Taux de validation</SelectItem>
@@ -607,36 +798,58 @@ function PerfsTable({ data, loading }: { data: any[]; loading: boolean }) {
             <CardContent className="p-4">
               <div className="flex items-center gap-4">
                 {/* Rang */}
-                <div className={cn(
-                  "h-12 w-12 rounded-xl flex items-center justify-center text-white font-bold shadow-md",
-                  i === 0 ? "bg-gradient-to-br from-amber-400 to-orange-500" :
-                  i === 1 ? "bg-gradient-to-br from-slate-400 to-slate-500" :
-                  i === 2 ? "bg-gradient-to-br from-orange-600 to-amber-700" :
-                  "bg-gradient-to-br from-slate-200 to-slate-300 text-slate-600",
-                )}>
+                <div
+                  className={cn(
+                    "h-12 w-12 rounded-xl flex items-center justify-center text-white font-bold shadow-md",
+                    i === 0
+                      ? "bg-gradient-to-br from-amber-400 to-orange-500"
+                      : i === 1
+                        ? "bg-gradient-to-br from-slate-400 to-slate-500"
+                        : i === 2
+                          ? "bg-gradient-to-br from-orange-600 to-amber-700"
+                          : "bg-gradient-to-br from-slate-200 to-slate-300 text-slate-600",
+                  )}
+                >
                   {i < 3 ? <Award className="h-5 w-5" /> : `#${i + 1}`}
                 </div>
                 {/* Infos */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="font-mono font-semibold">{a.badge_number}</span>
-                    {a.active
-                      ? <Badge className="bg-emerald-100 text-emerald-700">Actif</Badge>
-                      : <Badge variant="outline" className="border-slate-300 text-slate-500">Inactif</Badge>}
+                    {a.active ? (
+                      <Badge className="bg-emerald-100 text-emerald-700">Actif</Badge>
+                    ) : (
+                      <Badge variant="outline" className="border-slate-300 text-slate-500">
+                        Inactif
+                      </Badge>
+                    )}
                   </div>
                   <div className="mt-2 space-y-1.5">
                     <div className="flex items-center gap-2 text-xs">
                       <span className="w-24 text-slate-500">Installations</span>
                       <span className="font-semibold w-10">{a.total}</span>
                       <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-indigo-500 to-violet-600" style={{ width: `${(a.total / maxTotal) * 100}%` }} />
+                        <div
+                          className="h-full bg-gradient-to-r from-indigo-500 to-violet-600"
+                          style={{ width: `${(a.total / maxTotal) * 100}%` }}
+                        />
                       </div>
                     </div>
                     <div className="flex items-center gap-2 text-xs">
                       <span className="w-24 text-slate-500">Validation</span>
                       <span className="font-semibold w-10">{a.taux_validation}%</span>
                       <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
-                        <div className={cn("h-full", a.taux_validation >= 80 ? "bg-gradient-to-r from-emerald-500 to-teal-600" : a.taux_validation >= 50 ? "bg-gradient-to-r from-amber-500 to-orange-500" : "bg-gradient-to-r from-rose-500 to-red-600")} style={{ width: `${a.taux_validation}%` }} />
+                        <div
+                          className={cn(
+                            "h-full",
+                            a.taux_validation >= 80
+                              ? "bg-gradient-to-r from-emerald-500 to-teal-600"
+                              : a.taux_validation >= 50
+                                ? "bg-gradient-to-r from-amber-500 to-orange-500"
+                                : "bg-gradient-to-r from-rose-500 to-red-600",
+                          )}
+                          style={{ width: `${a.taux_validation}%` }}
+                        />
                       </div>
                     </div>
                     <div className="flex items-center gap-2 text-xs">
