@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -37,7 +37,9 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useLangue } from "@/hooks/useLangue";
 import { cn } from "@/lib/utils";
+
 const WHATSAPP_SERVICE = "224620000000";
+
 const NAV = [
   { to: "/tarifs" as const, cle: "nav.pricing" },
   { to: "/pro" as const, cle: "nav.pros" },
@@ -45,6 +47,10 @@ const NAV = [
   { to: "/faq" as const, cle: "nav.faq" },
   { to: "/a-propos" as const, cle: "nav.about" },
 ];
+
+/** Routes qui gèrent leur propre chrome (sidebar, topbar) — pas de header/footer public. */
+const BACKOFFICE_PREFIXES = ["/supervisor", "/admin"];
+
 function useScrolled() {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
@@ -55,6 +61,7 @@ function useScrolled() {
   }, []);
   return scrolled;
 }
+
 function Header() {
   const { t } = useTranslation();
   const { user, isAuthenticated } = useAuth();
@@ -192,9 +199,12 @@ function Header() {
     </header>
   );
 }
+
 const FOCUS =
   "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950";
+
 type FooterLink = { cle: string; to?: string; href?: string; disabled?: boolean };
+
 const FOOTER_COLS: { cle: string; links: FooterLink[] }[] = [
   {
     cle: "footer.cols.product",
@@ -234,6 +244,7 @@ const FOOTER_COLS: { cle: string; links: FooterLink[] }[] = [
     ],
   },
 ];
+
 function FooterLinkItem({ link }: { link: FooterLink }) {
   const { t } = useTranslation();
   const base = cn("text-xs transition-colors rounded-sm", FOCUS);
@@ -264,6 +275,7 @@ function FooterLinkItem({ link }: { link: FooterLink }) {
     </Link>
   );
 }
+
 function Footer() {
   const { t } = useTranslation();
   const { langue, langues } = useLangue();
@@ -283,7 +295,7 @@ function Footer() {
                 <MapPin className="size-3.5 shrink-0" />
                 {t("footer.location")}
               </span>
-              <a
+              
                 href="mailto:contact@adresse.gn"
                 className={cn(
                   "flex items-center gap-2 rounded-sm text-xs text-slate-300 transition-colors hover:text-accent",
@@ -293,7 +305,7 @@ function Footer() {
                 <Mail className="size-3.5 shrink-0" />
                 contact@adresse.gn
               </a>
-              <a
+              
                 href={`https://wa.me/${WHATSAPP_SERVICE}`}
                 target="_blank"
                 rel="noreferrer"
@@ -376,7 +388,18 @@ function Footer() {
     </footer>
   );
 }
+
 export function Layout({ children }: { children: ReactNode }) {
+  const { location } = useRouterState();
+  const isBackoffice = BACKOFFICE_PREFIXES.some((p) => location.pathname.startsWith(p));
+
+  // Back-office : layout complet géré par la route (sidebar + topbar).
+  // Pas de header/footer publics ici pour éviter le double chrome.
+  if (isBackoffice) {
+    return <div className="min-h-screen">{children}</div>;
+  }
+
+  // Site public : layout classique avec Header + Footer.
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
