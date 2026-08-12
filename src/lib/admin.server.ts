@@ -537,3 +537,19 @@ export async function chargerAnalytics(jours: number): Promise<AnalyticsData> {
     chaleur,
   };
 }
+/**
+ * Autorise Commercial (sales), Admin et Super Admin.
+ * Utilisé par l'espace /sales pour toute la partie commande / paiement / abonnement.
+ */
+export async function requireSales(userId: string): Promise<AdminIdentity> {
+  const { data, error } = await supabaseAdmin
+    .from("profiles")
+    .select("id, role, full_name")
+    .eq("id", userId)
+    .maybeSingle();
+  if (error) throw new Error("Impossible de vérifier le rôle.");
+  if (!data || !["sales", "admin", "super_admin"].includes(data.role)) {
+    throw new Error("Accès refusé : espace réservé à l'équipe commerciale.");
+  }
+  return { userId, role: data.role, fullName: data.full_name ?? null };
+}
