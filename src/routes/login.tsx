@@ -2,8 +2,6 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-
-
 import { AuthLayout } from "@/components/AuthLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +27,27 @@ export const Route = createFileRoute("/login")({
   component: Login,
 });
 
+/** Détermine la route de destination après login selon le rôle de l'utilisateur. */
+function destinationParRole(role: string | null | undefined): string {
+  switch (role) {
+    case "super_admin":
+    case "admin":
+      return "/admin";
+    case "supervisor":
+      return "/supervisor";
+    case "sales":
+      return "/sales";
+    case "ops":
+      return "/ops";
+    case "support":
+      return "/support";
+    case "agent":
+      return "/agent";
+    default:
+      return "/";
+  }
+}
+
 function Login() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -39,17 +58,35 @@ function Login() {
   const soumettre = async (event: React.FormEvent) => {
     event.preventDefault();
     setEnCours(true);
-    const { error } = await supabase.auth.signInWithPassword({
+
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password: motDePasse,
     });
-    setEnCours(false);
-    if (error) {
-      toast.error(t("auth.login.errorTitle"), { description: error.message });
+
+    if (error || !data.user) {
+      setEnCours(false);
+      toast.error(t("auth.login.errorTitle"), { description: error?.message ?? "Erreur." });
       return;
     }
+
+    // Récupère le rôle métier depuis profiles pour rediriger vers le bon espace
+    let destination = "/";
+    try {
+      const { data: profil } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", data.user.id)
+        .maybeSingle();
+      destination = destinationParRole(profil?.role);
+    } catch {
+      // En cas d'erreur silencieuse, on redirige vers l'accueil public
+      destination = "/";
+    }
+
+    setEnCours(false);
     toast.success(t("auth.login.success"));
-    navigate({ to: "/" });
+    navigate({ to: destination });
   };
 
   return (
@@ -97,7 +134,6 @@ function Login() {
         >
           {enCours ? t("auth.login.submitting") : t("auth.login.submit")}
         </Button>
-
       </form>
     </AuthLayout>
   );
