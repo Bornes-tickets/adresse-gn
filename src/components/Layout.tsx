@@ -380,7 +380,7 @@ function Footer() {
                 <Mail className="size-3.5 shrink-0" />
                 contact@adresse.gn
               </a>
-              <
+              <a
                 href={`https://wa.me/${WHATSAPP_SERVICE}`}
                 target="_blank"
                 rel="noreferrer"
