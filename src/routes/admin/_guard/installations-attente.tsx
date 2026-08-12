@@ -174,8 +174,8 @@ function AdminInstallationsAttente() {
       counts[l.status] = (counts[l.status] ?? 0) + 1;
       if (!["done", "cancelled"].includes(l.status) && ageDays(l.created_at) >= 7) sla += 1;
     }
-    const openTotal = counts.pending + counts.assigned + counts.planned;
-    const throughput = counts.done;
+    const openTotal = (counts['pending'] ?? 0) + (counts['assigned'] ?? 0) + (counts['planned'] ?? 0);
+    const throughput = counts['done'] ?? 0;
     return { counts, sla, openTotal, throughput, total: lignes.length };
   }, [lignes]);
 
@@ -221,7 +221,7 @@ function AdminInstallationsAttente() {
   };
 
   const bulkAssign = async () => {
-    if (!bulkAgent) return toast.error("Sélectionne un agent");
+    if (!bulkAgent) { toast.error("Sélectionne un agent"); return; }
     for (const id of selected) {
       await affecter.mutateAsync({ id, agentId: bulkAgent });
     }
@@ -245,7 +245,7 @@ function AdminInstallationsAttente() {
     dateRange !== "all" && { key: "d", label: `Période : ${dateRange === "sla" ? "SLA dépassé" : dateRange}`, clear: () => setDateRange("all") },
   ].filter(Boolean) as Array<{ key: string; label: string; clear: () => void }>;
 
-  const completionRate = stats.total > 0 ? Math.round((stats.throughput / stats.total) * 100) : 0;
+  const completionRate = stats.total > 0 ? Math.round(((stats.throughput ?? 0) / stats.total) * 100) : 0;
 
   return (
     <div className="space-y-6">
@@ -313,7 +313,7 @@ function AdminInstallationsAttente() {
                 <div>
                   <div className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">{s.label}</div>
                   <div className="text-2xl font-bold mt-1">{stats.counts[s.valeur] ?? 0}</div>
-                  {s.valeur === "pending" && stats.counts.pending > 0 && (
+                  {s.valeur === "pending" && (stats.counts['pending'] ?? 0) > 0 && (
                     <div className="text-[10px] text-slate-500 mt-0.5">à assigner</div>
                   )}
                 </div>
