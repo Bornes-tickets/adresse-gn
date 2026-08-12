@@ -36,6 +36,11 @@ const ALL_ITEMS = GROUPS.flatMap((g) => g.items);
 export const Route = createFileRoute("/supervisor/_guard")({
   ssr: false,
   beforeLoad: async () => {
+    // Pas de session locale : on redirige sans appeler la fonction protégée
+    const { supabase } = await import("@/integrations/supabase/client");
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) throw redirect({ to: "/login" });
+
     try {
       const identite = await supervisorWhoami();
       return { identite };
