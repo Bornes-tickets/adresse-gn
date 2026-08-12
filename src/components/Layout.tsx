@@ -50,6 +50,7 @@ const NAV = [
 
 /** Routes qui gèrent leur propre chrome (sidebar, topbar) — pas de header/footer public. */
 const BACKOFFICE_PREFIXES = ["/supervisor", "/admin"];
+const BACKOFFICE_PREFIXES = ["/supervisor", "/admin", "/sales"];
 
 function useScrolled() {
   const [scrolled, setScrolled] = useState(false);
