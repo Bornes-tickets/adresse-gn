@@ -1,4 +1,4 @@
-import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, redirect, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { salesWhoami } from "@/lib/sales.functions";
@@ -32,6 +32,14 @@ const GROUPS: MenuGroup[] = [
 const ALL_ITEMS = GROUPS.flatMap((g) => g.items);
 
 export const Route = createFileRoute("/sales/_guard")({
+  beforeLoad: async () => {
+    try {
+      const identite = await salesWhoami();
+      return { identite };
+    } catch {
+      throw redirect({ to: "/login" });
+    }
+  },
   component: SalesLayout,
 });
 
