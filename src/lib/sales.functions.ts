@@ -134,3 +134,29 @@ export const salesAbonnements = createServerFn({ method: "POST" })
     await requireSales(context.userId);
     return listerAbonnements();
   });
+/* --------------------------- OFFRES & TARIFS --------------------------- */
+
+export const salesOffres = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { requireSales } = await import("@/lib/admin.server");
+    const { listerOffres } = await import("@/lib/sales-ops.server");
+    await requireSales(context.userId);
+    return listerOffres();
+  });
+
+/* --------------------------- CLIENTS --------------------------- */
+
+export const salesClients = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { q?: string; page?: number; pageSize?: number }) => ({
+    q: input?.q?.trim() ?? "",
+    page: Number(input?.page ?? 1),
+    pageSize: Number(input?.pageSize ?? 25),
+  }))
+  .handler(async ({ context, data }) => {
+    const { requireSales } = await import("@/lib/admin.server");
+    const { listerClients } = await import("@/lib/sales-ops.server");
+    await requireSales(context.userId);
+    return listerClients(data);
+  });
