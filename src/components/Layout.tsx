@@ -2,6 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useQuery } from "@tanstack/react-query";
 import {
   Briefcase,
   ChevronDown,
@@ -14,6 +15,13 @@ import {
   MessageCircle,
   Twitter,
   User as UserIcon,
+  Shield,
+  ShieldCheck,
+  TrendingUp,
+  ClipboardCheck,
+  Wrench,
+  Headphones,
+  HardHat,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -34,6 +42,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useLangue } from "@/hooks/useLangue";
 import { cn } from "@/lib/utils";
@@ -49,7 +58,40 @@ const NAV = [
 ];
 
 /** Routes qui gèrent leur propre chrome (sidebar, topbar) — pas de header/footer public. */
-const BACKOFFICE_PREFIXES = ["/supervisor", "/admin", "/sales"];
+const BACKOFFICE_PREFIXES = ["/supervisor", "/admin", "/sales", "/ops", "/support", "/agent"];
+
+/** Configuration d'espace métier par rôle : icône, libellé, URL, couleurs. */
+type EspaceInfo = {
+  role: string;
+  to: string;
+  label: string;
+  icon: any;
+  cls: string; // classes du bouton dans le menu
+};
+
+const ESPACES_METIER: Record<string, EspaceInfo> = {
+  super_admin: { role: "super_admin", to: "/admin", label: "Espace super admin", icon: ShieldCheck, cls: "text-rose-600" },
+  admin: { role: "admin", to: "/admin", label: "Espace administrateur", icon: Shield, cls: "text-violet-600" },
+  supervisor: { role: "supervisor", to: "/supervisor", label: "Espace superviseur", icon: ClipboardCheck, cls: "text-indigo-600" },
+  sales: { role: "sales", to: "/sales", label: "Espace commercial", icon: TrendingUp, cls: "text-emerald-600" },
+  ops: { role: "ops", to: "/ops", label: "Espace opérations", icon: Wrench, cls: "text-amber-600" },
+  support: { role: "support", to: "/support", label: "Espace support", icon: Headphones, cls: "text-sky-600" },
+  agent: { role: "agent", to: "/agent", label: "Espace agent terrain", icon: HardHat, cls: "text-orange-600" },
+};
+
+/** Récupère le rôle métier de l'utilisateur connecté (via profiles). */
+function useRoleUtilisateur(userId: string | null | undefined) {
+  return useQuery({
+    queryKey: ["user-role", userId],
+    queryFn: async () => {
+      if (!userId) return null;
+      const { data } = await supabase.from("profiles").select("role").eq("id", userId).maybeSingle();
+      return (data?.role as string | null) ?? null;
+    },
+    enabled: !!userId,
+    staleTime: 10 * 60 * 1000,
+  });
+}
 
 function useScrolled() {
   const [scrolled, setScrolled] = useState(false);
@@ -65,9 +107,14 @@ function useScrolled() {
 function Header() {
   const { t } = useTranslation();
   const { user, isAuthenticated } = useAuth();
+  const { data: role } = useRoleUtilisateur(user?.id);
   const scrolled = useScrolled();
   const [menuOpen, setMenuOpen] = useState(false);
   const initiales = user?.email?.slice(0, 2).toUpperCase() ?? "GN";
+
+  // Détermine l'espace métier correspondant au rôle (si applicable)
+  const espace = role ? ESPACES_METIER[role] : null;
+
   return (
     <header
       className={cn(
@@ -108,9 +155,15 @@ function Header() {
                   </Avatar>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel className="truncate font-normal text-muted-foreground">
-                  {user?.email}
+              <DropdownMenuContent align="end" className="w-64">
+                <DropdownMenuLabel className="font-normal">
+                  <div className="truncate text-sm text-foreground">{user?.email}</div>
+                  {espace && (
+                    <div className={cn("mt-0.5 flex items-center gap-1 text-[11px] font-medium", espace.cls)}>
+                      <espace.icon className="size-3" />
+                      {espace.label.replace("Espace ", "")}
+                    </div>
+                  )}
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
@@ -119,12 +172,24 @@ function Header() {
                     {t("nav.account")}
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/pro" className="flex items-center gap-2">
-                    <Briefcase className="size-4" />
-                    {t("nav.proSpace")}
-                  </Link>
-                </DropdownMenuItem>
+
+                {/* Espace métier — n'apparaît que si l'utilisateur a un rôle back-office */}
+                {espace ? (
+                  <DropdownMenuItem asChild>
+                    <Link to={espace.to} className={cn("flex items-center gap-2 font-medium", espace.cls)}>
+                      <espace.icon className="size-4" />
+                      {espace.label}
+                    </Link>
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem asChild>
+                    <Link to="/pro" className="flex items-center gap-2">
+                      <Briefcase className="size-4" />
+                      {t("nav.proSpace")}
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link to="/logout" className="flex items-center gap-2">
@@ -182,6 +247,16 @@ function Header() {
                 >
                   {t("nav.privacy")}
                 </Link>
+                {espace && (
+                  <Link
+                    to={espace.to}
+                    onClick={() => setMenuOpen(false)}
+                    className={cn("rounded-lg px-3 py-3 text-base font-medium transition-colors hover:bg-muted flex items-center gap-2", espace.cls)}
+                  >
+                    <espace.icon className="size-4" />
+                    {espace.label}
+                  </Link>
+                )}
                 {!isAuthenticated && (
                   <Link
                     to="/login"
@@ -295,7 +370,7 @@ function Footer() {
                 <MapPin className="size-3.5 shrink-0" />
                 {t("footer.location")}
               </span>
-              <a
+              
                 href="mailto:contact@adresse.gn"
                 className={cn(
                   "flex items-center gap-2 rounded-sm text-xs text-slate-300 transition-colors hover:text-accent",
@@ -305,7 +380,7 @@ function Footer() {
                 <Mail className="size-3.5 shrink-0" />
                 contact@adresse.gn
               </a>
-              <a
+              
                 href={`https://wa.me/${WHATSAPP_SERVICE}`}
                 target="_blank"
                 rel="noreferrer"
