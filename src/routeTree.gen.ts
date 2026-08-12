@@ -67,6 +67,9 @@ import { Route as ProGuardEtablissementsRouteImport } from './routes/pro/_guard/
 import { Route as ProGuardFacturationRouteImport } from './routes/pro/_guard/facturation'
 import { Route as ProGuardStatistiquesRouteImport } from './routes/pro/_guard/statistiques'
 import { Route as SalesGuardIndexRouteImport } from './routes/sales/_guard/index'
+import { Route as SalesGuardCommandesRouteImport } from './routes/sales/_guard/commandes'
+import { Route as SalesGuardInstallationsRouteImport } from './routes/sales/_guard/installations'
+import { Route as SalesGuardPaiementsRouteImport } from './routes/sales/_guard/paiements'
 import { Route as SupervisorGuardIndexRouteImport } from './routes/supervisor/_guard/index'
 import { Route as SupervisorGuardClaimsRouteImport } from './routes/supervisor/_guard/claims'
 import { Route as SupervisorGuardConsultationsRouteImport } from './routes/supervisor/_guard/consultations'
@@ -378,6 +381,21 @@ const SalesGuardIndexRoute = SalesGuardIndexRouteImport.update({
   path: '/',
   getParentRoute: () => SalesGuardRouteRoute,
 } as any)
+const SalesGuardCommandesRoute = SalesGuardCommandesRouteImport.update({
+  id: '/commandes',
+  path: '/commandes',
+  getParentRoute: () => SalesGuardRouteRoute,
+} as any)
+const SalesGuardInstallationsRoute = SalesGuardInstallationsRouteImport.update({
+  id: '/installations',
+  path: '/installations',
+  getParentRoute: () => SalesGuardRouteRoute,
+} as any)
+const SalesGuardPaiementsRoute = SalesGuardPaiementsRouteImport.update({
+  id: '/paiements',
+  path: '/paiements',
+  getParentRoute: () => SalesGuardRouteRoute,
+} as any)
 const SupervisorGuardIndexRoute = SupervisorGuardIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -529,6 +547,9 @@ export interface FileRoutesByFullPath {
   '/pro/etablissements': typeof ProGuardEtablissementsRoute
   '/pro/facturation': typeof ProGuardFacturationRoute
   '/pro/statistiques': typeof ProGuardStatistiquesRoute
+  '/sales/commandes': typeof SalesGuardCommandesRoute
+  '/sales/installations': typeof SalesGuardInstallationsRoute
+  '/sales/paiements': typeof SalesGuardPaiementsRoute
   '/supervisor/claims': typeof SupervisorGuardClaimsRoute
   '/supervisor/consultations': typeof SupervisorGuardConsultationsRoute
   '/supervisor/installations': typeof SupervisorGuardInstallationsRoute
@@ -601,6 +622,9 @@ export interface FileRoutesByTo {
   '/pro/etablissements': typeof ProGuardEtablissementsRoute
   '/pro/facturation': typeof ProGuardFacturationRoute
   '/pro/statistiques': typeof ProGuardStatistiquesRoute
+  '/sales/commandes': typeof SalesGuardCommandesRoute
+  '/sales/installations': typeof SalesGuardInstallationsRoute
+  '/sales/paiements': typeof SalesGuardPaiementsRoute
   '/supervisor/claims': typeof SupervisorGuardClaimsRoute
   '/supervisor/consultations': typeof SupervisorGuardConsultationsRoute
   '/supervisor/installations': typeof SupervisorGuardInstallationsRoute
@@ -680,6 +704,9 @@ export interface FileRoutesById {
   '/pro/_guard/etablissements': typeof ProGuardEtablissementsRoute
   '/pro/_guard/facturation': typeof ProGuardFacturationRoute
   '/pro/_guard/statistiques': typeof ProGuardStatistiquesRoute
+  '/sales/_guard/commandes': typeof SalesGuardCommandesRoute
+  '/sales/_guard/installations': typeof SalesGuardInstallationsRoute
+  '/sales/_guard/paiements': typeof SalesGuardPaiementsRoute
   '/supervisor/_guard/claims': typeof SupervisorGuardClaimsRoute
   '/supervisor/_guard/consultations': typeof SupervisorGuardConsultationsRoute
   '/supervisor/_guard/installations': typeof SupervisorGuardInstallationsRoute
@@ -760,6 +787,9 @@ export interface FileRouteTypes {
     | '/pro/etablissements'
     | '/pro/facturation'
     | '/pro/statistiques'
+    | '/sales/commandes'
+    | '/sales/installations'
+    | '/sales/paiements'
     | '/supervisor/claims'
     | '/supervisor/consultations'
     | '/supervisor/installations'
@@ -832,6 +862,9 @@ export interface FileRouteTypes {
     | '/pro/etablissements'
     | '/pro/facturation'
     | '/pro/statistiques'
+    | '/sales/commandes'
+    | '/sales/installations'
+    | '/sales/paiements'
     | '/supervisor/claims'
     | '/supervisor/consultations'
     | '/supervisor/installations'
@@ -910,6 +943,9 @@ export interface FileRouteTypes {
     | '/pro/_guard/etablissements'
     | '/pro/_guard/facturation'
     | '/pro/_guard/statistiques'
+    | '/sales/_guard/commandes'
+    | '/sales/_guard/installations'
+    | '/sales/_guard/paiements'
     | '/supervisor/_guard/claims'
     | '/supervisor/_guard/consultations'
     | '/supervisor/_guard/installations'
@@ -1373,6 +1409,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SalesGuardIndexRouteImport
       parentRoute: typeof SalesGuardRouteRoute
     }
+    '/sales/_guard/commandes': {
+      id: '/sales/_guard/commandes'
+      path: '/commandes'
+      fullPath: '/sales/commandes'
+      preLoaderRoute: typeof SalesGuardCommandesRouteImport
+      parentRoute: typeof SalesGuardRouteRoute
+    }
+    '/sales/_guard/installations': {
+      id: '/sales/_guard/installations'
+      path: '/installations'
+      fullPath: '/sales/installations'
+      preLoaderRoute: typeof SalesGuardInstallationsRouteImport
+      parentRoute: typeof SalesGuardRouteRoute
+    }
+    '/sales/_guard/paiements': {
+      id: '/sales/_guard/paiements'
+      path: '/paiements'
+      fullPath: '/sales/paiements'
+      preLoaderRoute: typeof SalesGuardPaiementsRouteImport
+      parentRoute: typeof SalesGuardRouteRoute
+    }
     '/supervisor/_guard/': {
       id: '/supervisor/_guard/'
       path: '/'
@@ -1624,10 +1681,16 @@ const ProGuardRouteRouteWithChildren = ProGuardRouteRoute._addFileChildren(
 )
 
 interface SalesGuardRouteRouteChildren {
+  SalesGuardCommandesRoute: typeof SalesGuardCommandesRoute
+  SalesGuardInstallationsRoute: typeof SalesGuardInstallationsRoute
+  SalesGuardPaiementsRoute: typeof SalesGuardPaiementsRoute
   SalesGuardIndexRoute: typeof SalesGuardIndexRoute
 }
 
 const SalesGuardRouteRouteChildren: SalesGuardRouteRouteChildren = {
+  SalesGuardCommandesRoute: SalesGuardCommandesRoute,
+  SalesGuardInstallationsRoute: SalesGuardInstallationsRoute,
+  SalesGuardPaiementsRoute: SalesGuardPaiementsRoute,
   SalesGuardIndexRoute: SalesGuardIndexRoute,
 }
 

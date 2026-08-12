@@ -20,7 +20,7 @@ import { salesPaiements, salesConfirmerPaiement, salesRejeterPaiement } from "@/
 import { useRealtimeInvalidate } from "@/hooks/useRealtimeInvalidate";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/sales/_guard/paiements")({
+export const Route = createFileRoute("/admin/_guard/payments")({
   component: SalesPaiements,
 });
 

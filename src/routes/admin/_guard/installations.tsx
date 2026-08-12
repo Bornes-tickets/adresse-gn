@@ -23,7 +23,7 @@ import { salesInstallationsAPlanifier, salesAffecterInstallation, salesStatutIns
 import { useRealtimeInvalidate } from "@/hooks/useRealtimeInvalidate";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/sales/_guard/installations")({
+export const Route = createFileRoute("/admin/_guard/installations")({
   component: SalesInstallations,
 });
 
