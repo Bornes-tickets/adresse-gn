@@ -370,7 +370,7 @@ function Footer() {
                 <MapPin className="size-3.5 shrink-0" />
                 {t("footer.location")}
               </span>
-              
+              <a
                 href="mailto:contact@adresse.gn"
                 className={cn(
                   "flex items-center gap-2 rounded-sm text-xs text-slate-300 transition-colors hover:text-accent",
@@ -380,7 +380,7 @@ function Footer() {
                 <Mail className="size-3.5 shrink-0" />
                 contact@adresse.gn
               </a>
-              
+              <
                 href={`https://wa.me/${WHATSAPP_SERVICE}`}
                 target="_blank"
                 rel="noreferrer"
