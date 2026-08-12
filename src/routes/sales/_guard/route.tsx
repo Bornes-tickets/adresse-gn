@@ -32,6 +32,14 @@ const GROUPS: MenuGroup[] = [
 const ALL_ITEMS = GROUPS.flatMap((g) => g.items);
 
 export const Route = createFileRoute("/sales/_guard")({
+  beforeLoad: async () => {
+    try {
+      const identite = await salesWhoami();
+      return { identite };
+    } catch {
+      throw redirect({ to: "/login" });
+    }
+  },
   component: SalesLayout,
 });
 

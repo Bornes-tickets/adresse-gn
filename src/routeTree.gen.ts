@@ -30,6 +30,7 @@ import { Route as MonCompteGuardRouteRouteImport } from './routes/mon-compte/_gu
 import { Route as PSlugRouteImport } from './routes/p.$slug'
 import { Route as ProGuardRouteRouteImport } from './routes/pro/_guard/route'
 import { Route as ProOnboardingRouteImport } from './routes/pro/onboarding'
+import { Route as SalesGuardRouteRouteImport } from './routes/sales/_guard/route'
 import { Route as SupervisorGuardRouteRouteImport } from './routes/supervisor/_guard/route'
 import { Route as AdminGuardIndexRouteImport } from './routes/admin/_guard/index'
 import { Route as AdminGuardAbonnementsRouteImport } from './routes/admin/_guard/abonnements'
@@ -187,6 +188,11 @@ const ProGuardRouteRoute = ProGuardRouteRouteImport.update({
 const ProOnboardingRoute = ProOnboardingRouteImport.update({
   id: '/pro/onboarding',
   path: '/pro/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SalesGuardRouteRoute = SalesGuardRouteRouteImport.update({
+  id: '/sales/_guard',
+  path: '/sales',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SupervisorGuardRouteRoute = SupervisorGuardRouteRouteImport.update({
@@ -477,6 +483,7 @@ export interface FileRoutesByFullPath {
   '/agent': typeof AgentGuardRouteRouteWithChildren
   '/mon-compte': typeof MonCompteGuardRouteRouteWithChildren
   '/pro': typeof ProGuardRouteRouteWithChildren
+  '/sales': typeof SalesGuardRouteRoute
   '/supervisor': typeof SupervisorGuardRouteRouteWithChildren
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
@@ -549,6 +556,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tarifs': typeof TarifsRoute
+  '/sales': typeof SalesGuardRouteRoute
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -625,6 +633,7 @@ export interface FileRoutesById {
   '/agent/_guard': typeof AgentGuardRouteRouteWithChildren
   '/mon-compte/_guard': typeof MonCompteGuardRouteRouteWithChildren
   '/pro/_guard': typeof ProGuardRouteRouteWithChildren
+  '/sales/_guard': typeof SalesGuardRouteRoute
   '/supervisor/_guard': typeof SupervisorGuardRouteRouteWithChildren
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
@@ -703,6 +712,7 @@ export interface FileRouteTypes {
     | '/agent'
     | '/mon-compte'
     | '/pro'
+    | '/sales'
     | '/supervisor'
     | '/a/$number'
     | '/agent/login'
@@ -775,6 +785,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/sitemap.xml'
     | '/tarifs'
+    | '/sales'
     | '/a/$number'
     | '/agent/login'
     | '/blog/$slug'
@@ -850,6 +861,7 @@ export interface FileRouteTypes {
     | '/agent/_guard'
     | '/mon-compte/_guard'
     | '/pro/_guard'
+    | '/sales/_guard'
     | '/supervisor/_guard'
     | '/a/$number'
     | '/agent/login'
@@ -927,6 +939,7 @@ export interface RootRouteChildren {
   AgentGuardRouteRoute: typeof AgentGuardRouteRouteWithChildren
   MonCompteGuardRouteRoute: typeof MonCompteGuardRouteRouteWithChildren
   ProGuardRouteRoute: typeof ProGuardRouteRouteWithChildren
+  SalesGuardRouteRoute: typeof SalesGuardRouteRoute
   SupervisorGuardRouteRoute: typeof SupervisorGuardRouteRouteWithChildren
   ANumberRoute: typeof ANumberRoute
   AgentLoginRoute: typeof AgentLoginRoute
@@ -1089,6 +1102,13 @@ declare module '@tanstack/react-router' {
       path: '/pro/onboarding'
       fullPath: '/pro/onboarding'
       preLoaderRoute: typeof ProOnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sales/_guard': {
+      id: '/sales/_guard'
+      path: '/sales'
+      fullPath: '/sales'
+      preLoaderRoute: typeof SalesGuardRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/supervisor/_guard': {
@@ -1624,6 +1644,7 @@ const rootRouteChildren: RootRouteChildren = {
   AgentGuardRouteRoute: AgentGuardRouteRouteWithChildren,
   MonCompteGuardRouteRoute: MonCompteGuardRouteRouteWithChildren,
   ProGuardRouteRoute: ProGuardRouteRouteWithChildren,
+  SalesGuardRouteRoute: SalesGuardRouteRoute,
   SupervisorGuardRouteRoute: SupervisorGuardRouteRouteWithChildren,
   ANumberRoute: ANumberRoute,
   AgentLoginRoute: AgentLoginRoute,
@@ -1641,3 +1662,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
