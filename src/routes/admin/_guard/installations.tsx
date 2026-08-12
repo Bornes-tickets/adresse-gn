@@ -572,7 +572,7 @@ function agentColor(badge: string | null | undefined): string {
     "from-fuchsia-500 to-purple-600",
   ];
   const h = badge.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
-  return palettes[h % palettes.length];
+  return palettes[h % palettes.length] ?? palettes[0]!;
 }
 
 function RowInstall({ r, padding, selected, expanded, onSelect, onToggleExpand, onValider, onRejeter }: {
@@ -771,7 +771,7 @@ function QcCard({ item, onValider, onRejeter }: { item: any; onValider: () => vo
     hors_zone: { label: "Hors zone", cls: "bg-rose-100 text-rose-700 border-rose-200", icon: AlertTriangle },
     indetermine: { label: "Indéterminée", cls: "bg-slate-100 text-slate-700 border-slate-200", icon: Eye },
   };
-  const coh = coherenceMap[item.coherence] ?? coherenceMap.indetermine;
+  const coh = coherenceMap[item.coherence] ?? coherenceMap['indetermine']!;
   const CohIcon = coh.icon;
   return (
     <Card className="overflow-hidden hover:shadow-xl transition-all border-slate-200 group">
