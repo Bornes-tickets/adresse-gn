@@ -218,3 +218,117 @@ export async function listerCommandes(filtre: {
     })),
   };
 }
+/* --------------------------- OFFRES (lecture catalogue) --------------------------- */
+
+export async function listerOffres(): Promise<any[]> {
+  try {
+    const pricing = await import("@/lib/pricing");
+    const source =
+      (pricing as any).OFFERS ??
+      (pricing as any).offers ??
+      (typeof (pricing as any).getAllOffers === "function" ? (pricing as any).getAllOffers() : null);
+    if (Array.isArray(source)) return source;
+    if (source && typeof source === "object") return Object.values(source);
+  } catch {
+    // ignore
+  }
+  // Fallback : essaie de lire une table offers si elle existe
+  const { data } = await supabaseAdmin.from("offers" as any).select("*").limit(200);
+  return data ?? [];
+}
+
+/* --------------------------- CLIENTS --------------------------- */
+
+export interface SalesClientRow {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  phone: string | null;
+  role: string;
+  created_at: string | null;
+  nb_commandes: number;
+  total_depense: number;
+  derniere_commande: string | null;
+  abonnements_actifs: number;
+}
+
+export async function listerClients(f: {
+  q?: string;
+  page?: number;
+  pageSize?: number;
+}): Promise<{ total: number; page: number; pageSize: number; lignes: SalesClientRow[] }> {
+  const page = Math.max(1, f.page ?? 1);
+  const pageSize = Math.min(100, f.pageSize ?? 25);
+
+  // Récupère tous les profils user (paginés)
+  let req = supabaseAdmin
+    .from("profiles")
+    .select("id, full_name, phone, role, created_at", { count: "exact" })
+    .in("role", ["user", "sales", "supervisor", "admin", "super_admin"])
+    .order("created_at", { ascending: false })
+    .range((page - 1) * pageSize, page * pageSize - 1);
+
+  if (f.q) {
+    req = req.or(`full_name.ilike.%${f.q}%,phone.ilike.%${f.q}%`);
+  }
+
+  const { data: profils, count, error } = await req;
+  if (error) throw new Error(error.message);
+
+  const ids = (profils ?? []).map((p) => p.id);
+  if (ids.length === 0) return { total: 0, page, pageSize, lignes: [] };
+
+  // Emails via auth
+  const emails = new Map<string, string>();
+  for (const id of ids) {
+    try {
+      const { data: u } = await supabaseAdmin.auth.admin.getUserById(id);
+      if (u?.user?.email) emails.set(id, u.user.email);
+    } catch { /* silencieux */ }
+  }
+
+  // Commandes agrégées
+  const { data: commandes } = await supabaseAdmin
+    .from("orders")
+    .select("customer_id, amount_gnf, created_at, status")
+    .in("customer_id", ids);
+
+  const statsCommandes = new Map<string, { nb: number; total: number; derniere: string | null }>();
+  for (const c of commandes ?? []) {
+    const cur = statsCommandes.get(c.customer_id) ?? { nb: 0, total: 0, derniere: null };
+    cur.nb += 1;
+    if (c.status === "paid") cur.total += Number(c.amount_gnf ?? 0);
+    if (!cur.derniere || (c.created_at ?? "") > cur.derniere) cur.derniere = c.created_at ?? null;
+    statsCommandes.set(c.customer_id, cur);
+  }
+
+  // Abonnements actifs
+  const { data: abos } = await supabaseAdmin
+    .from("subscriptions")
+    .select("customer_id, status")
+    .in("customer_id", ids)
+    .eq("status", "active");
+
+  const abosParClient = new Map<string, number>();
+  for (const a of abos ?? []) {
+    abosParClient.set(a.customer_id, (abosParClient.get(a.customer_id) ?? 0) + 1);
+  }
+
+  const lignes: SalesClientRow[] = (profils ?? []).map((p) => {
+    const s = statsCommandes.get(p.id) ?? { nb: 0, total: 0, derniere: null };
+    return {
+      id: p.id,
+      full_name: p.full_name ?? null,
+      email: emails.get(p.id) ?? null,
+      phone: p.phone ?? null,
+      role: p.role,
+      created_at: p.created_at,
+      nb_commandes: s.nb,
+      total_depense: s.total,
+      derniere_commande: s.derniere,
+      abonnements_actifs: abosParClient.get(p.id) ?? 0,
+    };
+  });
+
+  return { total: count ?? 0, page, pageSize, lignes };
+}
