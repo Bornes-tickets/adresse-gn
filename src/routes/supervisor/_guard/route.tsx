@@ -34,6 +34,15 @@ const GROUPS: MenuGroup[] = [
 const ALL_ITEMS = GROUPS.flatMap((g) => g.items);
 
 export const Route = createFileRoute("/supervisor/_guard")({
+  ssr: false,
+  beforeLoad: async () => {
+    try {
+      const identite = await supervisorWhoami();
+      return { identite };
+    } catch {
+      throw redirect({ to: "/login" });
+    }
+  },
   component: () => (
     <ThemeProvider>
       <SupervisorLayout />
