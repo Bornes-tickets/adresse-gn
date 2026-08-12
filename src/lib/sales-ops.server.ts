@@ -140,3 +140,81 @@ export async function chargerDashboardSales(): Promise<SalesDashboardData> {
     },
   };
 }
+/* --------------------------- COMMANDES (liste globale) --------------------------- */
+
+export interface SalesOrderRow {
+  id: string;
+  order_ref: string;
+  offer_code: string;
+  amount_gnf: number;
+  status: string;
+  created_at: string;
+  customer_id: string;
+  client_name: string;
+  client_email: string | null;
+  client_phone: string | null;
+  invoice_number: string | null;
+}
+
+export async function listerCommandes(filtre: {
+  statut?: string;
+  q?: string;
+  page?: number;
+  pageSize?: number;
+}): Promise<{ total: number; page: number; pageSize: number; lignes: SalesOrderRow[] }> {
+  const page = Math.max(1, filtre.page ?? 1);
+  const pageSize = Math.min(100, filtre.pageSize ?? 25);
+
+  let req = supabaseAdmin
+    .from("orders")
+    .select(
+      "id, order_ref, offer_code, amount_gnf, status, created_at, customer_id, invoices(number)",
+      { count: "exact" },
+    )
+    .order("created_at", { ascending: false })
+    .range((page - 1) * pageSize, page * pageSize - 1);
+
+  if (filtre.statut && filtre.statut !== "all") req = req.eq("status", filtre.statut);
+  if (filtre.q) req = req.ilike("order_ref", `%${filtre.q}%`);
+
+  const { data, error, count } = await req;
+  if (error) throw new Error(error.message);
+
+  const clientIds = [...new Set((data ?? []).map((c: any) => c.customer_id).filter(Boolean))];
+  const profils = new Map<string, { name: string | null; phone: string | null }>();
+  if (clientIds.length) {
+    const { data: p } = await supabaseAdmin
+      .from("profiles")
+      .select("id, full_name, phone")
+      .in("id", clientIds);
+    for (const row of p ?? []) profils.set(row.id, { name: row.full_name, phone: row.phone });
+  }
+
+  // Emails via auth admin
+  const emails = new Map<string, string>();
+  for (const cid of clientIds) {
+    try {
+      const { data: u } = await supabaseAdmin.auth.admin.getUserById(cid as string);
+      if (u?.user?.email) emails.set(cid as string, u.user.email);
+    } catch { /* silencieux */ }
+  }
+
+  return {
+    total: count ?? 0,
+    page,
+    pageSize,
+    lignes: (data ?? []).map((c: any) => ({
+      id: c.id,
+      order_ref: c.order_ref,
+      offer_code: c.offer_code,
+      amount_gnf: c.amount_gnf,
+      status: c.status,
+      created_at: c.created_at,
+      customer_id: c.customer_id,
+      client_name: profils.get(c.customer_id)?.name ?? "Client",
+      client_email: emails.get(c.customer_id) ?? null,
+      client_phone: profils.get(c.customer_id)?.phone ?? null,
+      invoice_number: c.invoices?.[0]?.number ?? null,
+    })),
+  };
+}
