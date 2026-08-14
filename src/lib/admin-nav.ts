@@ -1,5 +1,6 @@
 /** Configuration de navigation du back-office (présentation uniquement). */
 import {
+  Activity,
   BarChart3,
   FileCheck2,
   FileClock,
@@ -7,6 +8,7 @@ import {
   HelpCircle,
   LayoutDashboard,
   Languages,
+  MapPin,
   Newspaper,
   Tags,
   Users,
@@ -125,8 +127,10 @@ export interface SectionAdmin {
 export const SECTIONS_ADMIN: SectionAdmin[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, accent: "blue", groupe: "Pilotage", exact: true },
   { to: "/admin/analytics", label: "Statistiques", icon: BarChart3, accent: "violet", groupe: "Pilotage" },
-  { to: "/admin/justificatifs", label: "Justificatifs", icon: FileCheck2, accent: "lime", groupe: "Terrain" },
-  { to: "/admin/agents", label: "Agents", icon: UserSquare2, accent: "cyan", groupe: "Terrain" },
+  { to: "/admin/addresses", label: "Adresses", icon: MapPin, accent: "cyan", groupe: "Configuration" },
+  { to: "/admin/zones", label: "Zones", icon: Activity, accent: "lime", groupe: "Configuration" },
+  { to: "/admin/agents", label: "Agents", icon: UserSquare2, accent: "cyan", groupe: "Configuration" },
+  { to: "/admin/justificatifs", label: "Justificatifs", icon: FileCheck2, accent: "lime", groupe: "Configuration" },
   { to: "/admin/cms", label: "Contenu du site", icon: FileText, accent: "blue", groupe: "Contenu", exact: true },
   { to: "/admin/cms/pages", label: "Pages", icon: FileText, accent: "cyan", groupe: "Contenu" },
   { to: "/admin/cms/blog", label: "Blog", icon: Newspaper, accent: "pink", groupe: "Contenu" },
