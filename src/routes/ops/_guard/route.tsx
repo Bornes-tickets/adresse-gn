@@ -1,6 +1,4 @@
 import { createFileRoute, Link, Outlet, redirect, useRouterState } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { opsWhoami } from "@/lib/ops.functions";
 import {
   LayoutDashboard, Package, QrCode, Radio, Wrench, LogOut, ChevronRight, Home,
@@ -54,8 +52,7 @@ function construireBreadcrumb(pathname: string) {
 
 function OpsLayout() {
   const { location } = useRouterState();
-  const whoamiFn = useServerFn(opsWhoami);
-  const { data: me } = useQuery({ queryKey: ["ops-whoami"], queryFn: () => whoamiFn(), staleTime: 5 * 60 * 1000 });
+  const { identite: me } = Route.useRouteContext();
   const breadcrumb = construireBreadcrumb(location.pathname);
 
   return (
