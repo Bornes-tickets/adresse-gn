@@ -63,6 +63,9 @@ import { Route as MonCompteGuardFavoritesRouteImport } from './routes/mon-compte
 import { Route as MonCompteGuardReportsRouteImport } from './routes/mon-compte/_guard/reports'
 import { Route as MonCompteGuardSettingsRouteImport } from './routes/mon-compte/_guard/settings'
 import { Route as OpsGuardIndexRouteImport } from './routes/ops/_guard/index'
+import { Route as OpsGuardBeaconsRouteImport } from './routes/ops/_guard/beacons'
+import { Route as OpsGuardExportsRouteImport } from './routes/ops/_guard/exports'
+import { Route as OpsGuardLotsRouteImport } from './routes/ops/_guard/lots'
 import { Route as ProGuardIndexRouteImport } from './routes/pro/_guard/index'
 import { Route as ProGuardApiRouteImport } from './routes/pro/_guard/api'
 import { Route as ProGuardEquipeRouteImport } from './routes/pro/_guard/equipe'
@@ -84,6 +87,8 @@ import { Route as SupervisorGuardPlanningRouteImport } from './routes/supervisor
 import { Route as SupervisorGuardReportInstallationsRouteImport } from './routes/supervisor/_guard/report-installations'
 import { Route as SupervisorGuardReportsRouteImport } from './routes/supervisor/_guard/reports'
 import { Route as SupportGuardIndexRouteImport } from './routes/support/_guard/index'
+import { Route as SupportGuardReclamationsRouteImport } from './routes/support/_guard/reclamations'
+import { Route as SupportGuardSignalementsRouteImport } from './routes/support/_guard/signalements'
 import { Route as AdminGuardCmsIndexRouteImport } from './routes/admin/_guard/cms/index'
 import { Route as AdminGuardCmsBlogRouteImport } from './routes/admin/_guard/cms/blog'
 import { Route as AdminGuardCmsFaqRouteImport } from './routes/admin/_guard/cms/faq'
@@ -368,6 +373,21 @@ const OpsGuardIndexRoute = OpsGuardIndexRouteImport.update({
   path: '/',
   getParentRoute: () => OpsGuardRouteRoute,
 } as any)
+const OpsGuardBeaconsRoute = OpsGuardBeaconsRouteImport.update({
+  id: '/beacons',
+  path: '/beacons',
+  getParentRoute: () => OpsGuardRouteRoute,
+} as any)
+const OpsGuardExportsRoute = OpsGuardExportsRouteImport.update({
+  id: '/exports',
+  path: '/exports',
+  getParentRoute: () => OpsGuardRouteRoute,
+} as any)
+const OpsGuardLotsRoute = OpsGuardLotsRouteImport.update({
+  id: '/lots',
+  path: '/lots',
+  getParentRoute: () => OpsGuardRouteRoute,
+} as any)
 const ProGuardIndexRoute = ProGuardIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -476,6 +496,18 @@ const SupportGuardIndexRoute = SupportGuardIndexRouteImport.update({
   path: '/',
   getParentRoute: () => SupportGuardRouteRoute,
 } as any)
+const SupportGuardReclamationsRoute =
+  SupportGuardReclamationsRouteImport.update({
+    id: '/reclamations',
+    path: '/reclamations',
+    getParentRoute: () => SupportGuardRouteRoute,
+  } as any)
+const SupportGuardSignalementsRoute =
+  SupportGuardSignalementsRouteImport.update({
+    id: '/signalements',
+    path: '/signalements',
+    getParentRoute: () => SupportGuardRouteRoute,
+  } as any)
 const AdminGuardCmsIndexRoute = AdminGuardCmsIndexRouteImport.update({
   id: '/cms/',
   path: '/cms/',
@@ -586,6 +618,9 @@ export interface FileRoutesByFullPath {
   '/mon-compte/favorites': typeof MonCompteGuardFavoritesRoute
   '/mon-compte/reports': typeof MonCompteGuardReportsRoute
   '/mon-compte/settings': typeof MonCompteGuardSettingsRoute
+  '/ops/beacons': typeof OpsGuardBeaconsRoute
+  '/ops/exports': typeof OpsGuardExportsRoute
+  '/ops/lots': typeof OpsGuardLotsRoute
   '/pro/api': typeof ProGuardApiRoute
   '/pro/equipe': typeof ProGuardEquipeRoute
   '/pro/etablissements': typeof ProGuardEtablissementsRoute
@@ -603,6 +638,8 @@ export interface FileRoutesByFullPath {
   '/supervisor/planning': typeof SupervisorGuardPlanningRoute
   '/supervisor/report-installations': typeof SupervisorGuardReportInstallationsRoute
   '/supervisor/reports': typeof SupervisorGuardReportsRoute
+  '/support/reclamations': typeof SupportGuardReclamationsRoute
+  '/support/signalements': typeof SupportGuardSignalementsRoute
   '/admin/': typeof AdminGuardIndexRoute
   '/agent/': typeof AgentGuardIndexRoute
   '/mon-compte/': typeof MonCompteGuardIndexRoute
@@ -666,6 +703,9 @@ export interface FileRoutesByTo {
   '/mon-compte/favorites': typeof MonCompteGuardFavoritesRoute
   '/mon-compte/reports': typeof MonCompteGuardReportsRoute
   '/mon-compte/settings': typeof MonCompteGuardSettingsRoute
+  '/ops/beacons': typeof OpsGuardBeaconsRoute
+  '/ops/exports': typeof OpsGuardExportsRoute
+  '/ops/lots': typeof OpsGuardLotsRoute
   '/pro/api': typeof ProGuardApiRoute
   '/pro/equipe': typeof ProGuardEquipeRoute
   '/pro/etablissements': typeof ProGuardEtablissementsRoute
@@ -683,6 +723,8 @@ export interface FileRoutesByTo {
   '/supervisor/planning': typeof SupervisorGuardPlanningRoute
   '/supervisor/report-installations': typeof SupervisorGuardReportInstallationsRoute
   '/supervisor/reports': typeof SupervisorGuardReportsRoute
+  '/support/reclamations': typeof SupportGuardReclamationsRoute
+  '/support/signalements': typeof SupportGuardSignalementsRoute
   '/admin': typeof AdminGuardIndexRoute
   '/agent': typeof AgentGuardIndexRoute
   '/mon-compte': typeof MonCompteGuardIndexRoute
@@ -755,6 +797,9 @@ export interface FileRoutesById {
   '/mon-compte/_guard/favorites': typeof MonCompteGuardFavoritesRoute
   '/mon-compte/_guard/reports': typeof MonCompteGuardReportsRoute
   '/mon-compte/_guard/settings': typeof MonCompteGuardSettingsRoute
+  '/ops/_guard/beacons': typeof OpsGuardBeaconsRoute
+  '/ops/_guard/exports': typeof OpsGuardExportsRoute
+  '/ops/_guard/lots': typeof OpsGuardLotsRoute
   '/pro/_guard/api': typeof ProGuardApiRoute
   '/pro/_guard/equipe': typeof ProGuardEquipeRoute
   '/pro/_guard/etablissements': typeof ProGuardEtablissementsRoute
@@ -772,6 +817,8 @@ export interface FileRoutesById {
   '/supervisor/_guard/planning': typeof SupervisorGuardPlanningRoute
   '/supervisor/_guard/report-installations': typeof SupervisorGuardReportInstallationsRoute
   '/supervisor/_guard/reports': typeof SupervisorGuardReportsRoute
+  '/support/_guard/reclamations': typeof SupportGuardReclamationsRoute
+  '/support/_guard/signalements': typeof SupportGuardSignalementsRoute
   '/admin/_guard/': typeof AdminGuardIndexRoute
   '/agent/_guard/': typeof AgentGuardIndexRoute
   '/mon-compte/_guard/': typeof MonCompteGuardIndexRoute
@@ -845,6 +892,9 @@ export interface FileRouteTypes {
     | '/mon-compte/favorites'
     | '/mon-compte/reports'
     | '/mon-compte/settings'
+    | '/ops/beacons'
+    | '/ops/exports'
+    | '/ops/lots'
     | '/pro/api'
     | '/pro/equipe'
     | '/pro/etablissements'
@@ -862,6 +912,8 @@ export interface FileRouteTypes {
     | '/supervisor/planning'
     | '/supervisor/report-installations'
     | '/supervisor/reports'
+    | '/support/reclamations'
+    | '/support/signalements'
     | '/admin/'
     | '/agent/'
     | '/mon-compte/'
@@ -925,6 +977,9 @@ export interface FileRouteTypes {
     | '/mon-compte/favorites'
     | '/mon-compte/reports'
     | '/mon-compte/settings'
+    | '/ops/beacons'
+    | '/ops/exports'
+    | '/ops/lots'
     | '/pro/api'
     | '/pro/equipe'
     | '/pro/etablissements'
@@ -942,6 +997,8 @@ export interface FileRouteTypes {
     | '/supervisor/planning'
     | '/supervisor/report-installations'
     | '/supervisor/reports'
+    | '/support/reclamations'
+    | '/support/signalements'
     | '/admin'
     | '/agent'
     | '/mon-compte'
@@ -1013,6 +1070,9 @@ export interface FileRouteTypes {
     | '/mon-compte/_guard/favorites'
     | '/mon-compte/_guard/reports'
     | '/mon-compte/_guard/settings'
+    | '/ops/_guard/beacons'
+    | '/ops/_guard/exports'
+    | '/ops/_guard/lots'
     | '/pro/_guard/api'
     | '/pro/_guard/equipe'
     | '/pro/_guard/etablissements'
@@ -1030,6 +1090,8 @@ export interface FileRouteTypes {
     | '/supervisor/_guard/planning'
     | '/supervisor/_guard/report-installations'
     | '/supervisor/_guard/reports'
+    | '/support/_guard/reclamations'
+    | '/support/_guard/signalements'
     | '/admin/_guard/'
     | '/agent/_guard/'
     | '/mon-compte/_guard/'
@@ -1463,6 +1525,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OpsGuardIndexRouteImport
       parentRoute: typeof OpsGuardRouteRoute
     }
+    '/ops/_guard/beacons': {
+      id: '/ops/_guard/beacons'
+      path: '/beacons'
+      fullPath: '/ops/beacons'
+      preLoaderRoute: typeof OpsGuardBeaconsRouteImport
+      parentRoute: typeof OpsGuardRouteRoute
+    }
+    '/ops/_guard/exports': {
+      id: '/ops/_guard/exports'
+      path: '/exports'
+      fullPath: '/ops/exports'
+      preLoaderRoute: typeof OpsGuardExportsRouteImport
+      parentRoute: typeof OpsGuardRouteRoute
+    }
+    '/ops/_guard/lots': {
+      id: '/ops/_guard/lots'
+      path: '/lots'
+      fullPath: '/ops/lots'
+      preLoaderRoute: typeof OpsGuardLotsRouteImport
+      parentRoute: typeof OpsGuardRouteRoute
+    }
     '/pro/_guard/': {
       id: '/pro/_guard/'
       path: '/'
@@ -1608,6 +1691,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/support/'
       preLoaderRoute: typeof SupportGuardIndexRouteImport
+      parentRoute: typeof SupportGuardRouteRoute
+    }
+    '/support/_guard/reclamations': {
+      id: '/support/_guard/reclamations'
+      path: '/reclamations'
+      fullPath: '/support/reclamations'
+      preLoaderRoute: typeof SupportGuardReclamationsRouteImport
+      parentRoute: typeof SupportGuardRouteRoute
+    }
+    '/support/_guard/signalements': {
+      id: '/support/_guard/signalements'
+      path: '/signalements'
+      fullPath: '/support/signalements'
+      preLoaderRoute: typeof SupportGuardSignalementsRouteImport
       parentRoute: typeof SupportGuardRouteRoute
     }
     '/admin/_guard/cms/': {
@@ -1790,10 +1887,16 @@ const MonCompteGuardRouteRouteWithChildren =
   MonCompteGuardRouteRoute._addFileChildren(MonCompteGuardRouteRouteChildren)
 
 interface OpsGuardRouteRouteChildren {
+  OpsGuardBeaconsRoute: typeof OpsGuardBeaconsRoute
+  OpsGuardExportsRoute: typeof OpsGuardExportsRoute
+  OpsGuardLotsRoute: typeof OpsGuardLotsRoute
   OpsGuardIndexRoute: typeof OpsGuardIndexRoute
 }
 
 const OpsGuardRouteRouteChildren: OpsGuardRouteRouteChildren = {
+  OpsGuardBeaconsRoute: OpsGuardBeaconsRoute,
+  OpsGuardExportsRoute: OpsGuardExportsRoute,
+  OpsGuardLotsRoute: OpsGuardLotsRoute,
   OpsGuardIndexRoute: OpsGuardIndexRoute,
 }
 
@@ -1872,10 +1975,14 @@ const SupervisorGuardRouteRouteWithChildren =
   SupervisorGuardRouteRoute._addFileChildren(SupervisorGuardRouteRouteChildren)
 
 interface SupportGuardRouteRouteChildren {
+  SupportGuardReclamationsRoute: typeof SupportGuardReclamationsRoute
+  SupportGuardSignalementsRoute: typeof SupportGuardSignalementsRoute
   SupportGuardIndexRoute: typeof SupportGuardIndexRoute
 }
 
 const SupportGuardRouteRouteChildren: SupportGuardRouteRouteChildren = {
+  SupportGuardReclamationsRoute: SupportGuardReclamationsRoute,
+  SupportGuardSignalementsRoute: SupportGuardSignalementsRoute,
   SupportGuardIndexRoute: SupportGuardIndexRoute,
 }
 
