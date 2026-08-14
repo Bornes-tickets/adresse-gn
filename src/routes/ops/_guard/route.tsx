@@ -21,7 +21,20 @@ const GROUPS: MenuGroup[] = [
 
 const ALL_ITEMS = GROUPS.flatMap((g) => g.items);
 
-export const Route = createFileRoute("/ops/_guard")({ component: OpsLayout });
+export const Route = createFileRoute("/ops/_guard")({
+  ssr: false,
+  beforeLoad: async () => {
+    const { supabase } = await import("@/integrations/supabase/client");
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) throw redirect({ to: "/login" });
+    try {
+      return { identite: await opsWhoami() };
+    } catch {
+      throw redirect({ to: "/login" });
+    }
+  },
+  component: OpsLayout,
+});
 
 function initiales(n: string | null | undefined) {
   return !n ? "OP" : n.split(/\s+/).filter(Boolean).slice(0, 2).map((s) => s[0]?.toUpperCase()).join("");
