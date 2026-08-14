@@ -27,11 +27,15 @@ import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as CommanderOfferCodeRouteImport } from './routes/commander.$offerCode'
 import { Route as EtablissementNumberRouteImport } from './routes/etablissement.$number'
 import { Route as MonCompteGuardRouteRouteImport } from './routes/mon-compte/_guard/route'
+import { Route as OpsGuardRouteRouteImport } from './routes/ops/_guard/route'
+import { Route as OpsGuardRouteImport } from './routes/ops/_guard'
 import { Route as PSlugRouteImport } from './routes/p.$slug'
 import { Route as ProGuardRouteRouteImport } from './routes/pro/_guard/route'
 import { Route as ProOnboardingRouteImport } from './routes/pro/onboarding'
 import { Route as SalesGuardRouteRouteImport } from './routes/sales/_guard/route'
 import { Route as SupervisorGuardRouteRouteImport } from './routes/supervisor/_guard/route'
+import { Route as SupportGuardRouteRouteImport } from './routes/support/_guard/route'
+import { Route as SupportGuardRouteImport } from './routes/support/_guard'
 import { Route as AdminGuardIndexRouteImport } from './routes/admin/_guard/index'
 import { Route as AdminGuardAbonnementsRouteImport } from './routes/admin/_guard/abonnements'
 import { Route as AdminGuardAddressesRouteImport } from './routes/admin/_guard/addresses'
@@ -60,6 +64,7 @@ import { Route as MonCompteGuardCommandesRouteImport } from './routes/mon-compte
 import { Route as MonCompteGuardFavoritesRouteImport } from './routes/mon-compte/_guard/favorites'
 import { Route as MonCompteGuardReportsRouteImport } from './routes/mon-compte/_guard/reports'
 import { Route as MonCompteGuardSettingsRouteImport } from './routes/mon-compte/_guard/settings'
+import { Route as OpsGuardIndexRouteImport } from './routes/ops/_guard/index'
 import { Route as ProGuardIndexRouteImport } from './routes/pro/_guard/index'
 import { Route as ProGuardApiRouteImport } from './routes/pro/_guard/api'
 import { Route as ProGuardEquipeRouteImport } from './routes/pro/_guard/equipe'
@@ -67,8 +72,11 @@ import { Route as ProGuardEtablissementsRouteImport } from './routes/pro/_guard/
 import { Route as ProGuardFacturationRouteImport } from './routes/pro/_guard/facturation'
 import { Route as ProGuardStatistiquesRouteImport } from './routes/pro/_guard/statistiques'
 import { Route as SalesGuardIndexRouteImport } from './routes/sales/_guard/index'
+import { Route as SalesGuardAbonnementsRouteImport } from './routes/sales/_guard/abonnements'
+import { Route as SalesGuardClientsRouteImport } from './routes/sales/_guard/clients'
 import { Route as SalesGuardCommandesRouteImport } from './routes/sales/_guard/commandes'
 import { Route as SalesGuardInstallationsRouteImport } from './routes/sales/_guard/installations'
+import { Route as SalesGuardOffresRouteImport } from './routes/sales/_guard/offres'
 import { Route as SalesGuardPaiementsRouteImport } from './routes/sales/_guard/paiements'
 import { Route as SupervisorGuardIndexRouteImport } from './routes/supervisor/_guard/index'
 import { Route as SupervisorGuardClaimsRouteImport } from './routes/supervisor/_guard/claims'
@@ -77,6 +85,7 @@ import { Route as SupervisorGuardInstallationsRouteImport } from './routes/super
 import { Route as SupervisorGuardPlanningRouteImport } from './routes/supervisor/_guard/planning'
 import { Route as SupervisorGuardReportInstallationsRouteImport } from './routes/supervisor/_guard/report-installations'
 import { Route as SupervisorGuardReportsRouteImport } from './routes/supervisor/_guard/reports'
+import { Route as SupportGuardIndexRouteImport } from './routes/support/_guard/index'
 import { Route as AdminGuardCmsIndexRouteImport } from './routes/admin/_guard/cms/index'
 import { Route as AdminGuardCmsBlogRouteImport } from './routes/admin/_guard/cms/blog'
 import { Route as AdminGuardCmsFaqRouteImport } from './routes/admin/_guard/cms/faq'
@@ -179,6 +188,16 @@ const MonCompteGuardRouteRoute = MonCompteGuardRouteRouteImport.update({
   path: '/mon-compte',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OpsGuardRouteRoute = OpsGuardRouteRouteImport.update({
+  id: '/ops/_guard',
+  path: '/ops',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OpsGuardRoute = OpsGuardRouteImport.update({
+  id: '/ops/_guard',
+  path: '/ops',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PSlugRoute = PSlugRouteImport.update({
   id: '/p/$slug',
   path: '/p/$slug',
@@ -202,6 +221,16 @@ const SalesGuardRouteRoute = SalesGuardRouteRouteImport.update({
 const SupervisorGuardRouteRoute = SupervisorGuardRouteRouteImport.update({
   id: '/supervisor/_guard',
   path: '/supervisor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SupportGuardRouteRoute = SupportGuardRouteRouteImport.update({
+  id: '/support/_guard',
+  path: '/support',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SupportGuardRoute = SupportGuardRouteImport.update({
+  id: '/support/_guard',
+  path: '/support',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminGuardIndexRoute = AdminGuardIndexRouteImport.update({
@@ -346,6 +375,11 @@ const MonCompteGuardSettingsRoute = MonCompteGuardSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => MonCompteGuardRouteRoute,
 } as any)
+const OpsGuardIndexRoute = OpsGuardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => OpsGuardRoute,
+} as any)
 const ProGuardIndexRoute = ProGuardIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -381,6 +415,16 @@ const SalesGuardIndexRoute = SalesGuardIndexRouteImport.update({
   path: '/',
   getParentRoute: () => SalesGuardRouteRoute,
 } as any)
+const SalesGuardAbonnementsRoute = SalesGuardAbonnementsRouteImport.update({
+  id: '/abonnements',
+  path: '/abonnements',
+  getParentRoute: () => SalesGuardRouteRoute,
+} as any)
+const SalesGuardClientsRoute = SalesGuardClientsRouteImport.update({
+  id: '/clients',
+  path: '/clients',
+  getParentRoute: () => SalesGuardRouteRoute,
+} as any)
 const SalesGuardCommandesRoute = SalesGuardCommandesRouteImport.update({
   id: '/commandes',
   path: '/commandes',
@@ -389,6 +433,11 @@ const SalesGuardCommandesRoute = SalesGuardCommandesRouteImport.update({
 const SalesGuardInstallationsRoute = SalesGuardInstallationsRouteImport.update({
   id: '/installations',
   path: '/installations',
+  getParentRoute: () => SalesGuardRouteRoute,
+} as any)
+const SalesGuardOffresRoute = SalesGuardOffresRouteImport.update({
+  id: '/offres',
+  path: '/offres',
   getParentRoute: () => SalesGuardRouteRoute,
 } as any)
 const SalesGuardPaiementsRoute = SalesGuardPaiementsRouteImport.update({
@@ -433,6 +482,11 @@ const SupervisorGuardReportsRoute = SupervisorGuardReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
   getParentRoute: () => SupervisorGuardRouteRoute,
+} as any)
+const SupportGuardIndexRoute = SupportGuardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SupportGuardRoute,
 } as any)
 const AdminGuardCmsIndexRoute = AdminGuardCmsIndexRouteImport.update({
   id: '/cms/',
@@ -506,9 +560,11 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminGuardRouteRouteWithChildren
   '/agent': typeof AgentGuardRouteRouteWithChildren
   '/mon-compte': typeof MonCompteGuardRouteRouteWithChildren
+  '/ops': typeof OpsGuardRouteWithChildren
   '/pro': typeof ProGuardRouteRouteWithChildren
   '/sales': typeof SalesGuardRouteRouteWithChildren
   '/supervisor': typeof SupervisorGuardRouteRouteWithChildren
+  '/support': typeof SupportGuardRouteWithChildren
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -547,8 +603,11 @@ export interface FileRoutesByFullPath {
   '/pro/etablissements': typeof ProGuardEtablissementsRoute
   '/pro/facturation': typeof ProGuardFacturationRoute
   '/pro/statistiques': typeof ProGuardStatistiquesRoute
+  '/sales/abonnements': typeof SalesGuardAbonnementsRoute
+  '/sales/clients': typeof SalesGuardClientsRoute
   '/sales/commandes': typeof SalesGuardCommandesRoute
   '/sales/installations': typeof SalesGuardInstallationsRoute
+  '/sales/offres': typeof SalesGuardOffresRoute
   '/sales/paiements': typeof SalesGuardPaiementsRoute
   '/supervisor/claims': typeof SupervisorGuardClaimsRoute
   '/supervisor/consultations': typeof SupervisorGuardConsultationsRoute
@@ -559,9 +618,11 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminGuardIndexRoute
   '/agent/': typeof AgentGuardIndexRoute
   '/mon-compte/': typeof MonCompteGuardIndexRoute
+  '/ops/': typeof OpsGuardIndexRoute
   '/pro/': typeof ProGuardIndexRoute
   '/sales/': typeof SalesGuardIndexRoute
   '/supervisor/': typeof SupervisorGuardIndexRoute
+  '/support/': typeof SupportGuardIndexRoute
   '/admin/cms/blog': typeof AdminGuardCmsBlogRoute
   '/admin/cms/faq': typeof AdminGuardCmsFaqRoute
   '/admin/cms/pages': typeof AdminGuardCmsPagesRoute
@@ -584,6 +645,8 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tarifs': typeof TarifsRoute
+  '/ops': typeof OpsGuardIndexRoute
+  '/support': typeof SupportGuardIndexRoute
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -622,8 +685,11 @@ export interface FileRoutesByTo {
   '/pro/etablissements': typeof ProGuardEtablissementsRoute
   '/pro/facturation': typeof ProGuardFacturationRoute
   '/pro/statistiques': typeof ProGuardStatistiquesRoute
+  '/sales/abonnements': typeof SalesGuardAbonnementsRoute
+  '/sales/clients': typeof SalesGuardClientsRoute
   '/sales/commandes': typeof SalesGuardCommandesRoute
   '/sales/installations': typeof SalesGuardInstallationsRoute
+  '/sales/offres': typeof SalesGuardOffresRoute
   '/sales/paiements': typeof SalesGuardPaiementsRoute
   '/supervisor/claims': typeof SupervisorGuardClaimsRoute
   '/supervisor/consultations': typeof SupervisorGuardConsultationsRoute
@@ -663,9 +729,11 @@ export interface FileRoutesById {
   '/admin/_guard': typeof AdminGuardRouteRouteWithChildren
   '/agent/_guard': typeof AgentGuardRouteRouteWithChildren
   '/mon-compte/_guard': typeof MonCompteGuardRouteRouteWithChildren
+  '/ops/_guard': typeof OpsGuardRouteWithChildren
   '/pro/_guard': typeof ProGuardRouteRouteWithChildren
   '/sales/_guard': typeof SalesGuardRouteRouteWithChildren
   '/supervisor/_guard': typeof SupervisorGuardRouteRouteWithChildren
+  '/support/_guard': typeof SupportGuardRouteWithChildren
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -704,8 +772,11 @@ export interface FileRoutesById {
   '/pro/_guard/etablissements': typeof ProGuardEtablissementsRoute
   '/pro/_guard/facturation': typeof ProGuardFacturationRoute
   '/pro/_guard/statistiques': typeof ProGuardStatistiquesRoute
+  '/sales/_guard/abonnements': typeof SalesGuardAbonnementsRoute
+  '/sales/_guard/clients': typeof SalesGuardClientsRoute
   '/sales/_guard/commandes': typeof SalesGuardCommandesRoute
   '/sales/_guard/installations': typeof SalesGuardInstallationsRoute
+  '/sales/_guard/offres': typeof SalesGuardOffresRoute
   '/sales/_guard/paiements': typeof SalesGuardPaiementsRoute
   '/supervisor/_guard/claims': typeof SupervisorGuardClaimsRoute
   '/supervisor/_guard/consultations': typeof SupervisorGuardConsultationsRoute
@@ -716,9 +787,11 @@ export interface FileRoutesById {
   '/admin/_guard/': typeof AdminGuardIndexRoute
   '/agent/_guard/': typeof AgentGuardIndexRoute
   '/mon-compte/_guard/': typeof MonCompteGuardIndexRoute
+  '/ops/_guard/': typeof OpsGuardIndexRoute
   '/pro/_guard/': typeof ProGuardIndexRoute
   '/sales/_guard/': typeof SalesGuardIndexRoute
   '/supervisor/_guard/': typeof SupervisorGuardIndexRoute
+  '/support/_guard/': typeof SupportGuardIndexRoute
   '/admin/_guard/cms/blog': typeof AdminGuardCmsBlogRoute
   '/admin/_guard/cms/faq': typeof AdminGuardCmsFaqRoute
   '/admin/_guard/cms/pages': typeof AdminGuardCmsPagesRoute
@@ -746,9 +819,11 @@ export interface FileRouteTypes {
     | '/admin'
     | '/agent'
     | '/mon-compte'
+    | '/ops'
     | '/pro'
     | '/sales'
     | '/supervisor'
+    | '/support'
     | '/a/$number'
     | '/agent/login'
     | '/blog/$slug'
@@ -787,8 +862,11 @@ export interface FileRouteTypes {
     | '/pro/etablissements'
     | '/pro/facturation'
     | '/pro/statistiques'
+    | '/sales/abonnements'
+    | '/sales/clients'
     | '/sales/commandes'
     | '/sales/installations'
+    | '/sales/offres'
     | '/sales/paiements'
     | '/supervisor/claims'
     | '/supervisor/consultations'
@@ -799,9 +877,11 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/agent/'
     | '/mon-compte/'
+    | '/ops/'
     | '/pro/'
     | '/sales/'
     | '/supervisor/'
+    | '/support/'
     | '/admin/cms/blog'
     | '/admin/cms/faq'
     | '/admin/cms/pages'
@@ -824,6 +904,8 @@ export interface FileRouteTypes {
     | '/signup'
     | '/sitemap.xml'
     | '/tarifs'
+    | '/ops'
+    | '/support'
     | '/a/$number'
     | '/agent/login'
     | '/blog/$slug'
@@ -862,8 +944,11 @@ export interface FileRouteTypes {
     | '/pro/etablissements'
     | '/pro/facturation'
     | '/pro/statistiques'
+    | '/sales/abonnements'
+    | '/sales/clients'
     | '/sales/commandes'
     | '/sales/installations'
+    | '/sales/offres'
     | '/sales/paiements'
     | '/supervisor/claims'
     | '/supervisor/consultations'
@@ -902,9 +987,11 @@ export interface FileRouteTypes {
     | '/admin/_guard'
     | '/agent/_guard'
     | '/mon-compte/_guard'
+    | '/ops/_guard'
     | '/pro/_guard'
     | '/sales/_guard'
     | '/supervisor/_guard'
+    | '/support/_guard'
     | '/a/$number'
     | '/agent/login'
     | '/blog/$slug'
@@ -943,8 +1030,11 @@ export interface FileRouteTypes {
     | '/pro/_guard/etablissements'
     | '/pro/_guard/facturation'
     | '/pro/_guard/statistiques'
+    | '/sales/_guard/abonnements'
+    | '/sales/_guard/clients'
     | '/sales/_guard/commandes'
     | '/sales/_guard/installations'
+    | '/sales/_guard/offres'
     | '/sales/_guard/paiements'
     | '/supervisor/_guard/claims'
     | '/supervisor/_guard/consultations'
@@ -955,9 +1045,11 @@ export interface FileRouteTypes {
     | '/admin/_guard/'
     | '/agent/_guard/'
     | '/mon-compte/_guard/'
+    | '/ops/_guard/'
     | '/pro/_guard/'
     | '/sales/_guard/'
     | '/supervisor/_guard/'
+    | '/support/_guard/'
     | '/admin/_guard/cms/blog'
     | '/admin/_guard/cms/faq'
     | '/admin/_guard/cms/pages'
@@ -984,16 +1076,20 @@ export interface RootRouteChildren {
   AdminGuardRouteRoute: typeof AdminGuardRouteRouteWithChildren
   AgentGuardRouteRoute: typeof AgentGuardRouteRouteWithChildren
   MonCompteGuardRouteRoute: typeof MonCompteGuardRouteRouteWithChildren
+  OpsGuardRouteRoute: typeof OpsGuardRouteRoute
   ProGuardRouteRoute: typeof ProGuardRouteRouteWithChildren
   SalesGuardRouteRoute: typeof SalesGuardRouteRouteWithChildren
   SupervisorGuardRouteRoute: typeof SupervisorGuardRouteRouteWithChildren
+  SupportGuardRouteRoute: typeof SupportGuardRouteRoute
   ANumberRoute: typeof ANumberRoute
   AgentLoginRoute: typeof AgentLoginRoute
   BlogSlugRoute: typeof BlogSlugRoute
   CommanderOfferCodeRoute: typeof CommanderOfferCodeRoute
   EtablissementNumberRoute: typeof EtablissementNumberRoute
+  OpsGuardRoute: typeof OpsGuardRouteWithChildren
   PSlugRoute: typeof PSlugRoute
   ProOnboardingRoute: typeof ProOnboardingRoute
+  SupportGuardRoute: typeof SupportGuardRouteWithChildren
   BlogIndexRoute: typeof BlogIndexRoute
   CommandeOrderRefPaiementRoute: typeof CommandeOrderRefPaiementRoute
   ApiPublicHooksRunBillingRoute: typeof ApiPublicHooksRunBillingRoute
@@ -1129,6 +1225,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MonCompteGuardRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ops/_guard': {
+      id: '/ops/_guard'
+      path: '/ops'
+      fullPath: '/ops'
+      preLoaderRoute: typeof OpsGuardRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ops/_guard': {
+      id: '/ops/_guard'
+      path: '/ops'
+      fullPath: '/ops'
+      preLoaderRoute: typeof OpsGuardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/p/$slug': {
       id: '/p/$slug'
       path: '/p/$slug'
@@ -1162,6 +1272,20 @@ declare module '@tanstack/react-router' {
       path: '/supervisor'
       fullPath: '/supervisor'
       preLoaderRoute: typeof SupervisorGuardRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/support/_guard': {
+      id: '/support/_guard'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof SupportGuardRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/support/_guard': {
+      id: '/support/_guard'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof SupportGuardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/_guard/': {
@@ -1360,6 +1484,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MonCompteGuardSettingsRouteImport
       parentRoute: typeof MonCompteGuardRouteRoute
     }
+    '/ops/_guard/': {
+      id: '/ops/_guard/'
+      path: '/'
+      fullPath: '/ops/'
+      preLoaderRoute: typeof OpsGuardIndexRouteImport
+      parentRoute: typeof OpsGuardRoute
+    }
     '/pro/_guard/': {
       id: '/pro/_guard/'
       path: '/'
@@ -1409,6 +1540,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SalesGuardIndexRouteImport
       parentRoute: typeof SalesGuardRouteRoute
     }
+    '/sales/_guard/abonnements': {
+      id: '/sales/_guard/abonnements'
+      path: '/abonnements'
+      fullPath: '/sales/abonnements'
+      preLoaderRoute: typeof SalesGuardAbonnementsRouteImport
+      parentRoute: typeof SalesGuardRouteRoute
+    }
+    '/sales/_guard/clients': {
+      id: '/sales/_guard/clients'
+      path: '/clients'
+      fullPath: '/sales/clients'
+      preLoaderRoute: typeof SalesGuardClientsRouteImport
+      parentRoute: typeof SalesGuardRouteRoute
+    }
     '/sales/_guard/commandes': {
       id: '/sales/_guard/commandes'
       path: '/commandes'
@@ -1421,6 +1566,13 @@ declare module '@tanstack/react-router' {
       path: '/installations'
       fullPath: '/sales/installations'
       preLoaderRoute: typeof SalesGuardInstallationsRouteImport
+      parentRoute: typeof SalesGuardRouteRoute
+    }
+    '/sales/_guard/offres': {
+      id: '/sales/_guard/offres'
+      path: '/offres'
+      fullPath: '/sales/offres'
+      preLoaderRoute: typeof SalesGuardOffresRouteImport
       parentRoute: typeof SalesGuardRouteRoute
     }
     '/sales/_guard/paiements': {
@@ -1478,6 +1630,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/supervisor/reports'
       preLoaderRoute: typeof SupervisorGuardReportsRouteImport
       parentRoute: typeof SupervisorGuardRouteRoute
+    }
+    '/support/_guard/': {
+      id: '/support/_guard/'
+      path: '/'
+      fullPath: '/support/'
+      preLoaderRoute: typeof SupportGuardIndexRouteImport
+      parentRoute: typeof SupportGuardRoute
     }
     '/admin/_guard/cms/': {
       id: '/admin/_guard/cms/'
@@ -1681,15 +1840,21 @@ const ProGuardRouteRouteWithChildren = ProGuardRouteRoute._addFileChildren(
 )
 
 interface SalesGuardRouteRouteChildren {
+  SalesGuardAbonnementsRoute: typeof SalesGuardAbonnementsRoute
+  SalesGuardClientsRoute: typeof SalesGuardClientsRoute
   SalesGuardCommandesRoute: typeof SalesGuardCommandesRoute
   SalesGuardInstallationsRoute: typeof SalesGuardInstallationsRoute
+  SalesGuardOffresRoute: typeof SalesGuardOffresRoute
   SalesGuardPaiementsRoute: typeof SalesGuardPaiementsRoute
   SalesGuardIndexRoute: typeof SalesGuardIndexRoute
 }
 
 const SalesGuardRouteRouteChildren: SalesGuardRouteRouteChildren = {
+  SalesGuardAbonnementsRoute: SalesGuardAbonnementsRoute,
+  SalesGuardClientsRoute: SalesGuardClientsRoute,
   SalesGuardCommandesRoute: SalesGuardCommandesRoute,
   SalesGuardInstallationsRoute: SalesGuardInstallationsRoute,
+  SalesGuardOffresRoute: SalesGuardOffresRoute,
   SalesGuardPaiementsRoute: SalesGuardPaiementsRoute,
   SalesGuardIndexRoute: SalesGuardIndexRoute,
 }
@@ -1722,6 +1887,30 @@ const SupervisorGuardRouteRouteChildren: SupervisorGuardRouteRouteChildren = {
 const SupervisorGuardRouteRouteWithChildren =
   SupervisorGuardRouteRoute._addFileChildren(SupervisorGuardRouteRouteChildren)
 
+interface OpsGuardRouteChildren {
+  OpsGuardIndexRoute: typeof OpsGuardIndexRoute
+}
+
+const OpsGuardRouteChildren: OpsGuardRouteChildren = {
+  OpsGuardIndexRoute: OpsGuardIndexRoute,
+}
+
+const OpsGuardRouteWithChildren = OpsGuardRoute._addFileChildren(
+  OpsGuardRouteChildren,
+)
+
+interface SupportGuardRouteChildren {
+  SupportGuardIndexRoute: typeof SupportGuardIndexRoute
+}
+
+const SupportGuardRouteChildren: SupportGuardRouteChildren = {
+  SupportGuardIndexRoute: SupportGuardIndexRoute,
+}
+
+const SupportGuardRouteWithChildren = SupportGuardRoute._addFileChildren(
+  SupportGuardRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AProposRoute: AProposRoute,
@@ -1735,16 +1924,20 @@ const rootRouteChildren: RootRouteChildren = {
   AdminGuardRouteRoute: AdminGuardRouteRouteWithChildren,
   AgentGuardRouteRoute: AgentGuardRouteRouteWithChildren,
   MonCompteGuardRouteRoute: MonCompteGuardRouteRouteWithChildren,
+  OpsGuardRouteRoute: OpsGuardRouteRoute,
   ProGuardRouteRoute: ProGuardRouteRouteWithChildren,
   SalesGuardRouteRoute: SalesGuardRouteRouteWithChildren,
   SupervisorGuardRouteRoute: SupervisorGuardRouteRouteWithChildren,
+  SupportGuardRouteRoute: SupportGuardRouteRoute,
   ANumberRoute: ANumberRoute,
   AgentLoginRoute: AgentLoginRoute,
   BlogSlugRoute: BlogSlugRoute,
   CommanderOfferCodeRoute: CommanderOfferCodeRoute,
   EtablissementNumberRoute: EtablissementNumberRoute,
+  OpsGuardRoute: OpsGuardRouteWithChildren,
   PSlugRoute: PSlugRoute,
   ProOnboardingRoute: ProOnboardingRoute,
+  SupportGuardRoute: SupportGuardRouteWithChildren,
   BlogIndexRoute: BlogIndexRoute,
   CommandeOrderRefPaiementRoute: CommandeOrderRefPaiementRoute,
   ApiPublicHooksRunBillingRoute: ApiPublicHooksRunBillingRoute,

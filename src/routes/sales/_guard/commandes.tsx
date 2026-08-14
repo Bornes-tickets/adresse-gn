@@ -15,7 +15,7 @@ import { salesAbonnements } from "@/lib/sales.functions";
 import { useRealtimeInvalidate } from "@/hooks/useRealtimeInvalidate";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/sales/_guard/abonnements")({
+export const Route = createFileRoute("/sales/_guard/commandes")({
   component: SalesAbonnements,
 });
 
