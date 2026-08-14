@@ -1,23 +1,13 @@
 /** Configuration de navigation du back-office (présentation uniquement). */
 import {
-  Activity,
   BarChart3,
-  CalendarClock,
-  ClipboardCheck,
-  CreditCard,
   FileCheck2,
   FileClock,
   FileText,
-  Flag,
   HelpCircle,
   LayoutDashboard,
   Languages,
-  MapPin,
   Newspaper,
-  Package,
-  QrCode,
-  Repeat,
-  ShieldCheck,
   Tags,
   Users,
   UserSquare2,
@@ -37,7 +27,7 @@ export type AccentAdmin =
   | "slate"
   | "lime";
 
-export const ACCENT_CLASSES: Record<
+export const ACCENT_CLASSES: Record
   AccentAdmin,
   { texte: string; fond: string; bordure: string; puce: string; barre: string; variable: string }
 > = {
@@ -135,37 +125,16 @@ export interface SectionAdmin {
 export const SECTIONS_ADMIN: SectionAdmin[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, accent: "blue", groupe: "Pilotage", exact: true },
   { to: "/admin/analytics", label: "Statistiques", icon: BarChart3, accent: "violet", groupe: "Pilotage" },
-
-  { to: "/admin/beacons", label: "Balises", icon: QrCode, accent: "blue", groupe: "Réseau" },
-  { to: "/admin/addresses", label: "Adresses", icon: MapPin, accent: "cyan", groupe: "Réseau" },
-  { to: "/admin/zones", label: "Zones", icon: Activity, accent: "lime", groupe: "Réseau" },
-  { to: "/admin/lots", label: "Lots", icon: Package, accent: "amber", groupe: "Réseau" },
-
-  { to: "/admin/installations", label: "Installations & QC", icon: ClipboardCheck, accent: "green", groupe: "Terrain" },
-  {
-    to: "/admin/installations-attente",
-    label: "Installations à planifier",
-    icon: CalendarClock,
-    accent: "green",
-    groupe: "Terrain",
-  },
   { to: "/admin/justificatifs", label: "Justificatifs", icon: FileCheck2, accent: "lime", groupe: "Terrain" },
   { to: "/admin/agents", label: "Agents", icon: UserSquare2, accent: "cyan", groupe: "Terrain" },
-
-  { to: "/admin/payments", label: "Paiements", icon: CreditCard, accent: "orange", groupe: "Commercial" },
-  { to: "/admin/abonnements", label: "Abonnements", icon: Repeat, accent: "amber", groupe: "Commercial" },
-
   { to: "/admin/cms", label: "Contenu du site", icon: FileText, accent: "blue", groupe: "Contenu", exact: true },
   { to: "/admin/cms/pages", label: "Pages", icon: FileText, accent: "cyan", groupe: "Contenu" },
   { to: "/admin/cms/blog", label: "Blog", icon: Newspaper, accent: "pink", groupe: "Contenu" },
   { to: "/admin/cms/faq", label: "FAQ", icon: HelpCircle, accent: "cyan", groupe: "Contenu" },
   { to: "/admin/cms/traductions", label: "Traductions", icon: Languages, accent: "violet", groupe: "Contenu" },
   { to: "/admin/cms/tarifs", label: "Tarifs", icon: Tags, accent: "amber", groupe: "Contenu" },
-
-  { to: "/admin/reports", label: "Signalements", icon: Flag, accent: "pink", groupe: "Conformité" },
-  { to: "/admin/claims", label: "Réclamations", icon: ShieldCheck, accent: "red", groupe: "Conformité" },
-  { to: "/admin/users", label: "Utilisateurs", icon: Users, accent: "violet", groupe: "Conformité" },
-  { to: "/admin/audit", label: "Journal d'audit", icon: FileClock, accent: "slate", groupe: "Conformité" },
+  { to: "/admin/users", label: "Utilisateurs", icon: Users, accent: "violet", groupe: "Système" },
+  { to: "/admin/audit", label: "Journal d'audit", icon: FileClock, accent: "slate", groupe: "Système" },
 ];
 
 export const GROUPES_ADMIN = [...new Set(SECTIONS_ADMIN.map((s) => s.groupe))];
