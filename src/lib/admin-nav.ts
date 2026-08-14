@@ -29,7 +29,7 @@ export type AccentAdmin =
   | "slate"
   | "lime";
 
-export const ACCENT_CLASSES: Record
+export const ACCENT_CLASSES: Record<
   AccentAdmin,
   { texte: string; fond: string; bordure: string; puce: string; barre: string; variable: string }
 > = {
