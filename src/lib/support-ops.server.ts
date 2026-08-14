@@ -40,7 +40,7 @@ export async function chargerDashboardSupport(): Promise<SupportDashboardData> {
     .select("created_at")
     .in("status", ["new", "in_review"])
     .limit(500);
-  const ages = (pourAge ?? []).map((r) => (Date.now() - new Date(r.created_at).getTime()) / 864e5);
+  const ages = (pourAge ?? []).map((r) => (Date.now() - new Date(r.created_at ?? 0).getTime()) / 864e5);
   const ageMoyen = ages.length > 0 ? Math.round(ages.reduce((s, a) => s + a, 0) / ages.length) : null;
 
   const { data: raisons } = await supabaseAdmin

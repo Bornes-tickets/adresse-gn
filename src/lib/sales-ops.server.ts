@@ -295,6 +295,7 @@ export async function listerClients(f: {
 
   const statsCommandes = new Map<string, { nb: number; total: number; derniere: string | null }>();
   for (const c of commandes ?? []) {
+    if (!c.customer_id) continue;
     const cur = statsCommandes.get(c.customer_id) ?? { nb: 0, total: 0, derniere: null };
     cur.nb += 1;
     if (c.status === "paid") cur.total += Number(c.amount_gnf ?? 0);
@@ -311,6 +312,7 @@ export async function listerClients(f: {
 
   const abosParClient = new Map<string, number>();
   for (const a of abos ?? []) {
+    if (!a.customer_id) continue;
     abosParClient.set(a.customer_id, (abosParClient.get(a.customer_id) ?? 0) + 1);
   }
 
