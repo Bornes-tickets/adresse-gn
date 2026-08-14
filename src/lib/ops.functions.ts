@@ -130,3 +130,32 @@ export const opsExportQrZip = createServerFn({ method: "POST" })
     const zip = await genererZipPng(numeros, base);
     return { ...zip, lotCode };
   });
+export const opsRegions = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { requireOps } = await import("@/lib/admin.server");
+    await requireOps(context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("regions")
+      .select("id, code, name, country_code")
+      .order("name");
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
+
+export const opsFournisseurs = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { requireOps } = await import("@/lib/admin.server");
+    await requireOps(context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("lots")
+      .select("supplier")
+      .not("supplier", "is", null)
+      .limit(500);
+    if (error) throw new Error(error.message);
+    const uniq = [...new Set((data ?? []).map((l: any) => l.supplier).filter(Boolean))].sort();
+    return uniq;
+  });
