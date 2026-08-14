@@ -31,7 +31,7 @@ function agentColor(seed: string): string {
     "from-indigo-500 to-violet-600",
   ];
   const h = seed.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
-  return palettes[h % palettes.length];
+  return palettes[h % palettes.length]!;
 }
 
 function tierClient(total: number, nb: number): { label: string; cls: string; icon: any } {
