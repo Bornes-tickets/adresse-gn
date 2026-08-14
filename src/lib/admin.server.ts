@@ -553,3 +553,30 @@ export async function requireSales(userId: string): Promise<AdminIdentity> {
   }
   return { userId, role: data.role, fullName: data.full_name ?? null };
 }
+/** Autorise Opérations, Admin, Super Admin — pour /ops (lots, balises, QR, stock). */
+export async function requireOps(userId: string): Promise<AdminIdentity> {
+  const { data, error } = await supabaseAdmin
+    .from("profiles")
+    .select("id, role, full_name")
+    .eq("id", userId)
+    .maybeSingle();
+  if (error) throw new Error("Impossible de vérifier le rôle.");
+  if (!data || !["ops", "admin", "super_admin"].includes(data.role)) {
+    throw new Error("Accès refusé : espace réservé aux opérations.");
+  }
+  return { userId, role: data.role, fullName: data.full_name ?? null };
+}
+
+/** Autorise Support, Admin, Super Admin — pour /support (signalements, réclamations). */
+export async function requireSupport(userId: string): Promise<AdminIdentity> {
+  const { data, error } = await supabaseAdmin
+    .from("profiles")
+    .select("id, role, full_name")
+    .eq("id", userId)
+    .maybeSingle();
+  if (error) throw new Error("Impossible de vérifier le rôle.");
+  if (!data || !["support", "admin", "super_admin"].includes(data.role)) {
+    throw new Error("Accès refusé : espace réservé au service support.");
+  }
+  return { userId, role: data.role, fullName: data.full_name ?? null };
+}
