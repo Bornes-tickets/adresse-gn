@@ -1,4 +1,4 @@
-import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, redirect, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { opsWhoami } from "@/lib/ops.functions";
@@ -21,7 +21,20 @@ const GROUPS: MenuGroup[] = [
 
 const ALL_ITEMS = GROUPS.flatMap((g) => g.items);
 
-export const Route = createFileRoute("/ops/_guard")({ component: OpsLayout });
+export const Route = createFileRoute("/ops/_guard")({
+  ssr: false,
+  beforeLoad: async () => {
+    const { supabase } = await import("@/integrations/supabase/client");
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) throw redirect({ to: "/login" });
+    try {
+      return { identite: await opsWhoami() };
+    } catch {
+      throw redirect({ to: "/login" });
+    }
+  },
+  component: OpsLayout,
+});
 
 function initiales(n: string | null | undefined) {
   return !n ? "OP" : n.split(/\s+/).filter(Boolean).slice(0, 2).map((s) => s[0]?.toUpperCase()).join("");

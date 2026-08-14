@@ -1,4 +1,4 @@
-import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, redirect, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supportWhoami } from "@/lib/support.functions";
@@ -22,7 +22,20 @@ const GROUPS: MenuGroup[] = [
 
 const ALL_ITEMS = GROUPS.flatMap((g) => g.items);
 
-export const Route = createFileRoute("/support/_guard")({ component: SupportLayout });
+export const Route = createFileRoute("/support/_guard")({
+  ssr: false,
+  beforeLoad: async () => {
+    const { supabase } = await import("@/integrations/supabase/client");
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) throw redirect({ to: "/login" });
+    try {
+      return { identite: await supportWhoami() };
+    } catch {
+      throw redirect({ to: "/login" });
+    }
+  },
+  component: SupportLayout,
+});
 
 function initiales(n: string | null | undefined) {
   return !n ? "SP" : n.split(/\s+/).filter(Boolean).slice(0, 2).map((s) => s[0]?.toUpperCase()).join("");
