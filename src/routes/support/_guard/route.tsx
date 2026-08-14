@@ -1,6 +1,4 @@
 import { createFileRoute, Link, Outlet, redirect, useRouterState } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { supportWhoami } from "@/lib/support.functions";
 import {
   LayoutDashboard, Headphones, AlertTriangle, MessageSquareWarning, MessageCircle,
@@ -55,8 +53,7 @@ function construireBreadcrumb(pathname: string) {
 
 function SupportLayout() {
   const { location } = useRouterState();
-  const whoamiFn = useServerFn(supportWhoami);
-  const { data: me } = useQuery({ queryKey: ["support-whoami"], queryFn: () => whoamiFn(), staleTime: 5 * 60 * 1000 });
+  const { identite: me } = Route.useRouteContext();
   const breadcrumb = construireBreadcrumb(location.pathname);
 
   return (
