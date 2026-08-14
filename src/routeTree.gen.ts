@@ -28,7 +28,6 @@ import { Route as CommanderOfferCodeRouteImport } from './routes/commander.$offe
 import { Route as EtablissementNumberRouteImport } from './routes/etablissement.$number'
 import { Route as MonCompteGuardRouteRouteImport } from './routes/mon-compte/_guard/route'
 import { Route as OpsGuardRouteRouteImport } from './routes/ops/_guard/route'
-import { Route as OpsGuardRouteImport } from './routes/ops/_guard'
 import { Route as PSlugRouteImport } from './routes/p.$slug'
 import { Route as ProGuardRouteRouteImport } from './routes/pro/_guard/route'
 import { Route as ProOnboardingRouteImport } from './routes/pro/onboarding'
@@ -189,11 +188,6 @@ const MonCompteGuardRouteRoute = MonCompteGuardRouteRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const OpsGuardRouteRoute = OpsGuardRouteRouteImport.update({
-  id: '/ops/_guard',
-  path: '/ops',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OpsGuardRoute = OpsGuardRouteImport.update({
   id: '/ops/_guard',
   path: '/ops',
   getParentRoute: () => rootRouteImport,
@@ -378,7 +372,7 @@ const MonCompteGuardSettingsRoute = MonCompteGuardSettingsRouteImport.update({
 const OpsGuardIndexRoute = OpsGuardIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => OpsGuardRoute,
+  getParentRoute: () => OpsGuardRouteRoute,
 } as any)
 const ProGuardIndexRoute = ProGuardIndexRouteImport.update({
   id: '/',
@@ -560,7 +554,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminGuardRouteRouteWithChildren
   '/agent': typeof AgentGuardRouteRouteWithChildren
   '/mon-compte': typeof MonCompteGuardRouteRouteWithChildren
-  '/ops': typeof OpsGuardRouteWithChildren
+  '/ops': typeof OpsGuardRouteRouteWithChildren
   '/pro': typeof ProGuardRouteRouteWithChildren
   '/sales': typeof SalesGuardRouteRouteWithChildren
   '/supervisor': typeof SupervisorGuardRouteRouteWithChildren
@@ -645,7 +639,6 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tarifs': typeof TarifsRoute
-  '/ops': typeof OpsGuardIndexRoute
   '/support': typeof SupportGuardIndexRoute
   '/a/$number': typeof ANumberRoute
   '/agent/login': typeof AgentLoginRoute
@@ -700,6 +693,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminGuardIndexRoute
   '/agent': typeof AgentGuardIndexRoute
   '/mon-compte': typeof MonCompteGuardIndexRoute
+  '/ops': typeof OpsGuardIndexRoute
   '/pro': typeof ProGuardIndexRoute
   '/sales': typeof SalesGuardIndexRoute
   '/supervisor': typeof SupervisorGuardIndexRoute
@@ -729,7 +723,7 @@ export interface FileRoutesById {
   '/admin/_guard': typeof AdminGuardRouteRouteWithChildren
   '/agent/_guard': typeof AgentGuardRouteRouteWithChildren
   '/mon-compte/_guard': typeof MonCompteGuardRouteRouteWithChildren
-  '/ops/_guard': typeof OpsGuardRouteWithChildren
+  '/ops/_guard': typeof OpsGuardRouteRouteWithChildren
   '/pro/_guard': typeof ProGuardRouteRouteWithChildren
   '/sales/_guard': typeof SalesGuardRouteRouteWithChildren
   '/supervisor/_guard': typeof SupervisorGuardRouteRouteWithChildren
@@ -904,7 +898,6 @@ export interface FileRouteTypes {
     | '/signup'
     | '/sitemap.xml'
     | '/tarifs'
-    | '/ops'
     | '/support'
     | '/a/$number'
     | '/agent/login'
@@ -959,6 +952,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/agent'
     | '/mon-compte'
+    | '/ops'
     | '/pro'
     | '/sales'
     | '/supervisor'
@@ -1076,7 +1070,7 @@ export interface RootRouteChildren {
   AdminGuardRouteRoute: typeof AdminGuardRouteRouteWithChildren
   AgentGuardRouteRoute: typeof AgentGuardRouteRouteWithChildren
   MonCompteGuardRouteRoute: typeof MonCompteGuardRouteRouteWithChildren
-  OpsGuardRouteRoute: typeof OpsGuardRouteRoute
+  OpsGuardRouteRoute: typeof OpsGuardRouteRouteWithChildren
   ProGuardRouteRoute: typeof ProGuardRouteRouteWithChildren
   SalesGuardRouteRoute: typeof SalesGuardRouteRouteWithChildren
   SupervisorGuardRouteRoute: typeof SupervisorGuardRouteRouteWithChildren
@@ -1086,7 +1080,6 @@ export interface RootRouteChildren {
   BlogSlugRoute: typeof BlogSlugRoute
   CommanderOfferCodeRoute: typeof CommanderOfferCodeRoute
   EtablissementNumberRoute: typeof EtablissementNumberRoute
-  OpsGuardRoute: typeof OpsGuardRouteWithChildren
   PSlugRoute: typeof PSlugRoute
   ProOnboardingRoute: typeof ProOnboardingRoute
   SupportGuardRoute: typeof SupportGuardRouteWithChildren
@@ -1230,13 +1223,6 @@ declare module '@tanstack/react-router' {
       path: '/ops'
       fullPath: '/ops'
       preLoaderRoute: typeof OpsGuardRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/ops/_guard': {
-      id: '/ops/_guard'
-      path: '/ops'
-      fullPath: '/ops'
-      preLoaderRoute: typeof OpsGuardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/p/$slug': {
@@ -1489,7 +1475,7 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/ops/'
       preLoaderRoute: typeof OpsGuardIndexRouteImport
-      parentRoute: typeof OpsGuardRoute
+      parentRoute: typeof OpsGuardRouteRoute
     }
     '/pro/_guard/': {
       id: '/pro/_guard/'
@@ -1817,6 +1803,18 @@ const MonCompteGuardRouteRouteChildren: MonCompteGuardRouteRouteChildren = {
 const MonCompteGuardRouteRouteWithChildren =
   MonCompteGuardRouteRoute._addFileChildren(MonCompteGuardRouteRouteChildren)
 
+interface OpsGuardRouteRouteChildren {
+  OpsGuardIndexRoute: typeof OpsGuardIndexRoute
+}
+
+const OpsGuardRouteRouteChildren: OpsGuardRouteRouteChildren = {
+  OpsGuardIndexRoute: OpsGuardIndexRoute,
+}
+
+const OpsGuardRouteRouteWithChildren = OpsGuardRouteRoute._addFileChildren(
+  OpsGuardRouteRouteChildren,
+)
+
 interface ProGuardRouteRouteChildren {
   ProGuardApiRoute: typeof ProGuardApiRoute
   ProGuardEquipeRoute: typeof ProGuardEquipeRoute
@@ -1887,18 +1885,6 @@ const SupervisorGuardRouteRouteChildren: SupervisorGuardRouteRouteChildren = {
 const SupervisorGuardRouteRouteWithChildren =
   SupervisorGuardRouteRoute._addFileChildren(SupervisorGuardRouteRouteChildren)
 
-interface OpsGuardRouteChildren {
-  OpsGuardIndexRoute: typeof OpsGuardIndexRoute
-}
-
-const OpsGuardRouteChildren: OpsGuardRouteChildren = {
-  OpsGuardIndexRoute: OpsGuardIndexRoute,
-}
-
-const OpsGuardRouteWithChildren = OpsGuardRoute._addFileChildren(
-  OpsGuardRouteChildren,
-)
-
 interface SupportGuardRouteChildren {
   SupportGuardIndexRoute: typeof SupportGuardIndexRoute
 }
@@ -1924,7 +1910,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminGuardRouteRoute: AdminGuardRouteRouteWithChildren,
   AgentGuardRouteRoute: AgentGuardRouteRouteWithChildren,
   MonCompteGuardRouteRoute: MonCompteGuardRouteRouteWithChildren,
-  OpsGuardRouteRoute: OpsGuardRouteRoute,
+  OpsGuardRouteRoute: OpsGuardRouteRouteWithChildren,
   ProGuardRouteRoute: ProGuardRouteRouteWithChildren,
   SalesGuardRouteRoute: SalesGuardRouteRouteWithChildren,
   SupervisorGuardRouteRoute: SupervisorGuardRouteRouteWithChildren,
@@ -1934,7 +1920,6 @@ const rootRouteChildren: RootRouteChildren = {
   BlogSlugRoute: BlogSlugRoute,
   CommanderOfferCodeRoute: CommanderOfferCodeRoute,
   EtablissementNumberRoute: EtablissementNumberRoute,
-  OpsGuardRoute: OpsGuardRouteWithChildren,
   PSlugRoute: PSlugRoute,
   ProOnboardingRoute: ProOnboardingRoute,
   SupportGuardRoute: SupportGuardRouteWithChildren,
