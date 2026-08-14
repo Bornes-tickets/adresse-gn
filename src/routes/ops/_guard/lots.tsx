@@ -46,7 +46,7 @@ function OpsLots() {
 
   const generate = useMutation({
     mutationFn: (v: any) => generateFn({ data: v }),
-    onSuccess: (r) => {
+    onSuccess: (r: any) => {
       toast.success(`Lot ${r.lotCode} créé : ${r.quantite} balises ${r.category}.`);
       qc.invalidateQueries({ queryKey: ["ops", "lots"] });
       setOpenGen(false);
