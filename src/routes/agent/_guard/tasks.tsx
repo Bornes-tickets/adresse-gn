@@ -65,7 +65,7 @@ function regionColor(code: string): string {
     "from-indigo-500 to-purple-600",
   ];
   const h = code.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
-  return palettes[h % palettes.length];
+  return palettes[h % palettes.length]!;
 }
 
 function Tasks() {

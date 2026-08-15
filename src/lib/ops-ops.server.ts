@@ -71,7 +71,7 @@ export async function majStatutLot(lotId: string, statut: string, actorId: strin
   if (statut === "sent") patch['sent_at'] = new Date().toISOString();
   if (statut === "received") patch['received_at'] = new Date().toISOString();
 
-  const { error } = await supabaseAdmin.from("lots").update(patch).eq("id", lotId);
+  const { error } = await supabaseAdmin.from("lots").update(patch as never).eq("id", lotId);
   if (error) throw new Error(error.message);
 
   await supabaseAdmin.from("lot_events" as any).insert({
