@@ -995,3 +995,14 @@ function InfoBloc({ label, value, icon: Icon, tone }: { label: string; value: st
     </Card>
   );
 }
+// Handler unifié pour changer le statut depuis le dialog détail
+const changerStatutDepuisDetail = (lot: any, toStatus: string) => {
+  setDetailLotId(null);
+  if (toStatus === "received") {
+    setReceptionDialog(lot);
+    setReceptionForm({ quantity_received: lot.quantity, qc_passed: true, defects: "", notes: "" });
+  } else {
+    setConfirmNext({ id: lot.id, from: lot.status, to: toStatus });
+    setConfirmNotes("");
+  }
+};
