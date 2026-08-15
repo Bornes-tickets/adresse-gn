@@ -64,6 +64,7 @@ import { Route as MonCompteGuardReportsRouteImport } from './routes/mon-compte/_
 import { Route as MonCompteGuardSettingsRouteImport } from './routes/mon-compte/_guard/settings'
 import { Route as OpsGuardIndexRouteImport } from './routes/ops/_guard/index'
 import { Route as OpsGuardBeaconsRouteImport } from './routes/ops/_guard/beacons'
+import { Route as OpsGuardCommandesFournisseursRouteImport } from './routes/ops/_guard/commandes-fournisseurs'
 import { Route as OpsGuardExportsRouteImport } from './routes/ops/_guard/exports'
 import { Route as OpsGuardLotsRouteImport } from './routes/ops/_guard/lots'
 import { Route as ProGuardIndexRouteImport } from './routes/pro/_guard/index'
@@ -378,6 +379,12 @@ const OpsGuardBeaconsRoute = OpsGuardBeaconsRouteImport.update({
   path: '/beacons',
   getParentRoute: () => OpsGuardRouteRoute,
 } as any)
+const OpsGuardCommandesFournisseursRoute =
+  OpsGuardCommandesFournisseursRouteImport.update({
+    id: '/commandes-fournisseurs',
+    path: '/commandes-fournisseurs',
+    getParentRoute: () => OpsGuardRouteRoute,
+  } as any)
 const OpsGuardExportsRoute = OpsGuardExportsRouteImport.update({
   id: '/exports',
   path: '/exports',
@@ -619,6 +626,7 @@ export interface FileRoutesByFullPath {
   '/mon-compte/reports': typeof MonCompteGuardReportsRoute
   '/mon-compte/settings': typeof MonCompteGuardSettingsRoute
   '/ops/beacons': typeof OpsGuardBeaconsRoute
+  '/ops/commandes-fournisseurs': typeof OpsGuardCommandesFournisseursRoute
   '/ops/exports': typeof OpsGuardExportsRoute
   '/ops/lots': typeof OpsGuardLotsRoute
   '/pro/api': typeof ProGuardApiRoute
@@ -704,6 +712,7 @@ export interface FileRoutesByTo {
   '/mon-compte/reports': typeof MonCompteGuardReportsRoute
   '/mon-compte/settings': typeof MonCompteGuardSettingsRoute
   '/ops/beacons': typeof OpsGuardBeaconsRoute
+  '/ops/commandes-fournisseurs': typeof OpsGuardCommandesFournisseursRoute
   '/ops/exports': typeof OpsGuardExportsRoute
   '/ops/lots': typeof OpsGuardLotsRoute
   '/pro/api': typeof ProGuardApiRoute
@@ -798,6 +807,7 @@ export interface FileRoutesById {
   '/mon-compte/_guard/reports': typeof MonCompteGuardReportsRoute
   '/mon-compte/_guard/settings': typeof MonCompteGuardSettingsRoute
   '/ops/_guard/beacons': typeof OpsGuardBeaconsRoute
+  '/ops/_guard/commandes-fournisseurs': typeof OpsGuardCommandesFournisseursRoute
   '/ops/_guard/exports': typeof OpsGuardExportsRoute
   '/ops/_guard/lots': typeof OpsGuardLotsRoute
   '/pro/_guard/api': typeof ProGuardApiRoute
@@ -893,6 +903,7 @@ export interface FileRouteTypes {
     | '/mon-compte/reports'
     | '/mon-compte/settings'
     | '/ops/beacons'
+    | '/ops/commandes-fournisseurs'
     | '/ops/exports'
     | '/ops/lots'
     | '/pro/api'
@@ -978,6 +989,7 @@ export interface FileRouteTypes {
     | '/mon-compte/reports'
     | '/mon-compte/settings'
     | '/ops/beacons'
+    | '/ops/commandes-fournisseurs'
     | '/ops/exports'
     | '/ops/lots'
     | '/pro/api'
@@ -1071,6 +1083,7 @@ export interface FileRouteTypes {
     | '/mon-compte/_guard/reports'
     | '/mon-compte/_guard/settings'
     | '/ops/_guard/beacons'
+    | '/ops/_guard/commandes-fournisseurs'
     | '/ops/_guard/exports'
     | '/ops/_guard/lots'
     | '/pro/_guard/api'
@@ -1532,6 +1545,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OpsGuardBeaconsRouteImport
       parentRoute: typeof OpsGuardRouteRoute
     }
+    '/ops/_guard/commandes-fournisseurs': {
+      id: '/ops/_guard/commandes-fournisseurs'
+      path: '/commandes-fournisseurs'
+      fullPath: '/ops/commandes-fournisseurs'
+      preLoaderRoute: typeof OpsGuardCommandesFournisseursRouteImport
+      parentRoute: typeof OpsGuardRouteRoute
+    }
     '/ops/_guard/exports': {
       id: '/ops/_guard/exports'
       path: '/exports'
@@ -1888,6 +1908,7 @@ const MonCompteGuardRouteRouteWithChildren =
 
 interface OpsGuardRouteRouteChildren {
   OpsGuardBeaconsRoute: typeof OpsGuardBeaconsRoute
+  OpsGuardCommandesFournisseursRoute: typeof OpsGuardCommandesFournisseursRoute
   OpsGuardExportsRoute: typeof OpsGuardExportsRoute
   OpsGuardLotsRoute: typeof OpsGuardLotsRoute
   OpsGuardIndexRoute: typeof OpsGuardIndexRoute
@@ -1895,6 +1916,7 @@ interface OpsGuardRouteRouteChildren {
 
 const OpsGuardRouteRouteChildren: OpsGuardRouteRouteChildren = {
   OpsGuardBeaconsRoute: OpsGuardBeaconsRoute,
+  OpsGuardCommandesFournisseursRoute: OpsGuardCommandesFournisseursRoute,
   OpsGuardExportsRoute: OpsGuardExportsRoute,
   OpsGuardLotsRoute: OpsGuardLotsRoute,
   OpsGuardIndexRoute: OpsGuardIndexRoute,

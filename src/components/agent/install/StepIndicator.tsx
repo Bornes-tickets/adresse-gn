@@ -13,7 +13,7 @@ const COLORS = [
 
 export function StepIndicator({ etape }: { etape: number }) {
   const Icone = ICONS[etape - 1] ?? Radio;
-  const couleur = COLORS[etape - 1] ?? COLORS[0];
+  const couleur = COLORS[etape - 1] ?? COLORS[0]!;
 
   return (
     <div className="space-y-3">
@@ -36,7 +36,7 @@ export function StepIndicator({ etape }: { etape: number }) {
             const num = i + 1;
             const done = num < etape;
             const active = num === etape;
-            const c = COLORS[i];
+            const c = COLORS[i] ?? COLORS[0]!;
             return (
               <div
                 key={i}
@@ -57,7 +57,7 @@ export function StepIndicator({ etape }: { etape: number }) {
           const faite = numero < etape;
           const active = numero === etape;
           const Ic = ICONS[index] ?? Radio;
-          const c = COLORS[index];
+          const c = COLORS[index] ?? COLORS[0]!;
           return (
             <div key={label} className="flex flex-1 items-center gap-2 last:flex-none">
               <div className="flex flex-col items-center gap-2">
