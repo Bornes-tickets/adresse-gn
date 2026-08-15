@@ -11,6 +11,8 @@ import {
   ArrowUpDown, Rows, Rows3, DollarSign, Timer, Copy, Printer, Ban, TrendingDown,
   MessageCircle, Phone, Mail, ClipboardCheck, PackageX, PackageMinus, History,
   ChevronDown, ChevronRight, Receipt, PackagePlus, ClipboardList,
+  Wallet, CreditCard, Banknote, Smartphone, FileCheck, XCircle,
+  PlusCircle, GitCompare, ScrollText, Upload,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +31,8 @@ import {
   opsUpdateLotStatus, opsLotDetail,
   opsGeneratePO, opsPurchaseOrder, opsGeneratePOPdf,
   opsGenerateDN, opsDeliveryNote, opsGenerateDNPdf,
+  opsCreateInvoice, opsInvoice, opsRecordPayment, opsDeletePayment,
+  opsMarkDispute, opsResolveDispute, opsReconciliation,
 } from "@/lib/ops.functions";
 import { useRealtimeInvalidate } from "@/hooks/useRealtimeInvalidate";
 import { cn } from "@/lib/utils";
@@ -76,6 +80,11 @@ const RECEPTION_INIT = {
   carrier: "", tracking_number: "", shipped_at: "", receiver_name: "",
 };
 
+const INVOICE_INIT = {
+  invoice_number: "", issued_at: new Date().toISOString().slice(0, 10),
+  due_date: "", amount_ht: 0, tva_rate: 18, notes: "", pdf_base64: "", pdf_filename: "",
+};
+
 function OpsCommandes() {
   const listerFn = useServerFn(opsLots);
   const generateFn = useServerFn(opsGenerateLot);
@@ -91,6 +100,13 @@ function OpsCommandes() {
   const generateDnFn = useServerFn(opsGenerateDN);
   const loadDnFn = useServerFn(opsDeliveryNote);
   const pdfDnFn = useServerFn(opsGenerateDNPdf);
+  const createInvoiceFn = useServerFn(opsCreateInvoice);
+  const loadInvoiceFn = useServerFn(opsInvoice);
+  const recordPaymentFn = useServerFn(opsRecordPayment);
+  const deletePaymentFn = useServerFn(opsDeletePayment);
+  const markDisputeFn = useServerFn(opsMarkDispute);
+  const resolveDisputeFn = useServerFn(opsResolveDispute);
+  const reconciliationFn = useServerFn(opsReconciliation);
   const qc = useQueryClient();
 
   const [q, setQ] = useState("");
@@ -109,6 +125,15 @@ function OpsCommandes() {
   const [receptionForm, setReceptionForm] = useState(RECEPTION_INIT);
   const [confirmNext, setConfirmNext] = useState<{ id: string; from: string; to: string } | null>(null);
   const [confirmNotes, setConfirmNotes] = useState("");
+  const [invoiceDialog, setInvoiceDialog] = useState(false);
+  const [invoiceForm, setInvoiceForm] = useState(INVOICE_INIT);
+  const [paymentDialog, setPaymentDialog] = useState<any>(null);
+  const [paymentForm, setPaymentForm] = useState({
+    amount: 0, method: "bank_transfer", paid_at: new Date().toISOString().slice(0, 10),
+    reference: "", notes: "",
+  });
+  const [disputeDialog, setDisputeDialog] = useState<any>(null);
+  const [disputeNotes, setDisputeNotes] = useState("");
   const [form, setForm] = useState({
     quantity: 50, regionId: "", category: "residential",
     supplier: "", unitPriceGnf: "",
@@ -132,6 +157,16 @@ function OpsCommandes() {
   const dnQuery = useQuery({
     queryKey: ["ops", "dn", detailLotId],
     queryFn: () => loadDnFn({ data: { lotId: detailLotId! } }),
+    enabled: !!detailLotId,
+  });
+  const invoiceQuery = useQuery({
+    queryKey: ["ops", "invoice", detailLotId],
+    queryFn: () => loadInvoiceFn({ data: { lotId: detailLotId! } }),
+    enabled: !!detailLotId,
+  });
+  const reconQuery = useQuery({
+    queryKey: ["ops", "recon", detailLotId],
+    queryFn: () => reconciliationFn({ data: { lotId: detailLotId! } }),
     enabled: !!detailLotId,
   });
   useRealtimeInvalidate({ table: "lots", invalidate: [["ops", "lots"]] });
@@ -183,6 +218,7 @@ function OpsCommandes() {
     onSuccess: (r: any) => {
       toast.success(`Bon de commande ${r.po_number} généré.`);
       qc.invalidateQueries({ queryKey: ["ops", "po"] });
+      qc.invalidateQueries({ queryKey: ["ops", "recon"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -204,6 +240,7 @@ function OpsCommandes() {
       qc.invalidateQueries({ queryKey: ["ops", "dn"] });
       qc.invalidateQueries({ queryKey: ["ops", "lots"] });
       qc.invalidateQueries({ queryKey: ["ops", "lot-detail"] });
+      qc.invalidateQueries({ queryKey: ["ops", "recon"] });
       setReceptionDialog(null);
     },
     onError: (e: Error) => toast.error(e.message),
@@ -218,6 +255,70 @@ function OpsCommandes() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const createInvoice = useMutation({
+    mutationFn: (v: any) => createInvoiceFn({ data: v }),
+    onSuccess: (r: any) => {
+      toast.success(`Facture ${r.internal_ref} enregistrée.`);
+      qc.invalidateQueries({ queryKey: ["ops", "invoice"] });
+      qc.invalidateQueries({ queryKey: ["ops", "recon"] });
+      setInvoiceDialog(false);
+      setInvoiceForm(INVOICE_INIT);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const recordPayment = useMutation({
+    mutationFn: (v: any) => recordPaymentFn({ data: v }),
+    onSuccess: () => {
+      toast.success("Paiement enregistré.");
+      qc.invalidateQueries({ queryKey: ["ops", "invoice"] });
+      qc.invalidateQueries({ queryKey: ["ops", "recon"] });
+      setPaymentDialog(null);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const deletePayment = useMutation({
+    mutationFn: (paymentId: string) => deletePaymentFn({ data: { paymentId } }),
+    onSuccess: () => {
+      toast.success("Paiement supprimé.");
+      qc.invalidateQueries({ queryKey: ["ops", "invoice"] });
+      qc.invalidateQueries({ queryKey: ["ops", "recon"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const markDispute = useMutation({
+    mutationFn: (v: { invoiceId: string; notes: string }) => markDisputeFn({ data: v }),
+    onSuccess: () => {
+      toast.success("Litige signalé.");
+      qc.invalidateQueries({ queryKey: ["ops", "invoice"] });
+      setDisputeDialog(null); setDisputeNotes("");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const resolveDispute = useMutation({
+    mutationFn: (invoiceId: string) => resolveDisputeFn({ data: { invoiceId } }),
+    onSuccess: () => {
+      toast.success("Litige levé.");
+      qc.invalidateQueries({ queryKey: ["ops", "invoice"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { toast.error("PDF max 5 Mo."); return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(",")[1] ?? "";
+      setInvoiceForm({ ...invoiceForm, pdf_base64: base64, pdf_filename: file.name });
+    };
+    reader.readAsDataURL(file);
+  };
 
   const rows = (lots.data ?? []) as any[];
 
@@ -797,7 +898,6 @@ function OpsCommandes() {
                   Commande de <strong>{receptionDialog.quantity}</strong> balises · {receptionDialog.supplier ?? "Fournisseur inconnu"}
                 </div>
               </div>
-
               <div>
                 <div className="text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2 flex items-center gap-1.5">
                   <Truck className="h-3.5 w-3.5" /> Transport
@@ -824,7 +924,6 @@ function OpsCommandes() {
                   </div>
                 </div>
               </div>
-
               <div>
                 <div className="text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2 flex items-center gap-1.5">
                   <PackagePlus className="h-3.5 w-3.5" /> Quantités
@@ -861,7 +960,6 @@ function OpsCommandes() {
                   </div>
                 )}
               </div>
-
               <div>
                 <div className="text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2 flex items-center gap-1.5">
                   <ClipboardCheck className="h-3.5 w-3.5" /> Contrôle qualité *
@@ -883,7 +981,6 @@ function OpsCommandes() {
                   </button>
                 </div>
               </div>
-
               {!receptionForm.qc_passed && (
                 <div>
                   <Label className="text-xs">Description des défauts *</Label>
@@ -891,13 +988,11 @@ function OpsCommandes() {
                     placeholder="Ex : 5 plaques cassées, QR illisibles sur 3 pièces…" rows={3} />
                 </div>
               )}
-
               <div>
                 <Label className="text-xs">Notes complémentaires</Label>
                 <Textarea value={receptionForm.notes} onChange={(e) => setReceptionForm({ ...receptionForm, notes: e.target.value })}
                   placeholder="Bordereau, conditions de livraison, autres remarques…" rows={2} />
               </div>
-
               <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3 flex items-start gap-2 text-xs text-emerald-800">
                 <ClipboardList className="h-4 w-4 shrink-0 mt-0.5" />
                 <div>
@@ -952,11 +1047,12 @@ function OpsCommandes() {
             <div className="py-16 text-center"><div className="inline-block h-8 w-8 border-2 border-slate-300 border-t-amber-600 rounded-full animate-spin" /></div>
           ) : detail.data && (
             <Tabs defaultValue="general">
-              <TabsList className="w-full grid grid-cols-5">
+              <TabsList className="w-full grid grid-cols-6">
                 <TabsTrigger value="general">Général</TabsTrigger>
                 <TabsTrigger value="livraison">Livraison</TabsTrigger>
                 <TabsTrigger value="bc" className="gap-1"><Receipt className="h-3.5 w-3.5" />BC</TabsTrigger>
                 <TabsTrigger value="bl" className="gap-1"><Truck className="h-3.5 w-3.5" />BL</TabsTrigger>
+                <TabsTrigger value="fa" className="gap-1"><ScrollText className="h-3.5 w-3.5" />FA</TabsTrigger>
                 <TabsTrigger value="historique">Historique</TabsTrigger>
               </TabsList>
 
@@ -1259,7 +1355,6 @@ function OpsCommandes() {
                           </div>
                         </CardContent>
                       </Card>
-
                       <Card>
                         <CardContent className="p-4">
                           <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">Quantités</div>
@@ -1288,7 +1383,6 @@ function OpsCommandes() {
                           </div>
                         </CardContent>
                       </Card>
-
                       <Card>
                         <CardContent className="p-4">
                           <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-1.5">
@@ -1303,7 +1397,6 @@ function OpsCommandes() {
                           </div>
                         </CardContent>
                       </Card>
-
                       {dn.defects && (
                         <Card className="border-rose-200 bg-rose-50">
                           <CardContent className="p-3">
@@ -1312,12 +1405,242 @@ function OpsCommandes() {
                           </CardContent>
                         </Card>
                       )}
-
                       {dn.notes && (
                         <Card>
                           <CardContent className="p-3">
                             <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Notes de réception</div>
                             <div className="text-sm italic">{dn.notes}</div>
+                          </CardContent>
+                        </Card>
+                      )}
+                    </div>
+                  );
+                })()}
+              </TabsContent>
+
+              {/* ONGLET FA — Facture d'achat */}
+              <TabsContent value="fa" className="space-y-4 pt-4">
+                {invoiceQuery.isLoading ? (
+                  <div className="py-8 text-center"><div className="inline-block h-6 w-6 border-2 border-slate-300 border-t-violet-600 rounded-full animate-spin" /></div>
+                ) : !invoiceQuery.data ? (
+                  <Card className="border-dashed border-2 border-slate-200 bg-slate-50/50">
+                    <CardContent className="p-8 text-center">
+                      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-violet-100 to-fuchsia-100">
+                        <ScrollText className="h-8 w-8 text-violet-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold">Aucune facture d'achat</h3>
+                      <p className="text-sm text-slate-600 mt-1 max-w-md mx-auto mb-4">
+                        Enregistrez la facture reçue du fournisseur avec le PDF et suivez son paiement.
+                      </p>
+                      <Button className="bg-gradient-to-r from-violet-500 to-fuchsia-600 hover:from-violet-600 hover:to-fuchsia-700 text-white shadow-md" onClick={() => setInvoiceDialog(true)}>
+                        <PlusCircle className="h-4 w-4 mr-1.5" />Enregistrer une facture
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ) : (() => {
+                  const invData: any = invoiceQuery.data;
+                  const inv = invData.invoice;
+                  const payments = invData.payments;
+                  const resteAPayer = Number(inv.amount_ttc) - Number(inv.amount_paid);
+                  const pctPaye = inv.amount_ttc > 0 ? Math.min(100, Math.round((inv.amount_paid / inv.amount_ttc) * 100)) : 0;
+                  const enRetard = inv.due_date && new Date(inv.due_date).getTime() < Date.now() && inv.payment_status !== "paid";
+
+                  return (
+                    <div className="space-y-4">
+                      <Card className="border-2 border-violet-200 bg-gradient-to-br from-violet-50 to-fuchsia-50 overflow-hidden">
+                        <div className="h-1 bg-gradient-to-r from-violet-500 to-fuchsia-600" />
+                        <CardContent className="p-4 flex items-center justify-between gap-3 flex-wrap">
+                          <div className="flex items-center gap-3">
+                            <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center text-white shadow-md">
+                              <ScrollText className="h-5 w-5" />
+                            </div>
+                            <div>
+                              <div className="text-[10px] uppercase tracking-widest text-violet-700 font-semibold">Facture d'achat</div>
+                              <div className="font-mono text-lg font-bold text-slate-900">{inv.internal_ref}</div>
+                              <div className="text-xs text-slate-600">N° fournisseur : <span className="font-mono">{inv.invoice_number}</span></div>
+                            </div>
+                          </div>
+                          <div className="flex gap-2 items-center">
+                            <Badge className={cn("gap-1 text-xs",
+                              inv.payment_status === "paid" ? "bg-emerald-100 text-emerald-700" :
+                              inv.payment_status === "partial" ? "bg-amber-100 text-amber-700" :
+                              inv.payment_status === "disputed" ? "bg-rose-100 text-rose-700" :
+                              inv.payment_status === "cancelled" ? "bg-slate-200 text-slate-700" :
+                              "bg-sky-100 text-sky-700")}>
+                              {inv.payment_status === "paid" ? "Payée" :
+                                inv.payment_status === "partial" ? "Partiellement payée" :
+                                inv.payment_status === "disputed" ? "En litige" :
+                                inv.payment_status === "cancelled" ? "Annulée" : "À payer"}
+                            </Badge>
+                            {inv.pdf_url && (
+                              <a href={inv.pdf_url} target="_blank" rel="noreferrer">
+                                <Button variant="outline" size="sm"><Download className="h-4 w-4 mr-1" />PDF</Button>
+                              </a>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {enRetard && (
+                        <Card className="border-rose-300 bg-rose-50">
+                          <CardContent className="p-3 flex items-center gap-3">
+                            <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0" />
+                            <div className="flex-1 text-sm text-rose-800">
+                              <strong>Facture en retard</strong> — échéance dépassée le {new Date(inv.due_date).toLocaleDateString("fr-FR")}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {inv.dispute_notes && (
+                        <Card className="border-rose-300 bg-rose-50">
+                          <CardContent className="p-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex items-start gap-2 flex-1">
+                                <XCircle className="h-4 w-4 text-rose-600 mt-0.5 shrink-0" />
+                                <div>
+                                  <div className="text-xs font-semibold uppercase tracking-wider text-rose-800 mb-1">Litige</div>
+                                  <div className="text-sm text-slate-800">{inv.dispute_notes}</div>
+                                </div>
+                              </div>
+                              <Button size="sm" variant="outline" onClick={() => resolveDispute.mutate(inv.id)} disabled={resolveDispute.isPending}>
+                                <CheckCircle2 className="h-3.5 w-3.5 mr-1" />Lever le litige
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      <Card>
+                        <CardContent className="p-4 space-y-3">
+                          <div className="grid grid-cols-3 gap-2">
+                            <div className="text-center p-3 rounded-lg border border-slate-200 bg-slate-50">
+                              <div className="text-[10px] uppercase text-slate-500 font-semibold">Total TTC</div>
+                              <div className="font-mono text-lg font-bold text-slate-900 mt-1">{formatMontant(inv.amount_ttc)}</div>
+                            </div>
+                            <div className="text-center p-3 rounded-lg border border-emerald-200 bg-emerald-50">
+                              <div className="text-[10px] uppercase text-emerald-600 font-semibold">Payé</div>
+                              <div className="font-mono text-lg font-bold text-emerald-700 mt-1">{formatMontant(inv.amount_paid)}</div>
+                            </div>
+                            <div className={cn("text-center p-3 rounded-lg border",
+                              resteAPayer <= 0 ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50")}>
+                              <div className="text-[10px] uppercase font-semibold">Reste</div>
+                              <div className={cn("font-mono text-lg font-bold mt-1",
+                                resteAPayer <= 0 ? "text-emerald-700" : "text-amber-700")}>
+                                {formatMontant(Math.max(0, resteAPayer))}
+                              </div>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="flex items-center justify-between text-xs mb-1">
+                              <span className="text-slate-500">Progression paiement</span>
+                              <span className="font-semibold">{pctPaye}%</span>
+                            </div>
+                            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                              <div className={cn("h-full rounded-full",
+                                pctPaye === 100 ? "bg-gradient-to-r from-emerald-500 to-teal-600" :
+                                pctPaye > 0 ? "bg-gradient-to-r from-amber-500 to-orange-500" : "bg-slate-300")}
+                                style={{ width: `${pctPaye}%` }} />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <InfoBloc label="Date facture" value={new Date(inv.issued_at).toLocaleDateString("fr-FR")} icon={ScrollText} />
+                        <InfoBloc label="Échéance" value={inv.due_date ? new Date(inv.due_date).toLocaleDateString("fr-FR") : "—"} icon={Clock} tone={enRetard ? "rose" : undefined} />
+                        <InfoBloc label="Reçue le" value={formatDateTimeFr(inv.received_at)} icon={FileCheck} />
+                        <InfoBloc label="TVA" value={`${inv.tva_rate}% (${formatMontant(inv.tva_amount)})`} icon={Calculator} />
+                      </div>
+
+                      <Card>
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                              <Wallet className="h-3.5 w-3.5" /> Paiements ({payments.length})
+                            </div>
+                            {inv.payment_status !== "paid" && inv.payment_status !== "cancelled" && (
+                              <div className="flex gap-1">
+                                <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white h-8" onClick={() => {
+                                  setPaymentDialog(inv);
+                                  setPaymentForm({ amount: resteAPayer, method: "bank_transfer", paid_at: new Date().toISOString().slice(0, 10), reference: "", notes: "" });
+                                }}>
+                                  <PlusCircle className="h-3.5 w-3.5 mr-1" />Ajouter
+                                </Button>
+                                {inv.payment_status !== "disputed" && (
+                                  <Button size="sm" variant="outline" className="h-8 text-rose-600 border-rose-300" onClick={() => { setDisputeDialog(inv); setDisputeNotes(""); }}>
+                                    <AlertTriangle className="h-3.5 w-3.5 mr-1" />Litige
+                                  </Button>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          {payments.length === 0 ? (
+                            <p className="text-xs text-slate-500 text-center py-4 italic">Aucun paiement enregistré.</p>
+                          ) : (
+                            <div className="space-y-2">
+                              {payments.map((p: any) => {
+                                const methodMap: Record<string, { label: string; icon: any; cls: string }> = {
+                                  bank_transfer: { label: "Virement", icon: CreditCard, cls: "bg-sky-100 text-sky-700" },
+                                  cash: { label: "Espèces", icon: Banknote, cls: "bg-emerald-100 text-emerald-700" },
+                                  check: { label: "Chèque", icon: ScrollText, cls: "bg-violet-100 text-violet-700" },
+                                  mobile_money: { label: "Mobile money", icon: Smartphone, cls: "bg-orange-100 text-orange-700" },
+                                  other: { label: "Autre", icon: Wallet, cls: "bg-slate-100 text-slate-700" },
+                                };
+                                const m = methodMap[p.method] ?? methodMap.other;
+                                const MIcon = m.icon;
+                                return (
+                                  <div key={p.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition group">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                      <div className={cn("h-9 w-9 rounded-lg flex items-center justify-center", m.cls)}>
+                                        <MIcon className="h-4 w-4" />
+                                      </div>
+                                      <div className="min-w-0">
+                                        <div className="font-semibold text-sm">{formatMontant(p.amount)}</div>
+                                        <div className="text-[10px] text-slate-500">
+                                          {m.label} · {new Date(p.paid_at).toLocaleDateString("fr-FR")}
+                                          {p.reference && ` · ${p.reference}`}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-rose-600 opacity-0 group-hover:opacity-100 transition"
+                                      onClick={() => { if (confirm("Supprimer ce paiement ?")) deletePayment.mutate(p.id); }}>
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+
+                      {reconQuery.data && (
+                        <Card className="border-slate-200">
+                          <CardContent className="p-4">
+                            <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-1.5">
+                              <GitCompare className="h-3.5 w-3.5" /> Rapprochement BC ↔ BL ↔ FA
+                            </div>
+                            <div className="space-y-2">
+                              <ReconLine label="Montant BC" value={(reconQuery.data as any).po ? formatMontant((reconQuery.data as any).po.amount_ttc) : "—"} refText={(reconQuery.data as any).po?.po_number} />
+                              <ReconLine label="Qté BL" value={(reconQuery.data as any).dn ? `${(reconQuery.data as any).dn.quantity_received} / ${(reconQuery.data as any).dn.quantity_ordered}` : "—"} refText={(reconQuery.data as any).dn?.dn_number} ok={(reconQuery.data as any).quantite_ok} />
+                              <ReconLine label="Montant FA" value={(reconQuery.data as any).invoice ? formatMontant((reconQuery.data as any).invoice.amount_ttc) : "—"} refText={(reconQuery.data as any).invoice?.internal_ref} ok={(reconQuery.data as any).montant_ok} />
+                              {(reconQuery.data as any).ecart_montant !== null && (reconQuery.data as any).ecart_montant !== 0 && (
+                                <div className="mt-2 p-2 rounded-lg bg-amber-50 border border-amber-200 text-xs">
+                                  <span className="font-semibold text-amber-800">Écart facture vs BC :</span>{" "}
+                                  <span className="font-mono">{(reconQuery.data as any).ecart_montant > 0 ? "+" : ""}{formatMontant((reconQuery.data as any).ecart_montant)}</span>
+                                </div>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {inv.notes && (
+                        <Card>
+                          <CardContent className="p-3">
+                            <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Notes</div>
+                            <div className="text-sm italic">{inv.notes}</div>
                           </CardContent>
                         </Card>
                       )}
@@ -1356,6 +1679,165 @@ function OpsCommandes() {
               </TabsContent>
             </Tabs>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog création facture */}
+      <Dialog open={invoiceDialog} onOpenChange={setInvoiceDialog}>
+        <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ScrollText className="h-5 w-5 text-violet-600" />Enregistrer une facture d'achat
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">N° facture fournisseur *</Label>
+                <Input value={invoiceForm.invoice_number} onChange={(e) => setInvoiceForm({ ...invoiceForm, invoice_number: e.target.value })} placeholder="Ex : FAC-2026-001" className="h-11 font-mono" />
+              </div>
+              <div>
+                <Label className="text-xs">Date facture *</Label>
+                <Input type="date" value={invoiceForm.issued_at} onChange={(e) => setInvoiceForm({ ...invoiceForm, issued_at: e.target.value })} className="h-11" />
+              </div>
+              <div>
+                <Label className="text-xs">Échéance</Label>
+                <Input type="date" value={invoiceForm.due_date} onChange={(e) => setInvoiceForm({ ...invoiceForm, due_date: e.target.value })} className="h-11" />
+              </div>
+              <div>
+                <Label className="text-xs">TVA (%)</Label>
+                <Input type="number" step="0.01" value={invoiceForm.tva_rate} onChange={(e) => setInvoiceForm({ ...invoiceForm, tva_rate: Number(e.target.value) })} className="h-11 font-mono" />
+              </div>
+            </div>
+            <div>
+              <Label className="text-xs">Montant HT (GNF) *</Label>
+              <Input type="number" value={invoiceForm.amount_ht} onChange={(e) => setInvoiceForm({ ...invoiceForm, amount_ht: Number(e.target.value) })} className="h-11 font-mono text-lg" />
+              <div className="text-[10px] text-slate-500 mt-1 font-mono">
+                TVA : {formatMontant(Math.round(invoiceForm.amount_ht * invoiceForm.tva_rate / 100))} · TTC : <strong>{formatMontant(invoiceForm.amount_ht + Math.round(invoiceForm.amount_ht * invoiceForm.tva_rate / 100))}</strong>
+              </div>
+            </div>
+            <div>
+              <Label className="text-xs">PDF de la facture (max 5 Mo)</Label>
+              <div className="mt-1 flex items-center gap-2">
+                <Input type="file" accept="application/pdf" onChange={handleFileUpload} className="h-11" />
+                {invoiceForm.pdf_filename && (
+                  <Badge className="bg-emerald-100 text-emerald-700 gap-1"><FileCheck className="h-3 w-3" />{invoiceForm.pdf_filename}</Badge>
+                )}
+              </div>
+            </div>
+            <div>
+              <Label className="text-xs">Notes</Label>
+              <Textarea value={invoiceForm.notes} onChange={(e) => setInvoiceForm({ ...invoiceForm, notes: e.target.value })} rows={2} placeholder="Remarques…" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setInvoiceDialog(false)}>Annuler</Button>
+            <Button className="bg-gradient-to-r from-violet-500 to-fuchsia-600 hover:from-violet-600 hover:to-fuchsia-700"
+              disabled={!invoiceForm.invoice_number.trim() || !invoiceForm.amount_ht || createInvoice.isPending}
+              onClick={() => {
+                if (!detailLotId) return;
+                createInvoice.mutate({
+                  lotId: detailLotId,
+                  invoice_number: invoiceForm.invoice_number.trim(),
+                  issued_at: invoiceForm.issued_at,
+                  due_date: invoiceForm.due_date || null,
+                  amount_ht: invoiceForm.amount_ht,
+                  tva_rate: invoiceForm.tva_rate,
+                  pdf_base64: invoiceForm.pdf_base64 || null,
+                  pdf_filename: invoiceForm.pdf_filename || null,
+                  notes: invoiceForm.notes || null,
+                });
+              }}>
+              <PlusCircle className="h-4 w-4 mr-1.5" />Enregistrer la facture
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog ajout paiement */}
+      <Dialog open={paymentDialog !== null} onOpenChange={(o) => !o && setPaymentDialog(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Wallet className="h-5 w-5 text-emerald-600" />Enregistrer un paiement</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label className="text-xs">Montant (GNF) *</Label>
+              <Input type="number" value={paymentForm.amount} onChange={(e) => setPaymentForm({ ...paymentForm, amount: Number(e.target.value) })} className="h-11 font-mono text-lg text-center" />
+            </div>
+            <div>
+              <Label className="text-xs">Mode *</Label>
+              <div className="grid grid-cols-3 gap-2 mt-1">
+                {[
+                  { v: "bank_transfer", l: "Virement", i: CreditCard },
+                  { v: "cash", l: "Espèces", i: Banknote },
+                  { v: "mobile_money", l: "Mobile", i: Smartphone },
+                  { v: "check", l: "Chèque", i: ScrollText },
+                  { v: "other", l: "Autre", i: Wallet },
+                ].map((m) => {
+                  const MI = m.i;
+                  return (
+                    <button key={m.v} type="button" onClick={() => setPaymentForm({ ...paymentForm, method: m.v })}
+                      className={cn("p-2 rounded-lg border-2 text-xs text-center transition",
+                        paymentForm.method === m.v ? "border-emerald-500 bg-emerald-50 text-emerald-700 font-bold" : "border-slate-200 hover:border-slate-300")}>
+                      <MI className="h-4 w-4 mx-auto mb-1" />{m.l}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">Date paiement</Label>
+                <Input type="date" value={paymentForm.paid_at} onChange={(e) => setPaymentForm({ ...paymentForm, paid_at: e.target.value })} className="h-11" />
+              </div>
+              <div>
+                <Label className="text-xs">Référence</Label>
+                <Input value={paymentForm.reference} onChange={(e) => setPaymentForm({ ...paymentForm, reference: e.target.value })} placeholder="Ex : REF12345" className="h-11 font-mono" />
+              </div>
+            </div>
+            <div>
+              <Label className="text-xs">Notes</Label>
+              <Textarea value={paymentForm.notes} onChange={(e) => setPaymentForm({ ...paymentForm, notes: e.target.value })} rows={2} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPaymentDialog(null)}>Annuler</Button>
+            <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" disabled={!paymentForm.amount || recordPayment.isPending}
+              onClick={() => paymentDialog && recordPayment.mutate({
+                invoiceId: paymentDialog.id, amount: paymentForm.amount, method: paymentForm.method,
+                paid_at: new Date(paymentForm.paid_at).toISOString(),
+                reference: paymentForm.reference.trim() || null, notes: paymentForm.notes.trim() || null,
+              })}>
+              <CheckCircle2 className="h-4 w-4 mr-1.5" />Enregistrer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog litige */}
+      <Dialog open={disputeDialog !== null} onOpenChange={(o) => !o && setDisputeDialog(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-rose-500" />Signaler un litige</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="text-sm text-slate-600 bg-rose-50 border border-rose-200 rounded-lg p-3">
+              Le paiement de cette facture sera suspendu jusqu'à résolution du litige.
+            </div>
+            <div>
+              <Label className="text-xs">Motif du litige *</Label>
+              <Textarea value={disputeNotes} onChange={(e) => setDisputeNotes(e.target.value)} rows={4}
+                placeholder="Ex : Montant erroné, quantité non conforme, service non rendu…" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDisputeDialog(null)}>Annuler</Button>
+            <Button className="bg-rose-600 hover:bg-rose-700 text-white" disabled={!disputeNotes.trim() || markDispute.isPending}
+              onClick={() => disputeDialog && markDispute.mutate({ invoiceId: disputeDialog.id, notes: disputeNotes.trim() })}>
+              Confirmer le litige
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
@@ -1404,5 +1886,22 @@ function InfoBloc({ label, value, icon: Icon, tone }: { label: string; value: st
         <div className="text-sm font-semibold text-slate-900">{value}</div>
       </CardContent>
     </Card>
+  );
+}
+
+function ReconLine({ label, value, refText, ok }: { label: string; value: string; refText?: string; ok?: boolean | null }) {
+  return (
+    <div className="flex items-center justify-between p-2 rounded-lg bg-slate-50">
+      <div className="flex items-center gap-2 min-w-0">
+        {ok === true ? <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+          : ok === false ? <XCircle className="h-4 w-4 text-rose-600" />
+          : <GitCompare className="h-4 w-4 text-slate-400" />}
+        <div>
+          <div className="text-sm font-semibold">{label}</div>
+          {refText && <div className="text-[10px] font-mono text-slate-500">{refText}</div>}
+        </div>
+      </div>
+      <div className="font-mono text-sm font-bold">{value}</div>
+    </div>
   );
 }
