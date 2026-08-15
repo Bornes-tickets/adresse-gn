@@ -1505,33 +1505,99 @@ export type Database = {
           },
         ]
       }
+      lot_events: {
+        Row: {
+          actor_id: string | null
+          attachment_url: string | null
+          event_at: string
+          event_type: string
+          id: string
+          lot_id: string
+          notes: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          attachment_url?: string | null
+          event_at?: string
+          event_type: string
+          id?: string
+          lot_id: string
+          notes?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          attachment_url?: string | null
+          event_at?: string
+          event_type?: string
+          id?: string
+          lot_id?: string
+          notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lot_events_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lot_events_lot_id_fkey"
+            columns: ["lot_id"]
+            isOneToOne: false
+            referencedRelation: "lots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lots: {
         Row: {
           category: string | null
           code: string
+          delivery_note_url: string | null
+          expected_delivery: string | null
           id: string
+          notes: string | null
+          priority: string
+          qc_passed: boolean | null
           quantity: number
           received_at: string | null
+          sent_at: string | null
           status: string
           supplier: string | null
+          supplier_order_ref: string | null
         }
         Insert: {
           category?: string | null
           code: string
+          delivery_note_url?: string | null
+          expected_delivery?: string | null
           id?: string
+          notes?: string | null
+          priority?: string
+          qc_passed?: boolean | null
           quantity: number
           received_at?: string | null
+          sent_at?: string | null
           status?: string
           supplier?: string | null
+          supplier_order_ref?: string | null
         }
         Update: {
           category?: string | null
           code?: string
+          delivery_note_url?: string | null
+          expected_delivery?: string | null
           id?: string
+          notes?: string | null
+          priority?: string
+          qc_passed?: boolean | null
           quantity?: number
           received_at?: string | null
+          sent_at?: string | null
           status?: string
           supplier?: string | null
+          supplier_order_ref?: string | null
         }
         Relationships: [
           {
