@@ -64,3 +64,52 @@ export async function chargerDashboardOps(): Promise<OpsDashboardData> {
     stockParCategorie: [...parCat.entries()].map(([categorie, total]) => ({ categorie, total })).sort((a, b) => b.total - a.total),
   };
 }
+/* --------------------------- COMMANDES FOURNISSEURS --------------------------- */
+
+export async function majStatutLot(lotId: string, statut: string, actorId: string, notes?: string | null) {
+  const patch: Record<string, unknown> = { status: statut };
+  if (statut === "sent") patch['sent_at'] = new Date().toISOString();
+  if (statut === "received") patch['received_at'] = new Date().toISOString();
+
+  const { error } = await supabaseAdmin.from("lots").update(patch).eq("id", lotId);
+  if (error) throw new Error(error.message);
+
+  await supabaseAdmin.from("lot_events" as any).insert({
+    lot_id: lotId,
+    event_type: statut === "sent" ? "sent"
+      : statut === "in_production" ? "in_production"
+      : statut === "shipped" ? "shipped"
+      : statut === "received" ? "received"
+      : statut === "distributed" ? "distributed"
+      : "note",
+    actor_id: actorId,
+    notes: notes ?? null,
+  });
+  return { success: true };
+}
+
+export async function ajouterEvenementLot(lotId: string, actorId: string, notes: string) {
+  const { error } = await supabaseAdmin.from("lot_events" as any).insert({
+    lot_id: lotId, actor_id: actorId, event_type: "note", notes,
+  });
+  if (error) throw new Error(error.message);
+  return { success: true };
+}
+
+export async function detailLot(lotId: string) {
+  const { data: lot, error } = await supabaseAdmin
+    .from("lots")
+    .select("*")
+    .eq("id", lotId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!lot) throw new Error("Lot introuvable.");
+
+  const { data: events } = await supabaseAdmin
+    .from("lot_events" as any)
+    .select("*")
+    .eq("lot_id", lotId)
+    .order("event_at", { ascending: false });
+
+  return { lot, events: events ?? [] };
+}
