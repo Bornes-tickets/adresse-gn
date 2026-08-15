@@ -1,7 +1,7 @@
 import { createFileRoute, Link, Outlet, redirect, useRouterState } from "@tanstack/react-router";
 import { opsWhoami } from "@/lib/ops.functions";
 import {
-  LayoutDashboard, Package, QrCode, Radio, Wrench, LogOut, ChevronRight, Home,
+  LayoutDashboard, Package, QrCode, Radio, Wrench, LogOut, ChevronRight, Home, Boxes,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -12,7 +12,8 @@ const GROUPS: MenuGroup[] = [
   { label: "Pilotage", items: [{ to: "/ops", label: "Tableau de bord", icon: LayoutDashboard, exact: true }]},
   { label: "Approvisionnement", items: [
     { to: "/ops/commandes-fournisseurs", label: "Commandes fournisseurs", icon: Package },
-    { to: "/ops/beacons", label: "Balises (stock)", icon: Radio },
+    { to: "/ops/stock", label: "Stock", icon: Boxes },
+    { to: "/ops/beacons", label: "Balises", icon: Radio },
     { to: "/ops/exports", label: "Exports QR", icon: QrCode },
   ]},
 ];
@@ -70,7 +71,6 @@ function OpsLayout() {
             <div className="text-[11px] font-medium text-amber-600 uppercase tracking-wider">Espace opérations</div>
           </div>
         </div>
-
         <nav className="px-3 py-5 space-y-5 overflow-y-auto h-[calc(100vh-20rem)]">
           {GROUPS.map((group) => (
             <div key={group.label}>
@@ -94,7 +94,6 @@ function OpsLayout() {
             </div>
           ))}
         </nav>
-
         <div className="absolute bottom-0 left-0 right-0 border-t border-slate-200/60 bg-white/60 backdrop-blur-xl p-3">
           <div className="flex items-center gap-3 rounded-xl p-3 border bg-gradient-to-r from-slate-50 to-slate-100/60 border-slate-200/60">
             <div className="h-10 w-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-bold text-sm shadow-md shrink-0">{initiales(me?.fullName)}</div>
@@ -107,7 +106,6 @@ function OpsLayout() {
           <div className="mt-2 text-center text-[10px] text-slate-400">Adresse GN · Ops</div>
         </div>
       </aside>
-
       <div className="ml-72">
         <header className="sticky top-0 z-20 border-b border-slate-200/60 bg-white/70 backdrop-blur-xl">
           <div className="flex h-16 items-center justify-between px-8 gap-4">
