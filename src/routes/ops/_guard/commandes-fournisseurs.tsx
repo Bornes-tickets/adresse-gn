@@ -158,13 +158,24 @@ function OpsCommandes() {
 
   const rows = (lots.data ?? []) as any[];
 
-  // Détecte les retards de livraison
   function isRetard(l: any): boolean {
     if (!["sent", "in_production", "shipped"].includes(l.status)) return false;
     if (l.expected_delivery && new Date(l.expected_delivery).getTime() < Date.now()) return true;
     if (l.sent_at && ageDays(l.sent_at) > 14 && l.status !== "received") return true;
     return false;
   }
+
+  /** Change le statut depuis le dialog détail : ferme le détail et ouvre le bon dialog secondaire. */
+  const changerStatutDepuisDetail = (lot: any, toStatus: string) => {
+    setDetailLotId(null);
+    if (toStatus === "received") {
+      setReceptionDialog(lot);
+      setReceptionForm({ quantity_received: lot.quantity, qc_passed: true, defects: "", notes: "" });
+    } else {
+      setConfirmNext({ id: lot.id, from: lot.status, to: toStatus });
+      setConfirmNotes("");
+    }
+  };
 
   const filtered = useMemo(() => {
     let r = rows;
@@ -242,7 +253,6 @@ function OpsCommandes() {
     dateRange !== "all" && { key: "dt", label: `Période : ${dateRange === "late" ? "Retards" : dateRange}`, clear: () => setDateRange("all") },
   ].filter(Boolean) as any[];
 
-  // Form live calcs
   const categorieChoisie = CATEGORIES.find((c) => c.code === form.category)!;
   const CatIcon = categorieChoisie.icon;
   const regionChoisie = regions.data?.find((r: any) => r.id === form.regionId);
@@ -255,7 +265,6 @@ function OpsCommandes() {
 
   return (
     <div className="space-y-6">
-      {/* HEADER HERO enrichi */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500 via-orange-600 to-rose-600 p-6 text-white shadow-xl">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_50%)]" />
         <div className="relative flex flex-wrap items-center justify-between gap-4">
@@ -414,7 +423,6 @@ function OpsCommandes() {
         </div>
       </div>
 
-      {/* KPI DASHBOARD */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <Kpi label="Total commandes" value={rows.length} icon={Package} tone="amber" />
         <Kpi label="En cours fournisseur" value={stats.enCours} icon={Factory} tone="violet" />
@@ -435,7 +443,6 @@ function OpsCommandes() {
         </button>
       </div>
 
-      {/* Alerte retards */}
       {stats.retards > 0 && dateRange !== "late" && (
         <Card className="border-rose-300 bg-gradient-to-br from-rose-50 to-red-50">
           <CardContent className="p-4 flex items-center gap-3">
@@ -451,7 +458,6 @@ function OpsCommandes() {
         </Card>
       )}
 
-      {/* Pipeline pills */}
       <div className="flex gap-2 flex-wrap">
         <button onClick={() => setStatutFilter(null)}
           className={cn("px-3 py-1.5 text-xs rounded-full border font-semibold transition",
@@ -470,7 +476,6 @@ function OpsCommandes() {
         })}
       </div>
 
-      {/* Filtres avancés */}
       <Card>
         <CardContent className="p-4 space-y-3">
           <div className="flex flex-col lg:flex-row gap-3">
@@ -501,7 +506,6 @@ function OpsCommandes() {
               </SelectContent>
             </Select>
           </div>
-
           <div className="flex gap-1.5 flex-wrap items-center">
             <span className="text-[10px] uppercase text-slate-500 font-semibold mr-1">Période :</span>
             {(["all", "today", "7d", "30d"] as const).map((p) => (
@@ -512,7 +516,6 @@ function OpsCommandes() {
               </button>
             ))}
           </div>
-
           {activeFilters.length > 0 && (
             <div className="pt-3 border-t border-slate-100 flex items-center gap-2 flex-wrap">
               <span className="text-[10px] uppercase text-slate-500 font-semibold">Filtres actifs</span>
@@ -529,7 +532,6 @@ function OpsCommandes() {
         </CardContent>
       </Card>
 
-      {/* Toolbar densité + bulk */}
       <div className="flex items-center justify-between text-xs">
         <div className="text-slate-500">
           {filtered.length} commande{filtered.length > 1 ? "s" : ""} · trié par <span className="font-semibold">{sortKey}</span> {sortDir === "asc" ? "↑" : "↓"}
@@ -545,7 +547,6 @@ function OpsCommandes() {
         </div>
       </div>
 
-      {/* TABLE */}
       <Card className="overflow-hidden">
         {lots.isLoading ? <div className="p-16 text-center"><div className="inline-block h-8 w-8 border-2 border-slate-300 border-t-amber-600 rounded-full animate-spin" /></div>
           : filtered.length === 0 ? (
@@ -604,7 +605,6 @@ function OpsCommandes() {
                           <div className="text-sm">{l.supplier ?? <span className="text-slate-400 italic">—</span>}</div>
                         </td>
                         <td className={pad}>
-                          {/* Mini pipeline */}
                           <div className="flex items-center gap-0.5 w-32">
                             {PIPELINE.map((s, i) => {
                               const done = i <= stepIndex;
@@ -654,11 +654,9 @@ function OpsCommandes() {
                                 <DropdownMenuSeparator />
                                 <DropdownMenuLabel>Communication</DropdownMenuLabel>
                                 {l.supplier && (
-                                  <>
-                                    <DropdownMenuItem onClick={() => window.open(`mailto:?subject=${encodeURIComponent(`Commande ${l.code}`)}`, "_blank")}>
-                                      <Mail className="h-4 w-4 mr-2" />Contacter par email
-                                    </DropdownMenuItem>
-                                  </>
+                                  <DropdownMenuItem onClick={() => window.open(`mailto:?subject=${encodeURIComponent(`Commande ${l.code}`)}`, "_blank")}>
+                                    <Mail className="h-4 w-4 mr-2" />Contacter par email
+                                  </DropdownMenuItem>
                                 )}
                                 <DropdownMenuItem onClick={() => { navigator.clipboard.writeText(l.code); toast.success("Code copié."); }}>
                                   <Copy className="h-4 w-4 mr-2" />Copier le code
@@ -697,7 +695,6 @@ function OpsCommandes() {
           )}
       </Card>
 
-      {/* Dialog confirmation changement de statut */}
       <Dialog open={confirmNext !== null} onOpenChange={(o) => !o && setConfirmNext(null)}>
         <DialogContent>
           <DialogHeader>
@@ -724,7 +721,6 @@ function OpsCommandes() {
         </DialogContent>
       </Dialog>
 
-      {/* DIALOG RÉCEPTION QC */}
       <Dialog open={receptionDialog !== null} onOpenChange={(o) => !o && setReceptionDialog(null)}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
@@ -808,7 +804,6 @@ function OpsCommandes() {
         </DialogContent>
       </Dialog>
 
-      {/* DIALOG DÉTAIL COMPLET (onglets) */}
       <Dialog open={detailLotId !== null} onOpenChange={(o) => !o && setDetailLotId(null)}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -836,7 +831,6 @@ function OpsCommandes() {
                 <TabsTrigger value="historique">Historique</TabsTrigger>
               </TabsList>
 
-              {/* ONGLET GÉNÉRAL */}
               <TabsContent value="general" className="space-y-4 pt-4">
                 <Card className="border-slate-200">
                   <CardContent className="p-4 space-y-3">
@@ -854,14 +848,12 @@ function OpsCommandes() {
                     </div>
                   </CardContent>
                 </Card>
-
                 <div className="grid grid-cols-2 gap-3">
                   <InfoBloc label="Quantité commandée" value={String(detail.data.lot.quantity)} icon={Package} />
                   <InfoBloc label="Catégorie" value={CATEGORIES.find((c) => c.code === detail.data.lot.category)?.label ?? "—"} icon={Sparkles} />
                   <InfoBloc label="Fournisseur" value={detail.data.lot.supplier ?? "—"} icon={Truck} />
                   <InfoBloc label="Prix unitaire" value="—" icon={DollarSign} />
                 </div>
-
                 {detail.data.lot.notes && (
                   <Card className="border-amber-200 bg-amber-50">
                     <CardContent className="p-3">
@@ -872,8 +864,39 @@ function OpsCommandes() {
                 )}
               </TabsContent>
 
-              {/* ONGLET LIVRAISON */}
+              {/* ONGLET LIVRAISON — enrichi avec actions cliquables */}
               <TabsContent value="livraison" className="space-y-4 pt-4">
+                {/* Action principale contextuelle */}
+                {statutInfo(detail.data.lot.status).next && (
+                  <Card className="border-2 border-emerald-300 bg-gradient-to-br from-emerald-50 to-teal-50 overflow-hidden">
+                    <div className="h-1 bg-gradient-to-r from-emerald-500 to-teal-600" />
+                    <CardContent className="p-4 flex items-center justify-between gap-3 flex-wrap">
+                      <div className="flex items-center gap-3">
+                        <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-md">
+                          {(() => {
+                            const nextInfo = statutInfo(statutInfo(detail.data.lot.status).next!);
+                            const NextIcon = nextInfo.icon;
+                            return <NextIcon className="h-5 w-5" />;
+                          })()}
+                        </div>
+                        <div>
+                          <div className="text-[10px] uppercase tracking-widest text-emerald-700 font-semibold">Prochaine étape</div>
+                          <div className="text-sm font-bold text-slate-900">
+                            Passer à « {statutInfo(statutInfo(detail.data.lot.status).next!).label} »
+                          </div>
+                        </div>
+                      </div>
+                      <Button
+                        className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-md"
+                        onClick={() => changerStatutDepuisDetail(detail.data.lot, statutInfo(detail.data.lot.status).next!)}
+                      >
+                        <ArrowRight className="h-4 w-4 mr-1.5" />
+                        {statutInfo(detail.data.lot.status).nextLabel}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
+
                 <div className="grid grid-cols-2 gap-3">
                   <InfoBloc label="Envoyée au fournisseur" value={formatDateTimeFr(detail.data.lot.sent_at)} icon={Send} tone="sky" />
                   <InfoBloc label="Livraison prévue" value={detail.data.lot.expected_delivery ? new Date(detail.data.lot.expected_delivery).toLocaleDateString("fr-FR") : "—"} icon={Timer} tone="amber" />
@@ -881,25 +904,38 @@ function OpsCommandes() {
                   <InfoBloc label="QC" value={detail.data.lot.qc_passed === true ? "Conforme" : detail.data.lot.qc_passed === false ? "Défauts" : "En attente"} icon={ClipboardCheck} tone={detail.data.lot.qc_passed === false ? "rose" : "emerald"} />
                 </div>
 
-                {/* Progression visuelle */}
+                {/* Timeline cliquable */}
                 <Card>
                   <CardContent className="p-4">
-                    <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">Progression pipeline</div>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">Progression pipeline</div>
+                      <div className="text-[10px] text-slate-400">Cliquez une étape pour y sauter</div>
+                    </div>
                     <div className="flex items-center gap-1">
                       {PIPELINE.map((s, i) => {
                         const idx = PIPELINE.findIndex((x) => x.code === detail.data.lot.status);
                         const done = i <= idx;
                         const active = i === idx;
+                        const clickable = i !== idx;
                         const Ic = s.icon;
                         return (
                           <div key={s.code} className="flex-1 flex items-center">
-                            <div className={cn(
-                              "h-8 w-8 rounded-full flex items-center justify-center transition",
-                              active ? cn(s.cls, "ring-2 ring-offset-1 shadow") :
-                              done ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-400",
-                            )}>
+                            <button
+                              type="button"
+                              disabled={!clickable}
+                              onClick={() => clickable && changerStatutDepuisDetail(detail.data.lot, s.code)}
+                              title={clickable ? `Passer à « ${s.label} »` : "Statut actuel"}
+                              className={cn(
+                                "h-8 w-8 rounded-full flex items-center justify-center transition-all",
+                                active ? cn(s.cls, "ring-2 ring-offset-1 shadow scale-110")
+                                  : done ? "bg-emerald-500 text-white hover:bg-emerald-600 hover:scale-110"
+                                  : "bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-600",
+                                clickable && "cursor-pointer",
+                                !clickable && "cursor-default",
+                              )}
+                            >
                               <Ic className="h-3.5 w-3.5" />
-                            </div>
+                            </button>
                             {i < PIPELINE.length - 1 && (
                               <div className={cn("flex-1 h-0.5 mx-0.5", done && i < idx ? "bg-emerald-500" : "bg-slate-200")} />
                             )}
@@ -912,9 +948,33 @@ function OpsCommandes() {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Actions manuelles avancées */}
+                <Card>
+                  <CardContent className="p-3">
+                    <div className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold mb-2">Changer manuellement le statut</div>
+                    <div className="flex gap-2 flex-wrap">
+                      {PIPELINE.filter((s) => s.code !== detail.data.lot.status).map((s) => {
+                        const Ic = s.icon;
+                        return (
+                          <button
+                            key={s.code}
+                            onClick={() => changerStatutDepuisDetail(detail.data.lot, s.code)}
+                            className={cn(
+                              "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold transition hover:opacity-80 hover:shadow-sm",
+                              s.cls,
+                            )}
+                          >
+                            <Ic className="h-3 w-3" />
+                            {s.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
               </TabsContent>
 
-              {/* ONGLET HISTORIQUE */}
               <TabsContent value="historique" className="pt-4">
                 {detail.data.events.length === 0 ? (
                   <div className="py-16 text-center">
@@ -995,14 +1055,3 @@ function InfoBloc({ label, value, icon: Icon, tone }: { label: string; value: st
     </Card>
   );
 }
-// Handler unifié pour changer le statut depuis le dialog détail
-const changerStatutDepuisDetail = (lot: any, toStatus: string) => {
-  setDetailLotId(null);
-  if (toStatus === "received") {
-    setReceptionDialog(lot);
-    setReceptionForm({ quantity_received: lot.quantity, qc_passed: true, defects: "", notes: "" });
-  } else {
-    setConfirmNext({ id: lot.id, from: lot.status, to: toStatus });
-    setConfirmNotes("");
-  }
-};
