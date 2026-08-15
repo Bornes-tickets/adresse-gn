@@ -10,9 +10,9 @@ type MenuGroup = { label: string; items: MenuItem[] };
 
 const GROUPS: MenuGroup[] = [
   { label: "Pilotage", items: [{ to: "/ops", label: "Tableau de bord", icon: LayoutDashboard, exact: true }]},
-  { label: "Production", items: [
-    { to: "/ops/lots", label: "Lots", icon: Package },
-    { to: "/ops/beacons", label: "Balises", icon: Radio },
+  { label: "Approvisionnement", items: [
+    { to: "/ops/commandes-fournisseurs", label: "Commandes fournisseurs", icon: Package },
+    { to: "/ops/beacons", label: "Balises (stock)", icon: Radio },
     { to: "/ops/exports", label: "Exports QR", icon: QrCode },
   ]},
 ];
@@ -130,11 +130,3 @@ function OpsLayout() {
     </div>
   );
 }
-const GROUPS: MenuGroup[] = [
-  { label: "Pilotage", items: [{ to: "/ops", label: "Tableau de bord", icon: LayoutDashboard, exact: true }]},
-  { label: "Approvisionnement", items: [
-    { to: "/ops/commandes-fournisseurs", label: "Commandes fournisseurs", icon: Package },
-    { to: "/ops/beacons", label: "Balises (stock)", icon: Radio },
-    { to: "/ops/exports", label: "Exports QR", icon: QrCode },
-  ]},
-];
