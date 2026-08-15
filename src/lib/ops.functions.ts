@@ -192,3 +192,61 @@ export const opsStock = createServerFn({ method: "POST" })
     await requireOps(context.userId);
     return chargerStock();
   });
+export const opsSuppliers = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { requireOps } = await import("@/lib/admin.server");
+    const { listerSuppliers } = await import("@/lib/ops-ops.server");
+    await requireOps(context.userId);
+    return listerSuppliers();
+  });
+
+export const opsUpsertSupplier = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: any) => input)
+  .handler(async ({ context, data }) => {
+    const { requireOps } = await import("@/lib/admin.server");
+    const { upsertSupplier } = await import("@/lib/ops-ops.server");
+    await requireOps(context.userId);
+    return upsertSupplier(data);
+  });
+
+export const opsGeneratePO = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { lotId: string }) => ({ lotId: String(input.lotId) }))
+  .handler(async ({ context, data }) => {
+    const { requireOps } = await import("@/lib/admin.server");
+    const { genererBonCommande } = await import("@/lib/ops-ops.server");
+    await requireOps(context.userId);
+    return genererBonCommande({ lotId: data.lotId, actorId: context.userId });
+  });
+
+export const opsPurchaseOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { lotId: string }) => ({ lotId: String(input.lotId) }))
+  .handler(async ({ context, data }) => {
+    const { requireOps } = await import("@/lib/admin.server");
+    const { chargerBonCommande } = await import("@/lib/ops-ops.server");
+    await requireOps(context.userId);
+    return chargerBonCommande(data.lotId);
+  });
+
+export const opsUpdatePO = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { poId: string; patch: any }) => ({ poId: String(input.poId), patch: input.patch }))
+  .handler(async ({ context, data }) => {
+    const { requireOps } = await import("@/lib/admin.server");
+    const { majBonCommande } = await import("@/lib/ops-ops.server");
+    await requireOps(context.userId);
+    return majBonCommande(data.poId, data.patch);
+  });
+
+export const opsGeneratePOPdf = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { poId: string }) => ({ poId: String(input.poId) }))
+  .handler(async ({ context, data }) => {
+    const { requireOps } = await import("@/lib/admin.server");
+    const { genererPdfBc } = await import("@/lib/ops-ops.server");
+    await requireOps(context.userId);
+    return genererPdfBc(data.poId);
+  });
