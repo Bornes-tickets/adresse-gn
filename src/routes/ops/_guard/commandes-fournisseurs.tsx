@@ -10,7 +10,7 @@ import {
   Clock, Eye, MoreVertical, MessageSquare, Download, Filter, X, ArrowUp, ArrowDown,
   ArrowUpDown, Rows, Rows3, DollarSign, Timer, Copy, Printer, Ban, TrendingDown,
   MessageCircle, Phone, Mail, ClipboardCheck, PackageX, PackageMinus, History,
-  ChevronDown, ChevronRight, Receipt,
+  ChevronDown, ChevronRight, Receipt, PackagePlus, ClipboardList,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +28,7 @@ import {
   opsLots, opsGenerateLot, opsExportQrPdf, opsExportQrZip, opsRegions, opsFournisseurs,
   opsUpdateLotStatus, opsLotDetail,
   opsGeneratePO, opsPurchaseOrder, opsGeneratePOPdf,
+  opsGenerateDN, opsDeliveryNote, opsGenerateDNPdf,
 } from "@/lib/ops.functions";
 import { useRealtimeInvalidate } from "@/hooks/useRealtimeInvalidate";
 import { cn } from "@/lib/utils";
@@ -70,6 +71,11 @@ function ageDays(iso: string | null): number {
   return Math.floor((Date.now() - new Date(iso).getTime()) / 864e5);
 }
 
+const RECEPTION_INIT = {
+  quantity_received: 0, quantity_shipped: 0, qc_passed: true, defects: "", notes: "",
+  carrier: "", tracking_number: "", shipped_at: "", receiver_name: "",
+};
+
 function OpsCommandes() {
   const listerFn = useServerFn(opsLots);
   const generateFn = useServerFn(opsGenerateLot);
@@ -82,6 +88,9 @@ function OpsCommandes() {
   const generatePoFn = useServerFn(opsGeneratePO);
   const loadPoFn = useServerFn(opsPurchaseOrder);
   const pdfPoFn = useServerFn(opsGeneratePOPdf);
+  const generateDnFn = useServerFn(opsGenerateDN);
+  const loadDnFn = useServerFn(opsDeliveryNote);
+  const pdfDnFn = useServerFn(opsGenerateDNPdf);
   const qc = useQueryClient();
 
   const [q, setQ] = useState("");
@@ -97,7 +106,7 @@ function OpsCommandes() {
   const [openGen, setOpenGen] = useState(false);
   const [detailLotId, setDetailLotId] = useState<string | null>(null);
   const [receptionDialog, setReceptionDialog] = useState<any | null>(null);
-  const [receptionForm, setReceptionForm] = useState({ quantity_received: 0, qc_passed: true, defects: "", notes: "" });
+  const [receptionForm, setReceptionForm] = useState(RECEPTION_INIT);
   const [confirmNext, setConfirmNext] = useState<{ id: string; from: string; to: string } | null>(null);
   const [confirmNotes, setConfirmNotes] = useState("");
   const [form, setForm] = useState({
@@ -120,6 +129,11 @@ function OpsCommandes() {
     queryFn: () => loadPoFn({ data: { lotId: detailLotId! } }),
     enabled: !!detailLotId,
   });
+  const dnQuery = useQuery({
+    queryKey: ["ops", "dn", detailLotId],
+    queryFn: () => loadDnFn({ data: { lotId: detailLotId! } }),
+    enabled: !!detailLotId,
+  });
   useRealtimeInvalidate({ table: "lots", invalidate: [["ops", "lots"]] });
 
   const generate = useMutation({
@@ -140,7 +154,6 @@ function OpsCommandes() {
       qc.invalidateQueries({ queryKey: ["ops", "lots"] });
       qc.invalidateQueries({ queryKey: ["ops", "lot-detail"] });
       setConfirmNext(null); setConfirmNotes("");
-      setReceptionDialog(null);
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -184,6 +197,28 @@ function OpsCommandes() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const generateDn = useMutation({
+    mutationFn: (v: any) => generateDnFn({ data: v }),
+    onSuccess: (r: any) => {
+      toast.success(`Bon de livraison ${r.dn_number} généré.`);
+      qc.invalidateQueries({ queryKey: ["ops", "dn"] });
+      qc.invalidateQueries({ queryKey: ["ops", "lots"] });
+      qc.invalidateQueries({ queryKey: ["ops", "lot-detail"] });
+      setReceptionDialog(null);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const pdfDn = useMutation({
+    mutationFn: (dnId: string) => pdfDnFn({ data: { dnId } }),
+    onSuccess: (r: any) => {
+      const blob = new Blob([Uint8Array.from(atob(r.base64), (c) => c.charCodeAt(0))], { type: "application/pdf" });
+      const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `${r.dn_number}.pdf`; a.click();
+      toast.success("BL téléchargé.");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const rows = (lots.data ?? []) as any[];
 
   function isRetard(l: any): boolean {
@@ -193,15 +228,15 @@ function OpsCommandes() {
     return false;
   }
 
+  const ouvrirReception = (lot: any) => {
+    setReceptionDialog(lot);
+    setReceptionForm({ ...RECEPTION_INIT, quantity_received: lot.quantity, quantity_shipped: lot.quantity });
+  };
+
   const changerStatutDepuisDetail = (lot: any, toStatus: string) => {
     setDetailLotId(null);
-    if (toStatus === "received") {
-      setReceptionDialog(lot);
-      setReceptionForm({ quantity_received: lot.quantity, qc_passed: true, defects: "", notes: "" });
-    } else {
-      setConfirmNext({ id: lot.id, from: lot.status, to: toStatus });
-      setConfirmNotes("");
-    }
+    if (toStatus === "received") ouvrirReception(lot);
+    else { setConfirmNext({ id: lot.id, from: lot.status, to: toStatus }); setConfirmNotes(""); }
   };
 
   const filtered = useMemo(() => {
@@ -658,13 +693,8 @@ function OpsCommandes() {
                             {st.next && (
                               <Button size="sm" className="h-8 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white"
                                 onClick={() => {
-                                  if (st.next === "received") {
-                                    setReceptionDialog(l);
-                                    setReceptionForm({ quantity_received: l.quantity, qc_passed: true, defects: "", notes: "" });
-                                  } else {
-                                    setConfirmNext({ id: l.id, from: l.status, to: st.next! });
-                                    setConfirmNotes("");
-                                  }
+                                  if (st.next === "received") ouvrirReception(l);
+                                  else { setConfirmNext({ id: l.id, from: l.status, to: st.next! }); setConfirmNotes(""); }
                                 }}>
                                 <ArrowRight className="h-3.5 w-3.5 mr-1" />{st.nextLabel}
                               </Button>
@@ -748,66 +778,131 @@ function OpsCommandes() {
         </DialogContent>
       </Dialog>
 
+      {/* DIALOG RÉCEPTION ENRICHI + création BL automatique */}
       <Dialog open={receptionDialog !== null} onOpenChange={(o) => !o && setReceptionDialog(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <PackageCheck className="h-5 w-5 text-emerald-600" />
-              Réception & contrôle qualité
+              <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-md">
+                <PackageCheck className="h-5 w-5" />
+              </div>
+              Réception & bon de livraison
             </DialogTitle>
           </DialogHeader>
           {receptionDialog && (
             <div className="space-y-4">
-              <div className="rounded-lg bg-slate-50 p-3 text-sm">
-                <div className="font-mono font-bold">{receptionDialog.code}</div>
-                <div className="text-xs text-slate-500 mt-0.5">
+              <div className="rounded-lg bg-gradient-to-br from-slate-50 to-emerald-50 border border-emerald-200 p-3 text-sm">
+                <div className="font-mono font-bold text-slate-900">{receptionDialog.code}</div>
+                <div className="text-xs text-slate-600 mt-0.5">
                   Commande de <strong>{receptionDialog.quantity}</strong> balises · {receptionDialog.supplier ?? "Fournisseur inconnu"}
                 </div>
               </div>
+
               <div>
-                <Label className="text-xs">Quantité réellement reçue *</Label>
-                <Input type="number" min={0} max={receptionDialog.quantity * 2}
-                  value={receptionForm.quantity_received}
-                  onChange={(e) => setReceptionForm({ ...receptionForm, quantity_received: Number(e.target.value) })}
-                  className="h-11 font-mono text-lg text-center mt-1" />
+                <div className="text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2 flex items-center gap-1.5">
+                  <Truck className="h-3.5 w-3.5" /> Transport
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs">Transporteur</Label>
+                    <Input value={receptionForm.carrier} onChange={(e) => setReceptionForm({ ...receptionForm, carrier: e.target.value })}
+                      placeholder="DHL, Chronopost, livreur…" className="h-10" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">N° de suivi</Label>
+                    <Input value={receptionForm.tracking_number} onChange={(e) => setReceptionForm({ ...receptionForm, tracking_number: e.target.value })}
+                      placeholder="Ex : 1Z999AA..." className="h-10 font-mono" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Date d'expédition</Label>
+                    <Input type="date" value={receptionForm.shipped_at} onChange={(e) => setReceptionForm({ ...receptionForm, shipped_at: e.target.value })} className="h-10" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Reçu par</Label>
+                    <Input value={receptionForm.receiver_name} onChange={(e) => setReceptionForm({ ...receptionForm, receiver_name: e.target.value })}
+                      placeholder="Nom du réceptionnaire" className="h-10" />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2 flex items-center gap-1.5">
+                  <PackagePlus className="h-3.5 w-3.5" /> Quantités
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <Label className="text-[10px] uppercase text-slate-500">Commandée</Label>
+                    <div className="h-11 rounded-md border border-slate-200 bg-slate-50 flex items-center justify-center font-mono text-lg font-bold text-slate-500">
+                      {receptionDialog.quantity}
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-[10px] uppercase text-slate-500">Expédiée</Label>
+                    <Input type="number" min={0} value={receptionForm.quantity_shipped}
+                      onChange={(e) => setReceptionForm({ ...receptionForm, quantity_shipped: Number(e.target.value) })}
+                      className="h-11 font-mono text-lg text-center" />
+                  </div>
+                  <div>
+                    <Label className="text-[10px] uppercase text-slate-500">Reçue *</Label>
+                    <Input type="number" min={0} value={receptionForm.quantity_received}
+                      onChange={(e) => setReceptionForm({ ...receptionForm, quantity_received: Number(e.target.value) })}
+                      className="h-11 font-mono text-lg text-center border-emerald-300" />
+                  </div>
+                </div>
                 {receptionForm.quantity_received !== receptionDialog.quantity && (
-                  <div className={cn("mt-1 text-xs font-semibold", receptionForm.quantity_received < receptionDialog.quantity ? "text-rose-600" : "text-amber-600")}>
+                  <div className={cn("mt-2 flex items-center gap-2 rounded-lg border p-2 text-xs font-semibold",
+                    receptionForm.quantity_received < receptionDialog.quantity
+                      ? "border-rose-200 bg-rose-50 text-rose-700"
+                      : "border-amber-200 bg-amber-50 text-amber-700")}>
+                    <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
                     {receptionForm.quantity_received < receptionDialog.quantity
-                      ? `⚠️ Manque ${receptionDialog.quantity - receptionForm.quantity_received} balise(s)`
-                      : `⚠️ Surplus de ${receptionForm.quantity_received - receptionDialog.quantity} balise(s)`}
+                      ? `Écart : manque ${receptionDialog.quantity - receptionForm.quantity_received} balise(s)`
+                      : `Écart : surplus de ${receptionForm.quantity_received - receptionDialog.quantity} balise(s)`}
                   </div>
                 )}
               </div>
+
               <div>
-                <Label className="text-xs mb-2 block">Contrôle qualité *</Label>
+                <div className="text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2 flex items-center gap-1.5">
+                  <ClipboardCheck className="h-3.5 w-3.5" /> Contrôle qualité *
+                </div>
                 <div className="grid grid-cols-2 gap-2">
                   <button type="button" onClick={() => setReceptionForm({ ...receptionForm, qc_passed: true })}
-                    className={cn("p-3 rounded-xl border-2 text-left",
-                      receptionForm.qc_passed ? "border-emerald-500 bg-emerald-50 shadow" : "border-slate-200")}>
+                    className={cn("p-3 rounded-xl border-2 text-left transition",
+                      receptionForm.qc_passed ? "border-emerald-500 bg-emerald-50 shadow" : "border-slate-200 hover:border-slate-300")}>
                     <CheckCircle2 className="h-5 w-5 text-emerald-600 mb-1" />
                     <div className="text-sm font-bold">Conforme</div>
                     <div className="text-[10px] text-slate-500">Aucun défaut majeur</div>
                   </button>
                   <button type="button" onClick={() => setReceptionForm({ ...receptionForm, qc_passed: false })}
-                    className={cn("p-3 rounded-xl border-2 text-left",
-                      !receptionForm.qc_passed ? "border-rose-500 bg-rose-50 shadow" : "border-slate-200")}>
+                    className={cn("p-3 rounded-xl border-2 text-left transition",
+                      !receptionForm.qc_passed ? "border-rose-500 bg-rose-50 shadow" : "border-slate-200 hover:border-slate-300")}>
                     <PackageX className="h-5 w-5 text-rose-600 mb-1" />
-                    <div className="text-sm font-bold">Défauts</div>
-                    <div className="text-[10px] text-slate-500">Retour ou signalement</div>
+                    <div className="text-sm font-bold">Défauts signalés</div>
+                    <div className="text-[10px] text-slate-500">Retour ou refus partiel</div>
                   </button>
                 </div>
               </div>
+
               {!receptionForm.qc_passed && (
                 <div>
-                  <Label className="text-xs">Description des défauts</Label>
+                  <Label className="text-xs">Description des défauts *</Label>
                   <Textarea value={receptionForm.defects} onChange={(e) => setReceptionForm({ ...receptionForm, defects: e.target.value })}
                     placeholder="Ex : 5 plaques cassées, QR illisibles sur 3 pièces…" rows={3} />
                 </div>
               )}
+
               <div>
-                <Label className="text-xs">Notes de réception</Label>
+                <Label className="text-xs">Notes complémentaires</Label>
                 <Textarea value={receptionForm.notes} onChange={(e) => setReceptionForm({ ...receptionForm, notes: e.target.value })}
-                  placeholder="Bordereau, livreur, conditions de livraison…" rows={2} />
+                  placeholder="Bordereau, conditions de livraison, autres remarques…" rows={2} />
+              </div>
+
+              <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3 flex items-start gap-2 text-xs text-emerald-800">
+                <ClipboardList className="h-4 w-4 shrink-0 mt-0.5" />
+                <div>
+                  La validation créera automatiquement un <strong>bon de livraison numéroté</strong> lié au bon de commande, avec téléchargement PDF possible depuis l'onglet BL.
+                </div>
               </div>
             </div>
           )}
@@ -816,16 +911,21 @@ function OpsCommandes() {
             <Button className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
               onClick={() => {
                 if (!receptionDialog) return;
-                const notes = [
-                  `Reçu ${receptionForm.quantity_received}/${receptionDialog.quantity}`,
-                  receptionForm.qc_passed ? "QC OK" : "QC : défauts signalés",
-                  receptionForm.defects && `Défauts : ${receptionForm.defects}`,
-                  receptionForm.notes,
-                ].filter(Boolean).join(" · ");
-                updateStatus.mutate({ lotId: receptionDialog.id, statut: "received", notes });
+                generateDn.mutate({
+                  lotId: receptionDialog.id,
+                  quantity_received: receptionForm.quantity_received,
+                  quantity_shipped: receptionForm.quantity_shipped || null,
+                  qc_passed: receptionForm.qc_passed,
+                  defects: receptionForm.defects.trim() || null,
+                  notes: receptionForm.notes.trim() || null,
+                  carrier: receptionForm.carrier.trim() || null,
+                  tracking_number: receptionForm.tracking_number.trim() || null,
+                  shipped_at: receptionForm.shipped_at || null,
+                  receiver_name: receptionForm.receiver_name.trim() || null,
+                });
               }}
-              disabled={updateStatus.isPending}>
-              <PackageCheck className="h-4 w-4 mr-1.5" />Valider la réception
+              disabled={generateDn.isPending}>
+              <PackageCheck className="h-4 w-4 mr-1.5" />Valider la réception & créer le BL
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -852,10 +952,11 @@ function OpsCommandes() {
             <div className="py-16 text-center"><div className="inline-block h-8 w-8 border-2 border-slate-300 border-t-amber-600 rounded-full animate-spin" /></div>
           ) : detail.data && (
             <Tabs defaultValue="general">
-              <TabsList className="w-full grid grid-cols-4">
+              <TabsList className="w-full grid grid-cols-5">
                 <TabsTrigger value="general">Général</TabsTrigger>
                 <TabsTrigger value="livraison">Livraison</TabsTrigger>
                 <TabsTrigger value="bc" className="gap-1"><Receipt className="h-3.5 w-3.5" />BC</TabsTrigger>
+                <TabsTrigger value="bl" className="gap-1"><Truck className="h-3.5 w-3.5" />BL</TabsTrigger>
                 <TabsTrigger value="historique">Historique</TabsTrigger>
               </TabsList>
 
@@ -996,7 +1097,6 @@ function OpsCommandes() {
                 </Card>
               </TabsContent>
 
-              {/* ONGLET BC — Bon de commande */}
               <TabsContent value="bc" className="space-y-4 pt-4">
                 {poQuery.isLoading ? (
                   <div className="py-8 text-center"><div className="inline-block h-6 w-6 border-2 border-slate-300 border-t-orange-600 rounded-full animate-spin" /></div>
@@ -1049,18 +1149,12 @@ function OpsCommandes() {
                                 po.status === "sent" ? "Envoyé" :
                                 po.status === "acknowledged" ? "Accusé réception" : "Annulé"}
                             </Badge>
-                            <Button
-                              className="bg-orange-600 hover:bg-orange-700 text-white"
-                              onClick={() => pdfPo.mutate(po.id)}
-                              disabled={pdfPo.isPending}
-                            >
-                              <Download className="h-4 w-4 mr-1.5" />
-                              Télécharger PDF
+                            <Button className="bg-orange-600 hover:bg-orange-700 text-white" onClick={() => pdfPo.mutate(po.id)} disabled={pdfPo.isPending}>
+                              <Download className="h-4 w-4 mr-1.5" />Télécharger PDF
                             </Button>
                           </div>
                         </CardContent>
                       </Card>
-
                       <Card>
                         <CardContent className="p-4">
                           <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">Fournisseur</div>
@@ -1073,7 +1167,6 @@ function OpsCommandes() {
                           </div>
                         </CardContent>
                       </Card>
-
                       <Card>
                         <CardContent className="p-0">
                           <table className="w-full text-sm">
@@ -1115,11 +1208,119 @@ function OpsCommandes() {
                           </table>
                         </CardContent>
                       </Card>
-
                       <div className="grid grid-cols-2 gap-3">
                         <InfoBloc label="Émis le" value={formatDateTimeFr(po.issued_at)} icon={Clock} />
                         <InfoBloc label="Conditions paiement" value={po.payment_terms ?? "—"} icon={DollarSign} />
                       </div>
+                    </div>
+                  );
+                })()}
+              </TabsContent>
+
+              {/* ONGLET BL — Bon de livraison */}
+              <TabsContent value="bl" className="space-y-4 pt-4">
+                {dnQuery.isLoading ? (
+                  <div className="py-8 text-center"><div className="inline-block h-6 w-6 border-2 border-slate-300 border-t-emerald-600 rounded-full animate-spin" /></div>
+                ) : !dnQuery.data ? (
+                  <Card className="border-dashed border-2 border-slate-200 bg-slate-50/50">
+                    <CardContent className="p-8 text-center">
+                      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-emerald-100 to-teal-100">
+                        <Truck className="h-8 w-8 text-emerald-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold">Aucun bon de livraison</h3>
+                      <p className="text-sm text-slate-600 mt-1 max-w-md mx-auto">
+                        Le bon de livraison sera créé automatiquement au moment de la réception physique de la commande.
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (() => {
+                  const dn: any = dnQuery.data;
+                  const ecart = dn.quantity_received - dn.quantity_ordered;
+                  return (
+                    <div className="space-y-4">
+                      <Card className="border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 overflow-hidden">
+                        <div className="h-1 bg-gradient-to-r from-emerald-500 to-teal-600" />
+                        <CardContent className="p-4 flex items-center justify-between gap-3 flex-wrap">
+                          <div className="flex items-center gap-3">
+                            <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-md">
+                              <Truck className="h-5 w-5" />
+                            </div>
+                            <div>
+                              <div className="text-[10px] uppercase tracking-widest text-emerald-700 font-semibold">Numéro de bon de livraison</div>
+                              <div className="font-mono text-lg font-bold text-slate-900">{dn.dn_number}</div>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            {dn.qc_passed === true && <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 gap-1"><CheckCircle2 className="h-3 w-3" />QC OK</Badge>}
+                            {dn.qc_passed === false && <Badge className="bg-rose-100 text-rose-700 border-rose-200 gap-1"><PackageX className="h-3 w-3" />QC défauts</Badge>}
+                            <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => pdfDn.mutate(dn.id)} disabled={pdfDn.isPending}>
+                              <Download className="h-4 w-4 mr-1.5" />Télécharger PDF
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card>
+                        <CardContent className="p-4">
+                          <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">Quantités</div>
+                          <div className="grid grid-cols-4 gap-2">
+                            <div className="text-center p-3 rounded-lg border border-slate-200 bg-slate-50">
+                              <div className="text-[10px] uppercase text-slate-500 font-semibold">Commandée</div>
+                              <div className="font-mono text-2xl font-bold text-slate-700 mt-1">{dn.quantity_ordered}</div>
+                            </div>
+                            <div className="text-center p-3 rounded-lg border border-sky-200 bg-sky-50">
+                              <div className="text-[10px] uppercase text-sky-600 font-semibold">Expédiée</div>
+                              <div className="font-mono text-2xl font-bold text-sky-700 mt-1">{dn.quantity_shipped ?? "—"}</div>
+                            </div>
+                            <div className="text-center p-3 rounded-lg border border-emerald-200 bg-emerald-50">
+                              <div className="text-[10px] uppercase text-emerald-600 font-semibold">Reçue</div>
+                              <div className="font-mono text-2xl font-bold text-emerald-700 mt-1">{dn.quantity_received}</div>
+                            </div>
+                            <div className={cn("text-center p-3 rounded-lg border",
+                              ecart === 0 ? "border-slate-200 bg-slate-50" :
+                              ecart < 0 ? "border-rose-200 bg-rose-50" : "border-amber-200 bg-amber-50")}>
+                              <div className="text-[10px] uppercase font-semibold">Écart</div>
+                              <div className={cn("font-mono text-2xl font-bold mt-1",
+                                ecart === 0 ? "text-slate-500" : ecart < 0 ? "text-rose-700" : "text-amber-700")}>
+                                {ecart > 0 ? `+${ecart}` : ecart}
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card>
+                        <CardContent className="p-4">
+                          <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-1.5">
+                            <Truck className="h-3.5 w-3.5" /> Transport
+                          </div>
+                          <div className="grid grid-cols-2 gap-3 text-sm">
+                            <div><span className="text-slate-500">Transporteur :</span> <strong>{dn.carrier ?? "—"}</strong></div>
+                            <div><span className="text-slate-500">N° suivi :</span> <span className="font-mono">{dn.tracking_number ?? "—"}</span></div>
+                            <div><span className="text-slate-500">Expédié le :</span> {dn.shipped_at ? new Date(dn.shipped_at).toLocaleDateString("fr-FR") : "—"}</div>
+                            <div><span className="text-slate-500">Reçu le :</span> {formatDateTimeFr(dn.received_at)}</div>
+                            {dn.receiver_name && <div className="col-span-2"><span className="text-slate-500">Reçu par :</span> <strong>{dn.receiver_name}</strong></div>}
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {dn.defects && (
+                        <Card className="border-rose-200 bg-rose-50">
+                          <CardContent className="p-3">
+                            <div className="text-xs font-semibold uppercase tracking-wider text-rose-800 mb-1 flex items-center gap-1"><PackageX className="h-3 w-3" />Défauts signalés</div>
+                            <div className="text-sm italic">{dn.defects}</div>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {dn.notes && (
+                        <Card>
+                          <CardContent className="p-3">
+                            <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Notes de réception</div>
+                            <div className="text-sm italic">{dn.notes}</div>
+                          </CardContent>
+                        </Card>
+                      )}
                     </div>
                   );
                 })()}
