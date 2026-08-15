@@ -224,3 +224,98 @@ export async function chargerStock(): Promise<StockDashboard> {
 
   return { lots: stockLots, global, parCategorie };
 }
+/* --------------------------- BONS DE LIVRAISON --------------------------- */
+
+export async function genererBonLivraison(input: {
+  lotId: string;
+  actorId: string;
+  quantity_received: number;
+  quantity_shipped?: number | null;
+  qc_passed: boolean;
+  defects?: string | null;
+  notes?: string | null;
+  carrier?: string | null;
+  tracking_number?: string | null;
+  shipped_at?: string | null;
+  receiver_name?: string | null;
+}) {
+  const { data: lot, error: errLot } = await supabaseAdmin.from("lots").select("*").eq("id", input.lotId).maybeSingle();
+  if (errLot) throw new Error(errLot.message);
+  if (!lot) throw new Error("Commande introuvable.");
+
+  // Récupère le BC associé s'il existe
+  const { data: po } = await supabaseAdmin.from("purchase_orders" as any).select("id, po_number, supplier_snapshot").eq("lot_id", input.lotId).maybeSingle();
+
+  // Snapshot fournisseur (depuis PO ou fallback sur lot)
+  const supplierSnapshot = (po as any)?.supplier_snapshot ?? { name: lot.supplier ?? "Fournisseur inconnu" };
+
+  // Numéro BL
+  const { data: numData, error: errNum } = await supabaseAdmin.rpc("next_dn_number" as any);
+  if (errNum) throw new Error(errNum.message);
+  const dnNumber = numData as unknown as string;
+
+  // Insert BL
+  const { data: dn, error: errDn } = await supabaseAdmin.from("delivery_notes" as any).insert({
+    dn_number: dnNumber,
+    lot_id: input.lotId,
+    po_id: (po as any)?.id ?? null,
+    supplier_snapshot: supplierSnapshot,
+    shipped_at: input.shipped_at ?? null,
+    received_at: new Date().toISOString(),
+    carrier: input.carrier ?? null,
+    tracking_number: input.tracking_number ?? null,
+    quantity_ordered: lot.quantity,
+    quantity_shipped: input.quantity_shipped ?? null,
+    quantity_received: input.quantity_received,
+    qc_passed: input.qc_passed,
+    defects: input.defects ?? null,
+    receiver_name: input.receiver_name ?? null,
+    notes: input.notes ?? null,
+    created_by: input.actorId,
+  }).select("id, dn_number").single();
+  if (errDn) throw new Error(errDn.message);
+
+  return { success: true, id: (dn as any).id, dn_number: (dn as any).dn_number };
+}
+
+export async function chargerBonLivraison(lotId: string) {
+  const { data: dn, error } = await supabaseAdmin.from("delivery_notes" as any).select("*").eq("lot_id", lotId).maybeSingle();
+  if (error) throw new Error(error.message);
+  return dn;
+}
+
+export async function genererPdfBl(dnId: string): Promise<{ base64: string; dn_number: string }> {
+  const { data: dn, error } = await supabaseAdmin.from("delivery_notes" as any).select("*, lots(code), purchase_orders(po_number)").eq("id", dnId).maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!dn) throw new Error("BL introuvable.");
+
+  const { genererPdfBonLivraison } = await import("@/lib/ops-dn-pdf.server");
+  const supplier = (dn as any).supplier_snapshot ?? { name: "Fournisseur inconnu" };
+  const pdf = await genererPdfBonLivraison({
+    dn_number: (dn as any).dn_number,
+    po_number: (dn as any).purchase_orders?.po_number ?? null,
+    lot_code: (dn as any).lots?.code ?? null,
+    received_at: (dn as any).received_at,
+    shipped_at: (dn as any).shipped_at,
+    supplier,
+    carrier: (dn as any).carrier,
+    tracking_number: (dn as any).tracking_number,
+    quantity_ordered: (dn as any).quantity_ordered,
+    quantity_shipped: (dn as any).quantity_shipped,
+    quantity_received: (dn as any).quantity_received,
+    qc_passed: (dn as any).qc_passed,
+    defects: (dn as any).defects,
+    receiver_name: (dn as any).receiver_name,
+    notes: (dn as any).notes,
+  });
+
+  // Upload storage
+  const chemin = `${(dn as any).dn_number}.pdf`;
+  const octets = Uint8Array.from(atob(pdf.base64), (c) => c.charCodeAt(0));
+  await supabaseAdmin.storage.from("delivery_notes").upload(chemin, octets, { contentType: "application/pdf", upsert: true });
+  const { data: signed } = await supabaseAdmin.storage.from("delivery_notes").createSignedUrl(chemin, 60 * 60 * 24 * 365);
+  if (signed?.signedUrl) {
+    await supabaseAdmin.from("delivery_notes" as any).update({ pdf_url: signed.signedUrl }).eq("id", dnId);
+  }
+  return { base64: pdf.base64, dn_number: (dn as any).dn_number };
+}
