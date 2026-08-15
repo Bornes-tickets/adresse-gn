@@ -298,3 +298,95 @@ export const opsGenerateDNPdf = createServerFn({ method: "POST" })
     await requireOps(context.userId);
     return genererPdfBl(data.dnId);
   });
+export const opsCreateInvoice = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: {
+    lotId: string; invoice_number: string; issued_at: string;
+    due_date?: string | null; amount_ht: number; tva_rate?: number;
+    pdf_base64?: string | null; pdf_filename?: string | null; notes?: string | null;
+  }) => {
+    if (!input?.lotId) throw new Error("Commande manquante.");
+    if (!input.invoice_number?.trim()) throw new Error("Numéro de facture requis.");
+    if (!input.issued_at) throw new Error("Date de facture requise.");
+    if (input.amount_ht == null || input.amount_ht < 0) throw new Error("Montant HT invalide.");
+    return input;
+  })
+  .handler(async ({ context, data }) => {
+    const { requireOps } = await import("@/lib/admin.server");
+    const { creerFacture } = await import("@/lib/ops-ops.server");
+    await requireOps(context.userId);
+    return creerFacture({ ...data, actorId: context.userId });
+  });
+
+export const opsInvoice = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { lotId: string }) => ({ lotId: String(input.lotId) }))
+  .handler(async ({ context, data }) => {
+    const { requireOps } = await import("@/lib/admin.server");
+    const { chargerFacture } = await import("@/lib/ops-ops.server");
+    await requireOps(context.userId);
+    return chargerFacture(data.lotId);
+  });
+
+export const opsRecordPayment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: {
+    invoiceId: string; amount: number; method: string;
+    paid_at?: string | null; reference?: string | null; notes?: string | null;
+  }) => {
+    if (!input?.invoiceId) throw new Error("Facture manquante.");
+    if (!input.amount || input.amount <= 0) throw new Error("Montant invalide.");
+    const methods = ["bank_transfer", "cash", "check", "mobile_money", "other"];
+    if (!methods.includes(input.method)) throw new Error("Méthode invalide.");
+    return input;
+  })
+  .handler(async ({ context, data }) => {
+    const { requireOps } = await import("@/lib/admin.server");
+    const { enregistrerPaiement } = await import("@/lib/ops-ops.server");
+    await requireOps(context.userId);
+    return enregistrerPaiement({ ...data, actorId: context.userId });
+  });
+
+export const opsDeletePayment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { paymentId: string }) => ({ paymentId: String(input.paymentId) }))
+  .handler(async ({ context, data }) => {
+    const { requireOps } = await import("@/lib/admin.server");
+    const { supprimerPaiement } = await import("@/lib/ops-ops.server");
+    await requireOps(context.userId);
+    return supprimerPaiement(data.paymentId);
+  });
+
+export const opsMarkDispute = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { invoiceId: string; notes: string }) => {
+    if (!input?.invoiceId) throw new Error("Facture manquante.");
+    if (!input.notes?.trim()) throw new Error("Motif du litige requis.");
+    return input;
+  })
+  .handler(async ({ context, data }) => {
+    const { requireOps } = await import("@/lib/admin.server");
+    const { marquerLitige } = await import("@/lib/ops-ops.server");
+    await requireOps(context.userId);
+    return marquerLitige(data.invoiceId, data.notes);
+  });
+
+export const opsResolveDispute = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { invoiceId: string }) => ({ invoiceId: String(input.invoiceId) }))
+  .handler(async ({ context, data }) => {
+    const { requireOps } = await import("@/lib/admin.server");
+    const { leverLitige } = await import("@/lib/ops-ops.server");
+    await requireOps(context.userId);
+    return leverLitige(data.invoiceId);
+  });
+
+export const opsReconciliation = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { lotId: string }) => ({ lotId: String(input.lotId) }))
+  .handler(async ({ context, data }) => {
+    const { requireOps } = await import("@/lib/admin.server");
+    const { chargerRapprochement } = await import("@/lib/ops-ops.server");
+    await requireOps(context.userId);
+    return chargerRapprochement(data.lotId);
+  });
