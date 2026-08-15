@@ -60,6 +60,7 @@ const PIPELINE = [
 const PRESETS_QTE = [10, 25, 50, 100, 200, 500];
 type SortKey = "code" | "quantity" | "supplier" | "received_at" | "status";
 type SortDir = "asc" | "desc";
+type PayFilter = "all" | "none" | "unpaid" | "partial" | "paid" | "late";
 
 function formatMontant(m: number | null): string {
   if (m == null) return "—";
@@ -73,6 +74,10 @@ function statutInfo(code: string) {
 function ageDays(iso: string | null): number {
   if (!iso) return 0;
   return Math.floor((Date.now() - new Date(iso).getTime()) / 864e5);
+}
+
+function isFactureRetard(l: any): boolean {
+  return !!l.invoice_status && l.invoice_status !== "paid" && l.invoice_due_date && new Date(l.invoice_due_date).getTime() < Date.now();
 }
 
 const RECEPTION_INIT = {
@@ -114,6 +119,7 @@ function OpsCommandes() {
   const [supplierFilter, setSupplierFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
+  const [paymentFilter, setPaymentFilter] = useState<PayFilter>("all");
   const [dateRange, setDateRange] = useState<"all" | "today" | "7d" | "30d" | "late">("all");
   const [sortKey, setSortKey] = useState<SortKey>("received_at");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
@@ -121,6 +127,7 @@ function OpsCommandes() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [openGen, setOpenGen] = useState(false);
   const [detailLotId, setDetailLotId] = useState<string | null>(null);
+  const [detailTab, setDetailTab] = useState<string>("general");
   const [receptionDialog, setReceptionDialog] = useState<any | null>(null);
   const [receptionForm, setReceptionForm] = useState(RECEPTION_INIT);
   const [confirmNext, setConfirmNext] = useState<{ id: string; from: string; to: string } | null>(null);
@@ -140,6 +147,8 @@ function OpsCommandes() {
     priority: "normal" as "normal" | "urgent",
     notes: "", expectedDelivery: "",
   });
+
+  const ouvrirDetail = (id: string) => { setDetailLotId(id); setDetailTab("general"); };
 
   const lots = useQuery({ queryKey: ["ops", "lots"], queryFn: () => listerFn() });
   const regions = useQuery({ queryKey: ["ops", "regions"], queryFn: () => regionsFn(), enabled: openGen });
@@ -219,6 +228,7 @@ function OpsCommandes() {
       toast.success(`Bon de commande ${r.po_number} généré.`);
       qc.invalidateQueries({ queryKey: ["ops", "po"] });
       qc.invalidateQueries({ queryKey: ["ops", "recon"] });
+      qc.invalidateQueries({ queryKey: ["ops", "lots"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -262,6 +272,7 @@ function OpsCommandes() {
       toast.success(`Facture ${r.internal_ref} enregistrée.`);
       qc.invalidateQueries({ queryKey: ["ops", "invoice"] });
       qc.invalidateQueries({ queryKey: ["ops", "recon"] });
+      qc.invalidateQueries({ queryKey: ["ops", "lots"] });
       setInvoiceDialog(false);
       setInvoiceForm(INVOICE_INIT);
     },
@@ -274,6 +285,7 @@ function OpsCommandes() {
       toast.success("Paiement enregistré.");
       qc.invalidateQueries({ queryKey: ["ops", "invoice"] });
       qc.invalidateQueries({ queryKey: ["ops", "recon"] });
+      qc.invalidateQueries({ queryKey: ["ops", "lots"] });
       setPaymentDialog(null);
     },
     onError: (e: Error) => toast.error(e.message),
@@ -285,6 +297,7 @@ function OpsCommandes() {
       toast.success("Paiement supprimé.");
       qc.invalidateQueries({ queryKey: ["ops", "invoice"] });
       qc.invalidateQueries({ queryKey: ["ops", "recon"] });
+      qc.invalidateQueries({ queryKey: ["ops", "lots"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -294,6 +307,7 @@ function OpsCommandes() {
     onSuccess: () => {
       toast.success("Litige signalé.");
       qc.invalidateQueries({ queryKey: ["ops", "invoice"] });
+      qc.invalidateQueries({ queryKey: ["ops", "lots"] });
       setDisputeDialog(null); setDisputeNotes("");
     },
     onError: (e: Error) => toast.error(e.message),
@@ -304,6 +318,7 @@ function OpsCommandes() {
     onSuccess: () => {
       toast.success("Litige levé.");
       qc.invalidateQueries({ queryKey: ["ops", "invoice"] });
+      qc.invalidateQueries({ queryKey: ["ops", "lots"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -346,6 +361,9 @@ function OpsCommandes() {
     if (supplierFilter !== "all") r = r.filter((l) => l.supplier === supplierFilter);
     if (categoryFilter !== "all") r = r.filter((l) => l.category === categoryFilter);
     if (priorityFilter !== "all") r = r.filter((l) => (l.priority ?? "normal") === priorityFilter);
+    if (paymentFilter === "none") r = r.filter((l) => !l.invoice_status);
+    else if (paymentFilter === "late") r = r.filter(isFactureRetard);
+    else if (paymentFilter !== "all") r = r.filter((l) => l.invoice_status === paymentFilter);
     if (dateRange === "late") r = r.filter(isRetard);
     else if (dateRange !== "all") {
       const now = Date.now();
@@ -364,11 +382,11 @@ function OpsCommandes() {
       return sortDir === "asc" ? cmp : -cmp;
     });
     return r;
-  }, [rows, statutFilter, supplierFilter, categoryFilter, priorityFilter, dateRange, q, sortKey, sortDir]);
+  }, [rows, statutFilter, supplierFilter, categoryFilter, priorityFilter, paymentFilter, dateRange, q, sortKey, sortDir]);
 
   const stats = useMemo(() => {
     const counts: Record<string, number> = {};
-    let totalValeur = 0, totalQuantite = 0, delaisSommes = 0, delaisCount = 0, retards = 0;
+    let totalValeur = 0, totalQuantite = 0, delaisSommes = 0, delaisCount = 0, retards = 0, facturesRetard = 0;
     for (const l of rows) {
       counts[l.status] = (counts[l.status] ?? 0) + 1;
       totalQuantite += Number(l.quantity ?? 0);
@@ -377,21 +395,24 @@ function OpsCommandes() {
         if (j >= 0) { delaisSommes += j; delaisCount += 1; }
       }
       if (isRetard(l)) retards += 1;
+      if (isFactureRetard(l)) facturesRetard += 1;
     }
     const enCours = (counts.sent ?? 0) + (counts.in_production ?? 0) + (counts.shipped ?? 0);
     return {
-      counts, totalValeur, totalQuantite, enCours, retards,
+      counts, totalValeur, totalQuantite, enCours, retards, facturesRetard,
       delaiMoyen: delaisCount > 0 ? Math.round(delaisSommes / delaisCount) : null,
     };
   }, [rows]);
 
   const csvUrl = useMemo(() => {
     if (!filtered.length) return null;
-    const header = "code,categorie,quantite,fournisseur,statut,priorite,envoyee,recue,notes\n";
+    const header = "code,categorie,quantite,fournisseur,statut,priorite,envoyee,recue,bc,bl,fa,statut_paiement,notes\n";
     const lines = filtered.map((l: any) => [
       l.code, CATEGORIES.find((c) => c.code === l.category)?.label ?? l.category ?? "",
       l.quantity, l.supplier ?? "", l.status, l.priority ?? "normal",
-      l.sent_at ?? "", l.received_at ?? "", l.notes ?? "",
+      l.sent_at ?? "", l.received_at ?? "",
+      l.po_number ?? "", l.dn_number ?? "", l.invoice_ref ?? "", l.invoice_status ?? "",
+      l.notes ?? "",
     ].map((v) => { const s = String(v); return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; }).join(",")).join("\n");
     return URL.createObjectURL(new Blob([header + lines], { type: "text/csv;charset=utf-8" }));
   }, [filtered]);
@@ -413,6 +434,7 @@ function OpsCommandes() {
     supplierFilter !== "all" && { key: "sup", label: `Fournisseur : ${supplierFilter}`, clear: () => setSupplierFilter("all") },
     categoryFilter !== "all" && { key: "cat", label: `Catégorie : ${CATEGORIES.find((c) => c.code === categoryFilter)?.label}`, clear: () => setCategoryFilter("all") },
     priorityFilter !== "all" && { key: "pri", label: `Priorité : ${priorityFilter}`, clear: () => setPriorityFilter("all") },
+    paymentFilter !== "all" && { key: "pay", label: `Paiement : ${paymentFilter}`, clear: () => setPaymentFilter("all") },
     dateRange !== "all" && { key: "dt", label: `Période : ${dateRange === "late" ? "Retards" : dateRange}`, clear: () => setDateRange("all") },
   ].filter(Boolean) as any[];
 
@@ -621,6 +643,21 @@ function OpsCommandes() {
         </Card>
       )}
 
+      {stats.facturesRetard > 0 && paymentFilter !== "late" && (
+        <Card className="border-violet-300 bg-gradient-to-br from-violet-50 to-fuchsia-50">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="h-11 w-11 rounded-xl bg-violet-500 text-white flex items-center justify-center shadow"><ScrollText className="h-5 w-5" /></div>
+            <div className="flex-1">
+              <div className="font-semibold text-violet-900">{stats.facturesRetard} facture{stats.facturesRetard > 1 ? "s" : ""} en retard de paiement</div>
+              <div className="text-xs text-violet-700 mt-0.5">Échéance dépassée sans paiement complet.</div>
+            </div>
+            <Button size="sm" className="bg-violet-600 hover:bg-violet-700 text-white" onClick={() => setPaymentFilter("late")}>
+              <Eye className="h-4 w-4 mr-1" />Voir
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="flex gap-2 flex-wrap">
         <button onClick={() => setStatutFilter(null)}
           className={cn("px-3 py-1.5 text-xs rounded-full border font-semibold transition",
@@ -679,6 +716,19 @@ function OpsCommandes() {
               </button>
             ))}
           </div>
+          <div className="flex gap-1.5 flex-wrap items-center">
+            <span className="text-[10px] uppercase text-slate-500 font-semibold mr-1">Paiement :</span>
+            {([
+              { v: "all", l: "Tous" }, { v: "none", l: "Sans facture" }, { v: "unpaid", l: "À payer" },
+              { v: "partial", l: "Partiel" }, { v: "paid", l: "Payée" }, { v: "late", l: "En retard" },
+            ] as const).map((p) => (
+              <button key={p.v} onClick={() => setPaymentFilter(p.v)}
+                className={cn("px-2.5 py-1 text-[11px] rounded-full border font-medium transition",
+                  paymentFilter === p.v ? "bg-violet-600 text-white border-violet-600" : "bg-white border-slate-200 text-slate-600 hover:border-violet-400")}>
+                {p.l}
+              </button>
+            ))}
+          </div>
           {activeFilters.length > 0 && (
             <div className="pt-3 border-t border-slate-100 flex items-center gap-2 flex-wrap">
               <span className="text-[10px] uppercase text-slate-500 font-semibold">Filtres actifs</span>
@@ -688,7 +738,7 @@ function OpsCommandes() {
                   {f.label} <X className="h-3 w-3" />
                 </button>
               ))}
-              <button onClick={() => { setQ(""); setStatutFilter(null); setSupplierFilter("all"); setCategoryFilter("all"); setPriorityFilter("all"); setDateRange("all"); }}
+              <button onClick={() => { setQ(""); setStatutFilter(null); setSupplierFilter("all"); setCategoryFilter("all"); setPriorityFilter("all"); setPaymentFilter("all"); setDateRange("all"); }}
                 className="text-xs text-slate-500 hover:text-slate-900 underline ml-2">Tout effacer</button>
             </div>
           )}
@@ -734,6 +784,7 @@ function OpsCommandes() {
                     <SortTh label="Fournisseur" k="supplier" cur={sortKey} dir={sortDir} onClick={toggleSort} />
                     <th className="text-left p-3 font-semibold">Pipeline</th>
                     <SortTh label="Reçu" k="received_at" cur={sortKey} dir={sortDir} onClick={toggleSort} />
+                    <th className="text-left p-3 font-semibold">Paiement</th>
                     <th className="text-left p-3 font-semibold">Alertes</th>
                     <th className="text-right p-3 font-semibold">Actions</th>
                   </tr>
@@ -759,7 +810,14 @@ function OpsCommandes() {
                             <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center shrink-0">
                               <Package className="h-4 w-4 text-orange-600" />
                             </div>
-                            <span className="font-mono text-xs font-bold">{l.code}</span>
+                            <div>
+                              <div className="font-mono text-xs font-bold">{l.code}</div>
+                              <div className="flex gap-1 mt-0.5">
+                                {l.po_number && <span className="text-[9px] font-mono text-orange-600" title="Bon de commande">BC</span>}
+                                {l.dn_number && <span className="text-[9px] font-mono text-emerald-600" title="Bon de livraison">BL</span>}
+                                {l.invoice_ref && <span className="text-[9px] font-mono text-violet-600" title="Facture">FA</span>}
+                              </div>
+                            </div>
                           </div>
                         </td>
                         <td className={pad}><Badge variant="outline" className="text-[10px]">{CATEGORIES.find((c) => c.code === l.category)?.label ?? l.category ?? "—"}</Badge></td>
@@ -784,6 +842,9 @@ function OpsCommandes() {
                         </td>
                         <td className={cn(pad, "text-xs text-slate-500")}>{l.received_at ? formatDateTimeFr(l.received_at) : "—"}</td>
                         <td className={pad}>
+                          <PaiementBadge lot={l} />
+                        </td>
+                        <td className={pad}>
                           <div className="flex gap-1 flex-wrap">
                             {urgent && <Badge className="bg-rose-100 text-rose-700 border-rose-200 gap-0.5 text-[10px]"><Zap className="h-2.5 w-2.5" />Urgent</Badge>}
                             {retard && <Badge className="bg-amber-100 text-amber-700 border-amber-200 gap-0.5 text-[10px]"><Timer className="h-2.5 w-2.5" />Retard</Badge>}
@@ -800,7 +861,7 @@ function OpsCommandes() {
                                 <ArrowRight className="h-3.5 w-3.5 mr-1" />{st.nextLabel}
                               </Button>
                             )}
-                            <Button size="sm" variant="outline" className="h-8" onClick={() => setDetailLotId(l.id)}>
+                            <Button size="sm" variant="outline" className="h-8" onClick={() => ouvrirDetail(l.id)}>
                               <Eye className="h-3.5 w-3.5" />
                             </Button>
                             <DropdownMenu>
@@ -823,7 +884,7 @@ function OpsCommandes() {
                                   <Printer className="h-4 w-4 mr-2" />Imprimer
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => setDetailLotId(l.id)}>
+                                <DropdownMenuItem onClick={() => ouvrirDetail(l.id)}>
                                   <History className="h-4 w-4 mr-2" />Voir la timeline
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => {
@@ -1046,7 +1107,7 @@ function OpsCommandes() {
           {detail.isLoading ? (
             <div className="py-16 text-center"><div className="inline-block h-8 w-8 border-2 border-slate-300 border-t-amber-600 rounded-full animate-spin" /></div>
           ) : detail.data && (
-            <Tabs defaultValue="general">
+            <Tabs value={detailTab} onValueChange={setDetailTab}>
               <TabsList className="w-full grid grid-cols-6">
                 <TabsTrigger value="general">Général</TabsTrigger>
                 <TabsTrigger value="livraison">Livraison</TabsTrigger>
@@ -1073,6 +1134,56 @@ function OpsCommandes() {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* BANDEAU CYCLE P2P */}
+                {(() => {
+                  const hasBc = !!poQuery.data;
+                  const hasBl = !!dnQuery.data;
+                  const invData: any = invoiceQuery.data;
+                  const hasFa = !!invData;
+                  const pctPaye = hasFa && invData.invoice.amount_ttc > 0
+                    ? Math.min(100, Math.round((invData.invoice.amount_paid / invData.invoice.amount_ttc) * 100))
+                    : 0;
+                  const steps = [
+                    { code: "bc", label: "Bon de commande", done: hasBc, ref: (poQuery.data as any)?.po?.po_number ?? (poQuery.data as any)?.po_number, icon: Receipt, tab: "bc" },
+                    { code: "bl", label: "Bon de livraison", done: hasBl, ref: (dnQuery.data as any)?.dn_number, icon: Truck, tab: "bl" },
+                    { code: "fa", label: "Facture", done: hasFa, ref: invData?.invoice?.internal_ref, icon: ScrollText, tab: "fa" },
+                    { code: "pay", label: hasFa ? `Paiement ${pctPaye}%` : "Paiement", done: hasFa && pctPaye === 100, ref: hasFa ? formatMontant(invData.invoice.amount_paid) : null, icon: Wallet, tab: "fa" },
+                  ];
+                  return (
+                    <Card className="border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white overflow-hidden">
+                      <div className="h-1 bg-gradient-to-r from-amber-500 via-emerald-500 to-violet-500" />
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="text-xs font-semibold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                            <GitCompare className="h-3.5 w-3.5" /> Cycle P2P
+                          </div>
+                          <div className="text-[10px] text-slate-400">Cliquez une étape pour l'ouvrir</div>
+                        </div>
+                        <div className="grid grid-cols-4 gap-2">
+                          {steps.map((s) => {
+                            const Ic = s.icon;
+                            return (
+                              <button key={s.code} type="button" onClick={() => setDetailTab(s.tab)}
+                                className={cn("p-3 rounded-xl border-2 text-left transition hover:shadow-md",
+                                  s.done ? "border-emerald-300 bg-emerald-50" : "border-slate-200 bg-slate-50 opacity-60")}>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <div className={cn("h-7 w-7 rounded-lg flex items-center justify-center",
+                                    s.done ? "bg-emerald-500 text-white" : "bg-slate-200 text-slate-400")}>
+                                    {s.done ? <CheckCircle2 className="h-4 w-4" /> : <Ic className="h-4 w-4" />}
+                                  </div>
+                                  <div className="text-xs font-bold">{s.label}</div>
+                                </div>
+                                <div className="text-[10px] font-mono text-slate-500 truncate">{s.ref ?? "—"}</div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })()}
+
                 <div className="grid grid-cols-2 gap-3">
                   <InfoBloc label="Quantité commandée" value={String(detail.data.lot.quantity)} icon={Package} />
                   <InfoBloc label="Catégorie" value={CATEGORIES.find((c) => c.code === detail.data.lot.category)?.label ?? "—"} icon={Sparkles} />
@@ -1223,6 +1334,7 @@ function OpsCommandes() {
                   const supplier = po.supplier_snapshot ?? { name: "Fournisseur inconnu" };
                   return (
                     <div className="space-y-4">
+                      <LienFactureBadge invoice={invoiceQuery.data as any} onOpen={() => setDetailTab("fa")} />
                       <Card className="border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-amber-50 overflow-hidden">
                         <div className="h-1 bg-gradient-to-r from-amber-500 to-orange-600" />
                         <CardContent className="p-4 flex items-center justify-between gap-3 flex-wrap">
@@ -1334,6 +1446,7 @@ function OpsCommandes() {
                   const ecart = dn.quantity_received - dn.quantity_ordered;
                   return (
                     <div className="space-y-4">
+                      <LienFactureBadge invoice={invoiceQuery.data as any} onOpen={() => setDetailTab("fa")} />
                       <Card className="border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 overflow-hidden">
                         <div className="h-1 bg-gradient-to-r from-emerald-500 to-teal-600" />
                         <CardContent className="p-4 flex items-center justify-between gap-3 flex-wrap">
@@ -1444,9 +1557,25 @@ function OpsCommandes() {
                   const resteAPayer = Number(inv.amount_ttc) - Number(inv.amount_paid);
                   const pctPaye = inv.amount_ttc > 0 ? Math.min(100, Math.round((inv.amount_paid / inv.amount_ttc) * 100)) : 0;
                   const enRetard = inv.due_date && new Date(inv.due_date).getTime() < Date.now() && inv.payment_status !== "paid";
-
                   return (
                     <div className="space-y-4">
+                      {/* Bandeau documents liés */}
+                      <Card className="border-slate-200">
+                        <CardContent className="p-3 flex items-center gap-3 flex-wrap text-xs">
+                          <span className="text-slate-500 font-semibold uppercase tracking-wider">Documents liés :</span>
+                          {poQuery.data && (
+                            <button onClick={() => setDetailTab("bc")} className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-orange-50 border border-orange-200 text-orange-700 hover:bg-orange-100 transition">
+                              <Receipt className="h-3 w-3" /> BC {(poQuery.data as any).po?.po_number ?? (poQuery.data as any).po_number}
+                            </button>
+                          )}
+                          {dnQuery.data && (
+                            <button onClick={() => setDetailTab("bl")} className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 transition">
+                              <Truck className="h-3 w-3" /> BL {(dnQuery.data as any).dn_number}
+                            </button>
+                          )}
+                        </CardContent>
+                      </Card>
+
                       <Card className="border-2 border-violet-200 bg-gradient-to-br from-violet-50 to-fuchsia-50 overflow-hidden">
                         <div className="h-1 bg-gradient-to-r from-violet-500 to-fuchsia-600" />
                         <CardContent className="p-4 flex items-center justify-between gap-3 flex-wrap">
@@ -1480,7 +1609,6 @@ function OpsCommandes() {
                           </div>
                         </CardContent>
                       </Card>
-
                       {enRetard && (
                         <Card className="border-rose-300 bg-rose-50">
                           <CardContent className="p-3 flex items-center gap-3">
@@ -1491,7 +1619,6 @@ function OpsCommandes() {
                           </CardContent>
                         </Card>
                       )}
-
                       {inv.dispute_notes && (
                         <Card className="border-rose-300 bg-rose-50">
                           <CardContent className="p-3">
@@ -1510,7 +1637,6 @@ function OpsCommandes() {
                           </CardContent>
                         </Card>
                       )}
-
                       <Card>
                         <CardContent className="p-4 space-y-3">
                           <div className="grid grid-cols-3 gap-2">
@@ -1545,14 +1671,12 @@ function OpsCommandes() {
                           </div>
                         </CardContent>
                       </Card>
-
                       <div className="grid grid-cols-2 gap-3">
                         <InfoBloc label="Date facture" value={new Date(inv.issued_at).toLocaleDateString("fr-FR")} icon={ScrollText} />
                         <InfoBloc label="Échéance" value={inv.due_date ? new Date(inv.due_date).toLocaleDateString("fr-FR") : "—"} icon={Clock} tone={enRetard ? "rose" : undefined} />
                         <InfoBloc label="Reçue le" value={formatDateTimeFr(inv.received_at)} icon={FileCheck} />
                         <InfoBloc label="TVA" value={`${inv.tva_rate}% (${formatMontant(inv.tva_amount)})`} icon={Calculator} />
                       </div>
-
                       <Card>
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between mb-3">
@@ -1614,7 +1738,6 @@ function OpsCommandes() {
                           )}
                         </CardContent>
                       </Card>
-
                       {reconQuery.data && (
                         <Card className="border-slate-200">
                           <CardContent className="p-4">
@@ -1635,7 +1758,6 @@ function OpsCommandes() {
                           </CardContent>
                         </Card>
                       )}
-
                       {inv.notes && (
                         <Card>
                           <CardContent className="p-3">
@@ -1903,5 +2025,49 @@ function ReconLine({ label, value, refText, ok }: { label: string; value: string
       </div>
       <div className="font-mono text-sm font-bold">{value}</div>
     </div>
+  );
+}
+
+function PaiementBadge({ lot }: { lot: any }) {
+  if (!lot.invoice_status) return <span className="text-[10px] text-slate-400 italic">Aucune facture</span>;
+  const reste = Number(lot.invoice_amount_ttc ?? 0) - Number(lot.invoice_amount_paid ?? 0);
+  const enRetard = isFactureRetard(lot);
+  const map: Record<string, { l: string; cls: string; Ic: any }> = {
+    paid: { l: "Payée", cls: "bg-emerald-100 text-emerald-700 border-emerald-200", Ic: CheckCircle2 },
+    partial: { l: `Reste ${formatMontant(reste)}`, cls: "bg-amber-100 text-amber-700 border-amber-200", Ic: Wallet },
+    unpaid: { l: enRetard ? "En retard" : "À payer", cls: enRetard ? "bg-rose-100 text-rose-700 border-rose-200" : "bg-sky-100 text-sky-700 border-sky-200", Ic: Clock },
+    disputed: { l: "Litige", cls: "bg-rose-100 text-rose-700 border-rose-200", Ic: AlertTriangle },
+    cancelled: { l: "Annulée", cls: "bg-slate-100 text-slate-500 border-slate-200", Ic: Ban },
+  };
+  const m = map[lot.invoice_status] ?? map.unpaid;
+  const MIcon = m.Ic;
+  return <Badge className={cn("gap-1 text-[10px]", m.cls)}><MIcon className="h-2.5 w-2.5" />{m.l}</Badge>;
+}
+
+function LienFactureBadge({ invoice, onOpen }: { invoice: any; onOpen: () => void }) {
+  if (!invoice?.invoice) return null;
+  const inv = invoice.invoice;
+  const reste = Number(inv.amount_ttc) - Number(inv.amount_paid);
+  return (
+    <Card className="border-violet-200 bg-violet-50">
+      <CardContent className="p-3 flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2 text-sm">
+          <ScrollText className="h-4 w-4 text-violet-600" />
+          <span>Facture liée : <strong className="font-mono">{inv.internal_ref}</strong></span>
+          <Badge className={cn("gap-1 text-[10px]",
+            inv.payment_status === "paid" ? "bg-emerald-100 text-emerald-700" :
+            inv.payment_status === "partial" ? "bg-amber-100 text-amber-700" :
+            inv.payment_status === "disputed" ? "bg-rose-100 text-rose-700" :
+            "bg-sky-100 text-sky-700")}>
+            {inv.payment_status === "paid" ? "Payée" :
+             inv.payment_status === "partial" ? `Reste ${formatMontant(reste)}` :
+             inv.payment_status === "disputed" ? "En litige" : "À payer"}
+          </Badge>
+        </div>
+        <Button size="sm" variant="outline" onClick={onOpen}>
+          <ArrowRight className="h-3.5 w-3.5 mr-1" />Voir FA
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
