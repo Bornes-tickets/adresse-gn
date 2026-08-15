@@ -184,3 +184,11 @@ export const opsLotDetail = createServerFn({ method: "POST" })
     await requireOps(context.userId);
     return detailLot(data.lotId);
   });
+export const opsStock = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { requireOps } = await import("@/lib/admin.server");
+    const { chargerStock } = await import("@/lib/ops-ops.server");
+    await requireOps(context.userId);
+    return chargerStock();
+  });
