@@ -14,7 +14,6 @@ function plage(page: number, pageSize: number): [number, number] {
 }
 
 /* ------------------------------ BALISES ------------------------------ */
-
 export async function listerBalises(f: {
   page: number;
   pageSize: number;
@@ -182,7 +181,6 @@ export async function codeDuLot(lotId: string) {
 }
 
 /* ------------------------------ ADRESSES ------------------------------ */
-
 export async function listerAdresses(f: {
   page: number;
   pageSize: number;
@@ -291,7 +289,6 @@ export async function reassignerProprietaire(addressId: string, email: string) {
 }
 
 /* --------------------------- INSTALLATIONS / QC --------------------------- */
-
 const MOTIF_QC = "qc_recheck";
 
 export async function listerInstallations(f: {
@@ -531,7 +528,6 @@ export async function metriquesAgents() {
 }
 
 /* --------------------------- PLANIFICATION --------------------------- */
-
 export async function listerPlanifications(f: {
   from?: string | null;
   to?: string | null;
@@ -638,7 +634,6 @@ export async function supprimerPlanification(id: string) {
 }
 
 /* --------------------------- RAPPORT D'INSTALLATIONS --------------------------- */
-
 export async function rapportInstallations(f: {
   from?: string | null;
   to?: string | null;
@@ -664,7 +659,6 @@ export async function rapportInstallations(f: {
     const { data: ags } = await supabaseAdmin.from("agents").select("id, badge_number").in("id", agents);
     for (const a of ags ?? []) badges.set(a.id, a.badge_number);
   }
-  // installations n'a pas de lien direct vers addresses : on passe par beacon_id
   const beaconIds = [...new Set((data ?? []).map((i: any) => i.beacon_id).filter(Boolean))] as string[];
   const communesParBalise = new Map<string, { id: string | null; name: string | null }>();
   if (beaconIds.length) {
@@ -694,7 +688,6 @@ export async function rapportInstallations(f: {
     validated_at: i.validated_at,
   }));
   if (f.communeId) rows = rows.filter((r) => r.commune_id === f.communeId);
-
   const stats = {
     total: rows.length,
     validees: rows.filter((r) => r.validated_at).length,
@@ -709,7 +702,6 @@ export async function rapportInstallations(f: {
 }
 
 /* --------------------------- SIGNALEMENTS --------------------------- */
-
 export async function listerSignalements(statut: string | null) {
   let req = supabaseAdmin
     .from("reports")
@@ -769,7 +761,6 @@ export async function majSignalement(input: { id: string; status: string; commen
 }
 
 /* --------------------------- UTILISATEURS --------------------------- */
-
 export async function listerUtilisateurs(page: number, recherche: string | null) {
   const perPage = 50;
   const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage });
@@ -852,7 +843,6 @@ export async function creerUtilisateur(input: {
 }
 
 /* ------------------------------- AGENTS ------------------------------- */
-
 export async function listerAgents() {
   const { data: agents, error } = await supabaseAdmin
     .from("agents")
@@ -947,26 +937,64 @@ export async function creerAgent(input: {
 }
 
 /* -------------------------------- LOTS -------------------------------- */
-
 export async function listerLots() {
   const { data: lots, error } = await supabaseAdmin
     .from("lots")
     .select("id, code, quantity, supplier, status, received_at, category")
     .order("received_at", { ascending: false });
   if (error) throw new Error(error.message);
+
+  const lotIds = (lots ?? []).map((l: any) => l.id);
+
   const { data: affectations } = await supabaseAdmin
     .from("lot_assignments")
     .select("lot_id, agent_id, assigned_at, agents(badge_number)");
-  return (lots ?? []).map((l) => ({
-    ...l,
-    assignations: ((affectations ?? []) as any[])
-      .filter((a) => a.lot_id === l.id)
-      .map((a) => ({
-        agent_id: a.agent_id,
-        badge: a.agents?.badge_number ?? null,
-        assigned_at: a.assigned_at,
-      })),
-  }));
+
+  // Enrichissement documentaire : BC, BL, FA
+  const invMap = new Map<string, any>();
+  const poMap = new Map<string, string>();
+  const dnMap = new Map<string, string>();
+
+  if (lotIds.length) {
+    const [{ data: invoices }, { data: pos }, { data: dns }] = await Promise.all([
+      supabaseAdmin
+        .from("purchase_invoices" as any)
+        .select("lot_id, payment_status, amount_ttc, amount_paid, due_date, internal_ref")
+        .in("lot_id", lotIds),
+      supabaseAdmin
+        .from("purchase_orders" as any)
+        .select("lot_id, po_number")
+        .in("lot_id", lotIds),
+      supabaseAdmin
+        .from("delivery_notes" as any)
+        .select("lot_id, dn_number")
+        .in("lot_id", lotIds),
+    ]);
+    for (const i of (invoices ?? []) as any[]) invMap.set(i.lot_id, i);
+    for (const p of (pos ?? []) as any[]) poMap.set(p.lot_id, p.po_number);
+    for (const d of (dns ?? []) as any[]) dnMap.set(d.lot_id, d.dn_number);
+  }
+
+  return (lots ?? []).map((l: any) => {
+    const inv = invMap.get(l.id);
+    return {
+      ...l,
+      assignations: ((affectations ?? []) as any[])
+        .filter((a) => a.lot_id === l.id)
+        .map((a) => ({
+          agent_id: a.agent_id,
+          badge: a.agents?.badge_number ?? null,
+          assigned_at: a.assigned_at,
+        })),
+      po_number: poMap.get(l.id) ?? null,
+      dn_number: dnMap.get(l.id) ?? null,
+      invoice_ref: inv?.internal_ref ?? null,
+      invoice_status: inv?.payment_status ?? null,
+      invoice_amount_ttc: inv?.amount_ttc ?? null,
+      invoice_amount_paid: inv?.amount_paid ?? null,
+      invoice_due_date: inv?.due_date ?? null,
+    };
+  });
 }
 
 export async function majLot(id: string, statut: string) {
@@ -976,7 +1004,6 @@ export async function majLot(id: string, statut: string) {
 }
 
 /* -------------------------------- ZONES -------------------------------- */
-
 export async function listerZones() {
   const [{ data: regions }, { data: communes }, { data: districts }] = await Promise.all([
     supabaseAdmin.from("regions").select("id, code, name, country_code").order("name"),
@@ -1038,8 +1065,8 @@ export async function supprimerZone(niveau: "region" | "commune" | "district", i
   if (error) throw new Error(error.message);
   return { success: true };
 }
-/* --------------------------- NOTIFICATIONS --------------------------- */
 
+/* --------------------------- NOTIFICATIONS --------------------------- */
 export async function listerNotifications(userId: string, limite = 20) {
   const { data, error } = await supabaseAdmin
     .from("notifications")
@@ -1073,8 +1100,8 @@ export async function marquerToutesLues(userId: string) {
   if (error) throw new Error(error.message);
   return { success: true };
 }
-/* --------------------------- PRÉFÉRENCES UTILISATEUR --------------------------- */
 
+/* --------------------------- PRÉFÉRENCES UTILISATEUR --------------------------- */
 export async function chargerPreferences(userId: string) {
   const { data, error } = await supabaseAdmin
     .from("profiles")
