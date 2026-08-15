@@ -250,3 +250,51 @@ export const opsGeneratePOPdf = createServerFn({ method: "POST" })
     await requireOps(context.userId);
     return genererPdfBc(data.poId);
   });
+export const opsGenerateDN = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: {
+    lotId: string; quantity_received: number; quantity_shipped?: number | null;
+    qc_passed: boolean; defects?: string | null; notes?: string | null;
+    carrier?: string | null; tracking_number?: string | null;
+    shipped_at?: string | null; receiver_name?: string | null;
+  }) => {
+    if (!input?.lotId) throw new Error("Commande manquante.");
+    if (input.quantity_received == null || input.quantity_received < 0) throw new Error("Quantité reçue invalide.");
+    return { ...input, lotId: String(input.lotId) };
+  })
+  .handler(async ({ context, data }) => {
+    const { requireOps } = await import("@/lib/admin.server");
+    const { genererBonLivraison, majStatutLot } = await import("@/lib/ops-ops.server");
+    await requireOps(context.userId);
+    const r = await genererBonLivraison({ ...data, actorId: context.userId });
+    // Met à jour le lot en "received" en même temps
+    const notes = [
+      `Reçu ${data.quantity_received}/${data.quantity_shipped ?? "?"}`,
+      data.qc_passed ? "QC OK" : "QC : défauts signalés",
+      data.defects && `Défauts : ${data.defects}`,
+      data.notes,
+      `BL ${r.dn_number} généré`,
+    ].filter(Boolean).join(" · ");
+    await majStatutLot(data.lotId, "received", context.userId, notes);
+    return r;
+  });
+
+export const opsDeliveryNote = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { lotId: string }) => ({ lotId: String(input.lotId) }))
+  .handler(async ({ context, data }) => {
+    const { requireOps } = await import("@/lib/admin.server");
+    const { chargerBonLivraison } = await import("@/lib/ops-ops.server");
+    await requireOps(context.userId);
+    return chargerBonLivraison(data.lotId);
+  });
+
+export const opsGenerateDNPdf = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { dnId: string }) => ({ dnId: String(input.dnId) }))
+  .handler(async ({ context, data }) => {
+    const { requireOps } = await import("@/lib/admin.server");
+    const { genererPdfBl } = await import("@/lib/ops-ops.server");
+    await requireOps(context.userId);
+    return genererPdfBl(data.dnId);
+  });
