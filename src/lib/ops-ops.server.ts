@@ -319,3 +319,155 @@ export async function genererPdfBl(dnId: string): Promise<{ base64: string; dn_n
   }
   return { base64: pdf.base64, dn_number: (dn as any).dn_number };
 }
+/* --------------------------- FACTURES D'ACHAT --------------------------- */
+
+export async function creerFacture(input: {
+  lotId: string;
+  invoice_number: string;
+  issued_at: string;
+  due_date?: string | null;
+  amount_ht: number;
+  tva_rate?: number;
+  pdf_base64?: string | null;
+  pdf_filename?: string | null;
+  notes?: string | null;
+  actorId: string;
+}) {
+  const { data: lot } = await supabaseAdmin.from("lots").select("*").eq("id", input.lotId).maybeSingle();
+  if (!lot) throw new Error("Commande introuvable.");
+
+  const { data: po } = await supabaseAdmin.from("purchase_orders" as any).select("id, supplier_id, supplier_snapshot").eq("lot_id", input.lotId).maybeSingle();
+  const { data: dn } = await supabaseAdmin.from("delivery_notes" as any).select("id").eq("lot_id", input.lotId).maybeSingle();
+
+  const supplierSnapshot = (po as any)?.supplier_snapshot ?? { name: lot.supplier ?? "Fournisseur inconnu" };
+  const supplierId = (po as any)?.supplier_id ?? null;
+
+  // Vérifier unicité invoice_number pour ce fournisseur
+  if (supplierId) {
+    const { data: existant } = await supabaseAdmin
+      .from("purchase_invoices" as any)
+      .select("internal_ref")
+      .eq("supplier_id", supplierId)
+      .eq("invoice_number", input.invoice_number)
+      .maybeSingle();
+    if (existant) throw new Error(`Facture ${input.invoice_number} déjà enregistrée pour ce fournisseur (${(existant as any).internal_ref}).`);
+  }
+
+  const { data: numData, error: errNum } = await supabaseAdmin.rpc("next_pi_number" as any);
+  if (errNum) throw new Error(errNum.message);
+  const internalRef = numData as unknown as string;
+
+  const tvaRate = input.tva_rate ?? 18;
+  const tvaAmount = Math.round(input.amount_ht * tvaRate / 100);
+  const amountTtc = input.amount_ht + tvaAmount;
+
+  let pdfUrl: string | null = null;
+  if (input.pdf_base64) {
+    const octets = Uint8Array.from(atob(input.pdf_base64), (c) => c.charCodeAt(0));
+    const chemin = `${internalRef}_${input.pdf_filename ?? "facture.pdf"}`;
+    await supabaseAdmin.storage.from("purchase_invoices").upload(chemin, octets, {
+      contentType: "application/pdf", upsert: true,
+    });
+    const { data: signed } = await supabaseAdmin.storage.from("purchase_invoices").createSignedUrl(chemin, 60 * 60 * 24 * 365);
+    pdfUrl = signed?.signedUrl ?? null;
+  }
+
+  const { data: inv, error } = await supabaseAdmin.from("purchase_invoices" as any).insert({
+    internal_ref: internalRef,
+    invoice_number: input.invoice_number,
+    lot_id: input.lotId,
+    po_id: (po as any)?.id ?? null,
+    dn_id: (dn as any)?.id ?? null,
+    supplier_id: supplierId,
+    supplier_snapshot: supplierSnapshot,
+    issued_at: input.issued_at,
+    due_date: input.due_date ?? null,
+    amount_ht: input.amount_ht,
+    tva_rate: tvaRate,
+    tva_amount: tvaAmount,
+    amount_ttc: amountTtc,
+    pdf_url: pdfUrl,
+    notes: input.notes ?? null,
+    created_by: input.actorId,
+  }).select("id, internal_ref").single();
+
+  if (error) throw new Error(error.message);
+  return { success: true, id: (inv as any).id, internal_ref: (inv as any).internal_ref };
+}
+
+export async function chargerFacture(lotId: string) {
+  const { data: inv, error } = await supabaseAdmin.from("purchase_invoices" as any).select("*").eq("lot_id", lotId).maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!inv) return null;
+
+  const { data: payments } = await supabaseAdmin
+    .from("purchase_invoice_payments" as any)
+    .select("*")
+    .eq("invoice_id", (inv as any).id)
+    .order("paid_at", { ascending: false });
+
+  return { invoice: inv, payments: payments ?? [] };
+}
+
+export async function enregistrerPaiement(input: {
+  invoiceId: string; amount: number; method: string;
+  paid_at?: string | null; reference?: string | null; notes?: string | null; actorId: string;
+}) {
+  if (input.amount <= 0) throw new Error("Montant invalide.");
+  const { error } = await supabaseAdmin.from("purchase_invoice_payments" as any).insert({
+    invoice_id: input.invoiceId,
+    amount: input.amount,
+    method: input.method,
+    paid_at: input.paid_at ?? new Date().toISOString(),
+    reference: input.reference ?? null,
+    notes: input.notes ?? null,
+    created_by: input.actorId,
+  });
+  if (error) throw new Error(error.message);
+  return { success: true };
+}
+
+export async function supprimerPaiement(paymentId: string) {
+  const { error } = await supabaseAdmin.from("purchase_invoice_payments" as any).delete().eq("id", paymentId);
+  if (error) throw new Error(error.message);
+  return { success: true };
+}
+
+export async function marquerLitige(invoiceId: string, disputeNotes: string) {
+  const { error } = await supabaseAdmin.from("purchase_invoices" as any).update({
+    payment_status: "disputed", dispute_notes: disputeNotes, updated_at: new Date().toISOString(),
+  }).eq("id", invoiceId);
+  if (error) throw new Error(error.message);
+  return { success: true };
+}
+
+export async function leverLitige(invoiceId: string) {
+  // Recalcule le statut via le trigger : on insère un paiement 0 puis on le supprime
+  // Plus simple : on remet unpaid/partial/paid selon amount_paid
+  const { data: inv } = await supabaseAdmin.from("purchase_invoices" as any).select("amount_paid, amount_ttc").eq("id", invoiceId).maybeSingle();
+  if (!inv) throw new Error("Facture introuvable.");
+  const status = (inv as any).amount_paid <= 0 ? "unpaid"
+    : (inv as any).amount_paid < (inv as any).amount_ttc ? "partial" : "paid";
+  const { error } = await supabaseAdmin.from("purchase_invoices" as any).update({
+    payment_status: status, dispute_notes: null, updated_at: new Date().toISOString(),
+  }).eq("id", invoiceId);
+  if (error) throw new Error(error.message);
+  return { success: true };
+}
+
+/** Rapprochement : compare montants BC vs Facture, qté BL vs Facture. */
+export async function chargerRapprochement(lotId: string) {
+  const { data: po } = await supabaseAdmin.from("purchase_orders" as any).select("amount_ttc, po_number").eq("lot_id", lotId).maybeSingle();
+  const { data: dn } = await supabaseAdmin.from("delivery_notes" as any).select("dn_number, quantity_ordered, quantity_received, qc_passed").eq("lot_id", lotId).maybeSingle();
+  const { data: inv } = await supabaseAdmin.from("purchase_invoices" as any).select("internal_ref, invoice_number, amount_ttc, amount_paid, payment_status, due_date").eq("lot_id", lotId).maybeSingle();
+
+  return {
+    po: po ?? null,
+    dn: dn ?? null,
+    invoice: inv ?? null,
+    ecart_montant: (po as any) && (inv as any) ? Number((inv as any).amount_ttc) - Number((po as any).amount_ttc) : null,
+    quantite_ok: (dn as any) ? (dn as any).quantity_received === (dn as any).quantity_ordered : null,
+    montant_ok: (po as any) && (inv as any) ? Number((po as any).amount_ttc) === Number((inv as any).amount_ttc) : null,
+    reste_a_payer: (inv as any) ? Number((inv as any).amount_ttc) - Number((inv as any).amount_paid) : null,
+  };
+}
