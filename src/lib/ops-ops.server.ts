@@ -113,3 +113,114 @@ export async function detailLot(lotId: string) {
 
   return { lot, events: events ?? [] };
 }
+/* --------------------------- STOCK PAR COMMANDE --------------------------- */
+
+export interface StockLot {
+  lot_id: string;
+  code: string;
+  category: string | null;
+  supplier: string | null;
+  status: string;
+  received_at: string | null;
+  quantity_ordered: number;
+  quantity_generated: number;
+  quantity_assigned: number;
+  quantity_active: number;
+  quantity_suspended: number;
+  quantity_cancelled: number;
+  quantity_stock: number;  // generated non encore assignées
+  quantity_used: number;   // active
+  taux_consommation: number;
+}
+
+export interface StockDashboard {
+  lots: StockLot[];
+  global: {
+    ordered: number;
+    stock: number;
+    assigned: number;
+    active: number;
+    suspended: number;
+    cancelled: number;
+    tauxConsommation: number;
+  };
+  parCategorie: { categorie: string; stock: number; total: number }[];
+}
+
+export async function chargerStock(): Promise<StockDashboard> {
+  // Récupère tous les lots avec leur quantité commandée
+  const { data: lots, error: errLots } = await supabaseAdmin
+    .from("lots")
+    .select("id, code, category, supplier, status, received_at, quantity")
+    .order("received_at", { ascending: false });
+  if (errLots) throw new Error(errLots.message);
+
+  // Agrège les balises par lot + statut
+  const { data: beacons, error: errBeacons } = await supabaseAdmin
+    .from("beacons")
+    .select("lot_id, status")
+    .limit(100000);
+  if (errBeacons) throw new Error(errBeacons.message);
+
+  const compteur = new Map<string, Record<string, number>>();
+  for (const b of beacons ?? []) {
+    if (!b.lot_id) continue;
+    const cur = compteur.get(b.lot_id) ?? { generated: 0, assigned: 0, active: 0, suspended: 0, cancelled: 0 };
+    cur[b.status] = (cur[b.status] ?? 0) + 1;
+    compteur.set(b.lot_id, cur);
+  }
+
+  const stockLots: StockLot[] = (lots ?? []).map((l: any) => {
+    const c = compteur.get(l.id) ?? { generated: 0, assigned: 0, active: 0, suspended: 0, cancelled: 0 };
+    const ordered = Number(l.quantity ?? 0);
+    const stock = c.generated ?? 0;
+    const used = c.active ?? 0;
+    return {
+      lot_id: l.id,
+      code: l.code,
+      category: l.category,
+      supplier: l.supplier,
+      status: l.status,
+      received_at: l.received_at,
+      quantity_ordered: ordered,
+      quantity_generated: stock,
+      quantity_assigned: c.assigned ?? 0,
+      quantity_active: used,
+      quantity_suspended: c.suspended ?? 0,
+      quantity_cancelled: c.cancelled ?? 0,
+      quantity_stock: stock,
+      quantity_used: used,
+      taux_consommation: ordered > 0 ? Math.round(((used + (c.assigned ?? 0)) / ordered) * 100) : 0,
+    };
+  });
+
+  // Global
+  const global = stockLots.reduce(
+    (acc, l) => ({
+      ordered: acc.ordered + l.quantity_ordered,
+      stock: acc.stock + l.quantity_stock,
+      assigned: acc.assigned + l.quantity_assigned,
+      active: acc.active + l.quantity_active,
+      suspended: acc.suspended + l.quantity_suspended,
+      cancelled: acc.cancelled + l.quantity_cancelled,
+      tauxConsommation: 0,
+    }),
+    { ordered: 0, stock: 0, assigned: 0, active: 0, suspended: 0, cancelled: 0, tauxConsommation: 0 },
+  );
+  global.tauxConsommation = global.ordered > 0 ? Math.round(((global.active + global.assigned) / global.ordered) * 100) : 0;
+
+  // Par catégorie
+  const parCatMap = new Map<string, { stock: number; total: number }>();
+  for (const l of stockLots) {
+    const key = l.category ?? "autre";
+    const cur = parCatMap.get(key) ?? { stock: 0, total: 0 };
+    cur.stock += l.quantity_stock;
+    cur.total += l.quantity_ordered;
+    parCatMap.set(key, cur);
+  }
+  const parCategorie = [...parCatMap.entries()]
+    .map(([categorie, v]) => ({ categorie, ...v }))
+    .sort((a, b) => b.stock - a.stock);
+
+  return { lots: stockLots, global, parCategorie };
+}
