@@ -10,7 +10,7 @@ import {
   Clock, Eye, MoreVertical, MessageSquare, Download, Filter, X, ArrowUp, ArrowDown,
   ArrowUpDown, Rows, Rows3, DollarSign, Timer, Copy, Printer, Ban, TrendingDown,
   MessageCircle, Phone, Mail, ClipboardCheck, PackageX, PackageMinus, History,
-  ChevronDown, ChevronRight,
+  ChevronDown, ChevronRight, Receipt,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +27,7 @@ import { formatDateTimeFr } from "@/lib/admin";
 import {
   opsLots, opsGenerateLot, opsExportQrPdf, opsExportQrZip, opsRegions, opsFournisseurs,
   opsUpdateLotStatus, opsLotDetail,
+  opsGeneratePO, opsPurchaseOrder, opsGeneratePOPdf,
 } from "@/lib/ops.functions";
 import { useRealtimeInvalidate } from "@/hooks/useRealtimeInvalidate";
 import { cn } from "@/lib/utils";
@@ -78,6 +79,9 @@ function OpsCommandes() {
   const fournisseursFn = useServerFn(opsFournisseurs);
   const updateStatusFn = useServerFn(opsUpdateLotStatus);
   const detailFn = useServerFn(opsLotDetail);
+  const generatePoFn = useServerFn(opsGeneratePO);
+  const loadPoFn = useServerFn(opsPurchaseOrder);
+  const pdfPoFn = useServerFn(opsGeneratePOPdf);
   const qc = useQueryClient();
 
   const [q, setQ] = useState("");
@@ -109,6 +113,11 @@ function OpsCommandes() {
   const detail = useQuery({
     queryKey: ["ops", "lot-detail", detailLotId],
     queryFn: () => detailFn({ data: { lotId: detailLotId! } }),
+    enabled: !!detailLotId,
+  });
+  const poQuery = useQuery({
+    queryKey: ["ops", "po", detailLotId],
+    queryFn: () => loadPoFn({ data: { lotId: detailLotId! } }),
     enabled: !!detailLotId,
   });
   useRealtimeInvalidate({ table: "lots", invalidate: [["ops", "lots"]] });
@@ -156,6 +165,25 @@ function OpsCommandes() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const generatePo = useMutation({
+    mutationFn: (lotId: string) => generatePoFn({ data: { lotId } }),
+    onSuccess: (r: any) => {
+      toast.success(`Bon de commande ${r.po_number} généré.`);
+      qc.invalidateQueries({ queryKey: ["ops", "po"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const pdfPo = useMutation({
+    mutationFn: (poId: string) => pdfPoFn({ data: { poId } }),
+    onSuccess: (r: any) => {
+      const blob = new Blob([Uint8Array.from(atob(r.base64), (c) => c.charCodeAt(0))], { type: "application/pdf" });
+      const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `${r.po_number}.pdf`; a.click();
+      toast.success("PDF téléchargé.");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const rows = (lots.data ?? []) as any[];
 
   function isRetard(l: any): boolean {
@@ -165,7 +193,6 @@ function OpsCommandes() {
     return false;
   }
 
-  /** Change le statut depuis le dialog détail : ferme le détail et ouvre le bon dialog secondaire. */
   const changerStatutDepuisDetail = (lot: any, toStatus: string) => {
     setDetailLotId(null);
     if (toStatus === "received") {
@@ -825,9 +852,10 @@ function OpsCommandes() {
             <div className="py-16 text-center"><div className="inline-block h-8 w-8 border-2 border-slate-300 border-t-amber-600 rounded-full animate-spin" /></div>
           ) : detail.data && (
             <Tabs defaultValue="general">
-              <TabsList className="w-full grid grid-cols-3">
+              <TabsList className="w-full grid grid-cols-4">
                 <TabsTrigger value="general">Général</TabsTrigger>
                 <TabsTrigger value="livraison">Livraison</TabsTrigger>
+                <TabsTrigger value="bc" className="gap-1"><Receipt className="h-3.5 w-3.5" />BC</TabsTrigger>
                 <TabsTrigger value="historique">Historique</TabsTrigger>
               </TabsList>
 
@@ -864,9 +892,7 @@ function OpsCommandes() {
                 )}
               </TabsContent>
 
-              {/* ONGLET LIVRAISON — enrichi avec actions cliquables */}
               <TabsContent value="livraison" className="space-y-4 pt-4">
-                {/* Action principale contextuelle */}
                 {statutInfo(detail.data.lot.status).next && (
                   <Card className="border-2 border-emerald-300 bg-gradient-to-br from-emerald-50 to-teal-50 overflow-hidden">
                     <div className="h-1 bg-gradient-to-r from-emerald-500 to-teal-600" />
@@ -896,15 +922,12 @@ function OpsCommandes() {
                     </CardContent>
                   </Card>
                 )}
-
                 <div className="grid grid-cols-2 gap-3">
                   <InfoBloc label="Envoyée au fournisseur" value={formatDateTimeFr(detail.data.lot.sent_at)} icon={Send} tone="sky" />
                   <InfoBloc label="Livraison prévue" value={detail.data.lot.expected_delivery ? new Date(detail.data.lot.expected_delivery).toLocaleDateString("fr-FR") : "—"} icon={Timer} tone="amber" />
                   <InfoBloc label="Reçue au stock" value={formatDateTimeFr(detail.data.lot.received_at)} icon={PackageCheck} tone="emerald" />
                   <InfoBloc label="QC" value={detail.data.lot.qc_passed === true ? "Conforme" : detail.data.lot.qc_passed === false ? "Défauts" : "En attente"} icon={ClipboardCheck} tone={detail.data.lot.qc_passed === false ? "rose" : "emerald"} />
                 </div>
-
-                {/* Timeline cliquable */}
                 <Card>
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-3">
@@ -948,8 +971,6 @@ function OpsCommandes() {
                     </div>
                   </CardContent>
                 </Card>
-
-                {/* Actions manuelles avancées */}
                 <Card>
                   <CardContent className="p-3">
                     <div className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold mb-2">Changer manuellement le statut</div>
@@ -973,6 +994,135 @@ function OpsCommandes() {
                     </div>
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              {/* ONGLET BC — Bon de commande */}
+              <TabsContent value="bc" className="space-y-4 pt-4">
+                {poQuery.isLoading ? (
+                  <div className="py-8 text-center"><div className="inline-block h-6 w-6 border-2 border-slate-300 border-t-orange-600 rounded-full animate-spin" /></div>
+                ) : !poQuery.data ? (
+                  <Card className="border-dashed border-2 border-slate-200 bg-slate-50/50">
+                    <CardContent className="p-8 text-center">
+                      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-orange-100 to-amber-100">
+                        <Receipt className="h-8 w-8 text-orange-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold">Aucun bon de commande</h3>
+                      <p className="text-sm text-slate-600 mt-1 max-w-md mx-auto mb-4">
+                        Générez un bon de commande officiel pour cette commande. Il sera envoyé au fournisseur au format PDF.
+                      </p>
+                      <Button
+                        className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-md"
+                        onClick={() => detail.data && generatePo.mutate(detail.data.lot.id)}
+                        disabled={generatePo.isPending}
+                      >
+                        <Sparkles className="h-4 w-4 mr-1.5" />
+                        Générer le bon de commande
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ) : (() => {
+                  const poData: any = poQuery.data;
+                  const po = poData.po ?? poData;
+                  const lines = poData.lines ?? [];
+                  const supplier = po.supplier_snapshot ?? { name: "Fournisseur inconnu" };
+                  return (
+                    <div className="space-y-4">
+                      <Card className="border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-amber-50 overflow-hidden">
+                        <div className="h-1 bg-gradient-to-r from-amber-500 to-orange-600" />
+                        <CardContent className="p-4 flex items-center justify-between gap-3 flex-wrap">
+                          <div className="flex items-center gap-3">
+                            <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white shadow-md">
+                              <Receipt className="h-5 w-5" />
+                            </div>
+                            <div>
+                              <div className="text-[10px] uppercase tracking-widest text-orange-700 font-semibold">Numéro de bon de commande</div>
+                              <div className="font-mono text-lg font-bold text-slate-900">{po.po_number}</div>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Badge className={cn("gap-1",
+                              po.status === "sent" ? "bg-sky-100 text-sky-700" :
+                              po.status === "acknowledged" ? "bg-emerald-100 text-emerald-700" :
+                              po.status === "cancelled" ? "bg-rose-100 text-rose-700" :
+                              "bg-slate-100 text-slate-700")}>
+                              {po.status === "draft" ? "Brouillon" :
+                                po.status === "sent" ? "Envoyé" :
+                                po.status === "acknowledged" ? "Accusé réception" : "Annulé"}
+                            </Badge>
+                            <Button
+                              className="bg-orange-600 hover:bg-orange-700 text-white"
+                              onClick={() => pdfPo.mutate(po.id)}
+                              disabled={pdfPo.isPending}
+                            >
+                              <Download className="h-4 w-4 mr-1.5" />
+                              Télécharger PDF
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card>
+                        <CardContent className="p-4">
+                          <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">Fournisseur</div>
+                          <div className="space-y-1 text-sm">
+                            <div className="font-bold">{supplier.name ?? "—"}</div>
+                            {supplier.contact_name && <div className="text-slate-600">À l'attention de {supplier.contact_name}</div>}
+                            {supplier.email && <div className="text-slate-600 flex items-center gap-1"><Mail className="h-3 w-3" />{supplier.email}</div>}
+                            {supplier.phone && <div className="text-slate-600 flex items-center gap-1"><Phone className="h-3 w-3" />{supplier.phone}</div>}
+                            {supplier.address && <div className="text-slate-500 text-xs mt-1">{supplier.address}</div>}
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card>
+                        <CardContent className="p-0">
+                          <table className="w-full text-sm">
+                            <thead className="bg-slate-900 text-white text-xs">
+                              <tr>
+                                <th className="text-left p-3 font-semibold">Désignation</th>
+                                <th className="text-right p-3 font-semibold">Qté</th>
+                                <th className="text-right p-3 font-semibold">PU HT</th>
+                                <th className="text-right p-3 font-semibold">Total HT</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {lines.map((l: any) => (
+                                <tr key={l.id} className="border-t border-slate-100">
+                                  <td className="p-3">
+                                    <div className="font-medium">{l.designation}</div>
+                                    {l.category && <div className="text-[10px] text-slate-500">{l.category}</div>}
+                                  </td>
+                                  <td className="p-3 text-right font-semibold">{l.quantity}</td>
+                                  <td className="p-3 text-right font-mono">{formatMontant(l.unit_price_ht)}</td>
+                                  <td className="p-3 text-right font-mono font-semibold">{formatMontant(l.line_total_ht)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                            <tfoot className="bg-slate-50 text-sm">
+                              <tr>
+                                <td colSpan={3} className="p-3 text-right text-slate-600">Total HT</td>
+                                <td className="p-3 text-right font-mono font-semibold">{formatMontant(po.amount_ht)}</td>
+                              </tr>
+                              <tr>
+                                <td colSpan={3} className="p-3 text-right text-slate-600">TVA {po.tva_rate}%</td>
+                                <td className="p-3 text-right font-mono">{formatMontant(po.tva_amount)}</td>
+                              </tr>
+                              <tr className="bg-gradient-to-r from-amber-500 to-orange-600 text-white">
+                                <td colSpan={3} className="p-3 text-right font-bold">TOTAL TTC</td>
+                                <td className="p-3 text-right font-mono font-bold text-lg">{formatMontant(po.amount_ttc)}</td>
+                              </tr>
+                            </tfoot>
+                          </table>
+                        </CardContent>
+                      </Card>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <InfoBloc label="Émis le" value={formatDateTimeFr(po.issued_at)} icon={Clock} />
+                        <InfoBloc label="Conditions paiement" value={po.payment_terms ?? "—"} icon={DollarSign} />
+                      </div>
+                    </div>
+                  );
+                })()}
               </TabsContent>
 
               <TabsContent value="historique" className="pt-4">
