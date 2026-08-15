@@ -159,3 +159,28 @@ export const opsFournisseurs = createServerFn({ method: "POST" })
     const uniq = [...new Set((data ?? []).map((l: any) => l.supplier).filter(Boolean))].sort();
     return uniq;
   });
+export const opsUpdateLotStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { lotId: string; statut: string; notes?: string | null }) => {
+    if (!input?.lotId) throw new Error("Lot manquant.");
+    if (!["draft", "sent", "in_production", "shipped", "received", "distributed"].includes(input.statut)) {
+      throw new Error("Statut invalide.");
+    }
+    return { lotId: String(input.lotId), statut: input.statut, notes: input.notes ?? null };
+  })
+  .handler(async ({ context, data }) => {
+    const { requireOps } = await import("@/lib/admin.server");
+    const { majStatutLot } = await import("@/lib/ops-ops.server");
+    await requireOps(context.userId);
+    return majStatutLot(data.lotId, data.statut, context.userId, data.notes);
+  });
+
+export const opsLotDetail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { lotId: string }) => ({ lotId: String(input.lotId) }))
+  .handler(async ({ context, data }) => {
+    const { requireOps } = await import("@/lib/admin.server");
+    const { detailLot } = await import("@/lib/ops-ops.server");
+    await requireOps(context.userId);
+    return detailLot(data.lotId);
+  });
