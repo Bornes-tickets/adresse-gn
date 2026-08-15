@@ -130,3 +130,11 @@ function OpsLayout() {
     </div>
   );
 }
+const GROUPS: MenuGroup[] = [
+  { label: "Pilotage", items: [{ to: "/ops", label: "Tableau de bord", icon: LayoutDashboard, exact: true }]},
+  { label: "Approvisionnement", items: [
+    { to: "/ops/commandes-fournisseurs", label: "Commandes fournisseurs", icon: Package },
+    { to: "/ops/beacons", label: "Balises (stock)", icon: Radio },
+    { to: "/ops/exports", label: "Exports QR", icon: QrCode },
+  ]},
+];
