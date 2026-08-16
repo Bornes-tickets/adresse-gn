@@ -9,15 +9,13 @@ import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
   tanstackStart: {
-    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
     server: { entry: "server" },
   },
   vite: {
     ssr: {
-      // Cloudflare Workers ne supporte pas createRequire ni les modules externes non bundlés.
-      // Tout ce qui est utilisé côté SSR doit être bundlé : tslib (interop __extends), pdf-lib (générateurs BC/BL/QR).
-      noExternal: ["tslib", "pdf-lib"],
+      // tslib doit rester bundlé (interop __extends cassée sinon).
+      // pdf-lib NE DOIT PAS être bundlé sur Cloudflare Workers (dépasse la limite de taille = boot cassé).
+      noExternal: ["tslib"],
     },
   },
   plugins: [
