@@ -29,6 +29,12 @@ function fmtDate(iso: string | null | undefined): string {
   if (!iso) return "-";
   return ascii(new Date(iso).toLocaleDateString("fr-FR"));
 }
+/** Filtre tout texte dessiné pour rester encodable en WinAnsi. */
+function sanitizePage(page: any): any {
+  const original = page.drawText.bind(page);
+  page.drawText = (texte: unknown, options: unknown) => original(ascii(texte), options);
+  return page;
+}
 function bytesToBase64(bytes: Uint8Array): string {
   let bin = "";
   for (let i = 0; i < bytes.length; i += 1) bin += String.fromCharCode(bytes[i]);
