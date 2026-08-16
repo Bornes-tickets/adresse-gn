@@ -13,13 +13,11 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-
 import { BeaconMap } from "@/components/BeaconMap";
 import { ClaimDialog } from "@/components/ClaimDialog";
 import { DirectionsSheet } from "@/components/DirectionsSheet";
 import { ReportSheet } from "@/components/ReportSheet";
 import { ShareSheet } from "@/components/ShareSheet";
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -33,7 +31,8 @@ import {
 } from "@/lib/geo";
 import { beaconContext, ownerToggleFavorite } from "@/lib/owner.functions";
 import { searchBeacon } from "@/lib/search.functions";
-
+import { OnboardingSheet } from "@/components/public/OnboardingSheet";
+import { InstallBanner } from "@/components/InstallBanner";
 
 export const Route = createFileRoute("/a/$number")({
   head: ({ params }) => ({
@@ -64,7 +63,6 @@ export const Route = createFileRoute("/a/$number")({
   component: BeaconResult,
 });
 
-
 function BeaconResult() {
   const { t } = useTranslation();
   const { number } = Route.useParams();
@@ -76,7 +74,6 @@ function BeaconResult() {
   const [claimOpen, setClaimOpen] = useState(false);
   const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
-
   const { data, error, isPending } = useQuery({
     queryKey: ["search-beacon", number],
     queryFn: async () => {
@@ -93,14 +90,12 @@ function BeaconResult() {
     },
     retry: false,
   });
-
   const contexte = useQuery({
     queryKey: ["beacon-context", number],
     queryFn: () => beaconContext({ data: { number } }),
     enabled: isAuthenticated && data?.status === "found",
     retry: false,
   });
-
   const basculerFavori = useMutation({
     mutationFn: () => ownerToggleFavorite({ data: { number } }),
     onSuccess: (res: { favorited?: boolean }) => {
@@ -109,8 +104,6 @@ function BeaconResult() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
-
-
   const demanderPosition = () => {
     if (!("geolocation" in navigator)) {
       setGeoError(t("address.geolocationUnavailable"));
@@ -125,7 +118,6 @@ function BeaconResult() {
       { enableHighAccuracy: true, timeout: 10000 },
     );
   };
-
   useEffect(() => {
     if (typeof navigator === "undefined" || !navigator.permissions?.query) return;
     navigator.permissions
@@ -137,20 +129,16 @@ function BeaconResult() {
         /* API non supportée : l'utilisateur cliquera sur le bouton */
       });
   }, []);
-
   const resultat = data?.status === "found" ? data.result : null;
   const lat = resultat?.lat ?? null;
   const lng = resultat?.lng ?? null;
-
   const distance =
     position && lat !== null && lng !== null
       ? formatDistance(haversineKm(position, { lat, lng }))
       : null;
-
   return (
     <div className="relative h-[60vh] min-h-[420px] w-full md:h-[70vh]">
       {isPending && <Skeleton className="h-full w-full rounded-none" />}
-
       {!isPending && lat !== null && lng !== null && resultat && (
         <BeaconMap
           lat={lat}
@@ -160,7 +148,6 @@ function BeaconResult() {
           userPosition={position}
         />
       )}
-
       {!isPending && (!resultat || lat === null || lng === null) && (
         <div className="flex h-full items-center justify-center bg-muted px-4">
           <Card className="w-full max-w-md">
@@ -191,7 +178,6 @@ function BeaconResult() {
           </Card>
         </div>
       )}
-
       {resultat && lat !== null && lng !== null && (
         <>
           <div className="absolute inset-x-0 bottom-0 z-[500] md:inset-x-auto md:bottom-auto md:left-6 md:top-6">
@@ -208,17 +194,14 @@ function BeaconResult() {
                     </span>
                   )}
                 </div>
-
                 <h1 className="text-display text-2xl font-bold leading-tight text-foreground">
                   {displayName(resultat)}
                 </h1>
-
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="rounded-full bg-primary/8 px-3 py-1 text-xs font-medium text-primary">
                     {categoryLabel(resultat.category)}
                   </span>
                 </div>
-
                 <div className="flex items-center gap-2 text-sm">
                   <LocateFixed className="size-4 shrink-0 text-accent" />
                   {distance ? (
@@ -233,7 +216,6 @@ function BeaconResult() {
                     </button>
                   )}
                 </div>
-
                 {resultat.access_point_note && (
                   <p className="text-sm italic leading-relaxed text-slate-500">
                     {resultat.access_point_note}
@@ -241,9 +223,7 @@ function BeaconResult() {
                 )}
                 {geoError && <p className="text-xs text-destructive">{geoError}</p>}
               </div>
-
               <div className="my-6 h-px bg-border" />
-
               <Button
                 className="gradient-accent h-14 w-full text-base font-medium text-accent-foreground transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
                 onClick={() => setDirectionsOpen(true)}
@@ -251,7 +231,6 @@ function BeaconResult() {
                 <Navigation className="size-5" />
                 {t("address.goThere")}
               </Button>
-
               <div className="mt-3 grid grid-cols-3 gap-2">
                 <Button
                   variant="outline"
@@ -287,7 +266,6 @@ function BeaconResult() {
                   <span className="hidden sm:inline">{t("address.favorite")}</span>
                 </Button>
               </div>
-
               {!contexte.data?.is_mine && (
                 <Button
                   variant="ghost"
@@ -300,7 +278,6 @@ function BeaconResult() {
                     : t("address.claimAddress")}
                 </Button>
               )}
-
               {isCommercialCategory(resultat.category) && resultat.business_name && (
                 <Button asChild variant="ghost" className="mt-1 h-11 w-full text-sm">
                   <Link to="/etablissement/$number" params={{ number }}>
@@ -311,8 +288,6 @@ function BeaconResult() {
               )}
             </div>
           </div>
-
-
           <DirectionsSheet
             open={directionsOpen}
             onOpenChange={setDirectionsOpen}
@@ -339,9 +314,14 @@ function BeaconResult() {
             claimStatus={contexte.data?.claim_status ?? null}
             isMine={contexte.data?.is_mine ?? false}
           />
-
         </>
       )}
+
+      {/* Onboarding 3 slides au premier scan (localStorage) */}
+      <OnboardingSheet />
+
+      {/* Bannière installation PWA */}
+      <InstallBanner variant="bottom" />
     </div>
   );
 }
