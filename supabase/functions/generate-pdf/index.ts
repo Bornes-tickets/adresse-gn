@@ -14,12 +14,26 @@ const CORS = {
 
 const A4 = { w: 595.28, h: 841.89 };
 
+/** WinAnsi (polices standard pdf-lib) ne sait pas encoder les espaces fines Unicode (U+202F, U+00A0…). */
+function ascii(v: unknown): string {
+  return String(v ?? "")
+    .replace(/[\u00a0\u202f\u2007\u2008\u2009\u200a\u2060]/g, " ")
+    .replace(/[\u2010-\u2015]/g, "-")
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201c\u201d]/g, '"');
+}
 function fmt(n: number): string {
-  return new Intl.NumberFormat("fr-FR").format(n);
+  return ascii(new Intl.NumberFormat("fr-FR").format(Number(n ?? 0)));
 }
 function fmtDate(iso: string | null | undefined): string {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("fr-FR");
+  if (!iso) return "-";
+  return ascii(new Date(iso).toLocaleDateString("fr-FR"));
+}
+/** Filtre tout texte dessiné pour rester encodable en WinAnsi. */
+function sanitizePage(page: any): any {
+  const original = page.drawText.bind(page);
+  page.drawText = (texte: unknown, options: unknown) => original(ascii(texte), options);
+  return page;
 }
 function bytesToBase64(bytes: Uint8Array): string {
   let bin = "";
@@ -31,7 +45,7 @@ function bytesToBase64(bytes: Uint8Array): string {
 async function pdfBc(po: any): Promise<string> {
   const MARGE = 40;
   const doc = await PDFDocument.create();
-  const page = doc.addPage([A4.w, A4.h]);
+  const page = sanitizePage(doc.addPage([A4.w, A4.h]));
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
   const reg = await doc.embedFont(StandardFonts.Helvetica);
   const mono = await doc.embedFont(StandardFonts.CourierBold);
@@ -98,7 +112,7 @@ async function pdfBc(po: any): Promise<string> {
 async function pdfBl(dn: any): Promise<string> {
   const MARGE = 40;
   const doc = await PDFDocument.create();
-  const page = doc.addPage([A4.w, A4.h]);
+  const page = sanitizePage(doc.addPage([A4.w, A4.h]));
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
   const reg = await doc.embedFont(StandardFonts.Helvetica);
   const mono = await doc.embedFont(StandardFonts.CourierBold);
@@ -164,7 +178,7 @@ async function pdfQr(input: { numeros: string[]; baseUrl: string }): Promise<str
   const pages = Math.max(1, Math.ceil(input.numeros.length / parPage));
   const racine = input.baseUrl.replace(/\/+$/, "");
   for (let p = 0; p < pages; p += 1) {
-    const page = doc.addPage([A4.w, A4.h]);
+    const page = sanitizePage(doc.addPage([A4.w, A4.h]));
     const lot = input.numeros.slice(p * parPage, (p + 1) * parPage);
     for (let i = 0; i < lot.length; i += 1) {
       const numero = lot[i];
