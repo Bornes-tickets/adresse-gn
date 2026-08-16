@@ -15,10 +15,9 @@ export default defineConfig({
   },
   vite: {
     ssr: {
-      // Modules CJS ou avec interop cassée en SSR : les bundler évite les erreurs
-      // "Cannot destructure property '__extends' of '__toESM(...).default'"
-      // et les require/module non définis dans le runner SSR.
-      noExternal: ["tslib", "pdf-lib", "pako", "@pdf-lib/standard-fonts", "@pdf-lib/upng"],
+      // tslib doit rester bundlé (interop __extends cassée sinon).
+      // pdf-lib idem : sinon "Cannot destructure property '__extends' of '__toESM(...).default'" au chargement des PDF BL/BC.
+      noExternal: ["tslib", "pdf-lib"],
     },
   },
   plugins: [
@@ -34,13 +33,11 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//, /^\/_serverFn\//],
         runtimeCaching: [
           {
-            // Navigations : réseau d'abord (jamais cache-first sur du HTML).
             urlPattern: ({ request }) => request.mode === "navigate",
             handler: "NetworkFirst",
             options: { cacheName: "agn-pages", networkTimeoutSeconds: 5 },
           },
           {
-            // App shell : assets buildés et immuables.
             urlPattern: ({ request, sameOrigin }) =>
               sameOrigin &&
               (request.destination === "script" ||
