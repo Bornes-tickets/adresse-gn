@@ -67,6 +67,7 @@ import { Route as OpsGuardBeaconsRouteImport } from './routes/ops/_guard/beacons
 import { Route as OpsGuardCommandesFournisseursRouteImport } from './routes/ops/_guard/commandes-fournisseurs'
 import { Route as OpsGuardExportsRouteImport } from './routes/ops/_guard/exports'
 import { Route as OpsGuardLotsRouteImport } from './routes/ops/_guard/lots'
+import { Route as OpsGuardStockRouteImport } from './routes/ops/_guard/stock'
 import { Route as ProGuardIndexRouteImport } from './routes/pro/_guard/index'
 import { Route as ProGuardApiRouteImport } from './routes/pro/_guard/api'
 import { Route as ProGuardEquipeRouteImport } from './routes/pro/_guard/equipe'
@@ -395,6 +396,11 @@ const OpsGuardLotsRoute = OpsGuardLotsRouteImport.update({
   path: '/lots',
   getParentRoute: () => OpsGuardRouteRoute,
 } as any)
+const OpsGuardStockRoute = OpsGuardStockRouteImport.update({
+  id: '/stock',
+  path: '/stock',
+  getParentRoute: () => OpsGuardRouteRoute,
+} as any)
 const ProGuardIndexRoute = ProGuardIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -629,6 +635,7 @@ export interface FileRoutesByFullPath {
   '/ops/commandes-fournisseurs': typeof OpsGuardCommandesFournisseursRoute
   '/ops/exports': typeof OpsGuardExportsRoute
   '/ops/lots': typeof OpsGuardLotsRoute
+  '/ops/stock': typeof OpsGuardStockRoute
   '/pro/api': typeof ProGuardApiRoute
   '/pro/equipe': typeof ProGuardEquipeRoute
   '/pro/etablissements': typeof ProGuardEtablissementsRoute
@@ -715,6 +722,7 @@ export interface FileRoutesByTo {
   '/ops/commandes-fournisseurs': typeof OpsGuardCommandesFournisseursRoute
   '/ops/exports': typeof OpsGuardExportsRoute
   '/ops/lots': typeof OpsGuardLotsRoute
+  '/ops/stock': typeof OpsGuardStockRoute
   '/pro/api': typeof ProGuardApiRoute
   '/pro/equipe': typeof ProGuardEquipeRoute
   '/pro/etablissements': typeof ProGuardEtablissementsRoute
@@ -810,6 +818,7 @@ export interface FileRoutesById {
   '/ops/_guard/commandes-fournisseurs': typeof OpsGuardCommandesFournisseursRoute
   '/ops/_guard/exports': typeof OpsGuardExportsRoute
   '/ops/_guard/lots': typeof OpsGuardLotsRoute
+  '/ops/_guard/stock': typeof OpsGuardStockRoute
   '/pro/_guard/api': typeof ProGuardApiRoute
   '/pro/_guard/equipe': typeof ProGuardEquipeRoute
   '/pro/_guard/etablissements': typeof ProGuardEtablissementsRoute
@@ -906,6 +915,7 @@ export interface FileRouteTypes {
     | '/ops/commandes-fournisseurs'
     | '/ops/exports'
     | '/ops/lots'
+    | '/ops/stock'
     | '/pro/api'
     | '/pro/equipe'
     | '/pro/etablissements'
@@ -992,6 +1002,7 @@ export interface FileRouteTypes {
     | '/ops/commandes-fournisseurs'
     | '/ops/exports'
     | '/ops/lots'
+    | '/ops/stock'
     | '/pro/api'
     | '/pro/equipe'
     | '/pro/etablissements'
@@ -1086,6 +1097,7 @@ export interface FileRouteTypes {
     | '/ops/_guard/commandes-fournisseurs'
     | '/ops/_guard/exports'
     | '/ops/_guard/lots'
+    | '/ops/_guard/stock'
     | '/pro/_guard/api'
     | '/pro/_guard/equipe'
     | '/pro/_guard/etablissements'
@@ -1566,6 +1578,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OpsGuardLotsRouteImport
       parentRoute: typeof OpsGuardRouteRoute
     }
+    '/ops/_guard/stock': {
+      id: '/ops/_guard/stock'
+      path: '/stock'
+      fullPath: '/ops/stock'
+      preLoaderRoute: typeof OpsGuardStockRouteImport
+      parentRoute: typeof OpsGuardRouteRoute
+    }
     '/pro/_guard/': {
       id: '/pro/_guard/'
       path: '/'
@@ -1911,6 +1930,7 @@ interface OpsGuardRouteRouteChildren {
   OpsGuardCommandesFournisseursRoute: typeof OpsGuardCommandesFournisseursRoute
   OpsGuardExportsRoute: typeof OpsGuardExportsRoute
   OpsGuardLotsRoute: typeof OpsGuardLotsRoute
+  OpsGuardStockRoute: typeof OpsGuardStockRoute
   OpsGuardIndexRoute: typeof OpsGuardIndexRoute
 }
 
@@ -1919,6 +1939,7 @@ const OpsGuardRouteRouteChildren: OpsGuardRouteRouteChildren = {
   OpsGuardCommandesFournisseursRoute: OpsGuardCommandesFournisseursRoute,
   OpsGuardExportsRoute: OpsGuardExportsRoute,
   OpsGuardLotsRoute: OpsGuardLotsRoute,
+  OpsGuardStockRoute: OpsGuardStockRoute,
   OpsGuardIndexRoute: OpsGuardIndexRoute,
 }
 

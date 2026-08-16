@@ -397,7 +397,7 @@ function OpsCommandes() {
       if (isRetard(l)) retards += 1;
       if (isFactureRetard(l)) facturesRetard += 1;
     }
-    const enCours = (counts.sent ?? 0) + (counts.in_production ?? 0) + (counts.shipped ?? 0);
+    const enCours = (counts['sent'] ?? 0) + (counts['in_production'] ?? 0) + (counts['shipped'] ?? 0);
     return {
       counts, totalValeur, totalQuantite, enCours, retards, facturesRetard,
       delaiMoyen: delaisCount > 0 ? Math.round(delaisSommes / delaisCount) : null,
@@ -1673,7 +1673,7 @@ function OpsCommandes() {
                       </Card>
                       <div className="grid grid-cols-2 gap-3">
                         <InfoBloc label="Date facture" value={new Date(inv.issued_at).toLocaleDateString("fr-FR")} icon={ScrollText} />
-                        <InfoBloc label="Échéance" value={inv.due_date ? new Date(inv.due_date).toLocaleDateString("fr-FR") : "—"} icon={Clock} tone={enRetard ? "rose" : undefined} />
+                        <InfoBloc label="Échéance" value={inv.due_date ? new Date(inv.due_date).toLocaleDateString("fr-FR") : "—"} icon={Clock} {...(enRetard ? { tone: "rose" as const } : {})} />
                         <InfoBloc label="Reçue le" value={formatDateTimeFr(inv.received_at)} icon={FileCheck} />
                         <InfoBloc label="TVA" value={`${inv.tva_rate}% (${formatMontant(inv.tva_amount)})`} icon={Calculator} />
                       </div>
@@ -1711,7 +1711,7 @@ function OpsCommandes() {
                                   mobile_money: { label: "Mobile money", icon: Smartphone, cls: "bg-orange-100 text-orange-700" },
                                   other: { label: "Autre", icon: Wallet, cls: "bg-slate-100 text-slate-700" },
                                 };
-                                const m = methodMap[p.method] ?? methodMap.other;
+                                const m = methodMap[p.method] ?? methodMap['other']!;
                                 const MIcon = m.icon;
                                 return (
                                   <div key={p.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition group">
@@ -2002,7 +2002,7 @@ function InfoBloc({ label, value, icon: Icon, tone }: { label: string; value: st
     <Card className={cn("border", tone && tones[tone])}>
       <CardContent className="p-3">
         <div className="flex items-center gap-2 text-xs text-slate-500 mb-1">
-          <Icon className={cn("h-3.5 w-3.5", tone ? tones[tone].split(" ")[0] : "text-slate-500")} />
+          <Icon className={cn("h-3.5 w-3.5", tone ? (tones[tone] ?? "").split(" ")[0] : "text-slate-500")} />
           <span className="uppercase tracking-widest font-semibold">{label}</span>
         </div>
         <div className="text-sm font-semibold text-slate-900">{value}</div>
@@ -2039,7 +2039,7 @@ function PaiementBadge({ lot }: { lot: any }) {
     disputed: { l: "Litige", cls: "bg-rose-100 text-rose-700 border-rose-200", Ic: AlertTriangle },
     cancelled: { l: "Annulée", cls: "bg-slate-100 text-slate-500 border-slate-200", Ic: Ban },
   };
-  const m = map[lot.invoice_status] ?? map.unpaid;
+  const m = map[lot.invoice_status] ?? map['unpaid']!;
   const MIcon = m.Ic;
   return <Badge className={cn("gap-1 text-[10px]", m.cls)}><MIcon className="h-2.5 w-2.5" />{m.l}</Badge>;
 }

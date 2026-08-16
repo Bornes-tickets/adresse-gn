@@ -157,16 +157,16 @@ export async function chargerStock(): Promise<StockDashboard> {
   const stockLots: StockLot[] = (lots ?? []).map((l: any) => {
     const c = compteur.get(l.id) ?? { generated: 0, assigned: 0, active: 0, suspended: 0, cancelled: 0 };
     const ordered = Number(l.quantity ?? 0);
-    const stock = c.generated ?? 0;
-    const used = c.active ?? 0;
+    const stock = c['generated'] ?? 0;
+    const used = c['active'] ?? 0;
     return {
       lot_id: l.id, code: l.code, category: l.category, supplier: l.supplier,
       status: l.status, received_at: l.received_at,
       quantity_ordered: ordered, quantity_generated: stock,
-      quantity_assigned: c.assigned ?? 0, quantity_active: used,
-      quantity_suspended: c.suspended ?? 0, quantity_cancelled: c.cancelled ?? 0,
+      quantity_assigned: c['assigned'] ?? 0, quantity_active: used,
+      quantity_suspended: c['suspended'] ?? 0, quantity_cancelled: c['cancelled'] ?? 0,
       quantity_stock: stock, quantity_used: used,
-      taux_consommation: ordered > 0 ? Math.round(((used + (c.assigned ?? 0)) / ordered) * 100) : 0,
+      taux_consommation: ordered > 0 ? Math.round(((used + (c['assigned'] ?? 0)) / ordered) * 100) : 0,
     };
   });
   const global = stockLots.reduce(
@@ -353,10 +353,10 @@ export async function genererPdfBc(poId: string): Promise<{ base64: string; po_n
   const { genererPdfBonCommande } = await import("@/lib/ops-po-pdf.server");
   const pdf = await genererPdfBonCommande({
     po_number: (po as any).po_number,
-    lot_code: (po as any).lots?.code ?? null,
+    expected_delivery: (po as any).expected_delivery ?? null,
     issued_at: (po as any).issued_at,
     supplier: (po as any).supplier_snapshot ?? { name: "Fournisseur inconnu" },
-    lines: lines ?? [],
+    lines: (lines ?? []) as any,
     amount_ht: (po as any).amount_ht,
     tva_rate: (po as any).tva_rate,
     tva_amount: (po as any).tva_amount,
