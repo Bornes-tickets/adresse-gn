@@ -19,15 +19,15 @@ export default defineConfig({
   },
   plugins: [
     VitePWA({
-      // On désactive selfDestroying pour que le SW cache vraiment (installation possible).
       registerType: "autoUpdate",
       injectRegister: "auto",
-      strategies: "generateSW",
-      filename: "sw.js",
+      // Notre propre SW pour supporter les push notifications (généré depuis src/sw.ts).
+      strategies: "injectManifest",
+      srcDir: "src",
+      filename: "sw.ts",
       devOptions: { enabled: false },
-      // Le manifest est fourni via /public/manifest.webmanifest — on n'injecte pas ici.
+      // Le manifest est servi depuis /public/manifest.webmanifest — on ne l'injecte pas ici.
       manifest: false,
-      // Inclut les icônes et le manifest dans le précache
       includeAssets: [
         "manifest.webmanifest",
         "icons/icon-192.png",
@@ -36,42 +36,9 @@ export default defineConfig({
         "icons/icon-maskable-512.png",
         "icons/apple-touch-icon-180.png",
       ],
-      workbox: {
+      injectManifest: {
         globPatterns: ["**/*.{js,css,ico,png,svg,woff2,webmanifest}"],
-        navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//, /^\/_serverFn\//],
-        cleanupOutdatedCaches: true,
-        clientsClaim: true,
-        skipWaiting: true,
-        runtimeCaching: [
-          {
-            // Navigations : réseau d'abord (jamais cache-first sur du HTML).
-            urlPattern: ({ request }) => request.mode === "navigate",
-            handler: "NetworkFirst",
-            options: { cacheName: "agn-pages", networkTimeoutSeconds: 5 },
-          },
-          {
-            // App shell : assets buildés et immuables.
-            urlPattern: ({ request, sameOrigin }) =>
-              sameOrigin &&
-              (request.destination === "script" ||
-                request.destination === "style" ||
-                request.destination === "font"),
-            handler: "CacheFirst",
-            options: {
-              cacheName: "agn-assets",
-              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 },
-            },
-          },
-          {
-            // Images (icônes, photos de balises stockées)
-            urlPattern: ({ request }) => request.destination === "image",
-            handler: "StaleWhileRevalidate",
-            options: {
-              cacheName: "agn-images",
-              expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 30 },
-            },
-          },
-        ],
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       },
     }),
   ],
