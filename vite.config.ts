@@ -14,38 +14,61 @@ export default defineConfig({
   vite: {
     ssr: {
       // tslib doit rester bundlé (interop __extends cassée sinon).
-      // pdf-lib NE DOIT PAS être bundlé sur Cloudflare Workers (dépasse la limite de taille = boot cassé).
       noExternal: ["tslib"],
     },
   },
   plugins: [
     VitePWA({
-      selfDestroying: true,
+      // On désactive selfDestroying pour que le SW cache vraiment (installation possible).
       registerType: "autoUpdate",
-      injectRegister: null,
+      injectRegister: "auto",
+      strategies: "generateSW",
       filename: "sw.js",
       devOptions: { enabled: false },
+      // Le manifest est fourni via /public/manifest.webmanifest — on n'injecte pas ici.
       manifest: false,
+      // Inclut les icônes et le manifest dans le précache
+      includeAssets: [
+        "manifest.webmanifest",
+        "icons/icon-192.png",
+        "icons/icon-512.png",
+        "icons/icon-maskable-192.png",
+        "icons/icon-maskable-512.png",
+        "icons/apple-touch-icon-180.png",
+      ],
       workbox: {
-        globPatterns: ["**/*.{js,css,ico,png,svg,woff2}"],
+        globPatterns: ["**/*.{js,css,ico,png,svg,woff2,webmanifest}"],
         navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//, /^\/_serverFn\//],
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
+        skipWaiting: true,
         runtimeCaching: [
           {
+            // Navigations : réseau d'abord (jamais cache-first sur du HTML).
             urlPattern: ({ request }) => request.mode === "navigate",
             handler: "NetworkFirst",
             options: { cacheName: "agn-pages", networkTimeoutSeconds: 5 },
           },
           {
+            // App shell : assets buildés et immuables.
             urlPattern: ({ request, sameOrigin }) =>
               sameOrigin &&
               (request.destination === "script" ||
                 request.destination === "style" ||
-                request.destination === "font" ||
-                request.destination === "image"),
+                request.destination === "font"),
             handler: "CacheFirst",
             options: {
               cacheName: "agn-assets",
               expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 },
+            },
+          },
+          {
+            // Images (icônes, photos de balises stockées)
+            urlPattern: ({ request }) => request.destination === "image",
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "agn-images",
+              expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 30 },
             },
           },
         ],
