@@ -1,6 +1,7 @@
 /** Génération du PDF officiel Bon de livraison. Serveur uniquement. */
-import * as PDFLib from "pdf-lib";
-const { PDFDocument, StandardFonts, rgb } = PDFLib;
+import { createRequire } from "node:module";
+const require = createRequire(import.meta.url);
+const { PDFDocument, StandardFonts, rgb } = require("pdf-lib");
 
 const A4 = { w: 595.28, h: 841.89 };
 const MARGE = 40;
