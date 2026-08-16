@@ -16,8 +16,9 @@ export default defineConfig({
   vite: {
     ssr: {
       // tslib doit rester bundlé (interop __extends cassée sinon).
-      // pdf-lib idem : sinon "Cannot destructure property '__extends' of '__toESM(...).default'" au chargement des PDF BL/BC.
-      noExternal: ["tslib", "pdf-lib"],
+      // qrcode & co restent externes : ce sont des modules CJS que le runner SSR
+      // de dev n'arrive pas à inliner (require/module non définis).
+      noExternal: ["tslib"],
     },
   },
   plugins: [
@@ -33,11 +34,13 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//, /^\/_serverFn\//],
         runtimeCaching: [
           {
+            // Navigations : réseau d'abord (jamais cache-first sur du HTML).
             urlPattern: ({ request }) => request.mode === "navigate",
             handler: "NetworkFirst",
             options: { cacheName: "agn-pages", networkTimeoutSeconds: 5 },
           },
           {
+            // App shell : assets buildés et immuables.
             urlPattern: ({ request, sameOrigin }) =>
               sameOrigin &&
               (request.destination === "script" ||
