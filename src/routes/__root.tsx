@@ -197,4 +197,36 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
+// Dans src/routes/__root.tsx, dans la config `head` de createRootRoute :
 
+head: () => ({
+  meta: [
+    { charSet: "utf-8" },
+    { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" },
+    { name: "theme-color", content: "#ea580c", media: "(prefers-color-scheme: light)" },
+    { name: "theme-color", content: "#0f172a", media: "(prefers-color-scheme: dark)" },
+    { name: "color-scheme", content: "light dark" },
+    { name: "mobile-web-app-capable", content: "yes" },
+    { name: "apple-mobile-web-app-capable", content: "yes" },
+    { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+    { name: "apple-mobile-web-app-title", content: "Adresse GN" },
+    { name: "application-name", content: "Adresse GN" },
+    { name: "format-detection", content: "telephone=no" },
+    { name: "description", content: "Système d'adressage QR de la Guinée. Scannez, posez, consultez vos adresses." },
+    { property: "og:title", content: "Adresse GN — Système d'adressage QR" },
+    { property: "og:description", content: "Système d'adressage numérique de la République de Guinée." },
+    { property: "og:type", content: "website" },
+    { property: "og:image", content: "/icons/icon-512.png" },
+  ],
+  links: [
+    { rel: "manifest", href: "/manifest.webmanifest" },
+    { rel: "icon", type: "image/png", sizes: "192x192", href: "/icons/icon-192.png" },
+    { rel: "icon", type: "image/png", sizes: "512x512", href: "/icons/icon-512.png" },
+    { rel: "apple-touch-icon", href: "/icons/icon-192.png" },
+    { rel: "apple-touch-icon", sizes: "180x180", href: "/icons/apple-touch-icon-180.png" },
+    // Splash iOS (les 5 tailles les plus courantes ; ajoute les autres si besoin)
+    { rel: "apple-touch-startup-image", media: "(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)", href: "/icons/splash-1170x2532.png" },
+    { rel: "apple-touch-startup-image", media: "(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)", href: "/icons/splash-1284x2778.png" },
+    { rel: "apple-touch-startup-image", media: "(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)", href: "/icons/splash-1125x2436.png" },
+  ],
+}),
