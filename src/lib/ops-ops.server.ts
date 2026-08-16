@@ -353,7 +353,7 @@ export async function genererPdfBc(poId: string): Promise<{ base64: string; po_n
   const { genererPdfBonCommande } = await import("@/lib/ops-po-pdf.server");
   const pdf = await genererPdfBonCommande({
     po_number: (po as any).po_number,
-    lot_code: (po as any).lots?.code ?? null,
+    expected_delivery: (po as any).expected_delivery ?? null,
     issued_at: (po as any).issued_at,
     supplier: (po as any).supplier_snapshot ?? { name: "Fournisseur inconnu" },
     lines: (lines ?? []) as any,
