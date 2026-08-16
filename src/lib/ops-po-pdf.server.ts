@@ -1,7 +1,5 @@
 /** Génération du PDF officiel Bon de commande. Serveur uniquement. */
-import { createRequire } from "node:module";
-const require = createRequire(import.meta.url);
-const { PDFDocument, StandardFonts, rgb } = require("pdf-lib");
+import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
 const A4 = { w: 595.28, h: 841.89 };
 const MARGE = 40;
@@ -40,14 +38,12 @@ export async function genererPdfBonCommande(po: POForPdf): Promise<{ base64: str
   const slate600 = rgb(0.35, 0.4, 0.47);
   const slate200 = rgb(0.89, 0.9, 0.92);
   let y = A4.h - MARGE;
-  // ==== EN-TÊTE ====
   page.drawRectangle({ x: 0, y: y - 60, width: A4.w, height: 60, color: orange });
   page.drawText("ADRESSE GN", { x: MARGE, y: y - 30, size: 22, font: bold, color: rgb(1, 1, 1) });
   page.drawText("Système d'adressage QR de la Guinée", { x: MARGE, y: y - 48, size: 9, font: reg, color: rgb(1, 1, 1) });
   page.drawText("BON DE COMMANDE", { x: A4.w - MARGE - 130, y: y - 25, size: 14, font: bold, color: rgb(1, 1, 1) });
   page.drawText(po.po_number, { x: A4.w - MARGE - 130, y: y - 43, size: 12, font: mono, color: rgb(1, 1, 1) });
   y -= 90;
-  // ==== INFOS ÉMETTEUR & DESTINATAIRE ====
   const colW = (A4.w - MARGE * 2 - 20) / 2;
   page.drawText("ÉMETTEUR", { x: MARGE, y, size: 8, font: bold, color: slate600 });
   y -= 14;
@@ -69,7 +65,6 @@ export async function genererPdfBonCommande(po: POForPdf): Promise<{ base64: str
   if (po.supplier.email) { page.drawText(po.supplier.email, { x: xDest, y: y2, size: 9, font: reg, color: slate600 }); y2 -= 11; }
   if (po.supplier.phone) { page.drawText(`Tél. : ${po.supplier.phone}`, { x: xDest, y: y2, size: 9, font: reg, color: slate600 }); y2 -= 11; }
   y = Math.min(y, y2) - 20;
-  // ==== RÉFÉRENCES ====
   page.drawRectangle({ x: MARGE, y: y - 40, width: A4.w - MARGE * 2, height: 40, color: rgb(0.98, 0.95, 0.9), borderColor: slate200, borderWidth: 0.5 });
   page.drawText("DATE ÉMISSION", { x: MARGE + 10, y: y - 15, size: 7, font: bold, color: slate600 });
   page.drawText(fmtDate(po.issued_at), { x: MARGE + 10, y: y - 30, size: 10, font: bold, color: slate900 });
@@ -78,7 +73,6 @@ export async function genererPdfBonCommande(po: POForPdf): Promise<{ base64: str
   page.drawText("CONDITIONS PAIEMENT", { x: MARGE + 350, y: y - 15, size: 7, font: bold, color: slate600 });
   page.drawText(po.payment_terms, { x: MARGE + 350, y: y - 30, size: 10, font: bold, color: slate900 });
   y -= 60;
-  // ==== TABLEAU LIGNES ====
   const colDesignation = MARGE;
   const colQte = MARGE + 260;
   const colPu = MARGE + 320;
@@ -103,7 +97,6 @@ export async function genererPdfBonCommande(po: POForPdf): Promise<{ base64: str
     y -= 32;
   }
   y -= 20;
-  // ==== TOTAUX ====
   const xTot = A4.w - MARGE - 200;
   page.drawText("Total HT", { x: xTot, y, size: 10, font: reg, color: slate600 });
   page.drawText(`${fmt(po.amount_ht)} GNF`, { x: xTot + 100, y, size: 10, font: reg, color: slate900 });
@@ -115,14 +108,12 @@ export async function genererPdfBonCommande(po: POForPdf): Promise<{ base64: str
   page.drawText("TOTAL TTC", { x: xTot, y, size: 12, font: bold, color: rgb(1, 1, 1) });
   page.drawText(`${fmt(po.amount_ttc)} GNF`, { x: xTot + 100, y, size: 12, font: bold, color: rgb(1, 1, 1) });
   y -= 40;
-  // ==== NOTES ====
   if (po.notes) {
     page.drawText("NOTES", { x: MARGE, y, size: 8, font: bold, color: slate600 });
     y -= 14;
     page.drawText(po.notes.slice(0, 300), { x: MARGE, y, size: 9, font: reg, color: slate900 });
     y -= 20;
   }
-  // ==== CONDITIONS + SIGNATURE ====
   y = 140;
   page.drawLine({ start: { x: MARGE, y }, end: { x: A4.w - MARGE, y }, thickness: 0.5, color: slate200 });
   y -= 20;
