@@ -885,6 +885,103 @@ export type Database = {
         }
         Relationships: []
       }
+      delivery_notes: {
+        Row: {
+          carrier: string | null
+          created_at: string
+          created_by: string | null
+          defects: string | null
+          discrepancy: number | null
+          dn_number: string
+          id: string
+          lot_id: string | null
+          notes: string | null
+          pdf_url: string | null
+          photos_urls: string[] | null
+          po_id: string | null
+          qc_passed: boolean | null
+          quantity_ordered: number
+          quantity_received: number
+          quantity_shipped: number | null
+          received_at: string
+          receiver_name: string | null
+          receiver_signature_url: string | null
+          shipped_at: string | null
+          supplier_snapshot: Json | null
+          tracking_number: string | null
+        }
+        Insert: {
+          carrier?: string | null
+          created_at?: string
+          created_by?: string | null
+          defects?: string | null
+          discrepancy?: number | null
+          dn_number: string
+          id?: string
+          lot_id?: string | null
+          notes?: string | null
+          pdf_url?: string | null
+          photos_urls?: string[] | null
+          po_id?: string | null
+          qc_passed?: boolean | null
+          quantity_ordered: number
+          quantity_received: number
+          quantity_shipped?: number | null
+          received_at?: string
+          receiver_name?: string | null
+          receiver_signature_url?: string | null
+          shipped_at?: string | null
+          supplier_snapshot?: Json | null
+          tracking_number?: string | null
+        }
+        Update: {
+          carrier?: string | null
+          created_at?: string
+          created_by?: string | null
+          defects?: string | null
+          discrepancy?: number | null
+          dn_number?: string
+          id?: string
+          lot_id?: string | null
+          notes?: string | null
+          pdf_url?: string | null
+          photos_urls?: string[] | null
+          po_id?: string | null
+          qc_passed?: boolean | null
+          quantity_ordered?: number
+          quantity_received?: number
+          quantity_shipped?: number | null
+          received_at?: string
+          receiver_name?: string | null
+          receiver_signature_url?: string | null
+          shipped_at?: string | null
+          supplier_snapshot?: Json | null
+          tracking_number?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_notes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_notes_lot_id_fkey"
+            columns: ["lot_id"]
+            isOneToOne: false
+            referencedRelation: "lots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_notes_po_id_fkey"
+            columns: ["po_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       districts: {
         Row: {
           boundary: unknown
@@ -981,6 +1078,21 @@ export type Database = {
             referencedColumns: ["commune_id"]
           },
         ]
+      }
+      dn_number_sequences: {
+        Row: {
+          last_number: number
+          year: number
+        }
+        Insert: {
+          last_number?: number
+          year: number
+        }
+        Update: {
+          last_number?: number
+          year?: number
+        }
+        Relationships: []
       }
       establishment_photos: {
         Row: {
@@ -1995,6 +2107,36 @@ export type Database = {
           },
         ]
       }
+      pi_number_sequences: {
+        Row: {
+          last_number: number
+          year: number
+        }
+        Insert: {
+          last_number?: number
+          year: number
+        }
+        Update: {
+          last_number?: number
+          year?: number
+        }
+        Relationships: []
+      }
+      po_number_sequences: {
+        Row: {
+          last_number: number
+          year: number
+        }
+        Insert: {
+          last_number?: number
+          year: number
+        }
+        Update: {
+          last_number?: number
+          year?: number
+        }
+        Relationships: []
+      }
       prefectures: {
         Row: {
           code: string | null
@@ -2081,6 +2223,309 @@ export type Database = {
           role?: string
         }
         Relationships: []
+      }
+      purchase_invoice_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          id: string
+          invoice_id: string
+          method: string
+          notes: string | null
+          paid_at: string
+          reference: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          invoice_id: string
+          method?: string
+          notes?: string | null
+          paid_at?: string
+          reference?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          invoice_id?: string
+          method?: string
+          notes?: string | null
+          paid_at?: string
+          reference?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_invoice_payments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_invoice_payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchase_invoices: {
+        Row: {
+          amount_ht: number
+          amount_paid: number
+          amount_ttc: number
+          created_at: string
+          created_by: string | null
+          currency: string
+          dispute_notes: string | null
+          dn_id: string | null
+          due_date: string | null
+          id: string
+          internal_ref: string
+          invoice_number: string
+          issued_at: string
+          lot_id: string | null
+          notes: string | null
+          payment_status: string
+          pdf_url: string | null
+          po_id: string | null
+          received_at: string
+          supplier_id: string | null
+          supplier_snapshot: Json | null
+          tva_amount: number
+          tva_rate: number
+          updated_at: string
+        }
+        Insert: {
+          amount_ht?: number
+          amount_paid?: number
+          amount_ttc?: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          dispute_notes?: string | null
+          dn_id?: string | null
+          due_date?: string | null
+          id?: string
+          internal_ref: string
+          invoice_number: string
+          issued_at: string
+          lot_id?: string | null
+          notes?: string | null
+          payment_status?: string
+          pdf_url?: string | null
+          po_id?: string | null
+          received_at?: string
+          supplier_id?: string | null
+          supplier_snapshot?: Json | null
+          tva_amount?: number
+          tva_rate?: number
+          updated_at?: string
+        }
+        Update: {
+          amount_ht?: number
+          amount_paid?: number
+          amount_ttc?: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          dispute_notes?: string | null
+          dn_id?: string | null
+          due_date?: string | null
+          id?: string
+          internal_ref?: string
+          invoice_number?: string
+          issued_at?: string
+          lot_id?: string | null
+          notes?: string | null
+          payment_status?: string
+          pdf_url?: string | null
+          po_id?: string | null
+          received_at?: string
+          supplier_id?: string | null
+          supplier_snapshot?: Json | null
+          tva_amount?: number
+          tva_rate?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_invoices_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_invoices_dn_id_fkey"
+            columns: ["dn_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_notes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_invoices_lot_id_fkey"
+            columns: ["lot_id"]
+            isOneToOne: false
+            referencedRelation: "lots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_invoices_po_id_fkey"
+            columns: ["po_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_invoices_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchase_order_lines: {
+        Row: {
+          category: string | null
+          designation: string
+          id: string
+          line_total_ht: number
+          po_id: string
+          position: number
+          quantity: number
+          unit_price_ht: number
+        }
+        Insert: {
+          category?: string | null
+          designation: string
+          id?: string
+          line_total_ht: number
+          po_id: string
+          position?: number
+          quantity: number
+          unit_price_ht: number
+        }
+        Update: {
+          category?: string | null
+          designation?: string
+          id?: string
+          line_total_ht?: number
+          po_id?: string
+          position?: number
+          quantity?: number
+          unit_price_ht?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_order_lines_po_id_fkey"
+            columns: ["po_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchase_orders: {
+        Row: {
+          amount_ht: number
+          amount_ttc: number
+          created_at: string
+          created_by: string | null
+          currency: string
+          delivery_address: string | null
+          expected_delivery: string | null
+          id: string
+          issued_at: string
+          lot_id: string | null
+          notes: string | null
+          payment_terms: string | null
+          pdf_url: string | null
+          po_number: string
+          sent_email_at: string | null
+          sent_email_to: string | null
+          status: string
+          supplier_id: string | null
+          supplier_snapshot: Json | null
+          tva_amount: number
+          tva_rate: number
+        }
+        Insert: {
+          amount_ht?: number
+          amount_ttc?: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          delivery_address?: string | null
+          expected_delivery?: string | null
+          id?: string
+          issued_at?: string
+          lot_id?: string | null
+          notes?: string | null
+          payment_terms?: string | null
+          pdf_url?: string | null
+          po_number: string
+          sent_email_at?: string | null
+          sent_email_to?: string | null
+          status?: string
+          supplier_id?: string | null
+          supplier_snapshot?: Json | null
+          tva_amount?: number
+          tva_rate?: number
+        }
+        Update: {
+          amount_ht?: number
+          amount_ttc?: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          delivery_address?: string | null
+          expected_delivery?: string | null
+          id?: string
+          issued_at?: string
+          lot_id?: string | null
+          notes?: string | null
+          payment_terms?: string | null
+          pdf_url?: string | null
+          po_number?: string
+          sent_email_at?: string | null
+          sent_email_to?: string | null
+          status?: string
+          supplier_id?: string | null
+          supplier_snapshot?: Json | null
+          tva_amount?: number
+          tva_rate?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_orders_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_lot_id_fkey"
+            columns: ["lot_id"]
+            isOneToOne: false
+            referencedRelation: "lots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       rate_limits: {
         Row: {
@@ -2451,6 +2896,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      suppliers: {
+        Row: {
+          active: boolean
+          address: string | null
+          contact_name: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          nif: string | null
+          notes: string | null
+          phone: string | null
+          rccm: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          address?: string | null
+          contact_name?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          nif?: string | null
+          notes?: string | null
+          phone?: string | null
+          rccm?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          address?: string | null
+          contact_name?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          nif?: string | null
+          notes?: string | null
+          phone?: string | null
+          rccm?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       team_members: {
         Row: {
@@ -2989,8 +3479,11 @@ export type Database = {
       geomfromewkt: { Args: { "": string }; Returns: unknown }
       gettransactionid: { Args: never; Returns: unknown }
       longtransactionsenabled: { Args: never; Returns: boolean }
+      next_dn_number: { Args: never; Returns: string }
       next_invoice_ref: { Args: never; Returns: string }
       next_order_ref: { Args: never; Returns: string }
+      next_pi_number: { Args: never; Returns: string }
+      next_po_number: { Args: never; Returns: string }
       populate_geometry_columns:
         | { Args: { tbl_oid: unknown; use_typmod?: boolean }; Returns: number }
         | { Args: { use_typmod?: boolean }; Returns: string }
