@@ -15,10 +15,9 @@ export default defineConfig({
   },
   vite: {
     ssr: {
-      // tslib doit rester bundlé (interop __extends cassée sinon).
-      // qrcode & co restent externes : ce sont des modules CJS que le runner SSR
-      // de dev n'arrive pas à inliner (require/module non définis).
-      noExternal: ["tslib"],
+      // Cloudflare Workers ne supporte pas createRequire ni les modules externes non bundlés.
+      // Tout ce qui est utilisé côté SSR doit être bundlé : tslib (interop __extends), pdf-lib (générateurs BC/BL/QR).
+      noExternal: ["tslib", "pdf-lib"],
     },
   },
   plugins: [
@@ -34,13 +33,11 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//, /^\/_serverFn\//],
         runtimeCaching: [
           {
-            // Navigations : réseau d'abord (jamais cache-first sur du HTML).
             urlPattern: ({ request }) => request.mode === "navigate",
             handler: "NetworkFirst",
             options: { cacheName: "agn-pages", networkTimeoutSeconds: 5 },
           },
           {
-            // App shell : assets buildés et immuables.
             urlPattern: ({ request, sameOrigin }) =>
               sameOrigin &&
               (request.destination === "script" ||
