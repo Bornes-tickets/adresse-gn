@@ -172,7 +172,7 @@ async function pdfQr(input: { numeros: string[]; baseUrl: string }): Promise<str
   const pages = Math.max(1, Math.ceil(input.numeros.length / parPage));
   const racine = input.baseUrl.replace(/\/+$/, "");
   for (let p = 0; p < pages; p += 1) {
-    const page = doc.addPage([A4.w, A4.h]);
+    const page = sanitizePage(doc.addPage([A4.w, A4.h]));
     const lot = input.numeros.slice(p * parPage, (p + 1) * parPage);
     for (let i = 0; i < lot.length; i += 1) {
       const numero = lot[i];
