@@ -1,6 +1,7 @@
 /** Génération du PDF de planches QR (12 par page A4, prêt à l'impression). Serveur uniquement. */
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import * as PDFLib from "pdf-lib";
 import * as QRCode from "qrcode";
+const { PDFDocument, StandardFonts, rgb } = PDFLib;
 
 const A4 = { w: 595.28, h: 841.89 };
 const COLS = 3;
@@ -12,7 +13,7 @@ const TAILLE_QR = (QR_MM / 25.4) * 72;
 
 /** Trait pointillé horizontal/vertical pour les marges de coupe. */
 function pointilles(
-  page: ReturnType<PDFDocument["addPage"]>,
+  page: ReturnType<InstanceType<typeof PDFDocument>["addPage"]>,
   x1: number,
   y1: number,
   x2: number,
@@ -113,11 +114,9 @@ export async function genererPdfQr(
   const hauteurCase = (A4.h - MARGE * 2) / ROWS;
   const parPage = COLS * ROWS;
   const pages = Math.max(1, Math.ceil(numeros.length / parPage));
-
   for (let p = 0; p < pages; p += 1) {
     const page = doc.addPage([A4.w, A4.h]);
     const lot = numeros.slice(p * parPage, (p + 1) * parPage);
-
     // Marges de coupe pointillées : grille complète 3x4.
     for (let c = 0; c <= COLS; c += 1) {
       const x = MARGE + c * largeurCase;
@@ -127,14 +126,12 @@ export async function genererPdfQr(
       const y = MARGE + r * hauteurCase;
       pointilles(page, MARGE, y, A4.w - MARGE, y);
     }
-
     for (let i = 0; i < lot.length; i += 1) {
       const numero = lot[i]!;
       const col = i % COLS;
       const ligne = Math.floor(i / COLS);
       const x0 = MARGE + col * largeurCase;
       const y0 = A4.h - MARGE - (ligne + 1) * hauteurCase;
-
       // Correction d'erreur H (≈30 % de redondance) pour l'extérieur.
       let brute: MatriceQr | null = null;
       try {
@@ -148,7 +145,6 @@ export async function genererPdfQr(
       const module = TAILLE_QR / taille;
       const qx = x0 + (largeurCase - TAILLE_QR) / 2;
       const qy = y0 + (hauteurCase - TAILLE_QR) / 2 + 16;
-
       for (let r = 0; r < taille; r += 1) {
         for (let c = 0; c < taille; c += 1) {
           if (modules[r]![c]) {
@@ -162,7 +158,6 @@ export async function genererPdfQr(
           }
         }
       }
-
       const tailleTexte = 11;
       const largeurTexte = mono.widthOfTextAtSize(numero, tailleTexte);
       page.drawText(numero, {
@@ -172,7 +167,6 @@ export async function genererPdfQr(
         font: mono,
         color: rgb(0.1, 0.12, 0.16),
       });
-
       const legende = "adresse.gn";
       page.drawText(legende, {
         x: x0 + (largeurCase - petite.widthOfTextAtSize(legende, 7)) / 2,
@@ -183,7 +177,6 @@ export async function genererPdfQr(
       });
     }
   }
-
   const octets = await doc.save();
   let binaire = "";
   for (let i = 0; i < octets.length; i += 1) binaire += String.fromCharCode(octets[i]!);
