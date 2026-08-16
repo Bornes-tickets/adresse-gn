@@ -39,7 +39,7 @@ function bytesToBase64(bytes: Uint8Array): string {
 async function pdfBc(po: any): Promise<string> {
   const MARGE = 40;
   const doc = await PDFDocument.create();
-  const page = doc.addPage([A4.w, A4.h]);
+  const page = sanitizePage(doc.addPage([A4.w, A4.h]));
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
   const reg = await doc.embedFont(StandardFonts.Helvetica);
   const mono = await doc.embedFont(StandardFonts.CourierBold);
