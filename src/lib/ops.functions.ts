@@ -61,12 +61,8 @@ export const opsGenerateLot = createServerFn({ method: "POST" })
       }
       if (!input.regionId) throw new Error("Zone obligatoire.");
       const CATEGORIES_VALIDES = [
-        "digital_only",
-        "residential",
-        "residential_plus",
-        "professional",
-        "institutional",
-        "custom",
+        "digital_only", "residential", "residential_plus",
+        "professional", "institutional", "custom",
       ];
       const category = input.category?.trim() || "residential";
       if (!CATEGORIES_VALIDES.includes(category)) throw new Error("Catégorie de balise invalide.");
@@ -100,19 +96,26 @@ export const opsAssignLot = createServerFn({ method: "POST" })
     return affecterLotAgent(data.lotId, data.agentId);
   });
 
+/** Export QR PDF — délégué à l'Edge Function Supabase (pdf-lib inutilisable sur Cloudflare Workers). */
 export const opsExportQrPdf = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { lotId: string }) => ({ lotId: String(input.lotId) }))
   .handler(async ({ context, data }) => {
     const { requireOps } = await import("@/lib/admin.server");
     const { numerosDuLot, codeDuLot } = await import("@/lib/admin-ops.server");
-    const { genererPdfQr, baseSite } = await import("@/lib/admin-pdf.server");
+    const { baseSite } = await import("@/lib/admin-pdf.server");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await requireOps(context.userId);
     const base = baseSite();
     const [numeros, lotCode] = await Promise.all([numerosDuLot(data.lotId), codeDuLot(data.lotId)]);
     if (numeros.length === 0) throw new Error("Aucune balise dans ce lot.");
-    const pdf = await genererPdfQr(numeros, base);
-    return { ...pdf, balises: numeros.length, lotCode };
+    const { data: pdfResp, error } = await supabaseAdmin.functions.invoke("generate-pdf", {
+      body: { type: "qr", data: { numeros, baseUrl: base } },
+    });
+    if (error) throw new Error(error.message);
+    const base64 = (pdfResp as any)?.base64;
+    if (!base64) throw new Error("PDF vide reçu de l'Edge Function.");
+    return { base64, pages: (pdfResp as any)?.pages ?? 1, balises: numeros.length, lotCode };
   });
 
 export const opsExportQrZip = createServerFn({ method: "POST" })
@@ -130,6 +133,7 @@ export const opsExportQrZip = createServerFn({ method: "POST" })
     const zip = await genererZipPng(numeros, base);
     return { ...zip, lotCode };
   });
+
 export const opsRegions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -159,6 +163,7 @@ export const opsFournisseurs = createServerFn({ method: "POST" })
     const uniq = [...new Set((data ?? []).map((l: any) => l.supplier).filter(Boolean))].sort();
     return uniq;
   });
+
 export const opsUpdateLotStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { lotId: string; statut: string; notes?: string | null }) => {
@@ -184,6 +189,7 @@ export const opsLotDetail = createServerFn({ method: "POST" })
     await requireOps(context.userId);
     return detailLot(data.lotId);
   });
+
 export const opsStock = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -192,6 +198,7 @@ export const opsStock = createServerFn({ method: "POST" })
     await requireOps(context.userId);
     return chargerStock();
   });
+
 export const opsSuppliers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -250,6 +257,7 @@ export const opsGeneratePOPdf = createServerFn({ method: "POST" })
     await requireOps(context.userId);
     return genererPdfBc(data.poId);
   });
+
 export const opsGenerateDN = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: {
@@ -267,7 +275,6 @@ export const opsGenerateDN = createServerFn({ method: "POST" })
     const { genererBonLivraison, majStatutLot } = await import("@/lib/ops-ops.server");
     await requireOps(context.userId);
     const r = await genererBonLivraison({ ...data, actorId: context.userId });
-    // Met à jour le lot en "received" en même temps
     const notes = [
       `Reçu ${data.quantity_received}/${data.quantity_shipped ?? "?"}`,
       data.qc_passed ? "QC OK" : "QC : défauts signalés",
@@ -298,6 +305,7 @@ export const opsGenerateDNPdf = createServerFn({ method: "POST" })
     await requireOps(context.userId);
     return genererPdfBl(data.dnId);
   });
+
 export const opsCreateInvoice = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: {
