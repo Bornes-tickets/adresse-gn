@@ -11,7 +11,6 @@ import {
   Search,
   UtensilsCrossed,
 } from "lucide-react";
-
 import { Reveal } from "@/components/Reveal";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,23 +24,21 @@ import {
   normalizeBeaconNumber,
 } from "@/lib/geo";
 import { searchBeacon } from "@/lib/search.functions";
+import { PushToggle } from "@/components/PushToggle";
+import { InstallBanner } from "@/components/InstallBanner";
 
 const EXEMPLES = ["GN-CKY-582741", "GN-CKY-152963", "GN-CKY-759482"];
-
 const ATOUTS = [
   "home.product.perks.qr",
   "home.product.perks.apps",
   "home.product.perks.noInstall",
 ];
-
 const USAGES = [
   { icone: HomeIcon, cle: "individuals" },
   { icone: UtensilsCrossed, cle: "shops" },
   { icone: Bike, cle: "delivery" },
   { icone: Building2, cle: "companies" },
 ];
-
-
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -92,23 +89,19 @@ function Home() {
   const [numero, setNumero] = useState("");
   const [erreur, setErreur] = useState<string | null>(null);
   const [enCours, setEnCours] = useState(false);
-
   const rechercher = async (valeur: string) => {
     const propre = normalizeBeaconNumber(valeur, getDefaultZone());
     if (!propre) return;
-
     if (!isValidBeaconNumber(propre)) {
       setErreur(t("home.errors.incomplete"));
       return;
     }
-
     setErreur(null);
     setEnCours(true);
     const reponse = await searchBeacon({ data: { number: propre } }).catch(
       () => null,
     );
     setEnCours(false);
-
     if (reponse?.status === "rate_limited") {
       setErreur(reponse.message ?? t("home.errors.rateLimited"));
       return;
@@ -117,10 +110,8 @@ function Home() {
       setErreur(t("home.errors.notFound"));
       return;
     }
-
     navigate({ to: "/a/$number", params: { number: propre } });
   };
-
   return (
     <div className="overflow-x-hidden bg-white">
       {/* Héros — seule section colorée de la page */}
@@ -132,12 +123,9 @@ function Home() {
           >
             {t("home.hero.title")}
           </h1>
-
           <p className="mx-auto mt-6 max-w-xl text-center text-base leading-relaxed text-white/85 md:text-lg lg:max-w-none">
             {t("home.hero.subtitle")}
           </p>
-
-
           <div className="mt-10 rounded-2xl bg-white p-3 shadow-2xl">
             <form
               className="flex flex-col gap-3 sm:flex-row"
@@ -175,7 +163,6 @@ function Home() {
                   <TooltipContent>{t("home.hero.soon")}</TooltipContent>
                 </Tooltip>
               </div>
-
               <Button
                 type="submit"
                 disabled={enCours}
@@ -183,17 +170,14 @@ function Home() {
               >
                 <Search className="size-5" />
                 {enCours ? t("home.hero.searching") : t("home.hero.search")}
-
               </Button>
             </form>
-
             {erreur && (
               <p role="alert" className="mt-3 px-1 text-sm text-destructive">
                 {erreur}
               </p>
             )}
           </div>
-
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-sm">
             {EXEMPLES.map((exemple) => (
               <Link
@@ -206,6 +190,13 @@ function Home() {
               </Link>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* 🔔 Test notifications push (à retirer une fois validé) */}
+      <section className="bg-slate-50 px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-md">
+          <PushToggle />
         </div>
       </section>
 
@@ -239,10 +230,8 @@ function Home() {
               <Link to="/a/$number" params={{ number: "GN-CKY-582741" }}>
                 {t("home.product.example")}
               </Link>
-
             </Button>
           </Reveal>
-
           <Reveal delay={120} className="relative">
             <div
               aria-hidden
@@ -287,7 +276,6 @@ function Home() {
               {t("home.usages.title")}
             </h2>
           </Reveal>
-
           <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
             {USAGES.map((item, index) => (
               <Reveal key={item.cle} delay={index * 80}>
@@ -301,7 +289,6 @@ function Home() {
                   <p className="mt-2 text-sm leading-relaxed text-slate-600">
                     {t(`home.usages.${item.cle}.text`)}
                   </p>
-
                 </div>
               </Reveal>
             ))}
@@ -337,10 +324,8 @@ function Home() {
                 >
                   <Link to="/a-propos">{t("home.cta.contact")}</Link>
                 </Button>
-
               </div>
             </div>
-
             <div className="flex flex-col justify-center bg-white p-10 lg:col-span-2">
               <div className="flex items-center gap-4 rounded-lg bg-slate-100 p-6">
                 <span className="min-w-0 flex-1 font-mono text-base font-bold tracking-tight text-slate-900 sm:text-lg">
@@ -359,12 +344,13 @@ function Home() {
               <p className="mt-4 text-xs text-slate-500">
                 {t("home.cta.plate")}
               </p>
-
             </div>
           </div>
         </Reveal>
       </section>
 
+      {/* Bannière installation PWA (fixée en bas) */}
+      <InstallBanner variant="bottom" />
     </div>
   );
 }
