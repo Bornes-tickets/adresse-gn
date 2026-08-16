@@ -1,7 +1,5 @@
 /** Génération du PDF officiel Bon de livraison. Serveur uniquement. */
-import { createRequire } from "node:module";
-const require = createRequire(import.meta.url);
-const { PDFDocument, StandardFonts, rgb } = require("pdf-lib");
+import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
 const A4 = { w: 595.28, h: 841.89 };
 const MARGE = 40;
@@ -42,14 +40,12 @@ export async function genererPdfBonLivraison(dn: DNForPdf): Promise<{ base64: st
   const slate200 = rgb(0.89, 0.9, 0.92);
   const rose = rgb(0.88, 0.11, 0.28);
   let y = A4.h - MARGE;
-  // En-tête vert émeraude
   page.drawRectangle({ x: 0, y: y - 60, width: A4.w, height: 60, color: emerald });
   page.drawText("ADRESSE GN", { x: MARGE, y: y - 30, size: 22, font: bold, color: rgb(1, 1, 1) });
   page.drawText("Système d'adressage QR de la Guinée", { x: MARGE, y: y - 48, size: 9, font: reg, color: rgb(1, 1, 1) });
   page.drawText("BON DE LIVRAISON", { x: A4.w - MARGE - 130, y: y - 25, size: 14, font: bold, color: rgb(1, 1, 1) });
   page.drawText(dn.dn_number, { x: A4.w - MARGE - 130, y: y - 43, size: 12, font: mono, color: rgb(1, 1, 1) });
   y -= 90;
-  // Références croisées
   page.drawRectangle({ x: MARGE, y: y - 40, width: A4.w - MARGE * 2, height: 40, color: rgb(0.95, 0.98, 0.96), borderColor: slate200, borderWidth: 0.5 });
   page.drawText("BON DE COMMANDE", { x: MARGE + 10, y: y - 15, size: 7, font: bold, color: slate600 });
   page.drawText(dn.po_number ?? "—", { x: MARGE + 10, y: y - 30, size: 10, font: mono, color: slate900 });
@@ -58,7 +54,6 @@ export async function genererPdfBonLivraison(dn: DNForPdf): Promise<{ base64: st
   page.drawText("DATE RÉCEPTION", { x: MARGE + 350, y: y - 15, size: 7, font: bold, color: slate600 });
   page.drawText(fmtDate(dn.received_at), { x: MARGE + 350, y: y - 30, size: 10, font: bold, color: slate900 });
   y -= 60;
-  // Expéditeur / Réceptionnaire
   const colW = (A4.w - MARGE * 2 - 20) / 2;
   page.drawText("EXPÉDITEUR", { x: MARGE, y, size: 8, font: bold, color: slate600 });
   y -= 14;
@@ -76,7 +71,6 @@ export async function genererPdfBonLivraison(dn: DNForPdf): Promise<{ base64: st
   y2 -= 11;
   if (dn.receiver_name) { page.drawText(`Reçu par : ${dn.receiver_name}`, { x: xDest, y: y2, size: 9, font: bold, color: slate900 }); y2 -= 11; }
   y = Math.min(y, y2) - 20;
-  // Transport
   page.drawRectangle({ x: MARGE, y: y - 50, width: A4.w - MARGE * 2, height: 50, color: rgb(0.98, 0.99, 0.99), borderColor: slate200, borderWidth: 0.5 });
   page.drawText("TRANSPORT", { x: MARGE + 10, y: y - 15, size: 7, font: bold, color: slate600 });
   page.drawText(dn.carrier ?? "Non spécifié", { x: MARGE + 10, y: y - 30, size: 10, font: bold, color: slate900 });
@@ -86,7 +80,6 @@ export async function genererPdfBonLivraison(dn: DNForPdf): Promise<{ base64: st
   page.drawText("DATE RÉCEPTION", { x: MARGE + 400, y: y - 15, size: 7, font: bold, color: slate600 });
   page.drawText(fmtDate(dn.received_at), { x: MARGE + 400, y: y - 30, size: 10, font: bold, color: slate900 });
   y -= 70;
-  // Tableau des quantités
   page.drawRectangle({ x: MARGE, y: y - 30, width: A4.w - MARGE * 2, height: 30, color: slate900 });
   page.drawText("QTÉ COMMANDÉE", { x: MARGE + 20, y: y - 20, size: 9, font: bold, color: rgb(1, 1, 1) });
   page.drawText("QTÉ EXPÉDIÉE", { x: MARGE + 160, y: y - 20, size: 9, font: bold, color: rgb(1, 1, 1) });
@@ -101,7 +94,6 @@ export async function genererPdfBonLivraison(dn: DNForPdf): Promise<{ base64: st
   const ecartTxt = ecart === 0 ? "0" : ecart > 0 ? `+${ecart}` : String(ecart);
   page.drawText(ecartTxt, { x: MARGE + 400, y: y - 25, size: 16, font: bold, color: ecart === 0 ? emerald : rose });
   y -= 60;
-  // Statut QC
   const qcColor = dn.qc_passed === true ? emerald : dn.qc_passed === false ? rose : slate600;
   page.drawRectangle({ x: MARGE, y: y - 40, width: A4.w - MARGE * 2, height: 40, color: rgb(1, 1, 1), borderColor: qcColor, borderWidth: 2 });
   page.drawText("CONTRÔLE QUALITÉ", { x: MARGE + 10, y: y - 15, size: 8, font: bold, color: slate600 });
@@ -129,7 +121,6 @@ export async function genererPdfBonLivraison(dn: DNForPdf): Promise<{ base64: st
       y -= 11;
     }
   }
-  // Signatures
   const ySig = 100;
   page.drawText("Signature expéditeur", { x: MARGE, y: ySig, size: 8, font: bold, color: slate600 });
   page.drawRectangle({ x: MARGE, y: ySig - 45, width: 200, height: 40, borderColor: slate200, borderWidth: 0.5, color: rgb(1, 1, 1) });
