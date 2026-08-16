@@ -14,12 +14,20 @@ const CORS = {
 
 const A4 = { w: 595.28, h: 841.89 };
 
+/** WinAnsi (polices standard pdf-lib) ne sait pas encoder les espaces fines Unicode (U+202F, U+00A0…). */
+function ascii(v: unknown): string {
+  return String(v ?? "")
+    .replace(/[\u00a0\u202f\u2007\u2008\u2009\u200a\u2060]/g, " ")
+    .replace(/[\u2010-\u2015]/g, "-")
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201c\u201d]/g, '"');
+}
 function fmt(n: number): string {
-  return new Intl.NumberFormat("fr-FR").format(n);
+  return ascii(new Intl.NumberFormat("fr-FR").format(Number(n ?? 0)));
 }
 function fmtDate(iso: string | null | undefined): string {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("fr-FR");
+  if (!iso) return "-";
+  return ascii(new Date(iso).toLocaleDateString("fr-FR"));
 }
 function bytesToBase64(bytes: Uint8Array): string {
   let bin = "";
