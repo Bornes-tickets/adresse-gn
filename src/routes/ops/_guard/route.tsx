@@ -26,6 +26,16 @@ export const Route = createFileRoute("/ops/_guard")({
     const { supabase } = await import("@/integrations/supabase/client");
     const { data } = await supabase.auth.getSession();
     if (!data.session) throw redirect({ to: "/login" });
+
+    const { data: profil, error: profilError } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", data.session.user.id)
+      .maybeSingle();
+    if (profilError || !profil || !["ops", "admin", "super_admin"].includes(profil.role)) {
+      throw redirect({ to: "/login" });
+    }
+
     try {
       return { identite: await opsWhoami() };
     } catch {
