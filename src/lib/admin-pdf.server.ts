@@ -1,25 +1,15 @@
 /** Génération du PDF de planches QR (12 par page A4, prêt à l'impression). Serveur uniquement. */
+import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import * as QRCode from "qrcode";
-import { createRequire } from "node:module";
-const require = createRequire(import.meta.url);
-const { PDFDocument, StandardFonts, rgb } = require("pdf-lib");
 
 const A4 = { w: 595.28, h: 841.89 };
 const COLS = 3;
 const ROWS = 4;
 const MARGE = 28;
-/** 25 mm en points PDF (unités vectorielles → densité illimitée à l'impression). */
 const QR_MM = 25;
 const TAILLE_QR = (QR_MM / 25.4) * 72;
 
-/** Trait pointillé horizontal/vertical pour les marges de coupe. */
-function pointilles(
-  page: ReturnType<InstanceType<typeof PDFDocument>["addPage"]>,
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
-) {
+function pointilles(page: any, x1: number, y1: number, x2: number, y2: number) {
   page.drawLine({
     start: { x: x1, y: y1 },
     end: { x: x2, y: y2 },
@@ -29,7 +19,6 @@ function pointilles(
   });
 }
 
-/** Base absolue du site de production, surchargée par PUBLIC_SITE_URL. */
 export const SITE_PAR_DEFAUT = "https://adresse-gn.lovable.app";
 export function baseSite(): string {
   const brut = (process.env["PUBLIC_SITE_URL"] ?? "").trim();
@@ -44,14 +33,12 @@ export function baseSite(): string {
   }
 }
 
-/** URL absolue encodée dans le QR d'une balise. */
 export function urlBalise(baseUrl: string, numero: string): string {
   return `${baseUrl.replace(/\/+$/, "")}/a/${numero}`;
 }
 
 export type MatriceQr = { taille: number; modules: boolean[][] };
 
-/** Résout l'API `create` de qrcode quelle que soit la forme du module (ESM/CJS/interop). */
 function resoudreCreate(): (contenu: string, opts: any) => any {
   const mod: any = QRCode as any;
   const create =
@@ -64,7 +51,6 @@ function resoudreCreate(): (contenu: string, opts: any) => any {
   return create;
 }
 
-/** Matrice de modules du QR réellement dessiné (correction d'erreur H). */
 export function matriceQr(contenu: string): MatriceQr {
   const create = resoudreCreate();
   const qr = create(contenu, { errorCorrectionLevel: "H" });
@@ -78,10 +64,6 @@ export function matriceQr(contenu: string): MatriceQr {
   return { taille, modules };
 }
 
-/**
- * Refuse une matrice inutilisable (vide, non carrée, taille incohérente, modules manquants)
- * avec un message explicite désignant la balise fautive.
- */
 export function validerMatrice(matrice: MatriceQr | null | undefined, numero: string): MatriceQr {
   const echec = (raison: string): never => {
     throw new Error(`QR illisible pour la balise ${numero} : ${raison}. Export PDF annulé.`);
@@ -118,7 +100,6 @@ export async function genererPdfQr(
   for (let p = 0; p < pages; p += 1) {
     const page = doc.addPage([A4.w, A4.h]);
     const lot = numeros.slice(p * parPage, (p + 1) * parPage);
-    // Marges de coupe pointillées : grille complète 3x4.
     for (let c = 0; c <= COLS; c += 1) {
       const x = MARGE + c * largeurCase;
       pointilles(page, x, MARGE, x, A4.h - MARGE);
@@ -133,7 +114,6 @@ export async function genererPdfQr(
       const ligne = Math.floor(i / COLS);
       const x0 = MARGE + col * largeurCase;
       const y0 = A4.h - MARGE - (ligne + 1) * hauteurCase;
-      // Correction d'erreur H (≈30 % de redondance) pour l'extérieur.
       let brute: MatriceQr | null = null;
       try {
         brute = fabriquerMatrice(urlBalise(racine, numero));
