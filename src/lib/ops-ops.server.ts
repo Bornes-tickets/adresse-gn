@@ -239,8 +239,6 @@ export async function genererBonCommande(input: { lotId: string; actorId: string
   const { data: lot, error: errLot } = await supabaseAdmin.from("lots").select("*").eq("id", input.lotId).maybeSingle();
   if (errLot) throw new Error(errLot.message);
   if (!lot) throw new Error("Commande introuvable.");
-
-  // Si le BC existe déjà, on le renvoie
   const { data: existing } = await supabaseAdmin
     .from("purchase_orders" as any)
     .select("id, po_number")
@@ -249,8 +247,6 @@ export async function genererBonCommande(input: { lotId: string; actorId: string
   if (existing) {
     return { success: true, id: (existing as any).id, po_number: (existing as any).po_number, existed: true };
   }
-
-  // Résolution du fournisseur : cherche dans la table suppliers, sinon snapshot minimal
   let supplierId: string | null = null;
   let supplierSnapshot: any = { name: lot.supplier ?? "Fournisseur inconnu" };
   if (lot.supplier) {
@@ -264,13 +260,9 @@ export async function genererBonCommande(input: { lotId: string; actorId: string
       supplierSnapshot = sup;
     }
   }
-
-  // Numéro BC
   const { data: numData, error: errNum } = await supabaseAdmin.rpc("next_po_number" as any);
   if (errNum) throw new Error(errNum.message);
   const poNumber = numData as unknown as string;
-
-  // Montants (HT/TVA/TTC)
   const cat = lot.category ?? "residential";
   const unitPrice = CATEGORY_PRICES[cat] ?? 0;
   const quantity = Number(lot.quantity ?? 0);
@@ -278,7 +270,6 @@ export async function genererBonCommande(input: { lotId: string; actorId: string
   const tvaRate = 18;
   const tvaAmount = Math.round(amountHt * tvaRate / 100);
   const amountTtc = amountHt + tvaAmount;
-
   const { data: po, error } = await supabaseAdmin.from("purchase_orders" as any).insert({
     po_number: poNumber,
     lot_id: input.lotId,
@@ -295,8 +286,6 @@ export async function genererBonCommande(input: { lotId: string; actorId: string
     created_by: input.actorId,
   }).select("id, po_number").single();
   if (error) throw new Error(error.message);
-
-  // Ligne unique (le lot = 1 ligne)
   await supabaseAdmin.from("purchase_order_lines" as any).insert({
     po_id: (po as any).id,
     designation: `${CATEGORY_LABELS[cat] ?? "Balise"} — Lot ${lot.code}`,
@@ -305,7 +294,6 @@ export async function genererBonCommande(input: { lotId: string; actorId: string
     unit_price_ht: unitPrice,
     line_total_ht: amountHt,
   });
-
   return { success: true, id: (po as any).id, po_number: (po as any).po_number };
 }
 
@@ -336,6 +324,7 @@ export async function majBonCommande(poId: string, patch: any) {
   return { success: true };
 }
 
+/** BC → délégué à l'Edge Function Supabase (pdf-lib inutilisable sur Cloudflare Workers). */
 export async function genererPdfBc(poId: string): Promise<{ base64: string; po_number: string }> {
   const { data: po, error } = await supabaseAdmin
     .from("purchase_orders" as any)
@@ -350,28 +339,35 @@ export async function genererPdfBc(poId: string): Promise<{ base64: string; po_n
     .eq("po_id", poId)
     .order("created_at", { ascending: true });
 
-  const { genererPdfBonCommande } = await import("@/lib/ops-po-pdf.server");
-  const pdf = await genererPdfBonCommande({
-    po_number: (po as any).po_number,
-    expected_delivery: (po as any).expected_delivery ?? null,
-    issued_at: (po as any).issued_at,
-    supplier: (po as any).supplier_snapshot ?? { name: "Fournisseur inconnu" },
-    lines: (lines ?? []) as any,
-    amount_ht: (po as any).amount_ht,
-    tva_rate: (po as any).tva_rate,
-    tva_amount: (po as any).tva_amount,
-    amount_ttc: (po as any).amount_ttc,
-    payment_terms: (po as any).payment_terms,
+  const { data: pdfResp, error: fnErr } = await supabaseAdmin.functions.invoke("generate-pdf", {
+    body: {
+      type: "bc",
+      data: {
+        po_number: (po as any).po_number,
+        lot_code: (po as any).lots?.code ?? null,
+        issued_at: (po as any).issued_at,
+        supplier: (po as any).supplier_snapshot ?? { name: "Fournisseur inconnu" },
+        lines: lines ?? [],
+        amount_ht: (po as any).amount_ht,
+        tva_rate: (po as any).tva_rate,
+        tva_amount: (po as any).tva_amount,
+        amount_ttc: (po as any).amount_ttc,
+        payment_terms: (po as any).payment_terms,
+      },
+    },
   });
+  if (fnErr) throw new Error(fnErr.message);
+  const base64 = (pdfResp as any)?.base64;
+  if (!base64) throw new Error("PDF vide reçu de l'Edge Function.");
 
   const chemin = `${(po as any).po_number}.pdf`;
-  const octets = Uint8Array.from(atob(pdf.base64), (c) => c.charCodeAt(0));
+  const octets = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
   await supabaseAdmin.storage.from("purchase_orders").upload(chemin, octets, { contentType: "application/pdf", upsert: true });
   const { data: signed } = await supabaseAdmin.storage.from("purchase_orders").createSignedUrl(chemin, 60 * 60 * 24 * 365);
   if (signed?.signedUrl) {
     await supabaseAdmin.from("purchase_orders" as any).update({ pdf_url: signed.signedUrl }).eq("id", poId);
   }
-  return { base64: pdf.base64, po_number: (po as any).po_number };
+  return { base64, po_number: (po as any).po_number };
 }
 
 /* --------------------------- BONS DE LIVRAISON --------------------------- */
@@ -424,37 +420,50 @@ export async function chargerBonLivraison(lotId: string) {
   return dn;
 }
 
+/** BL → délégué à l'Edge Function Supabase (pdf-lib inutilisable sur Cloudflare Workers). */
 export async function genererPdfBl(dnId: string): Promise<{ base64: string; dn_number: string }> {
-  const { data: dn, error } = await supabaseAdmin.from("delivery_notes" as any).select("*, lots(code), purchase_orders(po_number)").eq("id", dnId).maybeSingle();
+  const { data: dn, error } = await supabaseAdmin
+    .from("delivery_notes" as any)
+    .select("*, lots(code), purchase_orders(po_number)")
+    .eq("id", dnId)
+    .maybeSingle();
   if (error) throw new Error(error.message);
   if (!dn) throw new Error("BL introuvable.");
-  const { genererPdfBonLivraison } = await import("@/lib/ops-dn-pdf.server");
-  const supplier = (dn as any).supplier_snapshot ?? { name: "Fournisseur inconnu" };
-  const pdf = await genererPdfBonLivraison({
-    dn_number: (dn as any).dn_number,
-    po_number: (dn as any).purchase_orders?.po_number ?? null,
-    lot_code: (dn as any).lots?.code ?? null,
-    received_at: (dn as any).received_at,
-    shipped_at: (dn as any).shipped_at,
-    supplier,
-    carrier: (dn as any).carrier,
-    tracking_number: (dn as any).tracking_number,
-    quantity_ordered: (dn as any).quantity_ordered,
-    quantity_shipped: (dn as any).quantity_shipped,
-    quantity_received: (dn as any).quantity_received,
-    qc_passed: (dn as any).qc_passed,
-    defects: (dn as any).defects,
-    receiver_name: (dn as any).receiver_name,
-    notes: (dn as any).notes,
+
+  const { data: pdfResp, error: fnErr } = await supabaseAdmin.functions.invoke("generate-pdf", {
+    body: {
+      type: "bl",
+      data: {
+        dn_number: (dn as any).dn_number,
+        po_number: (dn as any).purchase_orders?.po_number ?? null,
+        lot_code: (dn as any).lots?.code ?? null,
+        received_at: (dn as any).received_at,
+        shipped_at: (dn as any).shipped_at,
+        supplier: (dn as any).supplier_snapshot ?? { name: "Fournisseur inconnu" },
+        carrier: (dn as any).carrier,
+        tracking_number: (dn as any).tracking_number,
+        quantity_ordered: (dn as any).quantity_ordered,
+        quantity_shipped: (dn as any).quantity_shipped,
+        quantity_received: (dn as any).quantity_received,
+        qc_passed: (dn as any).qc_passed,
+        defects: (dn as any).defects,
+        receiver_name: (dn as any).receiver_name,
+        notes: (dn as any).notes,
+      },
+    },
   });
+  if (fnErr) throw new Error(fnErr.message);
+  const base64 = (pdfResp as any)?.base64;
+  if (!base64) throw new Error("PDF vide reçu de l'Edge Function.");
+
   const chemin = `${(dn as any).dn_number}.pdf`;
-  const octets = Uint8Array.from(atob(pdf.base64), (c) => c.charCodeAt(0));
+  const octets = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
   await supabaseAdmin.storage.from("delivery_notes").upload(chemin, octets, { contentType: "application/pdf", upsert: true });
   const { data: signed } = await supabaseAdmin.storage.from("delivery_notes").createSignedUrl(chemin, 60 * 60 * 24 * 365);
   if (signed?.signedUrl) {
     await supabaseAdmin.from("delivery_notes" as any).update({ pdf_url: signed.signedUrl }).eq("id", dnId);
   }
-  return { base64: pdf.base64, dn_number: (dn as any).dn_number };
+  return { base64, dn_number: (dn as any).dn_number };
 }
 
 /* --------------------------- FACTURES D'ACHAT --------------------------- */
