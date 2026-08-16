@@ -15,10 +15,10 @@ export default defineConfig({
   },
   vite: {
     ssr: {
-      // tslib doit rester bundlé (interop __extends cassée sinon).
-      // qrcode & co restent externes : ce sont des modules CJS que le runner SSR
-      // de dev n'arrive pas à inliner (require/module non définis).
-      noExternal: ["tslib"],
+      // Modules CJS ou avec interop cassée en SSR : les bundler évite les erreurs
+      // "Cannot destructure property '__extends' of '__toESM(...).default'"
+      // et les require/module non définis dans le runner SSR.
+      noExternal: ["tslib", "pdf-lib", "pako", "@pdf-lib/standard-fonts", "@pdf-lib/upng"],
     },
   },
   plugins: [
