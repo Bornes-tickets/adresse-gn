@@ -956,7 +956,8 @@ export async function listerLots() {
   const dnMap = new Map<string, string>();
 
   if (lotIds.length) {
-    const [{ data: invoices }, { data: pos }, { data: dns }] = await Promise.all([
+    // Tolérant aux tables manquantes (migrations pas encore appliquées)
+    const [invRes, poRes, dnRes] = await Promise.allSettled([
       supabaseAdmin
         .from("purchase_invoices" as any)
         .select("lot_id, payment_status, amount_ttc, amount_paid, due_date, internal_ref")
@@ -970,9 +971,15 @@ export async function listerLots() {
         .select("lot_id, dn_number")
         .in("lot_id", lotIds),
     ]);
-    for (const i of (invoices ?? []) as any[]) invMap.set(i.lot_id, i);
-    for (const p of (pos ?? []) as any[]) poMap.set(p.lot_id, p.po_number);
-    for (const d of (dns ?? []) as any[]) dnMap.set(d.lot_id, d.dn_number);
+    if (invRes.status === "fulfilled" && !invRes.value.error) {
+      for (const i of (invRes.value.data ?? []) as any[]) invMap.set(i.lot_id, i);
+    }
+    if (poRes.status === "fulfilled" && !poRes.value.error) {
+      for (const p of (poRes.value.data ?? []) as any[]) poMap.set(p.lot_id, p.po_number);
+    }
+    if (dnRes.status === "fulfilled" && !dnRes.value.error) {
+      for (const d of (dnRes.value.data ?? []) as any[]) dnMap.set(d.lot_id, d.dn_number);
+    }
   }
 
   return (lots ?? []).map((l: any) => {
