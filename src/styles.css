@@ -266,3 +266,66 @@
 @utility animate-scroll-hint {
   animation: agn-scroll-hint 1.8s ease-in-out infinite;
 }
+/* À AJOUTER À LA FIN DE src/styles.css */
+
+/* Safe areas iOS notch/home-indicator */
+@supports (padding: max(0px)) {
+  .safe-top { padding-top: max(env(safe-area-inset-top), 0.5rem); }
+  .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 0.5rem); }
+  .safe-left { padding-left: max(env(safe-area-inset-left), 0.5rem); }
+  .safe-right { padding-right: max(env(safe-area-inset-right), 0.5rem); }
+  .safe-x { padding-left: max(env(safe-area-inset-left), 0.5rem); padding-right: max(env(safe-area-inset-right), 0.5rem); }
+}
+
+/* Touch targets 44×44 min (Apple HIG / Material) */
+@media (pointer: coarse) {
+  button, a[role="button"], [role="button"], input[type="button"], input[type="submit"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Empêche le zoom auto iOS quand on focus un input avec font-size < 16px */
+@media (pointer: coarse) {
+  input, select, textarea { font-size: 16px !important; }
+}
+
+/* Scroll-behavior smooth par défaut mobile */
+html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
+
+/* Désactive le double-tap zoom sur les éléments interactifs */
+button, a, [role="button"] { touch-action: manipulation; }
+
+/* Animation scan QR */
+@keyframes scan {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(calc(100% - 2px)); }
+  100% { transform: translateY(0); }
+}
+
+/* Pull-to-refresh visuel (à combiner avec un gesture handler si besoin) */
+.no-overscroll { overscroll-behavior: contain; }
+
+/* Feedback haptique visuel — tap active state */
+@media (hover: none) {
+  .tap-highlight:active { background-color: rgb(0 0 0 / 0.06); }
+}
+
+/* Cache la barre de scroll sur mobile mais garde le scroll */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+
+/* Skeleton loading shimmer */
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #f1f5f9 0px, #e2e8f0 40px, #f1f5f9 80px);
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite linear;
+}
+
