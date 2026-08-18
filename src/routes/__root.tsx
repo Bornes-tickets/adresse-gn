@@ -10,8 +10,6 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-
-
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Layout } from "@/components/Layout";
@@ -19,7 +17,7 @@ import { useLangue } from "@/hooks/useLangue";
 import { registerServiceWorker } from "@/lib/pwa";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-
+import { CapacitorInit } from "@/components/CapacitorInit";
 
 function NotFoundComponent() {
   const { t } = useTranslation();
@@ -31,7 +29,6 @@ function NotFoundComponent() {
           {t("notFound.title")}
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">{t("notFound.text")}</p>
-
         <div className="mt-6">
           <Link
             to="/"
@@ -52,7 +49,6 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
@@ -81,7 +77,6 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
     </div>
   );
 }
-
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
@@ -141,13 +136,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png", sizes: "180x180" },
     ],
   }),
-
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
 });
-
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
@@ -179,6 +172,15 @@ function RootComponent() {
     registerServiceWorker();
   }, []);
 
+  // Détection du mode natif Capacitor : ajoute la classe "native-app" au <html>
+  // pour appliquer les styles CSS spécifiques (safe-areas, cacher les éléments web-only, etc.)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const cap = (window as any).Capacitor;
+    if (cap?.isNativePlatform?.()) {
+      document.documentElement.classList.add("native-app");
+    }
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -193,6 +195,8 @@ function RootComponent() {
           </Layout>
         )}
         <Toaster />
+        {/* Initialisation Capacitor : StatusBar, SplashScreen, back button Android, haptic feedback */}
+        <CapacitorInit />
       </TooltipProvider>
     </QueryClientProvider>
   );
