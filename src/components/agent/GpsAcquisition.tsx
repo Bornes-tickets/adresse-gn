@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { MapPin, Loader2, Target, AlertTriangle, Check, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useHighAccuracyGps, type GpsPoint } from "@/hooks/useHighAccuracyGps";
+import { useHighAccuracyGps, type GpsPoint, type GpsQuality } from "@/hooks/useHighAccuracyGps";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -14,7 +14,7 @@ interface Props {
   onReady?: (point: GpsPoint) => void;
 }
 
-const QUALITY_STYLES: Record<string, { cls: string; label: string; icon: any }> = {
+const QUALITY_STYLES: Record<GpsQuality, { cls: string; label: string; icon: any }> = {
   excellent: { cls: "bg-emerald-100 text-emerald-700 border-emerald-200", label: "Excellent", icon: Target },
   bon: { cls: "bg-emerald-100 text-emerald-700 border-emerald-200", label: "Bon", icon: Target },
   moyen: { cls: "bg-amber-100 text-amber-700 border-amber-200", label: "Moyen", icon: MapPin },

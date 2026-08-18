@@ -60,7 +60,7 @@ export function ClaimAddressCard({ numero, hasOwner, ownerName }: Props) {
             Recevez des notifications pour les visites
           </li>
         </ul>
-        <Link to="/claim/$number" params={{ number: numero }} className="block mt-4">
+        <Link to="/a/$number" params={{ number: numero }} className="block mt-4">
           <Button className="w-full h-12 bg-gradient-to-r from-violet-500 via-fuchsia-600 to-pink-600 hover:from-violet-600 hover:via-fuchsia-700 hover:to-pink-700 text-white shadow-md font-semibold">
             <UserPlus className="h-4 w-4 mr-2" />
             Devenir propriétaire
