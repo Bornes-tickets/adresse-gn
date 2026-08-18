@@ -24,7 +24,6 @@ import {
   normalizeBeaconNumber,
 } from "@/lib/geo";
 import { searchBeacon } from "@/lib/search.functions";
-import { PushToggle } from "@/components/PushToggle";
 import { InstallBanner } from "@/components/InstallBanner";
 
 const EXEMPLES = ["GN-CKY-582741", "GN-CKY-152963", "GN-CKY-759482"];
@@ -190,13 +189,6 @@ function Home() {
               </Link>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* 🔔 Test notifications push (à retirer une fois validé) */}
-      <section className="bg-slate-50 px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-md">
-          <PushToggle />
         </div>
       </section>
 
