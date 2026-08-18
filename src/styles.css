@@ -328,4 +328,78 @@ button, a, [role="button"] { touch-action: manipulation; }
   background-size: 1000px 100%;
   animation: shimmer 2s infinite linear;
 }
+/* À AJOUTER À LA FIN DE src/styles.css */
 
+/* ===== APP NATIVE (Capacitor Android/iOS) ===== */
+
+/* Détection du mode natif : Capacitor injecte capacitor:// dans le scheme
+   ou hostname=localhost avec User-Agent AdresseGN-Android */
+html.native-app,
+html.native-app body {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  overflow-x: hidden;
+}
+
+/* Réactive la sélection texte sur les champs de saisie et contenus éditables */
+html.native-app input,
+html.native-app textarea,
+html.native-app [contenteditable="true"],
+html.native-app .selectable-text {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Safe areas : respecte les marges système Android (barre statut, gestures) */
+html.native-app body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Retire les scrollbars visibles inutiles sur mobile */
+html.native-app ::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* Empêche le zoom au double-tap (comportement natif attendu) */
+html.native-app * {
+  touch-action: manipulation;
+}
+
+/* Cache les éléments purement web sur l'app native (bannière install, etc.) */
+.web-only { display: block; }
+html.native-app .web-only { display: none !important; }
+
+.native-only { display: none; }
+html.native-app .native-only { display: block; }
+
+/* Améliore le rendu des inputs (évite le zoom iOS + look natif) */
+html.native-app input,
+html.native-app select,
+html.native-app textarea {
+  font-size: 16px !important;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Feedback tactile visuel sur les boutons */
+html.native-app button:active,
+html.native-app a:active,
+html.native-app [role="button"]:active {
+  opacity: 0.7;
+  transition: opacity 0.05s;
+}
+
+/* Ajuste le header sticky pour ne pas coller à la barre de statut */
+html.native-app header.sticky,
+html.native-app .sticky-top {
+  top: env(safe-area-inset-top, 0);
+}
