@@ -28,7 +28,7 @@ export function GpsAcquisition({ autoStart = true, targetAccuracy = 5, onReady }
   useEffect(() => { if (autoStart) gps.acquire(); /* eslint-disable-next-line */ }, [autoStart]);
   useEffect(() => { if (gps.status === "done" && gps.best) onReady?.(gps.best); }, [gps.status, gps.best, onReady]);
 
-  const q = QUALITY_STYLES[gps.quality];
+  const q = QUALITY_STYLES[gps.quality] ?? QUALITY_STYLES.aucun;
   const QIcon = q.icon;
   const acquiring = gps.status === "acquiring";
 
