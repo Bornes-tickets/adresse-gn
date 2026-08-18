@@ -27,7 +27,7 @@ registerRoute(
   ({ request }) => ["script", "style", "font"].includes(request.destination),
   new CacheFirst({
     cacheName: "agn-assets",
-    plugins: [new ExpirationPlugin({ maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 })],
+    plugins: [new ExpirationPlugin({ maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 }) as any],
   }),
 );
 
@@ -36,7 +36,7 @@ registerRoute(
   ({ request }) => request.destination === "image",
   new StaleWhileRevalidate({
     cacheName: "agn-images",
-    plugins: [new ExpirationPlugin({ maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 30 })],
+    plugins: [new ExpirationPlugin({ maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 30 }) as any],
   }),
 );
 
