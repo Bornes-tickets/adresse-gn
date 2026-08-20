@@ -16,7 +16,14 @@ import { QrScanner } from "@/components/QrScanner";
 import { cn } from "@/lib/utils";
 
 const EXEMPLES = ["GN-CKY-582741", "GN-CKY-152963", "GN-CKY-759482"];
-const ATOUTS = ["home.product.perks.qr", "home.product.perks.apps", "home.product.perks.noInstall"];
+
+// Atouts hardcodés (indépendants de la traduction pour garantir le texte)
+const ATOUTS = [
+  "Fonctionne aussi via QR code",
+  "Compatible avec toutes les apps de navigation",
+  "Web, mobile, tablette · Application installable",
+];
+
 const USAGES = [
   { icone: HomeIcon, cle: "individuals", grad: "from-emerald-500 to-teal-600" },
   { icone: UtensilsCrossed, cle: "shops", grad: "from-orange-500 to-rose-600" },
@@ -116,7 +123,6 @@ function Home() {
     <div className="bg-white">
       {/* ==================== HÉROS ==================== */}
       <section className="relative overflow-hidden gradient-signature-soft">
-        {/* Éclairage doux */}
         <div aria-hidden className="absolute top-0 left-1/2 -translate-x-1/2 h-[500px] w-[500px] rounded-full bg-white/10 blur-3xl pointer-events-none" />
 
         <div className="relative mx-auto w-full max-w-5xl px-5 pt-12 pb-14 sm:px-6 md:pt-20 md:pb-24 lg:px-8">
@@ -128,9 +134,9 @@ function Home() {
             {t("home.hero.title")}
           </h1>
 
-          {/* Sous-titre */}
-          <p className="mx-auto mt-4 md:mt-6 max-w-xl text-center text-sm md:text-lg leading-relaxed text-white/85 lg:max-w-2xl line-clamp-2 md:line-clamp-none">
-            {t("home.hero.subtitle")}
+          {/* Sous-titre : accroche courte et percutante, toujours entier */}
+          <p className="mx-auto mt-4 md:mt-6 max-w-md md:max-w-2xl text-center text-sm md:text-lg leading-relaxed text-white/90">
+            Un numéro unique par lieu. Partagez-le comme un contact — et faites-vous trouver instantanément.
           </p>
 
           {/* Barre de recherche */}
@@ -145,7 +151,6 @@ function Home() {
                   aria-invalid={!!erreur}
                   className="h-14 w-full min-w-0 bg-transparent font-mono text-lg font-semibold tracking-[0.08em] text-slate-900 outline-hidden placeholder:font-normal placeholder:text-slate-400 sm:text-xl"
                 />
-                {/* Micro */}
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
@@ -164,7 +169,6 @@ function Home() {
                   </TooltipTrigger>
                   <TooltipContent>{ecoute ? "En écoute…" : "Dicter"}</TooltipContent>
                 </Tooltip>
-                {/* QR */}
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
@@ -192,14 +196,14 @@ function Home() {
             {erreur && <p role="alert" className="mt-3 px-2 text-sm text-destructive">{erreur}</p>}
           </div>
 
-          {/* Exemples sans le "ESSAYEZ :" */}
-          <div className="mt-5 md:mt-6 flex flex-wrap items-center justify-center gap-1.5">
+          {/* Exemples : forcés sur UNE ligne (nowrap + petits chips) */}
+          <div className="mt-5 md:mt-6 flex flex-nowrap items-center justify-center gap-1.5 overflow-x-auto scrollbar-hide px-1">
             {EXEMPLES.map((exemple) => (
               <Link
                 key={exemple}
                 to="/a/$number"
                 params={{ number: exemple }}
-                className="rounded-full border border-white/20 bg-white/5 px-3 py-1 font-mono text-xs text-white/75 backdrop-blur-sm transition-all hover:border-white/50 hover:bg-white/15 hover:text-white active:scale-95"
+                className="shrink-0 rounded-full border border-white/20 bg-white/5 px-2.5 py-1 font-mono text-[10px] sm:text-xs text-white/75 backdrop-blur-sm transition-all hover:border-white/50 hover:bg-white/15 hover:text-white active:scale-95 whitespace-nowrap"
               >
                 {exemple}
               </Link>
@@ -223,7 +227,7 @@ function Home() {
                   <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-accent/15">
                     <Check className="size-3 text-accent" />
                   </div>
-                  <span className="text-sm text-slate-700">{t(atout)}</span>
+                  <span className="text-sm text-slate-700">{atout}</span>
                 </li>
               ))}
             </ul>
