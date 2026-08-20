@@ -166,12 +166,12 @@ function Home() {
       <section className="gradient-signature-soft px-4 py-12 sm:px-6 md:py-20 lg:px-8">
         <div className="mx-auto w-full max-w-5xl">
           <h1
-            className="text-display text-center font-extrabold leading-[1.05] text-white whitespace-nowrap"
-            style={{
+              className="text-display text-center font-extrabold leading-[1.05] text-white whitespace-nowrap"
+               style={{
               textShadow: "0 1px 12px rgb(15 23 42 / 0.18)",
-              fontSize: "clamp(1.35rem, 6vw, 3.75rem)",
+              fontSize: "clamp(0.95rem, 4.7vw, 3.75rem)",
             }}
-          >
+            >
             {t("home.hero.title")}
           </h1>
           <p
