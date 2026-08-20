@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Bike, Building2, Check, Home as HomeIcon, MapPin, Mic, MicOff,
-  QrCode, Search, UtensilsCrossed, Sparkles, ShieldCheck, Zap, ArrowRight,
+  QrCode, Search, UtensilsCrossed, ArrowRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Reveal } from "@/components/Reveal";
@@ -22,11 +22,6 @@ const USAGES = [
   { icone: UtensilsCrossed, cle: "shops", grad: "from-orange-500 to-rose-600" },
   { icone: Bike, cle: "delivery", grad: "from-violet-500 to-fuchsia-600" },
   { icone: Building2, cle: "companies", grad: "from-sky-500 to-blue-600" },
-];
-const CHIFFRES = [
-  { valeur: "100%", label: "Guinée couverte", icone: MapPin },
-  { valeur: "0 s", label: "Sans installation", icone: Zap },
-  { valeur: "Gratuit", label: "Pour tous", icone: ShieldCheck },
 ];
 
 export const Route = createFileRoute("/")({
@@ -103,7 +98,7 @@ function Home() {
         const raw = match[0];
         const nombre = raw.length === 6 ? `GN-CKY-${raw}` : `${raw.slice(0, 2)}-${raw.slice(2, 5)}-${raw.slice(5)}`;
         setNumero(nombre); void rechercher(nombre);
-      } else toast.error(`Non compris : "${brut}". Dites par ex. "GN CKY 582741"`);
+      } else toast.error(`Non compris : "${brut}"`);
     };
     reco.onerror = (e: any) => {
       setEcoute(false);
@@ -121,34 +116,27 @@ function Home() {
     <div className="bg-white">
       {/* ==================== HÉROS ==================== */}
       <section className="relative overflow-hidden gradient-signature-soft">
-        {/* Blobs décoratifs */}
-        <div aria-hidden className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-        <div aria-hidden className="absolute -bottom-32 -left-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+        {/* Éclairage doux */}
+        <div aria-hidden className="absolute top-0 left-1/2 -translate-x-1/2 h-[500px] w-[500px] rounded-full bg-white/10 blur-3xl pointer-events-none" />
 
-        <div className="relative mx-auto w-full max-w-5xl px-4 pt-10 pb-16 sm:px-6 md:pt-16 md:pb-24 lg:px-8">
-          {/* Badge */}
-          <div className="mx-auto flex w-fit items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 backdrop-blur-md border border-white/20">
-            <Sparkles className="size-3.5 text-white" />
-            <span className="text-[11px] font-semibold uppercase tracking-widest text-white">Système d'adressage QR</span>
-          </div>
-
+        <div className="relative mx-auto w-full max-w-5xl px-5 pt-12 pb-14 sm:px-6 md:pt-20 md:pb-24 lg:px-8">
           {/* Titre */}
           <h1
-            className="text-display mt-6 text-center font-extrabold leading-[1.05] text-white whitespace-nowrap"
-            style={{ textShadow: "0 1px 12px rgb(15 23 42 / 0.18)", fontSize: "clamp(0.95rem, 4.7vw, 3.75rem)" }}
+            className="text-display text-center font-extrabold leading-[1.05] text-white whitespace-nowrap"
+            style={{ textShadow: "0 2px 20px rgb(15 23 42 / 0.25)", fontSize: "clamp(0.95rem, 4.7vw, 3.75rem)" }}
           >
             {t("home.hero.title")}
           </h1>
 
           {/* Sous-titre */}
-          <p className="mx-auto mt-4 md:mt-5 max-w-xl text-center text-sm md:text-lg leading-relaxed text-white/90 lg:max-w-none line-clamp-2 md:line-clamp-none">
+          <p className="mx-auto mt-4 md:mt-6 max-w-xl text-center text-sm md:text-lg leading-relaxed text-white/85 lg:max-w-2xl line-clamp-2 md:line-clamp-none">
             {t("home.hero.subtitle")}
           </p>
 
           {/* Barre de recherche */}
-          <div className="mt-8 md:mt-10 rounded-3xl bg-white p-2.5 md:p-3 shadow-2xl ring-1 ring-slate-900/5">
-            <form className="flex flex-col gap-2 md:flex-row md:gap-3" onSubmit={(e) => { e.preventDefault(); void rechercher(numero); }}>
-              <div className="flex min-w-0 flex-1 items-center gap-0.5 rounded-2xl border border-slate-200 pl-4 pr-1.5 focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/25">
+          <div className="mt-8 md:mt-12 rounded-3xl bg-white/95 backdrop-blur-xl p-2.5 shadow-[0_20px_60px_-15px_rgba(15,23,42,0.35)] ring-1 ring-white/50">
+            <form className="flex flex-col gap-2 md:flex-row md:gap-2" onSubmit={(e) => { e.preventDefault(); void rechercher(numero); }}>
+              <div className="flex min-w-0 flex-1 items-center gap-1 rounded-2xl bg-slate-50/80 pl-4 pr-1.5 border border-transparent focus-within:border-accent focus-within:bg-white focus-within:ring-2 focus-within:ring-accent/20 transition-all">
                 <input
                   value={numero}
                   onChange={(e) => { setNumero(e.target.value); setErreur(null); }}
@@ -157,7 +145,7 @@ function Home() {
                   aria-invalid={!!erreur}
                   className="h-14 w-full min-w-0 bg-transparent font-mono text-lg font-semibold tracking-[0.08em] text-slate-900 outline-hidden placeholder:font-normal placeholder:text-slate-400 sm:text-xl"
                 />
-                {/* Micro voix */}
+                {/* Micro */}
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
@@ -165,10 +153,10 @@ function Home() {
                       onClick={ecoute ? arreterVoix : demarrerVoix}
                       aria-label={ecoute ? "Arrêter" : "Dicter"}
                       className={cn(
-                        "shrink-0 h-11 w-11 rounded-xl flex items-center justify-center transition-all active:scale-95",
+                        "shrink-0 h-11 w-11 rounded-xl flex items-center justify-center transition-all active:scale-90",
                         ecoute
-                          ? "bg-rose-500 text-white animate-pulse"
-                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          ? "bg-rose-500 text-white shadow-md shadow-rose-500/40 animate-pulse"
+                          : "text-slate-500 hover:bg-slate-100 hover:text-slate-800"
                       )}
                     >
                       {ecoute ? <MicOff className="size-5" /> : <Mic className="size-5" />}
@@ -176,14 +164,14 @@ function Home() {
                   </TooltipTrigger>
                   <TooltipContent>{ecoute ? "En écoute…" : "Dicter"}</TooltipContent>
                 </Tooltip>
-                {/* Scan QR */}
+                {/* QR */}
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
                       type="button"
                       onClick={() => setScannerOpen(true)}
                       aria-label="Scanner un QR"
-                      className="shrink-0 h-11 w-11 rounded-xl bg-gradient-to-br from-slate-900 to-slate-700 text-white flex items-center justify-center transition-all active:scale-95 hover:from-slate-800 hover:to-slate-600 ml-1"
+                      className="shrink-0 h-11 w-11 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-800 flex items-center justify-center transition-all active:scale-90"
                     >
                       <QrCode className="size-5" />
                     </button>
@@ -195,7 +183,7 @@ function Home() {
               <Button
                 type="submit"
                 disabled={enCours}
-                className="h-14 w-full rounded-2xl bg-accent px-8 text-base font-semibold text-accent-foreground shadow-md transition-all hover:bg-accent-dark active:scale-95 md:w-auto"
+                className="h-14 w-full rounded-2xl bg-gradient-to-r from-accent to-accent-dark px-8 text-base font-semibold text-accent-foreground shadow-lg shadow-accent/25 transition-all hover:shadow-accent/40 active:scale-[0.98] md:w-auto md:min-w-[180px]"
               >
                 <Search className="size-5" />
                 {enCours ? t("home.hero.searching") : t("home.hero.search")}
@@ -204,29 +192,17 @@ function Home() {
             {erreur && <p role="alert" className="mt-3 px-2 text-sm text-destructive">{erreur}</p>}
           </div>
 
-          {/* Exemples */}
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-            <span className="text-xs text-white/70 uppercase tracking-wider font-semibold">Essayez :</span>
+          {/* Exemples sans le "ESSAYEZ :" */}
+          <div className="mt-5 md:mt-6 flex flex-wrap items-center justify-center gap-1.5">
             {EXEMPLES.map((exemple) => (
               <Link
                 key={exemple}
                 to="/a/$number"
                 params={{ number: exemple }}
-                className="rounded-full border border-white/25 bg-white/5 px-3 py-1 font-mono text-xs text-white/90 backdrop-blur-sm transition-all hover:border-white/60 hover:bg-white/10 active:scale-95"
+                className="rounded-full border border-white/20 bg-white/5 px-3 py-1 font-mono text-xs text-white/75 backdrop-blur-sm transition-all hover:border-white/50 hover:bg-white/15 hover:text-white active:scale-95"
               >
                 {exemple}
               </Link>
-            ))}
-          </div>
-
-          {/* 3 chiffres clés */}
-          <div className="mt-10 grid grid-cols-3 gap-2 md:gap-4">
-            {CHIFFRES.map(({ valeur, label, icone: Icon }) => (
-              <div key={label} className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 p-3 md:p-4 text-center">
-                <Icon className="size-4 md:size-5 text-white/80 mx-auto" />
-                <div className="mt-1.5 text-lg md:text-2xl font-bold text-white leading-none">{valeur}</div>
-                <div className="mt-1 text-[10px] md:text-xs text-white/75 uppercase tracking-wide font-semibold leading-tight">{label}</div>
-              </div>
             ))}
           </div>
         </div>
