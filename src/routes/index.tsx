@@ -268,14 +268,14 @@ function Home() {
               {t("home.usages.title")}
             </h2>
           </Reveal>
-          <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-8 md:mt-12 grid grid-cols-1 gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-4">
             {USAGES.map((item, index) => (
               <Reveal key={item.cle} delay={index * 80}>
-                <div className="h-full rounded-2xl border border-slate-200 bg-white p-8 transition-all duration-200 ease-out hover:-translate-y-[2px] hover:border-accent/40">
-                  <span className="flex size-12 items-center justify-center rounded-xl bg-accent/10 text-accent">
-                    <item.icone className="size-8" />
+                <div className="h-full rounded-2xl border border-slate-200 bg-white p-5 md:p-8 transition-all duration-200 ease-out hover:-translate-y-[2px] hover:border-accent/40">
+                  <span className="flex size-10 md:size-12 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                    <item.icone className="size-5 md:size-7" />
                   </span>
-                  <h3 className="text-display mt-5 text-lg font-bold text-slate-900">
+                  <h3 className="text-display mt-4 md:mt-5 text-base md:text-lg font-bold text-slate-900">
                     {t(`home.usages.${item.cle}.title`)}
                   </h3>
                   <p className="mt-2 text-sm leading-relaxed text-slate-600">
