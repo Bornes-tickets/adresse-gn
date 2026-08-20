@@ -2,23 +2,11 @@
 @source "../src";
 @import "tw-animate-css";
 @import "leaflet/dist/leaflet.css";
-
 @custom-variant dark (&:is(.dark *));
 
 /*
  * Design system definition.
- *
- * The @theme inline block maps CSS custom properties to Tailwind utility
- * classes (e.g. --color-primary -> bg-primary, text-primary).
- *
- * The :root and .dark blocks define the actual color values using oklch.
- * All colors MUST use oklch format.
- *
- * To add a new semantic color:
- * 1. Add the variable to :root (light value) and .dark (dark value)
- * 2. Register it in @theme inline as --color-<name>: var(--<name>)
  */
-
 @theme inline {
   --font-sans:
     "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -85,31 +73,23 @@
 
 :root {
   --radius: 0.75rem;
-  /* Fond #F8FAFC / texte #0F172A */
   --background: oklch(0.984 0.003 247.86);
   --foreground: oklch(0.208 0.04 265.75);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.208 0.04 265.75);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.208 0.04 265.75);
-  /* Primaire #2E4A7B */
   --primary: oklch(0.412 0.089 260.89);
-  /* #1E3660 */
   --primary-dark: oklch(0.325 0.078 261.5);
-  /* #4A6CA0 */
   --primary-light: oklch(0.522 0.084 260.5);
-  /* #0B7F7E */
   --accent-dark: oklch(0.525 0.093 194.5);
-  /* #16A34A */
   --success: oklch(0.588 0.163 149.2);
-  /* #F59E0B */
   --warning: oklch(0.769 0.162 70.08);
   --primary-foreground: oklch(0.984 0.003 247.86);
   --secondary: oklch(0.945 0.012 255.51);
   --secondary-foreground: oklch(0.412 0.089 260.89);
   --muted: oklch(0.955 0.008 247.9);
   --muted-foreground: oklch(0.554 0.041 257.42);
-  /* Accent #0EA5A4 */
   --accent: oklch(0.654 0.11 194.03);
   --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.577 0.215 27.33);
@@ -141,7 +121,6 @@
   --admin-slate: oklch(0.554 0.041 257.42);
   --admin-lime: oklch(0.68 0.17 130);
 }
-
 
 .dark {
   --background: oklch(0.129 0.042 264.695);
@@ -192,83 +171,49 @@
   * {
     border-color: var(--color-border);
   }
-
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
   }
 }
 
-
-/* --- Utilitaires de marque (présentation uniquement) --- */
-
+/* --- Utilitaires de marque --- */
 @utility gradient-signature {
-  background-image: linear-gradient(
-    135deg,
-    #1e3660 0%,
-    #2e4a7b 50%,
-    #0ea5a4 100%
-  );
+  background-image: linear-gradient(135deg, #1e3660 0%, #2e4a7b 50%, #0ea5a4 100%);
 }
-
-/* Version adoucie (20% de blanc) pour le héros de la page d'accueil */
 @utility gradient-signature-soft {
-  background-image: linear-gradient(
-    135deg,
-    #4b5e83 0%,
-    #576e97 60%,
-    #3eb7b6 120%
-  );
+  background-image: linear-gradient(135deg, #4b5e83 0%, #576e97 60%, #3eb7b6 120%);
 }
-
-
 @utility gradient-accent {
   background-image: linear-gradient(135deg, #0ea5a4 0%, #0b7f7e 100%);
 }
-
 @utility dot-grid {
-  background-image: radial-gradient(
-    currentColor 1px,
-    transparent 1px
-  );
+  background-image: radial-gradient(currentColor 1px, transparent 1px);
   background-size: 24px 24px;
 }
-
 @utility shadow-brand {
   box-shadow:
     0 4px 20px -4px rgb(46 74 123 / 0.15),
     0 1px 3px rgb(15 23 42 / 0.06);
 }
-
 @utility shadow-brand-lg {
   box-shadow:
     0 24px 60px -20px rgb(30 54 96 / 0.35),
     0 8px 24px -12px rgb(15 23 42 / 0.15);
 }
-
 @utility text-display {
   font-family: var(--font-display);
   letter-spacing: -0.02em;
 }
-
 @keyframes agn-scroll-hint {
-  0%,
-  100% {
-    transform: translateY(0);
-    opacity: 0.5;
-  }
-  50% {
-    transform: translateY(6px);
-    opacity: 1;
-  }
+  0%, 100% { transform: translateY(0); opacity: 0.5; }
+  50% { transform: translateY(6px); opacity: 1; }
 }
-
 @utility animate-scroll-hint {
   animation: agn-scroll-hint 1.8s ease-in-out infinite;
 }
-/* À AJOUTER À LA FIN DE src/styles.css */
 
-/* Safe areas iOS notch/home-indicator */
+/* ===== SAFE AREAS iOS notch/home-indicator ===== */
 @supports (padding: max(0px)) {
   .safe-top { padding-top: max(env(safe-area-inset-top), 0.5rem); }
   .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 0.5rem); }
@@ -277,48 +222,38 @@
   .safe-x { padding-left: max(env(safe-area-inset-left), 0.5rem); padding-right: max(env(safe-area-inset-right), 0.5rem); }
 }
 
-/* Touch targets 44×44 min (Apple HIG / Material) */
+/* ===== TOUCH TARGETS mobile ===== */
 @media (pointer: coarse) {
   button, a[role="button"], [role="button"], input[type="button"], input[type="submit"] {
     min-height: 44px;
     min-width: 44px;
   }
-}
-
-/* Empêche le zoom auto iOS quand on focus un input avec font-size < 16px */
-@media (pointer: coarse) {
   input, select, textarea { font-size: 16px !important; }
 }
 
-/* Scroll-behavior smooth par défaut mobile */
 html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
 
-/* Désactive le double-tap zoom sur les éléments interactifs */
+/* Autorise le pinch-zoom sur la carte mais désactive le double-tap zoom ailleurs */
 button, a, [role="button"] { touch-action: manipulation; }
 
-/* Animation scan QR */
 @keyframes scan {
   0% { transform: translateY(0); }
   50% { transform: translateY(calc(100% - 2px)); }
   100% { transform: translateY(0); }
 }
 
-/* Pull-to-refresh visuel (à combiner avec un gesture handler si besoin) */
 .no-overscroll { overscroll-behavior: contain; }
 
-/* Feedback haptique visuel — tap active state */
 @media (hover: none) {
   .tap-highlight:active { background-color: rgb(0 0 0 / 0.06); }
 }
 
-/* Cache la barre de scroll sur mobile mais garde le scroll */
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 
-/* Skeleton loading shimmer */
 @keyframes shimmer {
   0% { background-position: -1000px 0; }
   100% { background-position: 1000px 0; }
@@ -328,24 +263,27 @@ button, a, [role="button"] { touch-action: manipulation; }
   background-size: 1000px 100%;
   animation: shimmer 2s infinite linear;
 }
-/* À AJOUTER À LA FIN DE src/styles.css */
 
 /* ===== APP NATIVE (Capacitor Android/iOS) ===== */
-
-/* Détection du mode natif : Capacitor injecte capacitor:// dans le scheme
-   ou hostname=localhost avec User-Agent AdresseGN-Android */
-html.native-app,
-html.native-app body {
-  overscroll-behavior: none;
-  -webkit-overflow-scrolling: touch;
+/* Base : autorise le scroll vertical, désactive juste le horizontal + tap highlight */
+html.native-app {
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
+  height: 100%;
+}
+html.native-app body {
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: auto;
   -webkit-user-select: none;
   user-select: none;
-  overflow-x: hidden;
+  touch-action: pan-y;
 }
 
-/* Réactive la sélection texte sur les champs de saisie et contenus éditables */
+/* Réactive la sélection texte sur inputs/textareas/contenu éditable */
 html.native-app input,
 html.native-app textarea,
 html.native-app [contenteditable="true"],
@@ -354,34 +292,35 @@ html.native-app .selectable-text {
   user-select: text;
 }
 
-/* Safe areas : respecte les marges système Android (barre statut, gestures) */
+/* Safe areas iOS notch/home indicator + Android barre statut */
 html.native-app body {
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
+  padding-top: env(safe-area-inset-top, 0);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-left: env(safe-area-inset-left, 0);
+  padding-right: env(safe-area-inset-right, 0);
 }
 
-/* Retire les scrollbars visibles inutiles sur mobile */
+/* Cache scrollbar mais garde scroll */
 html.native-app ::-webkit-scrollbar {
   width: 0;
   height: 0;
   display: none;
 }
 
-/* Empêche le zoom au double-tap (comportement natif attendu) */
-html.native-app * {
+/* Empêche zoom double-tap sur les éléments interactifs (mais pas le scroll) */
+html.native-app button,
+html.native-app a,
+html.native-app [role="button"] {
   touch-action: manipulation;
 }
 
-/* Cache les éléments purement web sur l'app native (bannière install, etc.) */
+/* Show/hide selon plateforme */
 .web-only { display: block; }
 html.native-app .web-only { display: none !important; }
-
 .native-only { display: none; }
 html.native-app .native-only { display: block; }
 
-/* Améliore le rendu des inputs (évite le zoom iOS + look natif) */
+/* Inputs : empêche zoom auto + look natif */
 html.native-app input,
 html.native-app select,
 html.native-app textarea {
@@ -390,15 +329,15 @@ html.native-app textarea {
   appearance: none;
 }
 
-/* Feedback tactile visuel sur les boutons */
+/* Feedback tactile sur boutons */
 html.native-app button:active,
 html.native-app a:active,
 html.native-app [role="button"]:active {
-  opacity: 0.7;
+  opacity: 0.75;
   transition: opacity 0.05s;
 }
 
-/* Ajuste le header sticky pour ne pas coller à la barre de statut */
+/* Header sticky respecte la barre statut */
 html.native-app header.sticky,
 html.native-app .sticky-top {
   top: env(safe-area-inset-top, 0);
