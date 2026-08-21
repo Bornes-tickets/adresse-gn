@@ -4,44 +4,19 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Briefcase,
-  ChevronDown,
-  Facebook,
-  Instagram,
-  LogOut,
-  Mail,
-  MapPin,
-  Menu,
-  MessageCircle,
-  Twitter,
-  User as UserIcon,
-  Shield,
-  ShieldCheck,
-  TrendingUp,
-  ClipboardCheck,
-  Wrench,
-  Headphones,
-  HardHat,
+  Briefcase, ChevronDown, Facebook, Instagram, LogOut, Mail, MapPin, Menu,
+  MessageCircle, Twitter, User as UserIcon, Shield, ShieldCheck, TrendingUp,
+  ClipboardCheck, Wrench, Headphones, HardHat,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
+  DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useLangue } from "@/hooks/useLangue";
@@ -60,15 +35,12 @@ const NAV = [
 /** Routes qui gèrent leur propre chrome (sidebar, topbar) — pas de header/footer public. */
 const BACKOFFICE_PREFIXES = ["/supervisor", "/admin", "/sales", "/ops", "/support", "/agent"];
 
-/** Configuration d'espace métier par rôle : icône, libellé, URL, couleurs. */
-type EspaceInfo = {
-  role: string;
-  to: string;
-  label: string;
-  icon: any;
-  cls: string; // classes du bouton dans le menu
-};
+/** Routes où le header doit être transparent au-dessus du héros (revient solide au scroll). */
+const OVERLAY_HEADER_ROUTES = ["/"];
 
+type EspaceInfo = {
+  role: string; to: string; label: string; icon: any; cls: string;
+};
 const ESPACES_METIER: Record<string, EspaceInfo> = {
   super_admin: { role: "super_admin", to: "/admin", label: "Espace super admin", icon: ShieldCheck, cls: "text-rose-600" },
   admin: { role: "admin", to: "/admin", label: "Espace administrateur", icon: Shield, cls: "text-violet-600" },
@@ -79,7 +51,6 @@ const ESPACES_METIER: Record<string, EspaceInfo> = {
   agent: { role: "agent", to: "/agent", label: "Espace agent terrain", icon: HardHat, cls: "text-orange-600" },
 };
 
-/** Récupère le rôle métier de l'utilisateur connecté (via profiles). */
 function useRoleUtilisateur(userId: string | null | undefined) {
   return useQuery({
     queryKey: ["user-role", userId],
@@ -93,14 +64,14 @@ function useRoleUtilisateur(userId: string | null | undefined) {
   });
 }
 
-function useScrolled() {
+function useScrolled(threshold = 40) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    const onScroll = () => setScrolled(window.scrollY > threshold);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [threshold]);
   return scrolled;
 }
 
@@ -108,44 +79,61 @@ function Header() {
   const { t } = useTranslation();
   const { user, isAuthenticated } = useAuth();
   const { data: role } = useRoleUtilisateur(user?.id);
-  const scrolled = useScrolled();
+  const { location } = useRouterState();
+  const scrolled = useScrolled(40);
   const [menuOpen, setMenuOpen] = useState(false);
   const initiales = user?.email?.slice(0, 2).toUpperCase() ?? "GN";
-
-  // Détermine l'espace métier correspondant au rôle (si applicable)
   const espace = role ? ESPACES_METIER[role] : null;
+
+  // Mode overlay : transparent au-dessus du héros, solide au scroll.
+  const isOverlayRoute = OVERLAY_HEADER_ROUTES.includes(location.pathname);
+  const overlay = isOverlayRoute && !scrolled;
 
   return (
     <header
       className={cn(
-        "sticky top-0 z-[900] border-b transition-all duration-200",
-        scrolled
-          ? "border-border/70 bg-background/85 shadow-brand backdrop-blur-md"
-          : "border-transparent bg-background/60 backdrop-blur-sm",
+        "sticky top-0 z-[900] transition-all duration-300",
+        overlay
+          ? "border-b border-transparent bg-transparent"
+          : scrolled
+            ? "border-b border-border/70 bg-background/90 shadow-brand backdrop-blur-md"
+            : "border-b border-border/70 bg-background",
       )}
     >
-      <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 py-3.5 sm:px-6">
+      <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 py-3 sm:px-6 sm:py-3.5">
         <Link to="/" aria-label={t("nav.home")} className="min-w-0">
-          <Logo />
+          <Logo tone={overlay ? "light" : undefined} />
         </Link>
+
         <div className="flex items-center gap-1 sm:gap-2">
+          {/* Nav desktop */}
           <nav className="mr-2 hidden items-center gap-1 rtl:mr-0 rtl:ml-2 lg:flex">
             {NAV.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
-                className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
+                className={cn(
+                  "rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  overlay
+                    ? "text-white/85 hover:bg-white/10 hover:text-white"
+                    : "text-muted-foreground hover:bg-muted hover:text-primary",
+                )}
               >
                 {t(item.cle)}
               </Link>
             ))}
           </nav>
-          <LanguageSwitcher />
+
+          <LanguageSwitcher tone={overlay ? "light" : undefined} />
+
           {isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
-                  className="rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-accent/40"
+                  className={cn(
+                    "rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-accent/40",
+                    overlay && "ring-2 ring-white/20",
+                  )}
                   aria-label={t("nav.userMenu")}
                 >
                   <Avatar>
@@ -172,8 +160,6 @@ function Header() {
                     {t("nav.account")}
                   </Link>
                 </DropdownMenuItem>
-
-                {/* Espace métier — n'apparaît que si l'utilisateur a un rôle back-office */}
                 {espace ? (
                   <DropdownMenuItem asChild>
                     <Link to={espace.to} className={cn("flex items-center gap-2 font-medium", espace.cls)}>
@@ -189,7 +175,6 @@ function Header() {
                     </Link>
                   </DropdownMenuItem>
                 )}
-
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link to="/logout" className="flex items-center gap-2">
@@ -201,23 +186,39 @@ function Header() {
             </DropdownMenu>
           ) : (
             <>
-              <Button asChild variant="ghost" className="hidden h-11 sm:inline-flex">
+              <Button
+                asChild
+                variant="ghost"
+                className={cn(
+                  "hidden h-11 sm:inline-flex",
+                  overlay && "text-white hover:bg-white/10 hover:text-white",
+                )}
+              >
                 <Link to="/login">{t("nav.login")}</Link>
               </Button>
               <Button
                 asChild
-                className="h-11 bg-accent text-accent-foreground transition-transform duration-200 hover:scale-[1.02] hover:bg-accent-dark active:scale-[0.98]"
+                className={cn(
+                  "h-11 transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]",
+                  overlay
+                    ? "bg-white text-slate-900 hover:bg-white/90"
+                    : "bg-accent text-accent-foreground hover:bg-accent-dark",
+                )}
               >
                 <Link to="/tarifs">{t("nav.order")}</Link>
               </Button>
             </>
           )}
+
           <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
             <SheetTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                className="size-11 lg:hidden"
+                className={cn(
+                  "size-11 lg:hidden",
+                  overlay && "text-white hover:bg-white/10 hover:text-white",
+                )}
                 aria-label={t("nav.openMenu")}
               >
                 <Menu className="size-5" />
@@ -326,28 +327,18 @@ function FooterLinkItem({ link }: { link: FooterLink }) {
   const label = t(link.cle);
   if (link.disabled) {
     return (
-      <span
-        aria-disabled="true"
-        className={cn(base, "cursor-not-allowed text-slate-300 opacity-40")}
-      >
+      <span aria-disabled="true" className={cn(base, "cursor-not-allowed text-slate-300 opacity-40")}>
         {label}
       </span>
     );
   }
   if (link.href) {
     return (
-      <a href={link.href} className={cn(base, "text-slate-300 hover:text-white")}>
-        {label}
-      </a>
+      <a href={link.href} className={cn(base, "text-slate-300 hover:text-white")}>{label}</a>
     );
   }
   return (
-    <Link
-      to={link.to as "/tarifs"}
-      className={cn(base, "text-slate-300 hover:text-white")}
-    >
-      {label}
-    </Link>
+    <Link to={link.to as "/tarifs"} className={cn(base, "text-slate-300 hover:text-white")}>{label}</Link>
   );
 }
 
@@ -359,36 +350,18 @@ function Footer() {
     <footer className="bg-slate-950 text-slate-300">
       <div className="mx-auto max-w-7xl px-6 pt-12 pb-6 md:px-8">
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-12">
-          {/* Bloc marque */}
           <div className="space-y-3 lg:col-span-4">
             <Logo tone="light" />
-            <p className="max-w-xs text-xs leading-relaxed text-slate-400">
-              {t("footer.tagline")}
-            </p>
+            <p className="max-w-xs text-xs leading-relaxed text-slate-400">{t("footer.tagline")}</p>
             <div className="flex flex-col gap-1.5">
               <span className="flex items-center gap-2 text-xs text-slate-400">
                 <MapPin className="size-3.5 shrink-0" />
                 {t("footer.location")}
               </span>
-              <a
-                href="mailto:contact@adresse.gn"
-                className={cn(
-                  "flex items-center gap-2 rounded-sm text-xs text-slate-300 transition-colors hover:text-accent",
-                  FOCUS,
-                )}
-              >
-                <Mail className="size-3.5 shrink-0" />
-                contact@adresse.gn
+              <a href="mailto:contact@adresse.gn" className={cn("flex items-center gap-2 rounded-sm text-xs text-slate-300 transition-colors hover:text-accent", FOCUS)}>
+                <Mail className="size-3.5 shrink-0" />contact@adresse.gn
               </a>
-              <a
-                href={`https://wa.me/${WHATSAPP_SERVICE}`}
-                target="_blank"
-                rel="noreferrer"
-                className={cn(
-                  "flex items-center gap-2 rounded-sm text-xs text-slate-300 transition-colors hover:text-accent",
-                  FOCUS,
-                )}
-              >
+              <a href={`https://wa.me/${WHATSAPP_SERVICE}`} target="_blank" rel="noreferrer" className={cn("flex items-center gap-2 rounded-sm text-xs text-slate-300 transition-colors hover:text-accent", FOCUS)}>
                 <MessageCircle className="size-3.5 shrink-0" />
                 {t("footer.whatsapp")}
               </a>
@@ -397,36 +370,23 @@ function Footer() {
               {t("footer.pilot")}
             </span>
           </div>
-          {/* Colonnes de liens — desktop */}
           {FOOTER_COLS.map((col) => (
             <div key={col.cle} className="hidden lg:col-span-2 lg:block">
-              <h2 className="mb-3 text-[11px] font-semibold tracking-[0.14em] text-slate-500 uppercase">
-                {t(col.cle)}
-              </h2>
+              <h2 className="mb-3 text-[11px] font-semibold tracking-[0.14em] text-slate-500 uppercase">{t(col.cle)}</h2>
               <nav className="flex flex-col space-y-2">
-                {col.links.map((link) => (
-                  <FooterLinkItem key={link.cle} link={link} />
-                ))}
+                {col.links.map((link) => <FooterLinkItem key={link.cle} link={link} />)}
               </nav>
             </div>
           ))}
-          {/* Colonnes de liens — accordéons mobile/tablette */}
           <div className="divide-y divide-slate-800 border-y border-slate-800 lg:hidden">
             {FOOTER_COLS.map((col) => (
               <details key={col.cle} className="group py-2.5">
-                <summary
-                  className={cn(
-                    "flex cursor-pointer list-none items-center justify-between rounded-sm text-[11px] font-semibold tracking-[0.14em] text-slate-500 uppercase",
-                    FOCUS,
-                  )}
-                >
+                <summary className={cn("flex cursor-pointer list-none items-center justify-between rounded-sm text-[11px] font-semibold tracking-[0.14em] text-slate-500 uppercase", FOCUS)}>
                   {t(col.cle)}
                   <ChevronDown className="size-4 transition-transform group-open:rotate-180" />
                 </summary>
                 <nav className="mt-2 flex flex-col space-y-2">
-                  {col.links.map((link) => (
-                    <FooterLinkItem key={link.cle} link={link} />
-                  ))}
+                  {col.links.map((link) => <FooterLinkItem key={link.cle} link={link} />)}
                 </nav>
               </details>
             ))}
@@ -437,10 +397,7 @@ function Footer() {
           <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] text-slate-500">
             <span>{t("footer.rights")}</span>
             <span aria-hidden="true">·</span>
-            <LanguageSwitcher
-              tone="light"
-              className="h-7 px-2 text-[11px] text-slate-400"
-            />
+            <LanguageSwitcher tone="light" className="h-7 px-2 text-[11px] text-slate-400" />
           </div>
           <div className="flex items-center gap-2">
             {[
@@ -448,11 +405,7 @@ function Footer() {
               { Icon: Instagram, label: "Instagram" },
               { Icon: Twitter, label: "X" },
             ].map(({ Icon, label }) => (
-              <span
-                key={label}
-                aria-label={label}
-                className="grid size-7 place-items-center rounded-md border border-slate-800 text-slate-400 transition-colors hover:border-slate-600 hover:text-white"
-              >
+              <span key={label} aria-label={label} className="grid size-7 place-items-center rounded-md border border-slate-800 text-slate-400 transition-colors hover:border-slate-600 hover:text-white">
                 <Icon className="size-3.5" />
               </span>
             ))}
@@ -467,18 +420,18 @@ function Footer() {
 export function Layout({ children }: { children: ReactNode }) {
   const { location } = useRouterState();
   const isBackoffice = BACKOFFICE_PREFIXES.some((p) => location.pathname.startsWith(p));
+  const isOverlay = OVERLAY_HEADER_ROUTES.includes(location.pathname);
 
-  // Back-office : layout complet géré par la route (sidebar + topbar).
-  // Pas de header/footer publics ici pour éviter le double chrome.
-  if (isBackoffice) {
-    return <div className="min-h-screen">{children}</div>;
-  }
+  if (isBackoffice) return <div className="min-h-screen">{children}</div>;
 
-  // Site public : layout classique avec Header + Footer.
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
-      <main className="flex-1">{children}</main>
+      {/* Sur les routes en overlay, le main démarre SOUS le header transparent
+          (via -mt-16 sur le premier enfant) pour que le héros passe derrière la nav. */}
+      <main className={cn("flex-1", isOverlay && "-mt-[68px] pt-[68px]")}>
+        {children}
+      </main>
       <Footer />
     </div>
   );
