@@ -24,12 +24,12 @@ import { cn } from "@/lib/utils";
 
 const WHATSAPP_SERVICE = "224620000000";
 
-const NAV = [
-  { to: "/tarifs" as const, cle: "nav.pricing" },
-  { to: "/pro" as const, cle: "nav.pros" },
-  { to: "/blog" as const, cle: "nav.blog" },
-  { to: "/faq" as const, cle: "nav.faq" },
-  { to: "/a-propos" as const, cle: "nav.about" },
+// Header épuré : 2 items visibles seulement.
+// "Comment ça marche" pointe vers l'ancre #comment-ca-marche du hero.
+// "Nos offres" = /tarifs. Les autres liens (Blog, FAQ, À propos) sont dans le footer.
+const NAV: { to: "/" | "/tarifs"; label: string; hash?: string }[] = [
+  { to: "/", label: "Comment ça marche", hash: "comment-ca-marche" },
+  { to: "/tarifs", label: "Nos offres" },
 ];
 
 /** Routes qui gèrent leur propre chrome (sidebar, topbar) — pas de header/footer public. */
@@ -106,12 +106,13 @@ function Header() {
         </Link>
 
         <div className="flex items-center gap-1 sm:gap-2">
-          {/* Nav desktop */}
+          {/* Nav desktop — 2 items uniquement */}
           <nav className="mr-2 hidden items-center gap-1 rtl:mr-0 rtl:ml-2 lg:flex">
             {NAV.map((item) => (
               <Link
-                key={item.to}
+                key={item.label}
                 to={item.to}
+                hash={item.hash}
                 className={cn(
                   "rounded-md px-3 py-2 text-sm font-medium transition-colors",
                   overlay
@@ -119,7 +120,7 @@ function Header() {
                     : "text-muted-foreground hover:bg-muted hover:text-primary",
                 )}
               >
-                {t(item.cle)}
+                {item.label}
               </Link>
             ))}
           </nav>
@@ -194,7 +195,7 @@ function Header() {
                   overlay && "text-white hover:bg-white/10 hover:text-white",
                 )}
               >
-                <Link to="/login">{t("nav.login")}</Link>
+                <Link to="/login">Se connecter</Link>
               </Button>
               <Button
                 asChild
@@ -205,7 +206,7 @@ function Header() {
                     : "bg-accent text-accent-foreground hover:bg-accent-dark",
                 )}
               >
-                <Link to="/tarifs">{t("nav.order")}</Link>
+                <Link to="/tarifs">Créer mon Adresse GN</Link>
               </Button>
             </>
           )}
@@ -233,12 +234,13 @@ function Header() {
               <nav className="mt-4 flex flex-col gap-1 px-4">
                 {NAV.map((item) => (
                   <Link
-                    key={item.to}
+                    key={item.label}
                     to={item.to}
+                    hash={item.hash}
                     onClick={() => setMenuOpen(false)}
                     className="rounded-lg px-3 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted"
                   >
-                    {t(item.cle)}
+                    {item.label}
                   </Link>
                 ))}
                 <Link
@@ -264,7 +266,7 @@ function Header() {
                     onClick={() => setMenuOpen(false)}
                     className="rounded-lg px-3 py-3 text-base font-medium text-accent transition-colors hover:bg-muted"
                   >
-                    {t("nav.login")}
+                    Se connecter
                   </Link>
                 )}
               </nav>
@@ -421,9 +423,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const { location } = useRouterState();
   const isBackoffice = BACKOFFICE_PREFIXES.some((p) => location.pathname.startsWith(p));
   const isOverlay = OVERLAY_HEADER_ROUTES.includes(location.pathname);
-
   if (isBackoffice) return <div className="min-h-screen">{children}</div>;
-
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
