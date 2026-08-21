@@ -1,9 +1,10 @@
 // src/routes/commander.tsx
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import {
   Check, Home, MapPin, Phone, User, MessageCircle, ShieldCheck, Truck,
-  Zap, ArrowRight, Smartphone, Banknote, Sparkles,
+  Zap, ArrowRight, Smartphone, Banknote, Sparkles, CreditCard, Building2,
+  Briefcase, Landmark, Mail, Globe, FileText, Wallet,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -13,76 +14,199 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 const WHATSAPP_SERVICE = "224620000000";
-const PRIX_GNF = 150000;
 
-const AVANTAGES = [
-  { icone: ShieldCheck, texte: "Balise physique certifiée avec QR code" },
-  { icone: User, texte: "Pose par un agent agréé Adresse GN" },
-  { icone: MapPin, texte: "Relevé GPS de précision (< 5 m)" },
-  { icone: Truck, texte: "Livraison et pose sous 72 h à Conakry" },
+/* ==================== Formules par type ==================== */
+type ClientType = "particulier" | "professionnel" | "institutionnel";
+
+const CLIENT_TYPES: { code: ClientType; label: string; desc: string; icone: any }[] = [
+  { code: "particulier", label: "Particulier", desc: "Domicile, logement", icone: Home },
+  { code: "professionnel", label: "Professionnel", desc: "Commerce, entreprise", icone: Briefcase },
+  { code: "institutionnel", label: "Institutionnel", desc: "Administration, ONG, école", icone: Landmark },
 ];
 
-type Paiement = "orange_money" | "mtn_money" | "cash";
+interface Formule {
+  code: string;
+  label: string;
+  prix: number; // 0 = sur devis
+  desc: string;
+  avantages: string[];
+  populaire?: boolean;
+}
 
-const PAIEMENTS: { code: Paiement; label: string; icone: any; desc: string }[] = [
-  { code: "orange_money", label: "Orange Money", icone: Smartphone, desc: "Paiement mobile" },
-  { code: "mtn_money", label: "MTN Mobile Money", icone: Smartphone, desc: "Paiement mobile" },
-  { code: "cash", label: "Espèces", icone: Banknote, desc: "À la livraison" },
+const FORMULES: Record<ClientType, Formule[]> = {
+  particulier: [
+    {
+      code: "numerique",
+      label: "Numérique seule",
+      prix: 40000,
+      desc: "Adresse enregistrée, sans balise physique",
+      avantages: ["Numéro unique GN-CKY-XXXXXX", "Localisation GPS vérifiée", "Partage du lien et itinéraire"],
+    },
+    {
+      code: "residentiel_standard",
+      label: "Résidentiel Standard",
+      prix: 150000,
+      desc: "Plaque balise posée par un agent agréé",
+      avantages: ["Balise physique avec QR code", "Pose par agent Adresse GN", "Relevé GPS de précision", "Fiche adresse et itinéraire"],
+      populaire: true,
+    },
+    {
+      code: "residentiel_premium",
+      label: "Résidentiel Premium",
+      prix: 300000,
+      desc: "Balise renforcée + point d'accès détaillé",
+      avantages: ["Balise renforcée longue durée", "Pose prioritaire sous 72 h", "Note d'accès détaillée (portail, étage)", "Assistance au remplacement 12 mois"],
+    },
+  ],
+  professionnel: [
+    {
+      code: "pro_standard",
+      label: "Professionnel Standard",
+      prix: 250000,
+      desc: "Pour commerces et PME (1 point de vente)",
+      avantages: ["Balise professionnelle vitrine", "Fiche établissement complète", "Photo + horaires + téléphone", "Référencement dans l'annuaire pro"],
+      populaire: true,
+    },
+    {
+      code: "pro_multisites",
+      label: "Multi-sites",
+      prix: 0,
+      desc: "Réseau de sites (à partir de 5)",
+      avantages: ["Devis personnalisé", "Tarif dégressif volumique", "Compte pro avec dashboard", "Support dédié"],
+    },
+  ],
+  institutionnel: [
+    {
+      code: "inst_pack",
+      label: "Pack Institutionnel",
+      prix: 0,
+      desc: "Administration, ONG, ministère, école",
+      avantages: ["Devis sur mesure", "Facturation en francs guinéens ou EUR/USD", "Convention et bon de commande", "Pose planifiée par lots"],
+      populaire: true,
+    },
+  ],
+};
+
+/* ==================== Modes de paiement ==================== */
+type Paiement =
+  | "orange_money"
+  | "mtn_money"
+  | "carte_bancaire"
+  | "paypal"
+  | "cash"
+  | "virement";
+
+const PAIEMENTS: { code: Paiement; label: string; icone: any; desc: string; disponiblePour: ClientType[] }[] = [
+  { code: "orange_money",  label: "Orange Money",       icone: Smartphone, desc: "Paiement mobile instantané", disponiblePour: ["particulier", "professionnel", "institutionnel"] },
+  { code: "mtn_money",     label: "MTN Mobile Money",   icone: Smartphone, desc: "Paiement mobile instantané", disponiblePour: ["particulier", "professionnel", "institutionnel"] },
+  { code: "carte_bancaire",label: "Carte bancaire",     icone: CreditCard, desc: "Visa, Mastercard",           disponiblePour: ["particulier", "professionnel", "institutionnel"] },
+  { code: "paypal",        label: "PayPal",             icone: Wallet,     desc: "Compte PayPal international",disponiblePour: ["particulier", "professionnel", "institutionnel"] },
+  { code: "cash",          label: "Espèces à la livraison", icone: Banknote, desc: "À l'installation",         disponiblePour: ["particulier", "professionnel"] },
+  { code: "virement",      label: "Virement bancaire",  icone: Building2,  desc: "Institutions et pros",       disponiblePour: ["professionnel", "institutionnel"] },
 ];
 
+/* ==================== Route ==================== */
 export const Route = createFileRoute("/commander")({
   head: () => ({
     meta: [
-      { title: "Commander votre Adresse GN — 150 000 GNF" },
-      { name: "description", content: "Commandez votre plaque Adresse GN. Livraison 72 h à Conakry. Paiement Mobile Money ou espèces." },
+      { title: "Commander votre Adresse GN" },
+      { name: "description", content: "Créez votre Adresse GN. Particulier, professionnel ou institutionnel. Paiement Mobile Money, carte bancaire, PayPal, virement ou espèces." },
     ],
   }),
   component: Commander,
 });
 
+function formatGNF(n: number): string {
+  return new Intl.NumberFormat("fr-FR").format(n) + " GNF";
+}
+
 function Commander() {
-  const navigate = useNavigate();
+  const [type, setType] = useState<ClientType>("particulier");
+  const [formuleCode, setFormuleCode] = useState<string>("residentiel_standard");
+  const [paiement, setPaiement] = useState<Paiement>("orange_money");
   const [busy, setBusy] = useState(false);
+
   const [form, setForm] = useState({
+    // Commun
     nom: "",
     telephone: "",
+    email: "",
     commune: "",
     adresse: "",
     point_acces: "",
-    paiement: "orange_money" as Paiement,
     notes: "",
+    // Pro / Institutionnel
+    raison_sociale: "",
+    fonction: "",
+    rccm: "",
+    nif: "",
+    site_web: "",
+    nb_adresses: "1",
+    devis_souhaite: false,
   });
+  const set = (k: keyof typeof form, v: any) => setForm({ ...form, [k]: v });
 
-  const set = (k: keyof typeof form, v: string) => setForm({ ...form, [k]: v });
+  const formulesDispo = FORMULES[type];
+  const formule = formulesDispo.find((f) => f.code === formuleCode) ?? formulesDispo[0]!;
+  const paiementsDispo = useMemo(() => PAIEMENTS.filter((p) => p.disponiblePour.includes(type)), [type]);
+
+  // Reset formule + paiement si non disponible pour le nouveau type
+  const changerType = (t: ClientType) => {
+    setType(t);
+    const first = FORMULES[t][0];
+    if (first) setFormuleCode(first.code);
+    if (!PAIEMENTS.find((p) => p.code === paiement && p.disponiblePour.includes(t))) {
+      const firstPay = PAIEMENTS.find((p) => p.disponiblePour.includes(t));
+      if (firstPay) setPaiement(firstPay.code);
+    }
+  };
+
+  const requiresPro = type === "professionnel" || type === "institutionnel";
+  const isDevis = formule.prix === 0 || form.devis_souhaite;
 
   const valide =
     form.nom.trim().length >= 2 &&
     /^(\+?224)?\s?\d{9}$/.test(form.telephone.replace(/\s/g, "")) &&
     form.commune.trim().length >= 2 &&
-    form.adresse.trim().length >= 5;
+    form.adresse.trim().length >= 5 &&
+    (!requiresPro || form.raison_sociale.trim().length >= 2) &&
+    (!requiresPro || form.email.trim().length >= 5);
 
   const soumettre = async () => {
     if (!valide) { toast.error("Merci de remplir tous les champs obligatoires"); return; }
     setBusy(true);
-    // MVP : bascule sur WhatsApp avec le récap pré-rempli.
-    // Remplace par un vrai POST vers ton backend quand tu auras une table `orders`.
-    const paiementLabel = PAIEMENTS.find((p) => p.code === form.paiement)?.label ?? form.paiement;
+    const clientLabel = CLIENT_TYPES.find((c) => c.code === type)?.label ?? type;
+    const paiementLabel = paiementsDispo.find((p) => p.code === paiement)?.label ?? paiement;
+
     const message = [
-      "🏠 *Nouvelle commande Adresse GN*",
+      `📦 *Nouvelle commande Adresse GN — ${clientLabel}*`,
       "",
       `👤 *Nom :* ${form.nom}`,
+      form.raison_sociale && `🏢 *Raison sociale :* ${form.raison_sociale}`,
+      form.fonction && `💼 *Fonction :* ${form.fonction}`,
       `📱 *Téléphone :* ${form.telephone}`,
+      form.email && `✉️ *Email :* ${form.email}`,
+      form.rccm && `📄 *RCCM :* ${form.rccm}`,
+      form.nif && `🧾 *NIF :* ${form.nif}`,
+      form.site_web && `🌐 *Site web :* ${form.site_web}`,
+      "",
       `🗺️ *Commune :* ${form.commune}`,
       `📍 *Adresse :* ${form.adresse}`,
       form.point_acces && `🚪 *Point d'accès :* ${form.point_acces}`,
       "",
-      "📦 *Pack :* Résidentiel Standard",
-      `💰 *Prix :* ${new Intl.NumberFormat("fr-FR").format(PRIX_GNF)} GNF (paiement unique)`,
+      `📦 *Formule :* ${formule.label}`,
+      requiresPro && Number(form.nb_adresses) > 1 && `🔢 *Nombre d'adresses :* ${form.nb_adresses}`,
+      isDevis
+        ? "💰 *Prix :* Sur devis"
+        : `💰 *Prix :* ${formatGNF(formule.prix * (requiresPro ? Number(form.nb_adresses || "1") : 1))} (paiement unique)`,
       `💳 *Paiement :* ${paiementLabel}`,
       form.notes && `📝 *Notes :* ${form.notes}`,
       "",
-      "Merci de me confirmer la disponibilité et l'horaire de pose. 🙏",
+      isDevis
+        ? "Merci de me faire parvenir un devis dans les meilleurs délais. 🙏"
+        : "Merci de me confirmer la disponibilité et l'horaire de pose. 🙏",
     ].filter(Boolean).join("\n");
+
     const url = `https://wa.me/${WHATSAPP_SERVICE}?text=${encodeURIComponent(message)}`;
     window.open(url, "_blank", "noopener");
     setBusy(false);
@@ -91,43 +215,198 @@ function Commander() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Hero résumé pack */}
+      {/* Hero */}
       <section className="gradient-signature-soft px-4 pt-8 pb-14 sm:px-6 md:pt-16 md:pb-20 lg:px-8">
         <div className="mx-auto max-w-4xl text-center">
           <div className="mx-auto flex w-fit items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 backdrop-blur border border-white/20">
             <Sparkles className="size-3.5 text-white" />
-            <span className="text-[11px] font-semibold uppercase tracking-widest text-white">Offre la plus populaire</span>
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-white">Commander en 2 minutes</span>
           </div>
           <h1 className="text-display mt-4 text-3xl md:text-5xl font-extrabold text-white leading-tight">
             Créer mon Adresse GN
           </h1>
           <p className="mx-auto mt-3 max-w-xl text-sm md:text-lg text-white/85 leading-relaxed">
-            Complétez ce formulaire — un agent vous contacte sous 24 h pour confirmer la pose.
+            Choisissez votre profil et votre formule. Un agent vous contacte sous 24 h pour confirmer.
           </p>
         </div>
       </section>
 
-      {/* Contenu */}
       <section className="px-4 sm:px-6 lg:px-8 -mt-8 md:-mt-12 pb-16">
         <div className="mx-auto max-w-5xl grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Formulaire */}
-          <div className="lg:col-span-3 rounded-3xl bg-white shadow-xl border border-slate-200 p-6 md:p-8">
-            <h2 className="text-lg md:text-xl font-bold text-slate-900 mb-1">Vos informations</h2>
-            <p className="text-xs text-slate-500 mb-6">Champs marqués * obligatoires</p>
+          <div className="lg:col-span-3 rounded-3xl bg-white shadow-xl border border-slate-200 p-6 md:p-8 space-y-8">
 
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="nom" className="text-xs font-semibold uppercase tracking-wider text-slate-600">Nom complet *</Label>
-                <Input
-                  id="nom"
-                  value={form.nom}
-                  onChange={(e) => set("nom", e.target.value)}
-                  placeholder="Ex : Aminata Diallo"
-                  className="h-12 mt-1.5"
-                />
+            {/* 1. Type de client */}
+            <section>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="flex size-7 items-center justify-center rounded-full bg-accent text-accent-foreground text-xs font-bold">1</span>
+                <h2 className="text-base md:text-lg font-bold text-slate-900">Vous êtes…</h2>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {CLIENT_TYPES.map((c) => {
+                  const Ic = c.icone;
+                  const sel = type === c.code;
+                  return (
+                    <button
+                      key={c.code}
+                      type="button"
+                      onClick={() => changerType(c.code)}
+                      className={cn(
+                        "p-3 rounded-xl border-2 text-left transition-all active:scale-95",
+                        sel ? "border-accent bg-accent/5 shadow-sm" : "border-slate-200 hover:border-slate-300"
+                      )}
+                    >
+                      <Ic className={cn("size-5 mb-1.5", sel ? "text-accent" : "text-slate-500")} />
+                      <div className={cn("text-xs font-bold", sel ? "text-accent" : "text-slate-900")}>{c.label}</div>
+                      <div className="text-[10px] text-slate-500 mt-0.5 leading-tight">{c.desc}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            {/* 2. Formule */}
+            <section>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="flex size-7 items-center justify-center rounded-full bg-accent text-accent-foreground text-xs font-bold">2</span>
+                <h2 className="text-base md:text-lg font-bold text-slate-900">Votre formule</h2>
+              </div>
+              <div className="space-y-2">
+                {formulesDispo.map((f) => {
+                  const sel = formuleCode === f.code;
+                  return (
+                    <button
+                      key={f.code}
+                      type="button"
+                      onClick={() => setFormuleCode(f.code)}
+                      className={cn(
+                        "w-full p-4 rounded-xl border-2 text-left transition-all active:scale-[0.99] relative",
+                        sel ? "border-accent bg-accent/5 shadow-sm" : "border-slate-200 hover:border-slate-300"
+                      )}
+                    >
+                      {f.populaire && (
+                        <span className="absolute -top-2 right-3 rounded-full bg-gradient-to-r from-accent to-accent-dark px-2 py-0.5 text-[9px] font-bold text-white uppercase tracking-widest">
+                          Plus populaire
+                        </span>
+                      )}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className={cn("text-sm font-bold", sel ? "text-accent" : "text-slate-900")}>{f.label}</div>
+                          <div className="text-xs text-slate-500 mt-0.5">{f.desc}</div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <div className={cn("text-base font-extrabold", sel ? "text-accent" : "text-slate-900")}>
+                            {f.prix === 0 ? "Sur devis" : formatGNF(f.prix)}
+                          </div>
+                          <div className="text-[10px] text-slate-500">{f.prix > 0 && "paiement unique"}</div>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              {requiresPro && formule.prix > 0 && (
+                <div className="mt-3">
+                  <Label htmlFor="nb" className="text-xs font-semibold uppercase tracking-wider text-slate-600">Nombre d'adresses</Label>
+                  <Input
+                    id="nb"
+                    type="number"
+                    min="1"
+                    value={form.nb_adresses}
+                    onChange={(e) => set("nb_adresses", e.target.value)}
+                    className="h-11 mt-1.5 max-w-[140px] font-mono"
+                  />
+                </div>
+              )}
+            </section>
+
+            {/* 3. Coordonnées */}
+            <section>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="flex size-7 items-center justify-center rounded-full bg-accent text-accent-foreground text-xs font-bold">3</span>
+                <h2 className="text-base md:text-lg font-bold text-slate-900">Vos coordonnées</h2>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {requiresPro && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
+                  <div className="sm:col-span-2">
+                    <Label htmlFor="rs" className="text-xs font-semibold uppercase tracking-wider text-slate-600">
+                      {type === "institutionnel" ? "Nom de l'institution *" : "Raison sociale *"}
+                    </Label>
+                    <div className="relative mt-1.5">
+                      <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
+                      <Input
+                        id="rs"
+                        value={form.raison_sociale}
+                        onChange={(e) => set("raison_sociale", e.target.value)}
+                        placeholder={type === "institutionnel" ? "Ex : Ministère de la Ville" : "Ex : Ma Société SARL"}
+                        className="h-11 pl-10"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="fn" className="text-xs font-semibold uppercase tracking-wider text-slate-600">Fonction du contact</Label>
+                    <Input
+                      id="fn"
+                      value={form.fonction}
+                      onChange={(e) => set("fonction", e.target.value)}
+                      placeholder="Ex : Directeur"
+                      className="h-11 mt-1.5"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="rccm" className="text-xs font-semibold uppercase tracking-wider text-slate-600">RCCM</Label>
+                    <Input
+                      id="rccm"
+                      value={form.rccm}
+                      onChange={(e) => set("rccm", e.target.value)}
+                      placeholder="Ex : GN.CKY.2024.B.1234"
+                      className="h-11 mt-1.5 font-mono"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="nif" className="text-xs font-semibold uppercase tracking-wider text-slate-600">NIF (identifiant fiscal)</Label>
+                    <Input
+                      id="nif"
+                      value={form.nif}
+                      onChange={(e) => set("nif", e.target.value)}
+                      placeholder="Numéro d'identification fiscale"
+                      className="h-11 mt-1.5 font-mono"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="web" className="text-xs font-semibold uppercase tracking-wider text-slate-600">Site web</Label>
+                    <div className="relative mt-1.5">
+                      <Globe className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
+                      <Input
+                        id="web"
+                        value={form.site_web}
+                        onChange={(e) => set("site_web", e.target.value)}
+                        placeholder="https://…"
+                        className="h-11 pl-10"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <Label htmlFor="nom" className="text-xs font-semibold uppercase tracking-wider text-slate-600">
+                  {requiresPro ? "Nom du contact *" : "Nom complet *"}
+                </Label>
+                <div className="relative mt-1.5">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
+                  <Input
+                    id="nom"
+                    value={form.nom}
+                    onChange={(e) => set("nom", e.target.value)}
+                    placeholder="Ex : Aminata Diallo"
+                    className="h-11 pl-10"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
                 <div>
                   <Label htmlFor="tel" className="text-xs font-semibold uppercase tracking-wider text-slate-600">Téléphone / WhatsApp *</Label>
                   <div className="relative mt-1.5">
@@ -138,88 +417,129 @@ function Commander() {
                       value={form.telephone}
                       onChange={(e) => set("telephone", e.target.value)}
                       placeholder="+224 620 XX XX XX"
-                      className="h-12 pl-10 font-mono"
+                      className="h-11 pl-10 font-mono"
                     />
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="commune" className="text-xs font-semibold uppercase tracking-wider text-slate-600">Commune *</Label>
+                  <Label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-slate-600">
+                    Email {requiresPro && "*"}
+                  </Label>
                   <div className="relative mt-1.5">
-                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
                     <Input
-                      id="commune"
-                      value={form.commune}
-                      onChange={(e) => set("commune", e.target.value)}
-                      placeholder="Ex : Kaloum, Ratoma…"
-                      className="h-12 pl-10"
+                      id="email"
+                      type="email"
+                      value={form.email}
+                      onChange={(e) => set("email", e.target.value)}
+                      placeholder="contact@exemple.gn"
+                      className="h-11 pl-10"
                     />
                   </div>
                 </div>
               </div>
+            </section>
 
+            {/* 4. Adresse */}
+            <section>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="flex size-7 items-center justify-center rounded-full bg-accent text-accent-foreground text-xs font-bold">4</span>
+                <h2 className="text-base md:text-lg font-bold text-slate-900">Adresse de pose</h2>
+              </div>
               <div>
-                <Label htmlFor="adresse" className="text-xs font-semibold uppercase tracking-wider text-slate-600">Adresse de pose *</Label>
+                <Label htmlFor="commune" className="text-xs font-semibold uppercase tracking-wider text-slate-600">Commune *</Label>
+                <div className="relative mt-1.5">
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
+                  <Input
+                    id="commune"
+                    value={form.commune}
+                    onChange={(e) => set("commune", e.target.value)}
+                    placeholder="Ex : Kaloum, Ratoma, Dixinn…"
+                    className="h-11 pl-10"
+                  />
+                </div>
+              </div>
+              <div className="mt-3">
+                <Label htmlFor="adresse" className="text-xs font-semibold uppercase tracking-wider text-slate-600">Adresse détaillée *</Label>
                 <Textarea
                   id="adresse"
                   value={form.adresse}
                   onChange={(e) => set("adresse", e.target.value)}
-                  placeholder="Ex : Quartier Coleah, Rue KA-045, Villa bleue à côté de la mosquée…"
+                  placeholder="Quartier, rue, repères… Ex : Coleah, Rue KA-045, Villa bleue à côté de la mosquée"
                   rows={2}
                   className="mt-1.5 resize-none"
                 />
               </div>
-
-              <div>
+              <div className="mt-3">
                 <Label htmlFor="point" className="text-xs font-semibold uppercase tracking-wider text-slate-600">Point d'accès (facultatif)</Label>
                 <Input
                   id="point"
                   value={form.point_acces}
                   onChange={(e) => set("point_acces", e.target.value)}
                   placeholder="Ex : Portail vert, sonnette au 1er étage…"
-                  className="h-12 mt-1.5"
+                  className="h-11 mt-1.5"
                 />
               </div>
+            </section>
 
-              {/* Paiement */}
-              <div>
-                <Label className="text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2 block">Mode de paiement *</Label>
-                <div className="grid grid-cols-3 gap-2">
-                  {PAIEMENTS.map((p) => {
-                    const Ic = p.icone;
-                    const sel = form.paiement === p.code;
-                    return (
-                      <button
-                        key={p.code}
-                        type="button"
-                        onClick={() => set("paiement", p.code)}
-                        className={cn(
-                          "p-3 rounded-xl border-2 text-left transition-all active:scale-95",
-                          sel
-                            ? "border-accent bg-accent/5 shadow-sm"
-                            : "border-slate-200 hover:border-slate-300"
-                        )}
-                      >
-                        <Ic className={cn("size-5 mb-1", sel ? "text-accent" : "text-slate-500")} />
-                        <div className={cn("text-xs font-bold", sel ? "text-accent" : "text-slate-900")}>{p.label}</div>
-                        <div className="text-[10px] text-slate-500 mt-0.5">{p.desc}</div>
-                      </button>
-                    );
-                  })}
-                </div>
+            {/* 5. Paiement */}
+            <section>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="flex size-7 items-center justify-center rounded-full bg-accent text-accent-foreground text-xs font-bold">5</span>
+                <h2 className="text-base md:text-lg font-bold text-slate-900">Mode de paiement</h2>
               </div>
-
-              <div>
-                <Label htmlFor="notes" className="text-xs font-semibold uppercase tracking-wider text-slate-600">Instructions particulières (facultatif)</Label>
-                <Textarea
-                  id="notes"
-                  value={form.notes}
-                  onChange={(e) => set("notes", e.target.value)}
-                  placeholder="Ex : Horaire de pose souhaité, personne à joindre…"
-                  rows={2}
-                  className="mt-1.5 resize-none"
-                />
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {paiementsDispo.map((p) => {
+                  const Ic = p.icone;
+                  const sel = paiement === p.code;
+                  return (
+                    <button
+                      key={p.code}
+                      type="button"
+                      onClick={() => setPaiement(p.code)}
+                      className={cn(
+                        "p-3 rounded-xl border-2 text-left transition-all active:scale-95",
+                        sel ? "border-accent bg-accent/5 shadow-sm" : "border-slate-200 hover:border-slate-300"
+                      )}
+                    >
+                      <Ic className={cn("size-5 mb-1.5", sel ? "text-accent" : "text-slate-500")} />
+                      <div className={cn("text-xs font-bold leading-tight", sel ? "text-accent" : "text-slate-900")}>{p.label}</div>
+                      <div className="text-[10px] text-slate-500 mt-0.5 leading-tight">{p.desc}</div>
+                    </button>
+                  );
+                })}
               </div>
+              {requiresPro && (
+                <label className="flex items-start gap-2 mt-3 cursor-pointer p-3 rounded-lg border border-dashed border-slate-300 hover:bg-slate-50 transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={form.devis_souhaite}
+                    onChange={(e) => set("devis_souhaite", e.target.checked)}
+                    className="mt-0.5 size-4 rounded border-slate-300 text-accent focus:ring-accent"
+                  />
+                  <div>
+                    <div className="text-sm font-semibold text-slate-900">Je souhaite recevoir un devis officiel</div>
+                    <div className="text-[11px] text-slate-500 mt-0.5">Bon de commande, facture pro forma, convention</div>
+                  </div>
+                </label>
+              )}
+            </section>
 
+            {/* 6. Notes */}
+            <section>
+              <Label htmlFor="notes" className="text-xs font-semibold uppercase tracking-wider text-slate-600">Instructions particulières (facultatif)</Label>
+              <Textarea
+                id="notes"
+                value={form.notes}
+                onChange={(e) => set("notes", e.target.value)}
+                placeholder="Horaire de pose souhaité, personne à joindre, urgence…"
+                rows={2}
+                className="mt-1.5 resize-none"
+              />
+            </section>
+
+            {/* Submit */}
+            <div className="pt-2 border-t border-slate-200">
               <Button
                 onClick={soumettre}
                 disabled={!valide || busy}
@@ -231,41 +551,49 @@ function Commander() {
                 )}
               >
                 <MessageCircle className="size-5 mr-2" />
-                Envoyer ma commande via WhatsApp
+                {isDevis ? "Demander un devis" : "Envoyer ma commande"}
                 <ArrowRight className="size-5 ml-1" />
               </Button>
-
-              <p className="text-[11px] text-center text-slate-500">
+              <p className="text-[11px] text-center text-slate-500 mt-3">
                 Aucun paiement en ligne à cette étape. Un agent vous rappelle sous 24 h pour confirmer la pose et le paiement.
               </p>
             </div>
           </div>
 
-          {/* Récapitulatif pack */}
-          <aside className="lg:col-span-2 space-y-4">
-            {/* Card pack */}
+          {/* Récapitulatif */}
+          <aside className="lg:col-span-2 space-y-4 lg:sticky lg:top-24 self-start">
             <div className="rounded-3xl bg-white shadow-xl border-2 border-accent/20 overflow-hidden">
               <div className="bg-gradient-to-br from-accent to-accent-dark p-4">
                 <div className="flex items-center gap-2 text-white/80 text-[10px] font-bold uppercase tracking-widest">
-                  <Home className="size-3" /> Résidentiel Standard
+                  <FileText className="size-3" /> Récapitulatif
                 </div>
-                <div className="mt-1 flex items-baseline gap-2">
+                <div className="mt-1 text-sm font-bold text-white">{formule.label}</div>
+                <div className="mt-2 flex items-baseline gap-2">
                   <span className="text-3xl md:text-4xl font-extrabold text-white">
-                    {new Intl.NumberFormat("fr-FR").format(PRIX_GNF)}
+                    {isDevis
+                      ? "Sur devis"
+                      : new Intl.NumberFormat("fr-FR").format(formule.prix * (requiresPro ? Number(form.nb_adresses || "1") : 1))}
                   </span>
-                  <span className="text-sm font-medium text-white/85">GNF</span>
+                  {!isDevis && <span className="text-sm font-medium text-white/85">GNF</span>}
                 </div>
-                <div className="text-[11px] text-white/75 mt-1">Paiement unique · Sans abonnement</div>
+                <div className="text-[11px] text-white/75 mt-1">
+                  {isDevis ? "Étude personnalisée · Devis sous 48 h" : "Paiement unique · Sans abonnement"}
+                </div>
+                {requiresPro && Number(form.nb_adresses) > 1 && !isDevis && (
+                  <div className="text-[10px] text-white/70 mt-1">
+                    {form.nb_adresses} adresses × {formatGNF(formule.prix)}
+                  </div>
+                )}
               </div>
               <div className="p-5">
                 <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">Ce qui est inclus</div>
                 <ul className="space-y-2.5">
-                  {AVANTAGES.map(({ icone: Ic, texte }, i) => (
+                  {formule.avantages.map((a, i) => (
                     <li key={i} className="flex items-start gap-2.5">
                       <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-accent/15">
                         <Check className="size-3 text-accent" />
                       </div>
-                      <span className="text-xs text-slate-700 leading-relaxed">{texte}</span>
+                      <span className="text-xs text-slate-700 leading-relaxed">{a}</span>
                     </li>
                   ))}
                 </ul>
@@ -294,21 +622,26 @@ function Commander() {
               </div>
               <div className="flex items-center gap-2">
                 <div className="h-9 w-9 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center">
+                  <Truck className="size-5" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-slate-900">Couverture nationale</div>
+                  <div className="text-[10px] text-slate-500">Conakry, Kindia, Kankan…</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-9 w-9 rounded-lg bg-violet-100 text-violet-600 flex items-center justify-center">
                   <MessageCircle className="size-5" />
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-slate-900">Support WhatsApp</div>
-                  <div className="text-[10px] text-slate-500">7j/7 en français, poular, malinké</div>
+                  <div className="text-xs font-bold text-slate-900">Support 7j/7</div>
+                  <div className="text-[10px] text-slate-500">Français, poular, malinké</div>
                 </div>
               </div>
             </div>
 
-            {/* Comparaison */}
             <div className="text-center">
-              <Link
-                to="/tarifs"
-                className="text-xs text-slate-500 hover:text-slate-900 underline underline-offset-4"
-              >
+              <Link to="/tarifs" className="text-xs text-slate-500 hover:text-slate-900 underline underline-offset-4">
                 Voir toutes les offres →
               </Link>
             </div>
@@ -318,4 +651,3 @@ function Commander() {
     </div>
   );
 }
-
