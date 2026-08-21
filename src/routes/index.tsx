@@ -17,7 +17,6 @@ import { cn } from "@/lib/utils";
 
 const EXEMPLES = ["GN-CKY-582741", "GN-CKY-152963", "GN-CKY-759482"];
 
-// Atouts hardcodés (indépendants de la traduction pour garantir le texte)
 const ATOUTS = [
   "Fonctionne aussi via QR code",
   "Compatible avec toutes les apps de navigation",
@@ -34,10 +33,10 @@ const USAGES = [
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "ADRESSE GN — Un lieu, un numéro, un itinéraire" },
-      { name: "description", content: "Trouvez ou partagez n'importe quelle adresse en Guinée grâce à un simple numéro unique." },
-      { property: "og:title", content: "ADRESSE GN — Un lieu, un numéro, un itinéraire" },
-      { property: "og:description", content: "Envoyez votre adresse comme un numéro de téléphone." },
+      { title: "ADRESSE GN — Votre adresse, enfin facile à trouver" },
+      { name: "description", content: "Un numéro unique par lieu. Fini les explications, les repères et les appels perdus. Trouvez ou partagez n'importe quelle adresse en Guinée en un numéro." },
+      { property: "og:title", content: "ADRESSE GN — Votre adresse, enfin facile à trouver" },
+      { property: "og:description", content: "Un numéro unique par lieu. Fini les explications, les repères et les appels perdus." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:url", content: "https://place-id-finder.lovable.app/" },
@@ -124,21 +123,18 @@ function Home() {
       {/* ==================== HÉROS ==================== */}
       <section className="relative overflow-hidden gradient-signature-soft">
         <div aria-hidden className="absolute top-0 left-1/2 -translate-x-1/2 h-[500px] w-[500px] rounded-full bg-white/10 blur-3xl pointer-events-none" />
-
         <div className="relative mx-auto w-full max-w-5xl px-5 pt-6 pb-8 sm:px-6 md:pt-12 md:pb-16 lg:px-8">
-          {/* Titre */}
+          {/* Titre — accroche marketing forte */}
           <h1
             className="text-display text-center font-extrabold leading-[1.05] text-white whitespace-nowrap"
             style={{ textShadow: "0 2px 20px rgb(15 23 42 / 0.25)", fontSize: "clamp(0.95rem, 4.7vw, 3.75rem)" }}
           >
-            {t("home.hero.title")}
+            Votre adresse, enfin facile à trouver.
           </h1>
-
-          {/* Sous-titre : accroche courte et percutante, toujours entier */}
+          {/* Sous-titre — bénéfice concret, ancré dans le quotidien guinéen */}
           <p className="mx-auto mt-4 md:mt-6 max-w-md md:max-w-2xl text-center text-sm md:text-lg leading-relaxed text-white/90">
-            Un numéro unique par lieu. Partagez-le comme un contact — et faites-vous trouver instantanément.
+            Un numéro unique par lieu. Fini les explications, les repères et les appels perdus.
           </p>
-
           {/* Barre de recherche */}
           <div className="mt-8 md:mt-12 rounded-3xl bg-white/95 backdrop-blur-xl p-2.5 shadow-[0_20px_60px_-15px_rgba(15,23,42,0.35)] ring-1 ring-white/50">
             <form className="flex flex-col gap-2 md:flex-row md:gap-2" onSubmit={(e) => { e.preventDefault(); void rechercher(numero); }}>
@@ -183,7 +179,6 @@ function Home() {
                   <TooltipContent>Scanner un QR</TooltipContent>
                 </Tooltip>
               </div>
-
               <Button
                 type="submit"
                 disabled={enCours}
@@ -195,7 +190,6 @@ function Home() {
             </form>
             {erreur && <p role="alert" className="mt-3 px-2 text-sm text-destructive">{erreur}</p>}
           </div>
-
           {/* Exemples : forcés sur UNE ligne (nowrap + petits chips) */}
           <div className="mt-5 md:mt-6 flex flex-nowrap items-center justify-center gap-1.5 overflow-x-auto scrollbar-hide px-1">
             {EXEMPLES.map((exemple) => (
