@@ -1,6 +1,6 @@
 // src/routes/commander.tsx
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Check, Home, MapPin, Phone, User, MessageCircle, ShieldCheck, Truck,
   Zap, ArrowRight, Smartphone, Banknote, Sparkles, CreditCard, Building2,
@@ -15,19 +15,20 @@ import { cn } from "@/lib/utils";
 
 const WHATSAPP_SERVICE = "224620000000";
 
-/* ==================== Formules par type ==================== */
+/* ==================== Types ==================== */
 type ClientType = "particulier" | "professionnel" | "institutionnel";
 
 const CLIENT_TYPES: { code: ClientType; label: string; desc: string; icone: any }[] = [
-  { code: "particulier", label: "Particulier", desc: "Domicile, logement", icone: Home },
-  { code: "professionnel", label: "Professionnel", desc: "Commerce, entreprise", icone: Briefcase },
-  { code: "institutionnel", label: "Institutionnel", desc: "Administration, ONG, école", icone: Landmark },
+  { code: "particulier",    label: "Particulier",    desc: "Domicile, logement",          icone: Home },
+  { code: "professionnel",  label: "Professionnel",  desc: "Commerce, entreprise",        icone: Briefcase },
+  { code: "institutionnel", label: "Institutionnel", desc: "Administration, ONG, école",  icone: Landmark },
 ];
 
 interface Formule {
   code: string;
   label: string;
-  prix: number; // 0 = sur devis
+  prix: number;              // installation (ou paiement unique) — 0 = sur devis
+  prix_mensuel?: number;     // abonnement mensuel optionnel
   desc: string;
   avantages: string[];
   populaire?: boolean;
@@ -60,11 +61,30 @@ const FORMULES: Record<ClientType, Formule[]> = {
   ],
   professionnel: [
     {
-      code: "pro_standard",
-      label: "Professionnel Standard",
-      prix: 250000,
-      desc: "Pour commerces et PME (1 point de vente)",
-      avantages: ["Balise professionnelle vitrine", "Fiche établissement complète", "Photo + horaires + téléphone", "Référencement dans l'annuaire pro"],
+      code: "pro_basic",
+      label: "Pro Basic",
+      prix: 350000,
+      prix_mensuel: 50000,
+      desc: "Fiche établissement pour les commerces",
+      avantages: [
+        "1 fiche établissement",
+        "Nom, téléphone, horaires",
+        "Statistiques de base (30 jours)",
+        "QR code téléchargeable",
+      ],
+    },
+    {
+      code: "pro_plus",
+      label: "Pro Plus",
+      prix: 600000,
+      prix_mensuel: 150000,
+      desc: "Fiche enrichie, équipe et statistiques avancées",
+      avantages: [
+        "Fiche enrichie (photos, description)",
+        "Statistiques détaillées 90 jours",
+        "Équipe multi-utilisateurs",
+        "Support prioritaire",
+      ],
       populaire: true,
     },
     {
@@ -81,32 +101,36 @@ const FORMULES: Record<ClientType, Formule[]> = {
       label: "Pack Institutionnel",
       prix: 0,
       desc: "Administration, ONG, ministère, école",
-      avantages: ["Devis sur mesure", "Facturation en francs guinéens ou EUR/USD", "Convention et bon de commande", "Pose planifiée par lots"],
+      avantages: ["Devis sur mesure", "Facturation en GNF ou EUR/USD", "Convention et bon de commande", "Pose planifiée par lots"],
       populaire: true,
     },
   ],
 };
 
-/* ==================== Modes de paiement ==================== */
+/* ==================== Paiements ==================== */
 type Paiement =
-  | "orange_money"
-  | "mtn_money"
-  | "carte_bancaire"
-  | "paypal"
-  | "cash"
-  | "virement";
+  | "orange_money" | "mtn_money" | "carte_bancaire"
+  | "paypal" | "cash" | "virement";
 
 const PAIEMENTS: { code: Paiement; label: string; icone: any; desc: string; disponiblePour: ClientType[] }[] = [
-  { code: "orange_money",  label: "Orange Money",       icone: Smartphone, desc: "Paiement mobile instantané", disponiblePour: ["particulier", "professionnel", "institutionnel"] },
-  { code: "mtn_money",     label: "MTN Mobile Money",   icone: Smartphone, desc: "Paiement mobile instantané", disponiblePour: ["particulier", "professionnel", "institutionnel"] },
-  { code: "carte_bancaire",label: "Carte bancaire",     icone: CreditCard, desc: "Visa, Mastercard",           disponiblePour: ["particulier", "professionnel", "institutionnel"] },
-  { code: "paypal",        label: "PayPal",             icone: Wallet,     desc: "Compte PayPal international",disponiblePour: ["particulier", "professionnel", "institutionnel"] },
-  { code: "cash",          label: "Espèces à la livraison", icone: Banknote, desc: "À l'installation",         disponiblePour: ["particulier", "professionnel"] },
-  { code: "virement",      label: "Virement bancaire",  icone: Building2,  desc: "Institutions et pros",       disponiblePour: ["professionnel", "institutionnel"] },
+  { code: "orange_money",   label: "Orange Money",           icone: Smartphone, desc: "Paiement mobile instantané",  disponiblePour: ["particulier", "professionnel", "institutionnel"] },
+  { code: "mtn_money",      label: "MTN Mobile Money",       icone: Smartphone, desc: "Paiement mobile instantané",  disponiblePour: ["particulier", "professionnel", "institutionnel"] },
+  { code: "carte_bancaire", label: "Carte bancaire",         icone: CreditCard, desc: "Visa, Mastercard",            disponiblePour: ["particulier", "professionnel", "institutionnel"] },
+  { code: "paypal",         label: "PayPal",                 icone: Wallet,     desc: "Compte PayPal international", disponiblePour: ["particulier", "professionnel", "institutionnel"] },
+  { code: "cash",           label: "Espèces à la livraison", icone: Banknote,   desc: "À l'installation",            disponiblePour: ["particulier", "professionnel"] },
+  { code: "virement",       label: "Virement bancaire",      icone: Building2,  desc: "Institutions et pros",        disponiblePour: ["professionnel", "institutionnel"] },
 ];
 
-/* ==================== Route ==================== */
+/* ==================== Route + query params ==================== */
+type CommanderSearch = { type?: ClientType; formule?: string };
+
 export const Route = createFileRoute("/commander")({
+  validateSearch: (search: Record<string, unknown>): CommanderSearch => ({
+    type: (["particulier", "professionnel", "institutionnel"].includes(search.type as string)
+      ? search.type
+      : undefined) as ClientType | undefined,
+    formule: typeof search.formule === "string" ? search.formule : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Commander votre Adresse GN" },
@@ -121,28 +145,18 @@ function formatGNF(n: number): string {
 }
 
 function Commander() {
-  const [type, setType] = useState<ClientType>("particulier");
-  const [formuleCode, setFormuleCode] = useState<string>("residentiel_standard");
+  const search = Route.useSearch();
+  const [type, setType] = useState<ClientType>(search.type ?? "particulier");
+  const initialFormule = search.formule ?? FORMULES[search.type ?? "particulier"][0]?.code ?? "";
+  const [formuleCode, setFormuleCode] = useState<string>(initialFormule);
   const [paiement, setPaiement] = useState<Paiement>("orange_money");
   const [busy, setBusy] = useState(false);
 
   const [form, setForm] = useState({
-    // Commun
-    nom: "",
-    telephone: "",
-    email: "",
-    commune: "",
-    adresse: "",
-    point_acces: "",
-    notes: "",
-    // Pro / Institutionnel
-    raison_sociale: "",
-    fonction: "",
-    rccm: "",
-    nif: "",
-    site_web: "",
-    nb_adresses: "1",
-    devis_souhaite: false,
+    nom: "", telephone: "", email: "",
+    commune: "", adresse: "", point_acces: "", notes: "",
+    raison_sociale: "", fonction: "", rccm: "", nif: "", site_web: "",
+    nb_adresses: "1", devis_souhaite: false,
   });
   const set = (k: keyof typeof form, v: any) => setForm({ ...form, [k]: v });
 
@@ -150,7 +164,17 @@ function Commander() {
   const formule = formulesDispo.find((f) => f.code === formuleCode) ?? formulesDispo[0]!;
   const paiementsDispo = useMemo(() => PAIEMENTS.filter((p) => p.disponiblePour.includes(type)), [type]);
 
-  // Reset formule + paiement si non disponible pour le nouveau type
+  // Synchronise depuis URL au premier rendu (?type=…&formule=…)
+  useEffect(() => {
+    if (search.type && search.type !== type) setType(search.type);
+    if (search.formule && search.formule !== formuleCode) {
+      const t = search.type ?? type;
+      const exists = FORMULES[t].some((f) => f.code === search.formule);
+      if (exists) setFormuleCode(search.formule);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search.type, search.formule]);
+
   const changerType = (t: ClientType) => {
     setType(t);
     const first = FORMULES[t][0];
@@ -171,6 +195,10 @@ function Commander() {
     form.adresse.trim().length >= 5 &&
     (!requiresPro || form.raison_sociale.trim().length >= 2) &&
     (!requiresPro || form.email.trim().length >= 5);
+
+  const nbAdresses = requiresPro ? Number(form.nb_adresses || "1") : 1;
+  const prixInstallation = formule.prix * nbAdresses;
+  const prixMensuel = (formule.prix_mensuel ?? 0) * nbAdresses;
 
   const soumettre = async () => {
     if (!valide) { toast.error("Merci de remplir tous les champs obligatoires"); return; }
@@ -195,10 +223,12 @@ function Commander() {
       form.point_acces && `🚪 *Point d'accès :* ${form.point_acces}`,
       "",
       `📦 *Formule :* ${formule.label}`,
-      requiresPro && Number(form.nb_adresses) > 1 && `🔢 *Nombre d'adresses :* ${form.nb_adresses}`,
+      requiresPro && nbAdresses > 1 && `🔢 *Nombre d'adresses :* ${nbAdresses}`,
       isDevis
         ? "💰 *Prix :* Sur devis"
-        : `💰 *Prix :* ${formatGNF(formule.prix * (requiresPro ? Number(form.nb_adresses || "1") : 1))} (paiement unique)`,
+        : formule.prix_mensuel
+          ? `💰 *Prix :* ${formatGNF(prixInstallation)} à l'installation, puis ${formatGNF(prixMensuel)} par mois`
+          : `💰 *Prix :* ${formatGNF(prixInstallation)} (paiement unique)`,
       `💳 *Paiement :* ${paiementLabel}`,
       form.notes && `📝 *Notes :* ${form.notes}`,
       "",
@@ -236,7 +266,7 @@ function Commander() {
           {/* Formulaire */}
           <div className="lg:col-span-3 rounded-3xl bg-white shadow-xl border border-slate-200 p-6 md:p-8 space-y-8">
 
-            {/* 1. Type de client */}
+            {/* 1. Type client */}
             <section>
               <div className="flex items-center gap-2 mb-3">
                 <span className="flex size-7 items-center justify-center rounded-full bg-accent text-accent-foreground text-xs font-bold">1</span>
@@ -247,15 +277,11 @@ function Commander() {
                   const Ic = c.icone;
                   const sel = type === c.code;
                   return (
-                    <button
-                      key={c.code}
-                      type="button"
-                      onClick={() => changerType(c.code)}
+                    <button key={c.code} type="button" onClick={() => changerType(c.code)}
                       className={cn(
                         "p-3 rounded-xl border-2 text-left transition-all active:scale-95",
                         sel ? "border-accent bg-accent/5 shadow-sm" : "border-slate-200 hover:border-slate-300"
-                      )}
-                    >
+                      )}>
                       <Ic className={cn("size-5 mb-1.5", sel ? "text-accent" : "text-slate-500")} />
                       <div className={cn("text-xs font-bold", sel ? "text-accent" : "text-slate-900")}>{c.label}</div>
                       <div className="text-[10px] text-slate-500 mt-0.5 leading-tight">{c.desc}</div>
@@ -275,15 +301,11 @@ function Commander() {
                 {formulesDispo.map((f) => {
                   const sel = formuleCode === f.code;
                   return (
-                    <button
-                      key={f.code}
-                      type="button"
-                      onClick={() => setFormuleCode(f.code)}
+                    <button key={f.code} type="button" onClick={() => setFormuleCode(f.code)}
                       className={cn(
                         "w-full p-4 rounded-xl border-2 text-left transition-all active:scale-[0.99] relative",
                         sel ? "border-accent bg-accent/5 shadow-sm" : "border-slate-200 hover:border-slate-300"
-                      )}
-                    >
+                      )}>
                       {f.populaire && (
                         <span className="absolute -top-2 right-3 rounded-full bg-gradient-to-r from-accent to-accent-dark px-2 py-0.5 text-[9px] font-bold text-white uppercase tracking-widest">
                           Plus populaire
@@ -298,7 +320,13 @@ function Commander() {
                           <div className={cn("text-base font-extrabold", sel ? "text-accent" : "text-slate-900")}>
                             {f.prix === 0 ? "Sur devis" : formatGNF(f.prix)}
                           </div>
-                          <div className="text-[10px] text-slate-500">{f.prix > 0 && "paiement unique"}</div>
+                          <div className="text-[10px] text-slate-500">
+                            {f.prix === 0
+                              ? "personnalisé"
+                              : f.prix_mensuel
+                                ? `à l'installation, puis ${formatGNF(f.prix_mensuel)} / mois`
+                                : "paiement unique"}
+                          </div>
                         </div>
                       </div>
                     </button>
@@ -307,15 +335,10 @@ function Commander() {
               </div>
               {requiresPro && formule.prix > 0 && (
                 <div className="mt-3">
-                  <Label htmlFor="nb" className="text-xs font-semibold uppercase tracking-wider text-slate-600">Nombre d'adresses</Label>
-                  <Input
-                    id="nb"
-                    type="number"
-                    min="1"
-                    value={form.nb_adresses}
+                  <Label htmlFor="nb" className="text-xs font-semibold uppercase tracking-wider text-slate-600">Nombre d'établissements</Label>
+                  <Input id="nb" type="number" min="1" value={form.nb_adresses}
                     onChange={(e) => set("nb_adresses", e.target.value)}
-                    className="h-11 mt-1.5 max-w-[140px] font-mono"
-                  />
+                    className="h-11 mt-1.5 max-w-[140px] font-mono" />
                 </div>
               )}
             </section>
@@ -326,7 +349,6 @@ function Commander() {
                 <span className="flex size-7 items-center justify-center rounded-full bg-accent text-accent-foreground text-xs font-bold">3</span>
                 <h2 className="text-base md:text-lg font-bold text-slate-900">Vos coordonnées</h2>
               </div>
-
               {requiresPro && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
                   <div className="sm:col-span-2">
@@ -335,56 +357,32 @@ function Commander() {
                     </Label>
                     <div className="relative mt-1.5">
                       <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
-                      <Input
-                        id="rs"
-                        value={form.raison_sociale}
-                        onChange={(e) => set("raison_sociale", e.target.value)}
+                      <Input id="rs" value={form.raison_sociale} onChange={(e) => set("raison_sociale", e.target.value)}
                         placeholder={type === "institutionnel" ? "Ex : Ministère de la Ville" : "Ex : Ma Société SARL"}
-                        className="h-11 pl-10"
-                      />
+                        className="h-11 pl-10" />
                     </div>
                   </div>
                   <div>
                     <Label htmlFor="fn" className="text-xs font-semibold uppercase tracking-wider text-slate-600">Fonction du contact</Label>
-                    <Input
-                      id="fn"
-                      value={form.fonction}
-                      onChange={(e) => set("fonction", e.target.value)}
-                      placeholder="Ex : Directeur"
-                      className="h-11 mt-1.5"
-                    />
+                    <Input id="fn" value={form.fonction} onChange={(e) => set("fonction", e.target.value)}
+                      placeholder="Ex : Directeur" className="h-11 mt-1.5" />
                   </div>
                   <div>
                     <Label htmlFor="rccm" className="text-xs font-semibold uppercase tracking-wider text-slate-600">RCCM</Label>
-                    <Input
-                      id="rccm"
-                      value={form.rccm}
-                      onChange={(e) => set("rccm", e.target.value)}
-                      placeholder="Ex : GN.CKY.2024.B.1234"
-                      className="h-11 mt-1.5 font-mono"
-                    />
+                    <Input id="rccm" value={form.rccm} onChange={(e) => set("rccm", e.target.value)}
+                      placeholder="Ex : GN.CKY.2024.B.1234" className="h-11 mt-1.5 font-mono" />
                   </div>
                   <div>
                     <Label htmlFor="nif" className="text-xs font-semibold uppercase tracking-wider text-slate-600">NIF (identifiant fiscal)</Label>
-                    <Input
-                      id="nif"
-                      value={form.nif}
-                      onChange={(e) => set("nif", e.target.value)}
-                      placeholder="Numéro d'identification fiscale"
-                      className="h-11 mt-1.5 font-mono"
-                    />
+                    <Input id="nif" value={form.nif} onChange={(e) => set("nif", e.target.value)}
+                      placeholder="Numéro d'identification fiscale" className="h-11 mt-1.5 font-mono" />
                   </div>
                   <div>
                     <Label htmlFor="web" className="text-xs font-semibold uppercase tracking-wider text-slate-600">Site web</Label>
                     <div className="relative mt-1.5">
                       <Globe className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
-                      <Input
-                        id="web"
-                        value={form.site_web}
-                        onChange={(e) => set("site_web", e.target.value)}
-                        placeholder="https://…"
-                        className="h-11 pl-10"
-                      />
+                      <Input id="web" value={form.site_web} onChange={(e) => set("site_web", e.target.value)}
+                        placeholder="https://…" className="h-11 pl-10" />
                     </div>
                   </div>
                 </div>
@@ -396,13 +394,8 @@ function Commander() {
                 </Label>
                 <div className="relative mt-1.5">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
-                  <Input
-                    id="nom"
-                    value={form.nom}
-                    onChange={(e) => set("nom", e.target.value)}
-                    placeholder="Ex : Aminata Diallo"
-                    className="h-11 pl-10"
-                  />
+                  <Input id="nom" value={form.nom} onChange={(e) => set("nom", e.target.value)}
+                    placeholder="Ex : Aminata Diallo" className="h-11 pl-10" />
                 </div>
               </div>
 
@@ -411,14 +404,8 @@ function Commander() {
                   <Label htmlFor="tel" className="text-xs font-semibold uppercase tracking-wider text-slate-600">Téléphone / WhatsApp *</Label>
                   <div className="relative mt-1.5">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
-                    <Input
-                      id="tel"
-                      type="tel"
-                      value={form.telephone}
-                      onChange={(e) => set("telephone", e.target.value)}
-                      placeholder="+224 620 XX XX XX"
-                      className="h-11 pl-10 font-mono"
-                    />
+                    <Input id="tel" type="tel" value={form.telephone} onChange={(e) => set("telephone", e.target.value)}
+                      placeholder="+224 620 XX XX XX" className="h-11 pl-10 font-mono" />
                   </div>
                 </div>
                 <div>
@@ -427,14 +414,8 @@ function Commander() {
                   </Label>
                   <div className="relative mt-1.5">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
-                    <Input
-                      id="email"
-                      type="email"
-                      value={form.email}
-                      onChange={(e) => set("email", e.target.value)}
-                      placeholder="contact@exemple.gn"
-                      className="h-11 pl-10"
-                    />
+                    <Input id="email" type="email" value={form.email} onChange={(e) => set("email", e.target.value)}
+                      placeholder="contact@exemple.gn" className="h-11 pl-10" />
                   </div>
                 </div>
               </div>
@@ -450,35 +431,19 @@ function Commander() {
                 <Label htmlFor="commune" className="text-xs font-semibold uppercase tracking-wider text-slate-600">Commune *</Label>
                 <div className="relative mt-1.5">
                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
-                  <Input
-                    id="commune"
-                    value={form.commune}
-                    onChange={(e) => set("commune", e.target.value)}
-                    placeholder="Ex : Kaloum, Ratoma, Dixinn…"
-                    className="h-11 pl-10"
-                  />
+                  <Input id="commune" value={form.commune} onChange={(e) => set("commune", e.target.value)}
+                    placeholder="Ex : Kaloum, Ratoma, Dixinn…" className="h-11 pl-10" />
                 </div>
               </div>
               <div className="mt-3">
                 <Label htmlFor="adresse" className="text-xs font-semibold uppercase tracking-wider text-slate-600">Adresse détaillée *</Label>
-                <Textarea
-                  id="adresse"
-                  value={form.adresse}
-                  onChange={(e) => set("adresse", e.target.value)}
-                  placeholder="Quartier, rue, repères… Ex : Coleah, Rue KA-045, Villa bleue à côté de la mosquée"
-                  rows={2}
-                  className="mt-1.5 resize-none"
-                />
+                <Textarea id="adresse" value={form.adresse} onChange={(e) => set("adresse", e.target.value)}
+                  placeholder="Quartier, rue, repères…" rows={2} className="mt-1.5 resize-none" />
               </div>
               <div className="mt-3">
                 <Label htmlFor="point" className="text-xs font-semibold uppercase tracking-wider text-slate-600">Point d'accès (facultatif)</Label>
-                <Input
-                  id="point"
-                  value={form.point_acces}
-                  onChange={(e) => set("point_acces", e.target.value)}
-                  placeholder="Ex : Portail vert, sonnette au 1er étage…"
-                  className="h-11 mt-1.5"
-                />
+                <Input id="point" value={form.point_acces} onChange={(e) => set("point_acces", e.target.value)}
+                  placeholder="Ex : Portail vert, sonnette au 1er étage…" className="h-11 mt-1.5" />
               </div>
             </section>
 
@@ -493,15 +458,11 @@ function Commander() {
                   const Ic = p.icone;
                   const sel = paiement === p.code;
                   return (
-                    <button
-                      key={p.code}
-                      type="button"
-                      onClick={() => setPaiement(p.code)}
+                    <button key={p.code} type="button" onClick={() => setPaiement(p.code)}
                       className={cn(
                         "p-3 rounded-xl border-2 text-left transition-all active:scale-95",
                         sel ? "border-accent bg-accent/5 shadow-sm" : "border-slate-200 hover:border-slate-300"
-                      )}
-                    >
+                      )}>
                       <Ic className={cn("size-5 mb-1.5", sel ? "text-accent" : "text-slate-500")} />
                       <div className={cn("text-xs font-bold leading-tight", sel ? "text-accent" : "text-slate-900")}>{p.label}</div>
                       <div className="text-[10px] text-slate-500 mt-0.5 leading-tight">{p.desc}</div>
@@ -511,12 +472,9 @@ function Commander() {
               </div>
               {requiresPro && (
                 <label className="flex items-start gap-2 mt-3 cursor-pointer p-3 rounded-lg border border-dashed border-slate-300 hover:bg-slate-50 transition-colors">
-                  <input
-                    type="checkbox"
-                    checked={form.devis_souhaite}
+                  <input type="checkbox" checked={form.devis_souhaite}
                     onChange={(e) => set("devis_souhaite", e.target.checked)}
-                    className="mt-0.5 size-4 rounded border-slate-300 text-accent focus:ring-accent"
-                  />
+                    className="mt-0.5 size-4 rounded border-slate-300 text-accent focus:ring-accent" />
                   <div>
                     <div className="text-sm font-semibold text-slate-900">Je souhaite recevoir un devis officiel</div>
                     <div className="text-[11px] text-slate-500 mt-0.5">Bon de commande, facture pro forma, convention</div>
@@ -528,34 +486,25 @@ function Commander() {
             {/* 6. Notes */}
             <section>
               <Label htmlFor="notes" className="text-xs font-semibold uppercase tracking-wider text-slate-600">Instructions particulières (facultatif)</Label>
-              <Textarea
-                id="notes"
-                value={form.notes}
-                onChange={(e) => set("notes", e.target.value)}
-                placeholder="Horaire de pose souhaité, personne à joindre, urgence…"
-                rows={2}
-                className="mt-1.5 resize-none"
-              />
+              <Textarea id="notes" value={form.notes} onChange={(e) => set("notes", e.target.value)}
+                placeholder="Horaire de pose souhaité, personne à joindre, urgence…" rows={2} className="mt-1.5 resize-none" />
             </section>
 
             {/* Submit */}
             <div className="pt-2 border-t border-slate-200">
-              <Button
-                onClick={soumettre}
-                disabled={!valide || busy}
+              <Button onClick={soumettre} disabled={!valide || busy}
                 className={cn(
                   "w-full h-14 text-base font-semibold rounded-2xl transition-all",
                   valide
                     ? "bg-gradient-to-r from-accent to-accent-dark text-accent-foreground shadow-lg shadow-accent/25 hover:shadow-accent/40 active:scale-[0.98]"
                     : "bg-slate-200 text-slate-500 cursor-not-allowed"
-                )}
-              >
+                )}>
                 <MessageCircle className="size-5 mr-2" />
                 {isDevis ? "Demander un devis" : "Envoyer ma commande"}
                 <ArrowRight className="size-5 ml-1" />
               </Button>
               <p className="text-[11px] text-center text-slate-500 mt-3">
-                Aucun paiement en ligne à cette étape. Un agent vous rappelle sous 24 h pour confirmer la pose et le paiement.
+                Aucun paiement en ligne à cette étape. Un agent vous rappelle sous 24 h pour confirmer.
               </p>
             </div>
           </div>
@@ -572,16 +521,20 @@ function Commander() {
                   <span className="text-3xl md:text-4xl font-extrabold text-white">
                     {isDevis
                       ? "Sur devis"
-                      : new Intl.NumberFormat("fr-FR").format(formule.prix * (requiresPro ? Number(form.nb_adresses || "1") : 1))}
+                      : new Intl.NumberFormat("fr-FR").format(prixInstallation)}
                   </span>
                   {!isDevis && <span className="text-sm font-medium text-white/85">GNF</span>}
                 </div>
                 <div className="text-[11px] text-white/75 mt-1">
-                  {isDevis ? "Étude personnalisée · Devis sous 48 h" : "Paiement unique · Sans abonnement"}
+                  {isDevis
+                    ? "Étude personnalisée · Devis sous 48 h"
+                    : formule.prix_mensuel
+                      ? `à l'installation, puis ${formatGNF(prixMensuel)} par mois`
+                      : "Paiement unique · Sans abonnement"}
                 </div>
-                {requiresPro && Number(form.nb_adresses) > 1 && !isDevis && (
+                {requiresPro && nbAdresses > 1 && !isDevis && (
                   <div className="text-[10px] text-white/70 mt-1">
-                    {form.nb_adresses} adresses × {formatGNF(formule.prix)}
+                    {nbAdresses} × {formatGNF(formule.prix)}
                   </div>
                 )}
               </div>
@@ -600,44 +553,23 @@ function Commander() {
               </div>
             </div>
 
-            {/* Trust */}
             <div className="rounded-2xl bg-white border border-slate-200 p-4 space-y-3">
-              <div className="flex items-center gap-2">
-                <div className="h-9 w-9 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
-                  <ShieldCheck className="size-5" />
+              {[
+                { Ic: ShieldCheck, t: "Agents certifiés", d: "Pose garantie et vérifiée", cls: "bg-emerald-100 text-emerald-600" },
+                { Ic: Zap,         t: "72 h à Conakry",   d: "Pose sous 3 jours ouvrés",  cls: "bg-orange-100 text-orange-600" },
+                { Ic: Truck,       t: "Couverture nationale", d: "Conakry, Kindia, Kankan…", cls: "bg-sky-100 text-sky-600" },
+                { Ic: MessageCircle, t: "Support 7j/7",   d: "Français, poular, malinké", cls: "bg-violet-100 text-violet-600" },
+              ].map(({ Ic, t, d, cls }, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <div className={cn("h-9 w-9 rounded-lg flex items-center justify-center", cls)}>
+                    <Ic className="size-5" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-900">{t}</div>
+                    <div className="text-[10px] text-slate-500">{d}</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-xs font-bold text-slate-900">Agents certifiés</div>
-                  <div className="text-[10px] text-slate-500">Pose garantie et vérifiée</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-9 w-9 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center">
-                  <Zap className="size-5" />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-slate-900">72 h à Conakry</div>
-                  <div className="text-[10px] text-slate-500">Pose sous 3 jours ouvrés</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-9 w-9 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center">
-                  <Truck className="size-5" />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-slate-900">Couverture nationale</div>
-                  <div className="text-[10px] text-slate-500">Conakry, Kindia, Kankan…</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-9 w-9 rounded-lg bg-violet-100 text-violet-600 flex items-center justify-center">
-                  <MessageCircle className="size-5" />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-slate-900">Support 7j/7</div>
-                  <div className="text-[10px] text-slate-500">Français, poular, malinké</div>
-                </div>
-              </div>
+              ))}
             </div>
 
             <div className="text-center">
