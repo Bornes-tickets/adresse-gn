@@ -26,7 +26,7 @@ const WHATSAPP_SERVICE = "224620000000";
 
 // Header épuré : 2 items visibles seulement.
 // "Comment ça marche" pointe vers l'ancre #comment-ca-marche du hero.
-// "Nos offres" = /tarifs. Les autres liens (Blog, FAQ, À propos) sont dans le footer.
+// "Nos offres" = /tarifs (comparaison). Le CTA principal → /commander (checkout direct).
 const NAV: { to: "/" | "/tarifs"; label: string; hash?: string }[] = [
   { to: "/", label: "Comment ça marche", hash: "comment-ca-marche" },
   { to: "/tarifs", label: "Nos offres" },
@@ -85,7 +85,6 @@ function Header() {
   const initiales = user?.email?.slice(0, 2).toUpperCase() ?? "GN";
   const espace = role ? ESPACES_METIER[role] : null;
 
-  // Mode overlay : transparent au-dessus du héros, solide au scroll.
   const isOverlayRoute = OVERLAY_HEADER_ROUTES.includes(location.pathname);
   const overlay = isOverlayRoute && !scrolled;
 
@@ -106,7 +105,6 @@ function Header() {
         </Link>
 
         <div className="flex items-center gap-1 sm:gap-2">
-          {/* Nav desktop — 2 items uniquement */}
           <nav className="mr-2 hidden items-center gap-1 rtl:mr-0 rtl:ml-2 lg:flex">
             {NAV.map((item) => (
               <Link
@@ -206,7 +204,7 @@ function Header() {
                     : "bg-accent text-accent-foreground hover:bg-accent-dark",
                 )}
               >
-                <Link to="/tarifs">Créer mon Adresse GN</Link>
+                <Link to="/commander">Créer mon Adresse GN</Link>
               </Button>
             </>
           )}
@@ -243,6 +241,13 @@ function Header() {
                     {item.label}
                   </Link>
                 ))}
+                <Link
+                  to="/commander"
+                  onClick={() => setMenuOpen(false)}
+                  className="rounded-lg bg-accent/10 px-3 py-3 text-base font-semibold text-accent transition-colors hover:bg-accent/20"
+                >
+                  Créer mon Adresse GN
+                </Link>
                 <Link
                   to="/confidentialite"
                   onClick={() => setMenuOpen(false)}
