@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
 
 const WHATSAPP_SERVICE = "224620000000";
 
-// Header épuré : 2 items visibles seulement.
+// Header épuré : 2 items visibles.
 // "Comment ça marche" pointe vers l'ancre #comment-ca-marche du hero.
 // "Nos offres" = /tarifs (comparaison). Le CTA principal → /commander (checkout direct).
 const NAV: { to: "/" | "/tarifs"; label: string; hash?: string }[] = [
@@ -32,10 +32,7 @@ const NAV: { to: "/" | "/tarifs"; label: string; hash?: string }[] = [
   { to: "/tarifs", label: "Nos offres" },
 ];
 
-/** Routes qui gèrent leur propre chrome (sidebar, topbar) — pas de header/footer public. */
 const BACKOFFICE_PREFIXES = ["/supervisor", "/admin", "/sales", "/ops", "/support", "/agent"];
-
-/** Routes où le header doit être transparent au-dessus du héros (revient solide au scroll). */
 const OVERLAY_HEADER_ROUTES = ["/"];
 
 type EspaceInfo = {
@@ -105,7 +102,8 @@ function Header() {
         </Link>
 
         <div className="flex items-center gap-1 sm:gap-2">
-          <nav className="mr-2 hidden items-center gap-1 rtl:mr-0 rtl:ml-2 lg:flex">
+          {/* Nav — visible dès tablette (md: 768px+) */}
+          <nav className="mr-2 hidden items-center gap-1 rtl:mr-0 rtl:ml-2 md:flex">
             {NAV.map((item) => (
               <Link
                 key={item.label}
@@ -215,7 +213,7 @@ function Header() {
                 variant="ghost"
                 size="icon"
                 className={cn(
-                  "size-11 lg:hidden",
+                  "size-11 md:hidden",
                   overlay && "text-white hover:bg-white/10 hover:text-white",
                 )}
                 aria-label={t("nav.openMenu")}
@@ -441,3 +439,4 @@ export function Layout({ children }: { children: ReactNode }) {
     </div>
   );
 }
+
