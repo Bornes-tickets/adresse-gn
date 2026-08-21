@@ -125,7 +125,7 @@ function Home() {
       <section className="relative overflow-hidden gradient-signature-soft">
         <div aria-hidden className="absolute top-0 left-1/2 -translate-x-1/2 h-[500px] w-[500px] rounded-full bg-white/10 blur-3xl pointer-events-none" />
 
-        <div className="relative mx-auto w-full max-w-5xl px-5 pt-12 pb-14 sm:px-6 md:pt-20 md:pb-24 lg:px-8">
+        <div className="relative mx-auto w-full max-w-5xl px-5 pt-6 pb-8 sm:px-6 md:pt-12 md:pb-16 lg:px-8">
           {/* Titre */}
           <h1
             className="text-display text-center font-extrabold leading-[1.05] text-white whitespace-nowrap"
