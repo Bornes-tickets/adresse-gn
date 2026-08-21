@@ -24,9 +24,6 @@ import { cn } from "@/lib/utils";
 
 const WHATSAPP_SERVICE = "224620000000";
 
-// Header épuré : 2 items visibles.
-// "Comment ça marche" pointe vers l'ancre #comment-ca-marche du hero.
-// "Nos offres" = /tarifs (comparaison). Le CTA principal → /commander (checkout direct).
 const NAV: { to: "/" | "/tarifs"; label: string; hash?: string }[] = [
   { to: "/", label: "Comment ça marche", hash: "comment-ca-marche" },
   { to: "/tarifs", label: "Nos offres" },
@@ -34,6 +31,9 @@ const NAV: { to: "/" | "/tarifs"; label: string; hash?: string }[] = [
 
 const BACKOFFICE_PREFIXES = ["/supervisor", "/admin", "/sales", "/ops", "/support", "/agent"];
 const OVERLAY_HEADER_ROUTES = ["/"];
+
+// Ombre pour renforcer la lisibilité du texte blanc sur le hero
+const OVERLAY_TEXT_SHADOW = { textShadow: "0 1px 4px rgb(15 23 42 / 0.4)" };
 
 type EspaceInfo = {
   role: string; to: string; label: string; icon: any; cls: string;
@@ -110,11 +110,12 @@ function Header() {
                 to={item.to}
                 hash={item.hash}
                 className={cn(
-                  "rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  "rounded-md px-3 py-2 text-sm font-semibold transition-colors",
                   overlay
-                    ? "text-white/85 hover:bg-white/10 hover:text-white"
+                    ? "text-white hover:bg-white/15"
                     : "text-muted-foreground hover:bg-muted hover:text-primary",
                 )}
+                style={overlay ? OVERLAY_TEXT_SHADOW : undefined}
               >
                 {item.label}
               </Link>
@@ -187,9 +188,10 @@ function Header() {
                 asChild
                 variant="ghost"
                 className={cn(
-                  "hidden h-11 sm:inline-flex",
-                  overlay && "text-white hover:bg-white/10 hover:text-white",
+                  "hidden h-11 font-semibold sm:inline-flex",
+                  overlay && "text-white hover:bg-white/15 hover:text-white",
                 )}
+                style={overlay ? OVERLAY_TEXT_SHADOW : undefined}
               >
                 <Link to="/login">Se connecter</Link>
               </Button>
@@ -198,7 +200,7 @@ function Header() {
                 className={cn(
                   "h-11 transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]",
                   overlay
-                    ? "bg-white text-slate-900 hover:bg-white/90"
+                    ? "bg-white text-slate-900 hover:bg-white/90 shadow-lg"
                     : "bg-accent text-accent-foreground hover:bg-accent-dark",
                 )}
               >
@@ -214,7 +216,7 @@ function Header() {
                 size="icon"
                 className={cn(
                   "size-11 md:hidden",
-                  overlay && "text-white hover:bg-white/10 hover:text-white",
+                  overlay && "text-white hover:bg-white/15 hover:text-white",
                 )}
                 aria-label={t("nav.openMenu")}
               >
@@ -439,4 +441,3 @@ export function Layout({ children }: { children: ReactNode }) {
     </div>
   );
 }
-
