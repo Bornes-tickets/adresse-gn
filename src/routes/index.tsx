@@ -131,8 +131,8 @@ function Home() {
           >
             Votre adresse, enfin facile à trouver.
           </h1>
-          {/* Sous-titre — bénéfice concret, ancré dans le quotidien guinéen */}
-          <p className="mx-auto mt-4 md:mt-6 max-w-md md:max-w-2xl text-center text-sm md:text-lg leading-relaxed text-white/90">
+          {/* Sous-titre — sur 1 ligne à partir de md (tablette+) */}
+          <p className="mx-auto mt-4 md:mt-6 max-w-md md:max-w-none text-center text-sm md:text-base leading-relaxed text-white/90 md:whitespace-nowrap">
             Un numéro unique par lieu. Fini les explications, les repères et les appels perdus.
           </p>
           {/* Barre de recherche */}
@@ -182,10 +182,10 @@ function Home() {
               <Button
                 type="submit"
                 disabled={enCours}
-                className="h-14 w-full rounded-2xl bg-gradient-to-r from-accent to-accent-dark px-8 text-base font-semibold text-accent-foreground shadow-lg shadow-accent/25 transition-all hover:shadow-accent/40 active:scale-[0.98] md:w-auto md:min-w-[180px]"
+                className="h-14 w-full rounded-2xl bg-gradient-to-r from-accent to-accent-dark px-8 text-base font-semibold text-accent-foreground shadow-lg shadow-accent/25 transition-all hover:shadow-accent/40 active:scale-[0.98] md:w-auto md:min-w-[160px]"
               >
                 <Search className="size-5" />
-                {enCours ? t("home.hero.searching") : t("home.hero.search")}
+                {enCours ? "Recherche…" : "Localiser"}
               </Button>
             </form>
             {erreur && <p role="alert" className="mt-3 px-2 text-sm text-destructive">{erreur}</p>}
