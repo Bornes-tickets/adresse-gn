@@ -132,7 +132,7 @@ function Home() {
             Votre adresse, enfin facile à trouver.
           </h1>
           {/* Sous-titre — sur 1 ligne à partir de md (tablette+) */}
-          <p className="mx-auto mt-4 md:mt-6 max-w-md md:max-w-none text-center text-sm md:text-base leading-relaxed text-white/90 md:whitespace-nowrap">
+          <p className="mx-auto mt-4 md:mt-6 max-w-md md:max-w-none text-center text-base md:text-xl leading-relaxed text-white/90 md:whitespace-nowrap">
             Un numéro unique par lieu. Fini les explications, les repères et les appels perdus.
           </p>
           {/* Barre de recherche */}
