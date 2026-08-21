@@ -1,6 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -30,10 +30,6 @@ const NAV: { to: "/" | "/tarifs"; label: string; hash?: string }[] = [
 ];
 
 const BACKOFFICE_PREFIXES = ["/supervisor", "/admin", "/sales", "/ops", "/support", "/agent"];
-const OVERLAY_HEADER_ROUTES = ["/"];
-
-// Ombre pour renforcer la lisibilité du texte blanc sur le hero
-const OVERLAY_TEXT_SHADOW = { textShadow: "0 1px 4px rgb(15 23 42 / 0.4)" };
 
 type EspaceInfo = {
   role: string; to: string; label: string; icon: any; cls: string;
@@ -61,44 +57,19 @@ function useRoleUtilisateur(userId: string | null | undefined) {
   });
 }
 
-function useScrolled(threshold = 40) {
-  const [scrolled, setScrolled] = useState(false);
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > threshold);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [threshold]);
-  return scrolled;
-}
-
 function Header() {
   const { t } = useTranslation();
   const { user, isAuthenticated } = useAuth();
   const { data: role } = useRoleUtilisateur(user?.id);
-  const { location } = useRouterState();
-  const scrolled = useScrolled(40);
   const [menuOpen, setMenuOpen] = useState(false);
   const initiales = user?.email?.slice(0, 2).toUpperCase() ?? "GN";
   const espace = role ? ESPACES_METIER[role] : null;
 
-  const isOverlayRoute = OVERLAY_HEADER_ROUTES.includes(location.pathname);
-  const overlay = isOverlayRoute && !scrolled;
-
   return (
-    <header
-      className={cn(
-        "sticky top-0 z-[900] transition-all duration-300",
-        overlay
-          ? "border-b border-transparent bg-transparent"
-          : scrolled
-            ? "border-b border-border/70 bg-background/90 shadow-brand backdrop-blur-md"
-            : "border-b border-border/70 bg-background",
-      )}
-    >
+    <header className="sticky top-0 z-[900] border-b border-border/70 bg-background">
       <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 py-3 sm:px-6 sm:py-3.5">
         <Link to="/" aria-label={t("nav.home")} className="min-w-0">
-          <Logo tone={overlay ? "light" : undefined} />
+          <Logo />
         </Link>
 
         <div className="flex items-center gap-1 sm:gap-2">
@@ -109,29 +80,20 @@ function Header() {
                 key={item.label}
                 to={item.to}
                 hash={item.hash}
-                className={cn(
-                  "rounded-md px-3 py-2 text-sm font-semibold transition-colors",
-                  overlay
-                    ? "text-white hover:bg-white/15"
-                    : "text-muted-foreground hover:bg-muted hover:text-primary",
-                )}
-                style={overlay ? OVERLAY_TEXT_SHADOW : undefined}
+                className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
               >
                 {item.label}
               </Link>
             ))}
           </nav>
 
-          <LanguageSwitcher tone={overlay ? "light" : undefined} />
+          <LanguageSwitcher />
 
           {isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
-                  className={cn(
-                    "rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-accent/40",
-                    overlay && "ring-2 ring-white/20",
-                  )}
+                  className="rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-accent/40"
                   aria-label={t("nav.userMenu")}
                 >
                   <Avatar>
@@ -187,22 +149,13 @@ function Header() {
               <Button
                 asChild
                 variant="ghost"
-                className={cn(
-                  "hidden h-11 font-semibold sm:inline-flex",
-                  overlay && "text-white hover:bg-white/15 hover:text-white",
-                )}
-                style={overlay ? OVERLAY_TEXT_SHADOW : undefined}
+                className="hidden h-11 font-medium text-foreground sm:inline-flex"
               >
                 <Link to="/login">Se connecter</Link>
               </Button>
               <Button
                 asChild
-                className={cn(
-                  "h-11 transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]",
-                  overlay
-                    ? "bg-white text-slate-900 hover:bg-white/90 shadow-lg"
-                    : "bg-accent text-accent-foreground hover:bg-accent-dark",
-                )}
+                className="h-11 bg-accent text-accent-foreground transition-transform duration-200 hover:scale-[1.02] hover:bg-accent-dark active:scale-[0.98]"
               >
                 <Link to="/commander">Créer mon Adresse GN</Link>
               </Button>
@@ -214,10 +167,7 @@ function Header() {
               <Button
                 variant="ghost"
                 size="icon"
-                className={cn(
-                  "size-11 md:hidden",
-                  overlay && "text-white hover:bg-white/15 hover:text-white",
-                )}
+                className="size-11 md:hidden"
                 aria-label={t("nav.openMenu")}
               >
                 <Menu className="size-5" />
@@ -427,16 +377,11 @@ function Footer() {
 export function Layout({ children }: { children: ReactNode }) {
   const { location } = useRouterState();
   const isBackoffice = BACKOFFICE_PREFIXES.some((p) => location.pathname.startsWith(p));
-  const isOverlay = OVERLAY_HEADER_ROUTES.includes(location.pathname);
   if (isBackoffice) return <div className="min-h-screen">{children}</div>;
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
-      {/* Sur les routes en overlay, le main démarre SOUS le header transparent
-          (via -mt-16 sur le premier enfant) pour que le héros passe derrière la nav. */}
-      <main className={cn("flex-1", isOverlay && "-mt-[68px] pt-[68px]")}>
-        {children}
-      </main>
+      <main className="flex-1">{children}</main>
       <Footer />
     </div>
   );
