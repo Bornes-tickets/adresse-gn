@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import {
   Bike, Building2, Check, Home as HomeIcon, MapPin, Mic, MicOff,
   QrCode, Search, UtensilsCrossed, ArrowRight, Navigation2,
+  Zap, Wifi, Globe2, Sparkles, X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Reveal } from "@/components/Reveal";
@@ -23,32 +24,44 @@ const USAGES = [
   { icone: Building2, cle: "companies", grad: "from-sky-500 to-blue-600" },
 ];
 
-// 3 étapes du "comment ça marche"
 const ETAPES = [
   {
     numero: "01",
     icone: QrCode,
     grad: "from-emerald-500 to-teal-600",
+    couleur: "emerald",
     titre: "Obtenez votre numéro",
     texte:
       "Une adresse déjà créée ? Notez son numéro (ex. GN-CKY-582741) ou son QR code. Sinon, un agent Adresse GN vient la créer sur place.",
+    tags: ["Créée en < 5 min", "Par un agent local"],
   },
   {
     numero: "02",
     icone: Search,
     grad: "from-sky-500 to-blue-600",
+    couleur: "sky",
     titre: "Saisissez ou scannez",
     texte:
       "Tapez le numéro sur adresse.gn ou pointez votre caméra sur le QR code. Fonctionne sur téléphone, tablette et ordinateur.",
+    tags: ["Aucune app requise", "Voix + QR"],
   },
   {
     numero: "03",
     icone: Navigation2,
     grad: "from-violet-500 to-fuchsia-600",
+    couleur: "violet",
     titre: "L'itinéraire s'ouvre",
     texte:
       "Un clic et Google Maps, Waze ou Apple Plans lance la navigation vers le point exact. Aucune installation supplémentaire.",
+    tags: ["1 clic", "GPS précis à ±3 m"],
   },
+];
+
+const AVANTAGES = [
+  { icone: Zap, texte: "Sous 30 secondes" },
+  { icone: Wifi, texte: "Fonctionne aussi hors ligne" },
+  { icone: Globe2, texte: "Compatible tout mobile & PC" },
+  { icone: Sparkles, texte: "Aucune installation" },
 ];
 
 export const Route = createFileRoute("/")({
@@ -225,31 +238,59 @@ function Home() {
       </section>
 
       {/* ==================== COMMENT ÇA MARCHE ==================== */}
-      <section id="comment-ca-marche" className="bg-white px-6 py-16 md:px-8 md:py-24">
-        <div className="mx-auto max-w-6xl">
+      <section
+        id="comment-ca-marche"
+        className="relative overflow-hidden bg-gradient-to-b from-white via-slate-50/50 to-white px-6 py-16 md:px-8 md:py-28"
+      >
+        {/* Motif de fond subtil */}
+        <div
+          aria-hidden
+          className="absolute inset-0 opacity-[0.03] pointer-events-none"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 1px 1px, rgb(15 23 42) 1px, transparent 0)",
+            backgroundSize: "32px 32px",
+          }}
+        />
+        <div aria-hidden className="absolute top-40 right-10 h-80 w-80 rounded-full bg-emerald-100/40 blur-3xl pointer-events-none" />
+        <div aria-hidden className="absolute bottom-20 left-10 h-80 w-80 rounded-full bg-violet-100/40 blur-3xl pointer-events-none" />
+
+        <div className="relative mx-auto max-w-6xl">
+          {/* En-tête */}
           <Reveal>
-            <Eyebrow>Comment ça marche</Eyebrow>
-            <h2 className="text-display mt-3 md:mt-4 text-center text-2xl md:text-4xl font-bold tracking-tight text-slate-900">
-              En 3 étapes, du numéro à l'itinéraire.
+            <div className="flex justify-center">
+              <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600 shadow-sm">
+                <Sparkles className="size-3.5 text-accent" />
+                Comment ça marche
+              </span>
+            </div>
+            <h2 className="text-display mt-4 text-center text-3xl md:text-5xl font-bold tracking-tight text-slate-900">
+              En 3 étapes,{" "}
+              <span className="bg-gradient-to-r from-emerald-600 via-sky-600 to-violet-600 bg-clip-text text-transparent">
+                du numéro à l'itinéraire.
+              </span>
             </h2>
-            <p className="mx-auto mt-3 md:mt-4 max-w-2xl text-center text-base md:text-lg leading-relaxed text-slate-600">
+            <p className="mx-auto mt-4 max-w-2xl text-center text-base md:text-lg leading-relaxed text-slate-600">
               Pas d'installation, pas de compte obligatoire. Un numéro suffit pour lancer la navigation.
             </p>
           </Reveal>
 
-          <div className="mt-10 md:mt-14 grid gap-10 lg:grid-cols-[1.15fr_1fr] lg:items-center">
+          {/* Grille 2 colonnes : étapes + mockup */}
+          <div className="mt-12 md:mt-16 grid gap-10 lg:grid-cols-[1.15fr_1fr] lg:items-center">
             {/* ÉTAPES */}
             <ol className="relative space-y-5 md:space-y-6">
-              {/* Ligne verticale de connexion (desktop) */}
-              <div aria-hidden className="absolute left-[27px] top-8 bottom-8 w-px bg-gradient-to-b from-emerald-300 via-sky-300 to-fuchsia-300 hidden md:block" />
+              <div
+                aria-hidden
+                className="absolute left-[27px] top-8 bottom-8 w-px bg-gradient-to-b from-emerald-300 via-sky-300 to-fuchsia-300 hidden md:block"
+              />
               {ETAPES.map((etape, index) => (
                 <Reveal key={etape.numero} delay={index * 100}>
-                  <li className="group relative flex gap-4 md:gap-6 rounded-2xl border border-slate-200/80 bg-white p-5 md:p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:border-transparent">
+                  <li className="group relative flex gap-4 md:gap-6 rounded-2xl border border-slate-200/80 bg-white p-5 md:p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:border-transparent">
                     {/* Badge numéroté + icône */}
                     <div className="relative flex-shrink-0">
                       <div
                         className={cn(
-                          "flex size-14 items-center justify-center rounded-2xl text-white shadow-lg bg-gradient-to-br transition-transform group-hover:scale-110",
+                          "flex size-14 items-center justify-center rounded-2xl text-white shadow-lg bg-gradient-to-br transition-transform group-hover:scale-110 group-hover:rotate-3",
                           etape.grad,
                         )}
                       >
@@ -267,21 +308,40 @@ function Home() {
                       <p className="mt-1.5 text-sm md:text-base leading-relaxed text-slate-600">
                         {etape.texte}
                       </p>
+                      {/* Chips micro-features */}
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        {etape.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-medium text-slate-700"
+                          >
+                            <Check className="size-3 text-emerald-600" />
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </li>
                 </Reveal>
               ))}
 
-              {/* CTA sous les étapes */}
+              {/* CTA */}
               <Reveal delay={350}>
                 <div className="mt-2 flex flex-wrap gap-3 pl-0 md:pl-[86px]">
-                  <Button asChild className="h-12 bg-gradient-to-r from-accent to-accent-dark px-6 text-base font-semibold text-accent-foreground shadow-lg shadow-accent/25 hover:shadow-accent/40 group">
+                  <Button
+                    asChild
+                    className="h-12 bg-gradient-to-r from-accent to-accent-dark px-6 text-base font-semibold text-accent-foreground shadow-lg shadow-accent/25 hover:shadow-accent/40 group"
+                  >
                     <Link to="/a/$number" params={{ number: "GN-CKY-582741" }}>
                       Voir un exemple réel
                       <ArrowRight className="size-4 ml-1 group-hover:translate-x-0.5 transition-transform" />
                     </Link>
                   </Button>
-                  <Button asChild variant="outline" className="h-12 border-slate-300 bg-white px-6 text-base font-medium text-slate-700 hover:bg-slate-50">
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="h-12 border-slate-300 bg-white px-6 text-base font-medium text-slate-700 hover:bg-slate-50"
+                  >
                     <Link to="/commander">Créer mon Adresse GN</Link>
                   </Button>
                 </div>
@@ -290,39 +350,155 @@ function Home() {
 
             {/* MOCKUP RÉSULTAT */}
             <Reveal delay={200} className="relative order-first lg:order-last">
-              <div aria-hidden className="absolute left-1/2 top-1/2 size-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/25 blur-3xl" />
-              {/* Étiquette "Résultat" au-dessus du mockup */}
-              <div className="relative mx-auto flex max-w-[280px] flex-col items-center">
-                <span className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-white shadow-md">
+              <div aria-hidden className="absolute left-1/2 top-1/2 size-80 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/25 blur-3xl" />
+              <div className="relative mx-auto flex max-w-[300px] flex-col items-center">
+                <span className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-white shadow-md">
                   <Check className="size-3 text-accent" />
                   Résultat sur mobile
                 </span>
-                <div className="aspect-9/19 w-full rotate-[-3deg] overflow-hidden rounded-[2.5rem] border-8 border-slate-900 bg-white shadow-2xl">
+
+                {/* Device frame */}
+                <div className="relative aspect-9/19 w-full rotate-[-3deg] overflow-hidden rounded-[2.75rem] border-[10px] border-slate-900 bg-white shadow-[0_30px_80px_-15px_rgba(15,23,42,0.5)]">
+                  {/* Notch */}
+                  <div aria-hidden className="absolute left-1/2 top-1 z-10 h-4 w-16 -translate-x-1/2 rounded-full bg-slate-900" />
                   <div className="flex h-full flex-col">
-                    <div className="gradient-signature-soft px-4 py-3 text-center text-[10px] font-semibold uppercase tracking-[0.2em] text-white">
+                    <div className="gradient-signature-soft px-4 pt-6 pb-3 text-center text-[10px] font-semibold uppercase tracking-[0.2em] text-white">
                       Adresse GN
                     </div>
-                    <div className="relative flex-1 bg-slate-100">
+                    {/* Fausse carte avec grille */}
+                    <div
+                      className="relative flex-1 bg-slate-100"
+                      style={{
+                        backgroundImage:
+                          "linear-gradient(rgb(203 213 225 / 0.5) 1px, transparent 1px), linear-gradient(90deg, rgb(203 213 225 / 0.5) 1px, transparent 1px)",
+                        backgroundSize: "20px 20px",
+                      }}
+                    >
+                      {/* Routes fictives */}
+                      <div aria-hidden className="absolute top-1/3 left-0 right-0 h-1 bg-slate-300/70" />
+                      <div aria-hidden className="absolute top-0 bottom-0 left-1/3 w-1 bg-slate-300/70" />
                       {/* Pin animé */}
-                      <span aria-hidden className="absolute left-1/2 top-1/2 size-16 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/30 animate-ping" />
-                      <MapPin className="absolute left-1/2 top-1/2 size-9 -translate-x-1/2 -translate-y-1/2 text-accent drop-shadow-lg" />
+                      <span
+                        aria-hidden
+                        className="absolute left-1/2 top-1/2 size-20 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/30 animate-ping"
+                      />
+                      <span
+                        aria-hidden
+                        className="absolute left-1/2 top-1/2 size-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/20"
+                      />
+                      <MapPin className="absolute left-1/2 top-1/2 size-10 -translate-x-1/2 -translate-y-[calc(50%+2px)] text-accent drop-shadow-lg" />
                     </div>
                     <div className="space-y-3 bg-white p-4">
-                      <div className="rounded-xl border border-slate-200 bg-white p-3">
-                        <p className="text-sm font-bold text-slate-900">Restaurant Le Damier</p>
-                        <p className="mt-1 font-mono text-xs text-slate-500">GN-CKY-582741</p>
-                        <p className="mt-1 text-xs text-slate-500">Kaloum · Conakry</p>
+                      <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold text-slate-900 truncate">Restaurant Le Damier</p>
+                            <p className="mt-0.5 font-mono text-[11px] text-slate-500">GN-CKY-582741</p>
+                          </div>
+                          <span className="shrink-0 rounded-md bg-emerald-50 px-1.5 py-0.5 text-[9px] font-bold text-emerald-700">
+                            OUVERT
+                          </span>
+                        </div>
+                        <p className="mt-1 text-[11px] text-slate-500">Kaloum · Conakry</p>
                       </div>
-                      <div className="rounded-xl bg-accent px-4 py-2.5 text-center text-sm font-medium text-accent-foreground flex items-center justify-center gap-1.5">
+                      <div className="flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-accent to-accent-dark px-4 py-2.5 text-sm font-semibold text-accent-foreground shadow-md">
                         <Navigation2 className="size-4" />
                         S'y rendre
                       </div>
                     </div>
                   </div>
                 </div>
+
+                {/* Petites cartes flottantes autour du téléphone */}
+                <div className="pointer-events-none absolute -left-4 top-16 hidden rotate-[-8deg] rounded-xl border border-slate-200 bg-white p-2 shadow-xl md:block">
+                  <div className="flex items-center gap-1.5">
+                    <div className="flex size-6 items-center justify-center rounded-full bg-emerald-100">
+                      <Check className="size-3 text-emerald-600" />
+                    </div>
+                    <span className="text-[10px] font-semibold text-slate-700">Adresse trouvée</span>
+                  </div>
+                </div>
+                <div className="pointer-events-none absolute -right-6 bottom-32 hidden rotate-[6deg] rounded-xl border border-slate-200 bg-white p-2 shadow-xl md:block">
+                  <div className="flex items-center gap-1.5">
+                    <Zap className="size-3.5 text-amber-500" />
+                    <span className="text-[10px] font-semibold text-slate-700">~30 s</span>
+                  </div>
+                </div>
               </div>
             </Reveal>
           </div>
+
+          {/* Comparatif Avant / Après */}
+          <Reveal delay={100}>
+            <div className="mt-16 md:mt-20 grid gap-4 md:gap-5 md:grid-cols-2">
+              {/* Sans Adresse GN */}
+              <div className="relative overflow-hidden rounded-2xl border border-rose-200 bg-rose-50/50 p-6 md:p-8">
+                <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-rose-100 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-rose-700">
+                  <X className="size-3.5" />
+                  Sans Adresse GN
+                </div>
+                <p className="text-base md:text-lg font-semibold text-slate-800 leading-snug">
+                  "C'est après la station Total, tu tournes à droite, tu demandes le tailleur…"
+                </p>
+                <ul className="mt-4 space-y-1.5 text-sm text-slate-600">
+                  <li className="flex items-start gap-2">
+                    <X className="mt-0.5 size-3.5 shrink-0 text-rose-500" />
+                    10 minutes d'explications par téléphone
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <X className="mt-0.5 size-3.5 shrink-0 text-rose-500" />
+                    Livreurs et taxis qui se perdent
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <X className="mt-0.5 size-3.5 shrink-0 text-rose-500" />
+                    Rendez-vous en retard, colis mal livrés
+                  </li>
+                </ul>
+              </div>
+
+              {/* Avec Adresse GN */}
+              <div className="relative overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 p-6 md:p-8 shadow-md">
+                <div aria-hidden className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-emerald-200/40 blur-2xl" />
+                <div className="relative mb-3 inline-flex items-center gap-2 rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow">
+                  <Check className="size-3.5" />
+                  Avec Adresse GN
+                </div>
+                <p className="relative font-mono text-base md:text-lg font-bold tracking-wide text-slate-900">
+                  "GN-CKY-582741"
+                </p>
+                <ul className="relative mt-4 space-y-1.5 text-sm text-slate-700">
+                  <li className="flex items-start gap-2">
+                    <Check className="mt-0.5 size-3.5 shrink-0 text-emerald-600" />
+                    Un numéro unique, partagé en 1 SMS
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="mt-0.5 size-3.5 shrink-0 text-emerald-600" />
+                    Navigation GPS lancée en 1 clic
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="mt-0.5 size-3.5 shrink-0 text-emerald-600" />
+                    Zéro perte de temps, zéro appel supplémentaire
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </Reveal>
+
+          {/* Barre d'avantages */}
+          <Reveal delay={150}>
+            <div className="mt-10 md:mt-12 rounded-2xl border border-slate-200 bg-white/70 backdrop-blur-sm p-4 md:p-5 shadow-sm">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {AVANTAGES.map((av) => (
+                  <div key={av.texte} className="flex items-center gap-2.5">
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                      <av.icone className="size-4" />
+                    </div>
+                    <span className="text-sm font-semibold text-slate-800">{av.texte}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Reveal>
         </div>
       </section>
 
