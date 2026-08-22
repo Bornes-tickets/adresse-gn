@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Bike, Building2, Check, Home as HomeIcon, MapPin, Mic, MicOff,
-  QrCode, Search, UtensilsCrossed, ArrowRight,
+  QrCode, Search, UtensilsCrossed, ArrowRight, Sparkles, ScanLine,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Reveal } from "@/components/Reveal";
@@ -16,13 +16,11 @@ import { QrScanner } from "@/components/QrScanner";
 import { cn } from "@/lib/utils";
 
 const EXEMPLES = ["GN-CKY-582741", "GN-CKY-152963", "GN-CKY-759482"];
-
 const ATOUTS = [
   "Fonctionne aussi via QR code",
   "Compatible avec toutes les apps de navigation",
   "Web, mobile, tablette · Application installable",
 ];
-
 const USAGES = [
   { icone: HomeIcon, cle: "individuals", grad: "from-emerald-500 to-teal-600" },
   { icone: UtensilsCrossed, cle: "shops", grad: "from-orange-500 to-rose-600" },
@@ -116,27 +114,45 @@ function Home() {
   };
 
   const arreterVoix = () => { try { recognitionRef.current?.stop(); } catch {} setEcoute(false); };
+
   useEffect(() => () => { try { recognitionRef.current?.abort(); } catch {} }, []);
 
   return (
     <div className="bg-white">
       {/* ==================== HÉROS ==================== */}
       <section className="relative overflow-hidden gradient-signature-soft">
+        {/* Halos décoratifs pour la profondeur */}
         <div aria-hidden className="absolute top-0 left-1/2 -translate-x-1/2 h-[500px] w-[500px] rounded-full bg-white/10 blur-3xl pointer-events-none" />
-        <div className="relative mx-auto w-full max-w-5xl px-5 pt-6 pb-8 sm:px-6 md:pt-12 md:pb-16 lg:px-8">
-          {/* Titre — accroche marketing forte */}
+        <div aria-hidden className="absolute -top-32 -right-32 h-[420px] w-[420px] rounded-full bg-accent/25 blur-3xl pointer-events-none" />
+        <div aria-hidden className="absolute -bottom-32 -left-32 h-[360px] w-[360px] rounded-full bg-white/10 blur-3xl pointer-events-none" />
+
+        <div className="relative mx-auto w-full max-w-5xl px-5 pt-10 pb-12 sm:px-6 md:pt-16 md:pb-20 lg:px-8">
+          {/* Badge de confiance */}
+          <div className="flex justify-center">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-white backdrop-blur-md">
+              <Sparkles className="size-3.5 text-accent" />
+              🇬🇳 Pilote actif à Conakry
+            </span>
+          </div>
+
+          {/* Titre — wrap naturel, plus lisible sur tous formats */}
           <h1
-            className="text-display text-center font-extrabold leading-[1.05] text-white whitespace-nowrap"
-            style={{ textShadow: "0 2px 20px rgb(15 23 42 / 0.25)", fontSize: "clamp(0.95rem, 4.7vw, 3.75rem)" }}
+            className="text-display mt-5 md:mt-6 text-center font-extrabold leading-[1.05] tracking-tight text-white text-balance"
+            style={{
+              textShadow: "0 2px 24px rgb(15 23 42 / 0.28)",
+              fontSize: "clamp(2rem, 6vw, 4rem)",
+            }}
           >
-            Votre adresse, enfin facile à trouver.
+            Votre adresse,<br className="sm:hidden" /> enfin facile à trouver.
           </h1>
-          {/* Sous-titre — sur 1 ligne à partir de md (tablette+) */}
-          <p className="mx-auto mt-4 md:mt-6 max-w-md md:max-w-none text-center text-base md:text-xl leading-relaxed text-white/90 md:whitespace-nowrap">
+
+          {/* Sous-titre — wrap naturel, largeur contrôlée */}
+          <p className="mx-auto mt-4 md:mt-6 max-w-2xl text-center text-base sm:text-lg md:text-xl leading-relaxed text-white/90">
             Un numéro unique par lieu. Fini les explications, les repères et les appels perdus.
           </p>
+
           {/* Barre de recherche */}
-          <div className="mt-8 md:mt-12 rounded-3xl bg-white/95 backdrop-blur-xl p-2.5 shadow-[0_20px_60px_-15px_rgba(15,23,42,0.35)] ring-1 ring-white/50">
+          <div className="mt-8 md:mt-10 rounded-3xl bg-white/95 backdrop-blur-xl p-2.5 shadow-[0_20px_60px_-15px_rgba(15,23,42,0.35)] ring-1 ring-white/50">
             <form className="flex flex-col gap-2 md:flex-row md:gap-2" onSubmit={(e) => { e.preventDefault(); void rechercher(numero); }}>
               <div className="flex min-w-0 flex-1 items-center gap-1 rounded-2xl bg-slate-50/80 pl-4 pr-1.5 border border-transparent focus-within:border-accent focus-within:bg-white focus-within:ring-2 focus-within:ring-accent/20 transition-all">
                 <input
@@ -190,8 +206,19 @@ function Home() {
             </form>
             {erreur && <p role="alert" className="mt-3 px-2 text-sm text-destructive">{erreur}</p>}
           </div>
-          {/* Exemples : forcés sur UNE ligne (nowrap + petits chips) */}
-          <div className="mt-5 md:mt-6 flex flex-nowrap items-center justify-center gap-1.5 overflow-x-auto scrollbar-hide px-1">
+
+          {/* Raccourci scanner (mobile-friendly) */}
+          <button
+            type="button"
+            onClick={() => setScannerOpen(true)}
+            className="mx-auto mt-4 flex items-center gap-2 text-xs sm:text-sm text-white/80 hover:text-white transition-colors group"
+          >
+            <ScanLine className="size-4 group-hover:scale-110 transition-transform" />
+            <span>ou <span className="underline underline-offset-4 decoration-white/40 font-medium">scannez un QR code</span></span>
+          </button>
+
+          {/* Exemples : une ligne, chips discrets */}
+          <div className="mt-6 flex flex-nowrap items-center justify-center gap-1.5 overflow-x-auto scrollbar-hide px-1">
             {EXEMPLES.map((exemple) => (
               <Link
                 key={exemple}
@@ -202,6 +229,25 @@ function Home() {
                 {exemple}
               </Link>
             ))}
+          </div>
+
+          {/* Bandeau de preuves : pour qui c'est fait */}
+          <div className="mt-8 md:mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[11px] sm:text-xs text-white/70">
+            <span className="inline-flex items-center gap-1.5">
+              <HomeIcon className="size-3.5" /> Particuliers
+            </span>
+            <span aria-hidden className="hidden sm:inline text-white/30">·</span>
+            <span className="inline-flex items-center gap-1.5">
+              <Bike className="size-3.5" /> Livreurs
+            </span>
+            <span aria-hidden className="hidden sm:inline text-white/30">·</span>
+            <span className="inline-flex items-center gap-1.5">
+              <UtensilsCrossed className="size-3.5" /> Commerces
+            </span>
+            <span aria-hidden className="hidden sm:inline text-white/30">·</span>
+            <span className="inline-flex items-center gap-1.5">
+              <Building2 className="size-3.5" /> Entreprises
+            </span>
           </div>
         </div>
       </section>
@@ -321,7 +367,6 @@ function Home() {
       </section>
 
       <InstallBanner variant="bottom" />
-
       <QrScanner
         open={scannerOpen}
         onClose={() => setScannerOpen(false)}
