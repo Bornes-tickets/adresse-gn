@@ -59,6 +59,19 @@ const SITE_CONTAINER =
   "mx-auto w-full max-w-[1760px] px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16";
 
 /* =========================================================
+   SYSTÈME VISUEL — TYPOGRAPHIE & RYTHME
+   Dernière passe premium : mêmes repères visuels sur toutes les sections.
+   ========================================================= */
+const SECTION_BADGE_CLASS =
+  "inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-500 shadow-sm";
+
+const SECTION_TITLE_CLASS =
+  "text-display text-center font-bold leading-[1.08] tracking-tight text-slate-950 text-[clamp(1.8rem,2.35vw,2.75rem)]";
+
+const SECTION_COPY_CLASS =
+  "text-center text-sm leading-6 text-slate-600 md:text-[15px]";
+
+/* =========================================================
    DÉMONSTRATION ITINÉRAIRE RÉEL
    ========================================================= */
 
@@ -702,7 +715,7 @@ function Home() {
 
       <section
         id="comment-ca-marche"
-        className="relative w-full overflow-hidden bg-white pb-10 pt-7 sm:pb-12 sm:pt-8 md:pb-14 md:pt-9 lg:pb-14 lg:pt-10 xl:pb-16"
+        className="relative w-full overflow-hidden bg-white pb-10 pt-8 sm:pb-11 sm:pt-9 md:pb-12 md:pt-10 lg:pb-12 lg:pt-10 xl:pb-14"
       >
         <div
           aria-hidden
@@ -728,20 +741,30 @@ function Home() {
         <div className={cn(SITE_CONTAINER, "relative")}>
           <Reveal>
             <div className="flex justify-center">
-              <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-600 shadow-sm">
-                <Sparkles className="size-3.5 text-accent" />
+              <span className={SECTION_BADGE_CLASS}>
+                <Sparkles className="size-3 text-accent" />
                 Comment ça marche
               </span>
             </div>
 
-            <h2 className="text-display mx-auto mt-4 max-w-[1500px] text-center font-bold tracking-tight text-slate-950 text-[clamp(1.75rem,2.45vw,3rem)] leading-[1.08] xl:whitespace-nowrap">
+            <h2
+              className={cn(
+                SECTION_TITLE_CLASS,
+                "mx-auto mt-4 max-w-[1500px] xl:whitespace-nowrap",
+              )}
+            >
               Un numéro. Une destination.{" "}
               <span className="bg-gradient-to-r from-accent via-sky-500 to-blue-600 bg-clip-text text-transparent">
                 Aucun détour.
               </span>
             </h2>
 
-            <p className="mx-auto mt-3 max-w-4xl text-center text-sm leading-6 text-slate-600 md:text-[15px] xl:max-w-none xl:whitespace-nowrap xl:text-base">
+            <p
+              className={cn(
+                SECTION_COPY_CLASS,
+                "mx-auto mt-3 max-w-4xl xl:max-w-none xl:whitespace-nowrap",
+              )}
+            >
               Adresse GN transforme chaque lieu en une adresse simple à identifier, partager et rejoindre.
             </p>
 
@@ -774,7 +797,7 @@ function Home() {
                         index * 80
                       }
                     >
-                      <li className="group relative w-full overflow-hidden rounded-[20px] border border-slate-200/80 bg-white p-4 shadow-[0_8px_28px_rgba(15,23,42,0.035)] transition-all duration-300 hover:-translate-y-1 hover:border-accent/20 hover:shadow-[0_18px_45px_rgba(15,23,42,0.08)] sm:p-5 xl:rounded-[22px] xl:p-6">
+                      <li className="group relative w-full overflow-hidden rounded-[20px] border border-slate-200/80 bg-white p-4 shadow-[0_8px_28px_rgba(15,23,42,0.035)] transition-all duration-300 hover:-translate-y-1 hover:border-accent/20 hover:shadow-[0_18px_45px_rgba(15,23,42,0.08)] sm:p-5 xl:rounded-[22px] xl:p-5">
                         <div
                           aria-hidden
                           className="absolute -right-14 -top-14 size-28 rounded-full bg-accent/0 blur-2xl transition-colors group-hover:bg-accent/[0.08]"
@@ -797,13 +820,13 @@ function Home() {
                               <span className="h-px flex-1 bg-slate-100" />
                             </div>
 
-                            <h3 className="text-display text-base font-bold tracking-tight text-slate-950 md:text-lg">
+                            <h3 className="text-display text-[15px] font-bold tracking-tight text-slate-950 sm:text-base xl:text-[17px]">
                               {
                                 etape.titre
                               }
                             </h3>
 
-                            <p className="mt-1.5 text-[13px] leading-[1.6] text-slate-600 md:text-sm">
+                            <p className="mt-1.5 text-[13px] leading-6 text-slate-600 xl:text-sm">
                               {
                                 etape.texte
                               }
@@ -1137,20 +1160,20 @@ function Home() {
               ================================================= */}
 
           <Reveal delay={100}>
-            <div className="mt-10 md:mt-12">
-              <div className="mx-auto mb-7 text-center">
+            <div className="mt-9 md:mt-10 xl:mt-11">
+              <div className="mx-auto mb-6 text-center">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
                   LA DIFFÉRENCE ADRESSE GN
                 </p>
 
-                <h3 className="text-display mt-2.5 text-2xl font-bold tracking-tight text-slate-950 md:text-3xl">
+                <h3 className="text-display mt-2 text-[clamp(1.5rem,1.85vw,2rem)] font-bold leading-tight tracking-tight text-slate-950">
                   Avant, on expliquait.{" "}
                   <span className="text-accent">
                     Maintenant, on partage.
                   </span>
                 </h3>
 
-                <p className="mx-auto mt-2.5 max-w-4xl text-sm leading-6 text-slate-600 xl:max-w-none xl:whitespace-nowrap">
+                <p className="mx-auto mt-2 max-w-4xl text-sm leading-6 text-slate-600 xl:max-w-none xl:whitespace-nowrap">
                   Un numéro Adresse GN remplace les longues indications et simplifie l’arrivée à destination.
                 </p>
               </div>
@@ -1223,7 +1246,7 @@ function Home() {
                       Une référence claire, partageable et immédiatement exploitable pour retrouver le lieu.
                     </p>
 
-                    <div className="mt-5 space-y-2.5">
+                    <div className="mt-4 space-y-2">
                       {[
                         "Un numéro unique facile à partager",
                         "Un QR Code ou un lien accessible instantanément",
@@ -1256,7 +1279,7 @@ function Home() {
               ================================================= */}
 
           <Reveal delay={140}>
-            <div className="mt-7 overflow-hidden rounded-[24px] border border-slate-200 bg-slate-50/60 shadow-[0_8px_30px_rgba(15,23,42,0.04)]">
+            <div className="mt-6 overflow-hidden rounded-[22px] border border-slate-200 bg-slate-50/60 shadow-[0_8px_30px_rgba(15,23,42,0.04)]">
               <div className="grid grid-cols-1 divide-y divide-slate-200/70 sm:grid-cols-2 lg:grid-cols-4 lg:divide-x lg:divide-y-0 2xl:grid-cols-4">
                 {AVANTAGES.map(
                   (
@@ -1266,7 +1289,7 @@ function Home() {
                       key={
                         avantage.titre
                       }
-                      className="group flex min-h-[88px] items-center gap-3 bg-white/55 p-4 transition-all hover:bg-white md:p-5"
+                      className="group flex min-h-[80px] items-center gap-3 bg-white/55 p-4 transition-all hover:bg-white md:px-5 md:py-4"
                     >
                       <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-accent to-accent-dark text-white shadow-md shadow-accent/15 transition-transform group-hover:scale-105">
                         <avantage.icone className="size-4" />
@@ -1300,7 +1323,7 @@ function Home() {
 
       <section
         id="usages"
-        className="relative w-full overflow-hidden border-t border-slate-100 bg-slate-50 py-10 sm:py-12 md:py-14 xl:py-16"
+        className="relative w-full overflow-hidden border-t border-slate-100 bg-slate-50 py-10 sm:py-11 md:py-12 xl:py-14"
       >
         <div
           aria-hidden
@@ -1310,25 +1333,35 @@ function Home() {
         <div className={cn(SITE_CONTAINER, "relative")}>
           <Reveal>
             <div className="flex justify-center">
-              <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-500 shadow-sm">
+              <span className={SECTION_BADGE_CLASS}>
                 <Sparkles className="size-3 text-accent" />
                 Usages
               </span>
             </div>
 
-            <h2 className="text-display mx-auto mt-4 max-w-5xl text-center text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl md:text-[2.15rem] xl:text-[2.45rem] 2xl:text-[2.6rem]">
+            <h2
+              className={cn(
+                SECTION_TITLE_CLASS,
+                "mx-auto mt-4 max-w-5xl",
+              )}
+            >
               Pensé pour{" "}
               <span className="bg-gradient-to-r from-accent via-sky-500 to-blue-600 bg-clip-text text-transparent">
                 tous les usages du quotidien.
               </span>
             </h2>
 
-            <p className="mx-auto mt-4 max-w-3xl text-center text-sm leading-6 text-slate-600 md:text-base lg:max-w-none lg:whitespace-nowrap">
+            <p
+              className={cn(
+                SECTION_COPY_CLASS,
+                "mx-auto mt-3 max-w-3xl lg:max-w-none xl:whitespace-nowrap",
+              )}
+            >
               Que vous receviez, livriez, vendiez ou gériez plusieurs sites, Adresse GN simplifie la façon de vous trouver.
             </p>
           </Reveal>
 
-          <div className="mx-auto mt-8 grid w-full max-w-[1660px] grid-cols-1 gap-4 sm:grid-cols-2 lg:mt-9 lg:grid-cols-4 lg:gap-4 xl:gap-5 2xl:gap-6">
+          <div className="mx-auto mt-7 grid w-full max-w-[1660px] grid-cols-1 gap-4 sm:grid-cols-2 lg:mt-8 lg:grid-cols-4 lg:gap-4 xl:gap-5 2xl:gap-6">
             {USAGES.map((item, index) => (
               <Reveal
                 key={item.cle}
@@ -1336,7 +1369,7 @@ function Home() {
               >
                 <article
                   className={cn(
-                    "group relative flex h-full min-h-[240px] flex-col overflow-hidden rounded-[22px] border border-slate-200/90 bg-gradient-to-br p-5 shadow-[0_8px_28px_rgba(15,23,42,0.035)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_24px_55px_rgba(15,23,42,0.10)] lg:min-h-[250px] xl:min-h-[260px] xl:rounded-[24px] xl:p-6",
+                    "group relative flex h-full min-h-[230px] flex-col overflow-hidden rounded-[22px] border border-slate-200/90 bg-gradient-to-br p-5 shadow-[0_8px_28px_rgba(15,23,42,0.035)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_24px_55px_rgba(15,23,42,0.10)] lg:min-h-[238px] xl:min-h-[245px] xl:rounded-[24px] xl:p-5",
                     item.fond,
                     item.bordure,
                   )}
@@ -1365,11 +1398,11 @@ function Home() {
                       </span>
                     </div>
 
-                    <h3 className="text-display mt-5 text-lg font-bold leading-snug tracking-tight text-slate-950 md:text-xl">
+                    <h3 className="text-display mt-4 text-[17px] font-bold leading-snug tracking-tight text-slate-950 xl:text-lg">
                       {item.accroche}
                     </h3>
 
-                    <p className="mt-3 text-[13px] leading-6 text-slate-600">
+                    <p className="mt-2.5 text-[13px] leading-5 text-slate-600">
                       {item.texte}
                     </p>
 
@@ -1390,7 +1423,7 @@ function Home() {
                       ))}
                     </div>
 
-                    <div className="mt-auto pt-5">
+                    <div className="mt-auto pt-4">
                       <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 transition-colors group-hover:text-accent">
                         Une adresse adaptée à votre besoin
                         <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
@@ -1408,7 +1441,7 @@ function Home() {
           CONFIANCE — PREUVES TERRAIN
           ===================================================== */}
 
-      <section className="relative w-full overflow-hidden bg-white py-5 sm:py-6 md:py-7 xl:py-8">
+      <section className="relative w-full overflow-hidden bg-white py-4 sm:py-5 md:py-6 xl:py-7">
         <div
           aria-hidden
           className="pointer-events-none absolute left-1/2 top-0 h-[240px] w-[680px] -translate-x-1/2 rounded-full bg-cyan-50 blur-[90px]"
@@ -1416,18 +1449,28 @@ function Home() {
 
         <div className={cn(SITE_CONTAINER, "relative")}>
           <Reveal>
-            <div className="mx-auto w-full max-w-[1320px] rounded-[24px] border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-cyan-50/70 p-4 shadow-[0_16px_44px_-32px_rgba(15,23,42,0.18)] sm:p-5 md:p-5 xl:p-6">
+            <div className="mx-auto w-full max-w-[1320px] rounded-[24px] border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-cyan-50/70 p-4 shadow-[0_16px_44px_-32px_rgba(15,23,42,0.18)] sm:p-5 xl:p-5">
               <div className="mx-auto w-full text-center">
-                <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-500 shadow-sm">
+                <span className={SECTION_BADGE_CLASS}>
                   <Sparkles className="size-3 text-accent" />
                   Pourquoi nous faire confiance
                 </span>
 
-                <h2 className="text-display mx-auto mt-3 max-w-3xl text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl md:text-[2rem]">
+                <h2
+                  className={cn(
+                    SECTION_TITLE_CLASS,
+                    "mx-auto mt-3 max-w-3xl",
+                  )}
+                >
                   Conçu pour les réalités du terrain.
                 </h2>
 
-                <p className="mx-auto mt-2 w-full max-w-[1180px] text-center text-sm leading-5 text-slate-600 md:text-[14px] lg:whitespace-nowrap">
+                <p
+                  className={cn(
+                    SECTION_COPY_CLASS,
+                    "mx-auto mt-2 w-full max-w-[1180px] xl:whitespace-nowrap",
+                  )}
+                >
                   Adresse GN relie un numéro unique, une position GPS et des outils que les utilisateurs connaissent déjà pour rendre l’adresse simple à créer, à partager et à rejoindre.
                 </p>
               </div>
@@ -1438,7 +1481,7 @@ function Home() {
                     key={point.titre}
                     delay={index * 60}
                   >
-                    <article className="group h-full rounded-[20px] border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
+                    <article className="group h-full rounded-[20px] border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(15,23,42,0.08)] xl:p-[18px]">
                       <div className="flex items-start justify-between gap-3">
                         <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-accent to-accent-dark text-white shadow-md shadow-accent/20">
                           <point.icone className="size-5" />
@@ -1449,11 +1492,11 @@ function Home() {
                         </span>
                       </div>
 
-                      <h3 className="mt-3 text-base font-bold text-slate-950 md:text-lg">
+                      <h3 className="mt-3 text-[15px] font-bold text-slate-950 sm:text-base xl:text-[17px]">
                         {point.titre}
                       </h3>
 
-                      <p className="mt-1.5 text-[12px] leading-5 text-slate-600 md:text-[13px]">
+                      <p className="mt-1.5 text-[12px] leading-5 text-slate-600 xl:text-[13px]">
                         {point.texte}
                       </p>
                     </article>
@@ -1469,7 +1512,7 @@ function Home() {
           CTA FINAL — VERSION PREMIUM COMPACTE & RESPONSIVE
           ===================================================== */}
 
-      <section className="relative w-full overflow-hidden bg-white pb-7 pt-2 sm:pb-8 sm:pt-3 md:pb-9 md:pt-4 xl:pb-10 xl:pt-4">
+      <section className="relative w-full overflow-hidden bg-white pb-7 pt-1 sm:pb-8 sm:pt-2 md:pb-8 md:pt-2 xl:pb-9 xl:pt-2">
         {/* Halos décoratifs */}
         <div
           aria-hidden
@@ -1487,7 +1530,7 @@ function Home() {
                 PARTIE GAUCHE
                 ================================================= */}
 
-            <div className="relative overflow-hidden gradient-signature-soft px-6 py-6 sm:px-8 sm:py-6 md:px-9 md:py-7 lg:px-9 lg:py-6 xl:px-11">
+            <div className="relative overflow-hidden gradient-signature-soft px-6 py-6 sm:px-8 md:px-9 lg:px-10 lg:py-6 xl:px-11">
               <div
                 aria-hidden
                 className="absolute -left-20 -top-20 size-56 rounded-full bg-white/10 blur-[65px]"
@@ -1499,53 +1542,53 @@ function Home() {
               />
 
               <div className="relative flex h-full flex-col justify-center">
-                {/* Label */}
                 <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-white/85 backdrop-blur-sm">
-                  <Sparkles className="size-3.5" />
-                  Commencer
+                  <Zap className="size-3.5" />
+                  Passez à l’action
                 </span>
 
-                {/* Titre */}
-                <h2 className="text-display mt-3 max-w-xl text-[1.75rem] font-bold leading-[1.08] tracking-tight text-white sm:text-3xl md:text-[2.05rem] lg:max-w-none lg:whitespace-nowrap lg:text-[clamp(1.55rem,1.75vw,2.1rem)]">
+                <h2 className="text-display mt-3 max-w-xl text-[1.75rem] font-bold leading-[1.08] tracking-tight text-white sm:text-3xl md:text-[2.05rem] lg:max-w-none lg:text-[clamp(1.55rem,1.72vw,2.05rem)] xl:whitespace-nowrap">
                   Créez votre Adresse GN.{" "}
                   <span className="block text-cyan-200 sm:mt-1 lg:mt-0 lg:inline">
                     Soyez facile à trouver.
                   </span>
                 </h2>
 
-                {/* Description */}
-                <p className="mt-3 max-w-xl text-sm leading-5 text-white/85 md:text-[14px] lg:max-w-none lg:whitespace-nowrap lg:text-[11px] xl:text-xs 2xl:text-[13px]">
+                <p className="mt-3 max-w-xl text-sm leading-5 text-white/85 md:text-[14px] lg:max-w-none lg:text-[11px] xl:whitespace-nowrap xl:text-xs 2xl:text-[13px]">
                   Obtenez un numéro unique associé à votre localisation, partagez-le instantanément et choisissez la formule adaptée à votre besoin.
                 </p>
 
-                {/* Bénéfices */}
-                <div className="mt-4 grid grid-cols-2 gap-2">
+                <div className="mt-4 flex items-center gap-2 text-[11px] font-semibold text-cyan-100">
+                  <Sparkles className="size-3.5 shrink-0" />
+                  Votre adresse numérique est prête à être partagée dès son activation.
+                </div>
+
+                <div className="mt-3 grid grid-cols-2 gap-2">
                   {[
-                    "Numéro unique",
+                    "Numéro unique prêt à partager",
                     "QR Code intégré",
                     "Localisation GPS",
-                    "Plaque selon l’offre",
+                    "Plaque physique en option",
                   ].map((item) => (
                     <div
                       key={item}
-                      className="flex min-h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.07] px-2.5 py-2 backdrop-blur-sm sm:px-3"
+                      className="flex min-h-10 items-center gap-2 rounded-xl border border-white/12 bg-white/[0.08] px-2.5 py-2 backdrop-blur-sm sm:px-3"
                     >
-                      <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-white/15">
+                      <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-white/16">
                         <Check className="size-3 text-white" />
                       </span>
 
-                      <span className="text-[10px] font-medium leading-4 text-white/90 sm:text-xs">
+                      <span className="text-[10px] font-medium leading-4 text-white/95 sm:text-xs">
                         {item}
                       </span>
                     </div>
                   ))}
                 </div>
 
-                {/* CTA */}
-                <div className="mt-5 flex flex-col gap-2.5 sm:flex-row">
+                <div className="mt-5 flex flex-col gap-2.5 sm:flex-row sm:items-center">
                   <Button
                     asChild
-                    className="group h-11 w-full rounded-xl bg-white px-6 text-sm font-semibold text-slate-950 shadow-lg shadow-slate-950/10 transition-all hover:-translate-y-0.5 hover:bg-white hover:shadow-xl sm:w-auto"
+                    className="group h-12 w-full rounded-xl bg-white px-7 text-sm font-bold text-slate-950 shadow-[0_12px_30px_rgba(15,23,42,0.18)] transition-all hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_16px_36px_rgba(15,23,42,0.24)] sm:w-auto sm:min-w-[220px]"
                   >
                     <Link to="/commander">
                       Créer mon Adresse GN
@@ -1556,20 +1599,25 @@ function Home() {
                   <Button
                     asChild
                     variant="outline"
-                    className="h-11 w-full rounded-xl border-white/35 bg-white/[0.04] px-6 text-sm font-semibold text-white backdrop-blur-sm hover:border-white/60 hover:bg-white/10 hover:text-white sm:w-auto"
+                    className="h-12 w-full rounded-xl border-white/35 bg-white/[0.04] px-6 text-sm font-semibold text-white backdrop-blur-sm hover:border-white/60 hover:bg-white/10 hover:text-white sm:w-auto"
                   >
                     <Link to="/tarifs">
-                      Découvrir les offres
+                      Voir les offres
                     </Link>
                   </Button>
                 </div>
 
-                {/* Note */}
-                <p className="mt-3 flex items-start gap-2 text-[10px] leading-4 text-white/65">
-                  <Check className="mt-0.5 size-3 shrink-0" />
-                  L’adresse numérique peut être créée sans commander de plaque
-                  physique.
-                </p>
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] font-medium text-white/65 sm:text-[10px]">
+                  <span className="inline-flex items-center gap-1.5">
+                    <Check className="size-3 shrink-0" />
+                    Sans application obligatoire
+                  </span>
+
+                  <span className="inline-flex items-center gap-1.5">
+                    <Check className="size-3 shrink-0" />
+                    Plaque physique selon l’offre
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -1577,7 +1625,7 @@ function Home() {
                 PARTIE DROITE — PLAQUE
                 ================================================= */}
 
-            <div className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-50 via-white to-cyan-50/60 px-5 py-5 sm:px-7 sm:py-6 md:px-8 lg:px-7 lg:py-5">
+            <div className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-50 via-white to-cyan-50/60 px-5 py-5 sm:px-7 md:px-8 lg:px-7 lg:py-5">
               <div
                 aria-hidden
                 className="absolute -right-20 -top-20 size-60 rounded-full bg-accent/10 blur-[80px]"
@@ -1598,7 +1646,7 @@ function Home() {
                 <div className="mb-2 flex justify-center">
                   <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[8px] font-bold uppercase tracking-[0.16em] text-slate-600 shadow-sm sm:text-[9px]">
                     <QrCode className="size-3.5 text-accent" />
-                    Exemple de plaque
+                    Aperçu de votre Adresse GN
                   </span>
                 </div>
 
@@ -1767,9 +1815,9 @@ function Home() {
         <aside
           role="dialog"
           aria-label="Installer Adresse GN"
-          className="fixed bottom-6 left-6 z-[1200] hidden w-[min(430px,calc(100vw-48px))] overflow-hidden rounded-[24px] bg-gradient-to-r from-orange-500 via-orange-500 to-rose-600 p-[1px] shadow-[0_24px_70px_-18px_rgba(244,63,94,0.45)] lg:block"
+          className="fixed bottom-5 left-5 z-[1200] hidden w-[min(420px,calc(100vw-40px))] overflow-hidden rounded-[22px] bg-gradient-to-r from-orange-500 via-orange-500 to-rose-600 p-[1px] shadow-[0_24px_70px_-18px_rgba(244,63,94,0.45)] lg:block"
         >
-          <div className="relative rounded-[23px] bg-gradient-to-r from-orange-500 via-orange-500 to-rose-600 px-5 py-4 text-white">
+          <div className="relative rounded-[21px] bg-gradient-to-r from-orange-500 via-orange-500 to-rose-600 px-5 py-4 text-white">
             <button
               type="button"
               onClick={fermerInstallationDesktop}
