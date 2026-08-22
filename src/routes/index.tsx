@@ -1168,9 +1168,8 @@ function Home() {
               </span>
             </h2>
 
-            <p className="mx-auto mt-4 max-w-3xl text-center text-sm leading-6 text-slate-600 md:text-base">
-              Que vous receviez, livriez, vendiez ou gériez plusieurs sites,
-              Adresse GN simplifie la façon de vous trouver.
+            <p className="mx-auto mt-4 max-w-3xl text-center text-sm leading-6 text-slate-600 md:text-base lg:max-w-none lg:whitespace-nowrap">
+              Que vous receviez, livriez, vendiez ou gériez plusieurs sites, Adresse GN simplifie la façon de vous trouver.
             </p>
           </Reveal>
 
