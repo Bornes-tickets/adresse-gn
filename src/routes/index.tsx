@@ -7,6 +7,7 @@ import {
   Building2,
   Check,
   ExternalLink,
+  Handshake,
   Home as HomeIcon,
   MapPin,
   MapPinned,
@@ -132,10 +133,10 @@ const USAGES = [
     icone: Building2,
     cle: "companies",
     titre: "Entreprises",
-    accroche: "Centralisez toutes vos adresses.",
+    accroche: "Centralisez vos adresses.",
     texte:
-      "Identifiez vos bureaux, agences et établissements avec une solution adaptée aux organisations.",
-    avantages: ["Gestion multi-sites", "Intégration API"],
+      "Identifiez vos bureaux, agences et sites dans une même solution.",
+    avantages: ["Multi-sites", "Intégration API"],
     grad: "from-sky-500 to-blue-600",
     fond: "from-sky-50/70 via-white to-white",
     bordure: "hover:border-sky-200",
@@ -193,6 +194,30 @@ const AVANTAGES = [
     icone: Smartphone,
     titre: "Accessible partout",
     texte: "Téléphone, tablette et ordinateur",
+  },
+];
+
+const POINTS_CONFIANCE = [
+  {
+    icone: MapPinned,
+    titre: "Précision GPS",
+    texte:
+      "Chaque Adresse GN est associée à une position géographique exploitable pour retrouver le lieu sans approximation.",
+    badge: "Repère fiable",
+  },
+  {
+    icone: Handshake,
+    titre: "Accompagnement local",
+    texte:
+      "Des agents peuvent accompagner la création et l’installation de votre Adresse GN selon l’offre choisie.",
+    badge: "Support terrain",
+  },
+  {
+    icone: Smartphone,
+    titre: "Compatible avec vos outils",
+    texte:
+      "Google Maps, Waze, QR Code, web et mobile : votre adresse reste simple à partager et facile à utiliser.",
+    badge: "Utilisation immédiate",
   },
 ];
 
@@ -785,7 +810,7 @@ function Home() {
                   Google Maps
                 </div>
 
-                <div className="relative z-[2] aspect-[9/19] w-[min(82vw,290px)] rotate-[-1deg] overflow-hidden rounded-[2.55rem] border-[8px] border-slate-950 bg-white shadow-[0_45px_95px_-28px_rgba(15,23,42,0.58)] transition-all duration-500 hover:rotate-0 hover:scale-[1.012] sm:w-[305px] sm:rounded-[2.7rem] md:w-[320px] lg:w-[330px] xl:w-[355px] 2xl:w-[390px] 2xl:rounded-[3rem] 2xl:border-[9px]">
+                <div className="relative z-[2] aspect-[9/19] w-[min(78vw,272px)] rotate-[-1deg] overflow-hidden rounded-[2.45rem] border-[8px] border-slate-950 bg-white shadow-[0_42px_90px_-30px_rgba(15,23,42,0.55)] transition-all duration-500 hover:rotate-0 hover:scale-[1.01] sm:w-[286px] sm:rounded-[2.6rem] md:w-[298px] lg:w-[312px] xl:w-[330px] 2xl:w-[350px] 2xl:rounded-[2.9rem] 2xl:border-[9px]">
                   <div
                     aria-hidden
                     className="absolute left-1/2 top-1 z-30 h-4 w-16 -translate-x-1/2 rounded-full bg-slate-950"
@@ -793,7 +818,7 @@ function Home() {
 
                   <div className="flex h-full flex-col">
                     <div className="relative z-20 gradient-signature-soft px-4 pb-3 pt-7">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-2">
                         <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white">
                           ADRESSE GN
                         </span>
@@ -809,9 +834,7 @@ function Home() {
                       {GOOGLE_MAPS_EMBED_URL ? (
                         <iframe
                           title="Itinéraire Google Maps de démonstration"
-                          src={
-                            GOOGLE_MAPS_EMBED_URL
-                          }
+                          src={GOOGLE_MAPS_EMBED_URL}
                           className="absolute inset-0 h-full w-full border-0"
                           loading="lazy"
                           referrerPolicy="strict-origin-when-cross-origin"
@@ -821,20 +844,17 @@ function Home() {
                         <div className="absolute inset-0 overflow-hidden bg-[#edf2f4]">
                           <div
                             aria-hidden
-                            className="absolute inset-0 opacity-50"
+                            className="absolute inset-0 opacity-45"
                             style={{
                               backgroundImage:
                                 "linear-gradient(rgb(203 213 225 / 0.55) 1px, transparent 1px), linear-gradient(90deg, rgb(203 213 225 / 0.55) 1px, transparent 1px)",
-                              backgroundSize:
-                                "26px 26px",
+                              backgroundSize: "26px 26px",
                             }}
                           />
 
-                          <div className="absolute -left-10 right-[-10%] top-[25%] h-3 rotate-[-7deg] rounded-full bg-white shadow-sm" />
-
-                          <div className="absolute -bottom-10 left-[31%] top-[-5%] w-3 rotate-[10deg] rounded-full bg-white shadow-sm" />
-
-                          <div className="absolute -left-8 right-[-10%] top-[68%] h-2 rotate-[11deg] rounded-full bg-white/90" />
+                          <div className="absolute -left-[8%] right-[22%] top-[16%] h-3 rotate-[102deg] rounded-full bg-white/95 shadow-sm" />
+                          <div className="absolute left-[3%] right-[-10%] top-[40%] h-3 rotate-[8deg] rounded-full bg-white/95 shadow-sm" />
+                          <div className="absolute left-[8%] right-[-8%] top-[70%] h-2.5 rotate-[14deg] rounded-full bg-white/90 shadow-sm" />
 
                           <svg
                             viewBox="0 0 300 420"
@@ -842,15 +862,28 @@ function Home() {
                             aria-hidden
                           >
                             <path
-                              d="M74 360 C86 330 110 317 113 284 C117 247 93 221 108 185 C124 147 164 158 181 128 C195 103 198 81 220 61"
+                              d="M78 356 C103 330 112 305 112 272 C112 230 88 207 98 171 C111 124 157 134 178 106 C196 82 202 66 226 48"
                               fill="none"
-                              stroke="white"
-                              strokeWidth="11"
+                              stroke="rgba(59,130,246,0.85)"
+                              strokeWidth="4"
                               strokeLinecap="round"
                             />
-
                             <path
-                              d="M74 360 C86 330 110 317 113 284 C117 247 93 221 108 185 C124 147 164 158 181 128 C195 103 198 81 220 61"
+                              d="M72 362 C92 333 98 317 98 282 C98 247 70 217 81 181 C94 138 136 130 158 109 C180 88 187 69 212 58"
+                              fill="none"
+                              stroke="rgba(59,130,246,0.6)"
+                              strokeWidth="3"
+                              strokeLinecap="round"
+                            />
+                            <path
+                              d="M76 360 C94 334 103 316 102 286 C101 247 79 221 91 183 C105 140 154 151 177 122 C196 98 200 80 222 60"
+                              fill="none"
+                              stroke="white"
+                              strokeWidth="12"
+                              strokeLinecap="round"
+                            />
+                            <path
+                              d="M76 360 C94 334 103 316 102 286 C101 247 79 221 91 183 C105 140 154 151 177 122 C196 98 200 80 222 60"
                               fill="none"
                               stroke="rgb(13 148 136)"
                               strokeWidth="6"
@@ -858,30 +891,70 @@ function Home() {
                             />
                           </svg>
 
-                          <div className="absolute bottom-[12%] left-[19%]">
+                          <div className="absolute bottom-[10%] left-[21%] z-20">
                             <span className="flex size-6 items-center justify-center rounded-full border-[3px] border-white bg-blue-600 shadow-xl">
                               <span className="size-2 rounded-full bg-white" />
                             </span>
                           </div>
 
-                          <div className="absolute right-[19%] top-[10%]">
+                          <div className="absolute right-[17%] top-[9%] z-20">
                             <div className="flex size-11 items-center justify-center rounded-full bg-white shadow-xl">
                               <MapPin className="size-7 fill-accent/15 text-accent" />
                             </div>
                           </div>
                         </div>
                       )}
+
+                      <div className="pointer-events-none absolute left-3 top-3 z-20 rounded-2xl border border-white/70 bg-white/92 px-3 py-2 shadow-lg backdrop-blur">
+                        <p className="text-[7px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                          Numéro recherché
+                        </p>
+                        <p className="mt-0.5 font-mono text-[11px] font-extrabold tracking-[0.12em] text-slate-950">
+                          GN-CKY-582741
+                        </p>
+                      </div>
+
+                      <div className="pointer-events-none absolute left-[6%] top-[17%] z-20 rounded-xl border border-slate-200 bg-white/96 px-2.5 py-1.5 shadow-lg backdrop-blur">
+                        <p className="text-[10px] font-bold leading-none text-amber-600">
+                          24 min
+                        </p>
+                        <p className="mt-0.5 text-[8px] text-slate-500">
+                          10 km
+                        </p>
+                      </div>
+
+                      <div className="pointer-events-none absolute right-[10%] top-[34%] z-20 rounded-xl border border-slate-200 bg-white/96 px-2.5 py-1.5 shadow-lg backdrop-blur">
+                        <p className="text-[10px] font-bold leading-none text-slate-700">
+                          25 min
+                        </p>
+                        <p className="mt-0.5 text-[8px] text-slate-500">
+                          9,9 km
+                        </p>
+                      </div>
+
+                      <div className="pointer-events-none absolute bottom-[13%] left-[37%] z-20 rounded-xl border border-slate-200 bg-white/96 px-2.5 py-1.5 shadow-lg backdrop-blur">
+                        <p className="text-[10px] font-bold leading-none text-slate-700">
+                          28 min
+                        </p>
+                        <p className="mt-0.5 text-[8px] text-slate-500">
+                          10,3 km
+                        </p>
+                      </div>
                     </div>
 
                     <div className="relative z-20 border-t border-slate-100 bg-white p-3.5">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="text-xs font-bold text-slate-950">
-                            Hôtel Kaloum
+                          <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.14em] text-accent">
+                            Numéro central
+                          </div>
+
+                          <p className="mt-2 font-mono text-[12px] font-extrabold tracking-[0.1em] text-slate-950 sm:text-[13px]">
+                            GN-CKY-582741
                           </p>
 
-                          <p className="mt-0.5 font-mono text-[10px] font-bold tracking-[0.04em] text-accent">
-                            GN-CKY-582741
+                          <p className="mt-1 text-xs font-bold text-slate-950">
+                            Hôtel Kaloum
                           </p>
 
                           <p className="mt-0.5 text-[9px] text-slate-500">
@@ -896,9 +969,7 @@ function Home() {
 
                       <div className="mt-3 grid grid-cols-2 gap-2">
                         <a
-                          href={
-                            GOOGLE_MAPS_ROUTE_URL
-                          }
+                          href={GOOGLE_MAPS_ROUTE_URL}
                           target="_blank"
                           rel="noreferrer"
                           className="group flex h-10 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-accent to-accent-dark px-2 text-[9px] font-semibold text-white shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg"
@@ -909,9 +980,7 @@ function Home() {
                         </a>
 
                         <a
-                          href={
-                            WAZE_ROUTE_URL
-                          }
+                          href={WAZE_ROUTE_URL}
                           target="_blank"
                           rel="noreferrer"
                           className="group flex h-10 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2 text-[9px] font-semibold text-slate-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-accent/30 hover:text-accent hover:shadow-md"
@@ -1044,24 +1113,32 @@ function Home() {
                   </div>
                 </div>
 
-                <div className="relative overflow-hidden rounded-[26px] border border-accent/25 bg-gradient-to-br from-accent/[0.11] via-white to-cyan-50 p-6 shadow-[0_20px_55px_-30px_rgba(13,148,136,0.45)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_25px_65px_-30px_rgba(13,148,136,0.55)]">
+                <div className="relative overflow-hidden rounded-[26px] border border-accent/35 bg-gradient-to-br from-white via-emerald-50/70 to-cyan-50 p-6 ring-1 ring-accent/10 shadow-[0_24px_65px_-30px_rgba(13,148,136,0.55)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_28px_75px_-28px_rgba(13,148,136,0.62)]">
                   <div
                     aria-hidden
-                    className="absolute -right-14 -top-14 size-44 rounded-full bg-accent/15 blur-3xl"
+                    className="absolute -right-14 -top-14 size-44 rounded-full bg-accent/20 blur-3xl"
                   />
 
-                  <div className="relative mb-4 inline-flex items-center gap-2 rounded-full bg-slate-950 px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-white shadow-sm">
-                    <Check className="size-3.5 text-accent" />
-                    Avec Adresse GN
+                  <div className="relative flex flex-wrap items-center gap-2">
+                    <div className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-white shadow-sm">
+                      <Check className="size-3.5 text-accent" />
+                      Avec Adresse GN
+                    </div>
+
+                    <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.12em] text-emerald-700">
+                      Situation idéale
+                    </div>
                   </div>
 
-                  <div className="relative">
-                    <p className="font-mono text-xl font-extrabold tracking-[0.06em] text-slate-950 md:text-2xl">
-                      GN-CKY-582741
-                    </p>
+                  <div className="relative mt-4">
+                    <div className="inline-flex rounded-2xl bg-slate-950 px-4 py-2 shadow-md shadow-slate-950/10">
+                      <p className="font-mono text-xl font-extrabold tracking-[0.08em] text-white md:text-2xl">
+                        GN-CKY-582741
+                      </p>
+                    </div>
 
-                    <p className="mt-1.5 text-[13px] text-slate-500">
-                      Une référence unique pour identifier et retrouver le lieu.
+                    <p className="mt-2 text-[13px] font-medium text-slate-600">
+                      Une référence claire, partageable et immédiatement exploitable pour retrouver le lieu.
                     </p>
 
                     <div className="mt-5 space-y-2.5">
@@ -1072,19 +1149,15 @@ function Home() {
                       ].map(
                         (item) => (
                           <div
-                            key={
-                              item
-                            }
+                            key={item}
                             className="flex items-start gap-2.5"
                           >
-                            <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-accent/10">
+                            <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-accent/12 ring-1 ring-accent/10">
                               <Check className="size-3 text-accent" />
                             </span>
 
-                            <span className="text-[13px] font-medium leading-5 text-slate-700">
-                              {
-                                item
-                              }
+                            <span className="text-[13px] font-semibold leading-5 text-slate-800">
+                              {item}
                             </span>
                           </div>
                         ),
@@ -1246,6 +1319,67 @@ function Home() {
               </Reveal>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* =====================================================
+          CONFIANCE — PREUVES TERRAIN
+          ===================================================== */}
+
+      <section className="relative w-full overflow-hidden bg-white py-8 sm:py-10 md:py-12 xl:py-14">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 top-0 h-[240px] w-[680px] -translate-x-1/2 rounded-full bg-cyan-50 blur-[90px]"
+        />
+
+        <div className={cn(SITE_CONTAINER, "relative")}>
+          <Reveal>
+            <div className="mx-auto w-full max-w-[1320px] rounded-[26px] border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-cyan-50/70 p-5 shadow-[0_18px_50px_-32px_rgba(15,23,42,0.18)] sm:p-6 md:p-7 xl:p-8">
+              <div className="mx-auto max-w-3xl text-center">
+                <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-500 shadow-sm">
+                  <Sparkles className="size-3 text-accent" />
+                  Pourquoi nous faire confiance
+                </span>
+
+                <h2 className="text-display mt-4 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl md:text-[2.1rem]">
+                  Conçu pour les réalités du terrain.
+                </h2>
+
+                <p className="mx-auto mt-3 max-w-3xl text-sm leading-6 text-slate-600 md:text-[15px]">
+                  Adresse GN relie un numéro unique, une position GPS et des outils que les utilisateurs connaissent déjà pour rendre l’adresse simple à créer, à partager et à rejoindre.
+                </p>
+              </div>
+
+              <div className="mt-6 grid gap-3 md:grid-cols-3 xl:gap-4">
+                {POINTS_CONFIANCE.map((point, index) => (
+                  <Reveal
+                    key={point.titre}
+                    delay={index * 60}
+                  >
+                    <article className="group h-full rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
+                      <div className="flex items-start justify-between gap-3">
+                        <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-accent to-accent-dark text-white shadow-md shadow-accent/20">
+                          <point.icone className="size-5" />
+                        </span>
+
+                        <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                          {point.badge}
+                        </span>
+                      </div>
+
+                      <h3 className="mt-4 text-base font-bold text-slate-950 md:text-lg">
+                        {point.titre}
+                      </h3>
+
+                      <p className="mt-2 text-[13px] leading-6 text-slate-600">
+                        {point.texte}
+                      </p>
+                    </article>
+                  </Reveal>
+                ))}
+              </div>
+            </div>
+          </Reveal>
         </div>
       </section>
 
