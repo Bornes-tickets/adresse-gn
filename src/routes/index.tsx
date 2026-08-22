@@ -6,6 +6,7 @@ import {
   Bike,
   Building2,
   Check,
+  Download,
   ExternalLink,
   Handshake,
   Home as HomeIcon,
@@ -280,6 +281,14 @@ function Eyebrow({ children }: { children: string }) {
   );
 }
 
+type DesktopInstallPromptEvent = Event & {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{
+    outcome: "accepted" | "dismissed";
+    platform?: string;
+  }>;
+};
+
 function hasSpeechRecognition(): boolean {
   if (typeof window === "undefined") return false;
 
@@ -298,6 +307,9 @@ function Home() {
   const [enCours, setEnCours] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
   const [ecoute, setEcoute] = useState(false);
+  const [desktopInstallPrompt, setDesktopInstallPrompt] =
+    useState<DesktopInstallPromptEvent | null>(null);
+  const [desktopInstallVisible, setDesktopInstallVisible] = useState(false);
 
   const recognitionRef = useRef<any>(null);
 
@@ -457,6 +469,76 @@ function Home() {
     },
     [],
   );
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      Boolean((navigator as Navigator & { standalone?: boolean }).standalone);
+    const dismissedForSession =
+      window.sessionStorage.getItem("adresse-gn-desktop-install-dismissed") ===
+      "1";
+
+    if (!isDesktop || isStandalone || dismissedForSession) return;
+
+    const showTimer = window.setTimeout(() => {
+      setDesktopInstallVisible(true);
+    }, 900);
+
+    const handleBeforeInstallPrompt = (event: Event) => {
+      event.preventDefault();
+      setDesktopInstallPrompt(event as DesktopInstallPromptEvent);
+      setDesktopInstallVisible(true);
+    };
+
+    const handleInstalled = () => {
+      setDesktopInstallPrompt(null);
+      setDesktopInstallVisible(false);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("appinstalled", handleInstalled);
+
+    return () => {
+      window.clearTimeout(showTimer);
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt,
+      );
+      window.removeEventListener("appinstalled", handleInstalled);
+    };
+  }, []);
+
+  const fermerInstallationDesktop = () => {
+    if (typeof window !== "undefined") {
+      window.sessionStorage.setItem(
+        "adresse-gn-desktop-install-dismissed",
+        "1",
+      );
+    }
+
+    setDesktopInstallVisible(false);
+  };
+
+  const installerSurDesktop = async () => {
+    if (!desktopInstallPrompt) {
+      toast.info(
+        "Dans Chrome ou Edge, utilisez l’icône Installer dans la barre d’adresse, ou le menu du navigateur > Installer Adresse GN.",
+      );
+      return;
+    }
+
+    await desktopInstallPrompt.prompt();
+    const choix = await desktopInstallPrompt.userChoice;
+
+    if (choix.outcome === "accepted") {
+      setDesktopInstallVisible(false);
+    }
+
+    setDesktopInstallPrompt(null);
+  };
 
   return (
     <div className="w-full overflow-x-hidden bg-white">
@@ -1326,7 +1408,7 @@ function Home() {
           CONFIANCE — PREUVES TERRAIN
           ===================================================== */}
 
-      <section className="relative w-full overflow-hidden bg-white py-8 sm:py-10 md:py-12 xl:py-14">
+      <section className="relative w-full overflow-hidden bg-white py-5 sm:py-6 md:py-7 xl:py-8">
         <div
           aria-hidden
           className="pointer-events-none absolute left-1/2 top-0 h-[240px] w-[680px] -translate-x-1/2 rounded-full bg-cyan-50 blur-[90px]"
@@ -1334,29 +1416,29 @@ function Home() {
 
         <div className={cn(SITE_CONTAINER, "relative")}>
           <Reveal>
-            <div className="mx-auto w-full max-w-[1320px] rounded-[26px] border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-cyan-50/70 p-5 shadow-[0_18px_50px_-32px_rgba(15,23,42,0.18)] sm:p-6 md:p-7 xl:p-8">
+            <div className="mx-auto w-full max-w-[1320px] rounded-[24px] border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-cyan-50/70 p-4 shadow-[0_16px_44px_-32px_rgba(15,23,42,0.18)] sm:p-5 md:p-5 xl:p-6">
               <div className="mx-auto max-w-3xl text-center">
                 <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-500 shadow-sm">
                   <Sparkles className="size-3 text-accent" />
                   Pourquoi nous faire confiance
                 </span>
 
-                <h2 className="text-display mt-4 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl md:text-[2.1rem]">
+                <h2 className="text-display mt-3 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl md:text-[2rem]">
                   Conçu pour les réalités du terrain.
                 </h2>
 
-                <p className="mx-auto mt-3 max-w-3xl text-sm leading-6 text-slate-600 md:text-[15px]">
+                <p className="mx-auto mt-2 max-w-3xl text-center text-sm leading-5 text-slate-600 md:text-[14px] lg:max-w-none lg:whitespace-nowrap">
                   Adresse GN relie un numéro unique, une position GPS et des outils que les utilisateurs connaissent déjà pour rendre l’adresse simple à créer, à partager et à rejoindre.
                 </p>
               </div>
 
-              <div className="mt-6 grid gap-3 md:grid-cols-3 xl:gap-4">
+              <div className="mt-4 grid gap-3 md:grid-cols-3 xl:gap-4">
                 {POINTS_CONFIANCE.map((point, index) => (
                   <Reveal
                     key={point.titre}
                     delay={index * 60}
                   >
-                    <article className="group h-full rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
+                    <article className="group h-full rounded-[20px] border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
                       <div className="flex items-start justify-between gap-3">
                         <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-accent to-accent-dark text-white shadow-md shadow-accent/20">
                           <point.icone className="size-5" />
@@ -1367,11 +1449,11 @@ function Home() {
                         </span>
                       </div>
 
-                      <h3 className="mt-4 text-base font-bold text-slate-950 md:text-lg">
+                      <h3 className="mt-3 text-base font-bold text-slate-950 md:text-lg">
                         {point.titre}
                       </h3>
 
-                      <p className="mt-2 text-[13px] leading-6 text-slate-600">
+                      <p className="mt-1.5 text-[12px] leading-5 text-slate-600 md:text-[13px]">
                         {point.texte}
                       </p>
                     </article>
@@ -1387,7 +1469,7 @@ function Home() {
           CTA FINAL — VERSION PREMIUM COMPACTE & RESPONSIVE
           ===================================================== */}
 
-      <section className="relative w-full overflow-hidden bg-white py-8 sm:py-9 md:py-10 xl:py-12">
+      <section className="relative w-full overflow-hidden bg-white pb-7 pt-2 sm:pb-8 sm:pt-3 md:pb-9 md:pt-4 xl:pb-10 xl:pt-4">
         {/* Halos décoratifs */}
         <div
           aria-hidden
@@ -1400,12 +1482,12 @@ function Home() {
         />
 
         <Reveal className={cn(SITE_CONTAINER, "relative")}>
-          <div className="mx-auto grid w-full max-w-[1660px] overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-[0_24px_70px_-32px_rgba(15,23,42,0.30)] sm:rounded-[26px] lg:grid-cols-[1.02fr_0.98fr] xl:rounded-[28px]">
+          <div className="mx-auto grid w-full max-w-[1660px] overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-[0_22px_62px_-34px_rgba(15,23,42,0.28)] sm:rounded-[26px] lg:grid-cols-[1.12fr_0.88fr] xl:rounded-[28px]">
             {/* =================================================
                 PARTIE GAUCHE
                 ================================================= */}
 
-            <div className="relative overflow-hidden gradient-signature-soft px-6 py-7 sm:px-8 sm:py-8 md:px-9 md:py-9 lg:px-9 lg:py-8 xl:px-11">
+            <div className="relative overflow-hidden gradient-signature-soft px-6 py-6 sm:px-8 sm:py-6 md:px-9 md:py-7 lg:px-9 lg:py-6 xl:px-11">
               <div
                 aria-hidden
                 className="absolute -left-20 -top-20 size-56 rounded-full bg-white/10 blur-[65px]"
@@ -1424,22 +1506,20 @@ function Home() {
                 </span>
 
                 {/* Titre */}
-                <h2 className="text-display mt-4 max-w-xl text-[1.8rem] font-bold leading-[1.08] tracking-tight text-white sm:text-3xl md:text-[2.15rem] lg:text-[2.35rem]">
-                  Créez votre Adresse GN.
-                  <span className="mt-1 block text-cyan-200">
+                <h2 className="text-display mt-3 max-w-xl text-[1.75rem] font-bold leading-[1.08] tracking-tight text-white sm:text-3xl md:text-[2.05rem] lg:max-w-none lg:whitespace-nowrap lg:text-[clamp(1.55rem,1.75vw,2.1rem)]">
+                  Créez votre Adresse GN.{" "}
+                  <span className="block text-cyan-200 sm:mt-1 lg:mt-0 lg:inline">
                     Soyez facile à trouver.
                   </span>
                 </h2>
 
                 {/* Description */}
-                <p className="mt-4 max-w-xl text-sm leading-6 text-white/85 md:text-[15px]">
-                  Obtenez un numéro unique associé à votre localisation,
-                  partagez-le instantanément et choisissez la formule adaptée à
-                  votre besoin.
+                <p className="mt-3 max-w-xl text-sm leading-5 text-white/85 md:text-[14px] lg:max-w-none lg:whitespace-nowrap lg:text-[11px] xl:text-xs 2xl:text-[13px]">
+                  Obtenez un numéro unique associé à votre localisation, partagez-le instantanément et choisissez la formule adaptée à votre besoin.
                 </p>
 
                 {/* Bénéfices */}
-                <div className="mt-5 grid grid-cols-2 gap-2">
+                <div className="mt-4 grid grid-cols-2 gap-2">
                   {[
                     "Numéro unique",
                     "QR Code intégré",
@@ -1462,7 +1542,7 @@ function Home() {
                 </div>
 
                 {/* CTA */}
-                <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
+                <div className="mt-5 flex flex-col gap-2.5 sm:flex-row">
                   <Button
                     asChild
                     className="group h-11 w-full rounded-xl bg-white px-6 text-sm font-semibold text-slate-950 shadow-lg shadow-slate-950/10 transition-all hover:-translate-y-0.5 hover:bg-white hover:shadow-xl sm:w-auto"
@@ -1485,7 +1565,7 @@ function Home() {
                 </div>
 
                 {/* Note */}
-                <p className="mt-4 flex items-start gap-2 text-[10px] leading-4 text-white/65">
+                <p className="mt-3 flex items-start gap-2 text-[10px] leading-4 text-white/65">
                   <Check className="mt-0.5 size-3 shrink-0" />
                   L’adresse numérique peut être créée sans commander de plaque
                   physique.
@@ -1497,7 +1577,7 @@ function Home() {
                 PARTIE DROITE — PLAQUE
                 ================================================= */}
 
-            <div className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-50 via-white to-cyan-50/60 px-5 py-8 sm:px-7 sm:py-9 md:px-8 lg:px-8 lg:py-7">
+            <div className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-50 via-white to-cyan-50/60 px-5 py-5 sm:px-7 sm:py-6 md:px-8 lg:px-7 lg:py-5">
               <div
                 aria-hidden
                 className="absolute -right-20 -top-20 size-60 rounded-full bg-accent/10 blur-[80px]"
@@ -1513,9 +1593,9 @@ function Home() {
                 className="absolute inset-x-16 bottom-10 h-8 rounded-full bg-slate-950/10 blur-2xl"
               />
 
-              <div className="relative w-full max-w-[450px]">
+              <div className="relative w-full max-w-[420px]">
                 {/* Label */}
-                <div className="mb-3 flex justify-center">
+                <div className="mb-2 flex justify-center">
                   <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[8px] font-bold uppercase tracking-[0.16em] text-slate-600 shadow-sm sm:text-[9px]">
                     <QrCode className="size-3.5 text-accent" />
                     Exemple de plaque
@@ -1526,7 +1606,7 @@ function Home() {
                     PLAQUE PRINCIPALE
                     ================================================= */}
 
-                <div className="relative mx-auto w-full max-w-[430px] rotate-[0.5deg] overflow-hidden rounded-[22px] border border-slate-300/80 bg-white shadow-[0_26px_60px_-24px_rgba(15,23,42,0.36)] transition-all duration-500 hover:rotate-0 hover:scale-[1.005]">
+                <div className="relative mx-auto w-full max-w-[395px] rotate-[0.5deg] overflow-hidden rounded-[22px] border border-slate-300/80 bg-white shadow-[0_26px_60px_-24px_rgba(15,23,42,0.36)] transition-all duration-500 hover:rotate-0 hover:scale-[1.005]">
                   {/* Bande supérieure */}
                   <div className="gradient-signature-soft px-5 py-3 sm:px-6 sm:py-3.5">
                     <div className="flex items-center justify-between gap-4">
@@ -1553,7 +1633,7 @@ function Home() {
                   </div>
 
                   {/* Corps plaque */}
-                  <div className="relative p-5 sm:p-6">
+                  <div className="relative p-4 sm:p-5">
                     {/* Fixations */}
                     <span
                       aria-hidden
@@ -1608,7 +1688,7 @@ function Home() {
                         <svg
                           viewBox="0 0 21 21"
                           aria-label="QR Code Adresse GN"
-                          className="size-16 text-slate-950 min-[390px]:size-[72px] sm:size-20 md:size-24"
+                          className="size-14 text-slate-950 min-[390px]:size-16 sm:size-[72px] md:size-20"
                           fill="currentColor"
                         >
                           <path d="M0 0h7v7H0V0zm2 2v3h3V2H2zM14 0h7v7h-7V0zm2 2v3h3V2h-3zM0 14h7v7H0v-7zm2 2v3h3v-3H2z" />
@@ -1640,8 +1720,8 @@ function Home() {
                     ADRESSE NUMÉRIQUE / PLAQUE PHYSIQUE
                     ================================================= */}
 
-                <div className="mt-3 grid grid-cols-2 gap-2.5">
-                  <div className="rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-[0_8px_22px_rgba(15,23,42,0.04)] backdrop-blur">
+                <div className="mt-2.5 grid grid-cols-2 gap-2">
+                  <div className="rounded-2xl border border-slate-200 bg-white/95 p-2.5 shadow-[0_8px_22px_rgba(15,23,42,0.04)] backdrop-blur">
                     <div className="flex items-center gap-2.5">
                       <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
                         <Smartphone className="size-4" />
@@ -1659,7 +1739,7 @@ function Home() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-[0_8px_22px_rgba(15,23,42,0.04)] backdrop-blur">
+                  <div className="rounded-2xl border border-slate-200 bg-white/95 p-2.5 shadow-[0_8px_22px_rgba(15,23,42,0.04)] backdrop-blur">
                     <div className="flex items-center gap-2.5">
                       <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-slate-950 text-white">
                         <QrCode className="size-4" />
@@ -1682,6 +1762,60 @@ function Home() {
           </div>
         </Reveal>
       </section>
+
+      {desktopInstallVisible && (
+        <aside
+          role="dialog"
+          aria-label="Installer Adresse GN"
+          className="fixed bottom-6 left-6 z-[1200] hidden w-[min(430px,calc(100vw-48px))] overflow-hidden rounded-[24px] bg-gradient-to-r from-orange-500 via-orange-500 to-rose-600 p-[1px] shadow-[0_24px_70px_-18px_rgba(244,63,94,0.45)] lg:block"
+        >
+          <div className="relative rounded-[23px] bg-gradient-to-r from-orange-500 via-orange-500 to-rose-600 px-5 py-4 text-white">
+            <button
+              type="button"
+              onClick={fermerInstallationDesktop}
+              aria-label="Fermer la proposition d’installation"
+              className="absolute right-3 top-3 flex size-8 items-center justify-center rounded-full text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <X className="size-4" />
+            </button>
+
+            <div className="flex items-start gap-3 pr-8">
+              <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-white/18 shadow-inner backdrop-blur-sm">
+                <Smartphone className="size-5" />
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <h3 className="text-base font-bold leading-5">
+                  Installer Adresse GN
+                </h3>
+
+                <p className="mt-1 text-[12px] leading-4 text-white/90">
+                  Accès rapide depuis votre bureau, mode hors-ligne et expérience proche d’une application.
+                </p>
+
+                <div className="mt-3 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void installerSurDesktop()}
+                    className="inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-white px-4 text-xs font-semibold text-orange-600 shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                  >
+                    <Download className="size-4" />
+                    Installer
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={fermerInstallationDesktop}
+                    className="inline-flex h-9 items-center justify-center rounded-xl px-3 text-xs font-semibold text-white transition-colors hover:bg-white/10"
+                  >
+                    Plus tard
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
+      )}
 
       <InstallBanner variant="bottom" />
 
