@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Bike, Building2, Check, Home as HomeIcon, MapPin, Mic, MicOff,
-  QrCode, Search, UtensilsCrossed, ArrowRight,
+  QrCode, Search, UtensilsCrossed, ArrowRight, Navigation2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Reveal } from "@/components/Reveal";
@@ -16,16 +16,39 @@ import { QrScanner } from "@/components/QrScanner";
 import { cn } from "@/lib/utils";
 
 const EXEMPLES = ["GN-CKY-582741", "GN-CKY-152963", "GN-CKY-759482"];
-const ATOUTS = [
-  "Fonctionne aussi via QR code",
-  "Compatible avec toutes les apps de navigation",
-  "Web, mobile, tablette · Application installable",
-];
 const USAGES = [
   { icone: HomeIcon, cle: "individuals", grad: "from-emerald-500 to-teal-600" },
   { icone: UtensilsCrossed, cle: "shops", grad: "from-orange-500 to-rose-600" },
   { icone: Bike, cle: "delivery", grad: "from-violet-500 to-fuchsia-600" },
   { icone: Building2, cle: "companies", grad: "from-sky-500 to-blue-600" },
+];
+
+// 3 étapes du "comment ça marche"
+const ETAPES = [
+  {
+    numero: "01",
+    icone: QrCode,
+    grad: "from-emerald-500 to-teal-600",
+    titre: "Obtenez votre numéro",
+    texte:
+      "Une adresse déjà créée ? Notez son numéro (ex. GN-CKY-582741) ou son QR code. Sinon, un agent Adresse GN vient la créer sur place.",
+  },
+  {
+    numero: "02",
+    icone: Search,
+    grad: "from-sky-500 to-blue-600",
+    titre: "Saisissez ou scannez",
+    texte:
+      "Tapez le numéro sur adresse.gn ou pointez votre caméra sur le QR code. Fonctionne sur téléphone, tablette et ordinateur.",
+  },
+  {
+    numero: "03",
+    icone: Navigation2,
+    grad: "from-violet-500 to-fuchsia-600",
+    titre: "L'itinéraire s'ouvre",
+    texte:
+      "Un clic et Google Maps, Waze ou Apple Plans lance la navigation vers le point exact. Aucune installation supplémentaire.",
+  },
 ];
 
 export const Route = createFileRoute("/")({
@@ -123,18 +146,15 @@ function Home() {
       <section className="relative overflow-hidden gradient-signature-soft">
         <div aria-hidden className="absolute top-0 left-1/2 -translate-x-1/2 h-[500px] w-[500px] rounded-full bg-white/10 blur-3xl pointer-events-none" />
         <div className="relative mx-auto w-full max-w-5xl px-5 pt-6 pb-8 sm:px-6 md:pt-12 md:pb-16 lg:px-8">
-          {/* Titre — accroche marketing forte */}
           <h1
             className="text-display text-center font-extrabold leading-[1.05] text-white whitespace-nowrap"
             style={{ textShadow: "0 2px 20px rgb(15 23 42 / 0.25)", fontSize: "clamp(0.95rem, 4.7vw, 3.75rem)" }}
           >
             Votre adresse, enfin facile à trouver.
           </h1>
-          {/* Sous-titre — sur 1 ligne à partir de md (tablette+) */}
           <p className="mx-auto mt-4 md:mt-6 max-w-md md:max-w-none text-center text-base md:text-xl leading-relaxed text-white/90 md:whitespace-nowrap">
             Un numéro unique par lieu. Fini les explications, les repères et les appels perdus.
           </p>
-          {/* Barre de recherche */}
           <div className="mt-8 md:mt-12 rounded-3xl bg-white/95 backdrop-blur-xl p-2.5 shadow-[0_20px_60px_-15px_rgba(15,23,42,0.35)] ring-1 ring-white/50">
             <form className="flex flex-col gap-2 md:flex-row md:gap-2" onSubmit={(e) => { e.preventDefault(); void rechercher(numero); }}>
               <div className="flex min-w-0 flex-1 items-center gap-1 rounded-2xl bg-slate-50/80 pl-4 pr-1.5 border border-transparent focus-within:border-accent focus-within:bg-white focus-within:ring-2 focus-within:ring-accent/20 transition-all">
@@ -189,7 +209,6 @@ function Home() {
             </form>
             {erreur && <p role="alert" className="mt-3 px-2 text-sm text-destructive">{erreur}</p>}
           </div>
-          {/* Exemples : forcés sur UNE ligne (nowrap + petits chips) */}
           <div className="mt-5 md:mt-6 flex flex-nowrap items-center justify-center gap-1.5 overflow-x-auto scrollbar-hide px-1">
             {EXEMPLES.map((exemple) => (
               <Link
@@ -205,55 +224,105 @@ function Home() {
         </div>
       </section>
 
-      {/* ==================== PRODUIT ==================== */}
-      <section id="comment-ca-marche" className="bg-white px-6 py-14 md:px-8 md:py-24">
-        <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 md:gap-16 lg:grid-cols-2">
+      {/* ==================== COMMENT ÇA MARCHE ==================== */}
+      <section id="comment-ca-marche" className="bg-white px-6 py-16 md:px-8 md:py-24">
+        <div className="mx-auto max-w-6xl">
           <Reveal>
-            <Eyebrow>{t("home.product.eyebrow")}</Eyebrow>
-            <h2 className="text-display mt-3 md:mt-4 text-2xl md:text-4xl font-bold tracking-tight text-slate-900">
-              {t("home.product.title")}
+            <Eyebrow>Comment ça marche</Eyebrow>
+            <h2 className="text-display mt-3 md:mt-4 text-center text-2xl md:text-4xl font-bold tracking-tight text-slate-900">
+              En 3 étapes, du numéro à l'itinéraire.
             </h2>
-            <p className="mt-4 md:mt-5 text-base md:text-lg leading-relaxed text-slate-600">{t("home.product.text")}</p>
-            <ul className="mt-6 md:mt-8 space-y-2.5 md:space-y-3">
-              {ATOUTS.map((atout) => (
-                <li key={atout} className="flex items-start gap-3">
-                  <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-accent/15">
-                    <Check className="size-3 text-accent" />
-                  </div>
-                  <span className="text-sm text-slate-700">{atout}</span>
-                </li>
-              ))}
-            </ul>
-            <Button asChild variant="outline" className="mt-6 md:mt-8 h-12 border-slate-300 bg-transparent px-6 text-base font-medium text-slate-700 hover:bg-slate-50 group">
-              <Link to="/a/$number" params={{ number: "GN-CKY-582741" }}>
-                {t("home.product.example")}
-                <ArrowRight className="size-4 ml-1 group-hover:translate-x-0.5 transition-transform" />
-              </Link>
-            </Button>
+            <p className="mx-auto mt-3 md:mt-4 max-w-2xl text-center text-base md:text-lg leading-relaxed text-slate-600">
+              Pas d'installation, pas de compte obligatoire. Un numéro suffit pour lancer la navigation.
+            </p>
           </Reveal>
-          <Reveal delay={120} className="relative">
-            <div aria-hidden className="absolute left-1/2 top-1/2 size-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/20 blur-3xl" />
-            <div className="relative mx-auto aspect-9/19 max-w-[260px] md:max-w-[280px] rotate-[-3deg] overflow-hidden rounded-[2.5rem] border-8 border-slate-900 bg-white shadow-2xl">
-              <div className="flex h-full flex-col">
-                <div className="gradient-signature-soft px-4 py-3 text-center text-[10px] font-semibold uppercase tracking-[0.2em] text-white">
-                  Adresse GN
+
+          <div className="mt-10 md:mt-14 grid gap-10 lg:grid-cols-[1.15fr_1fr] lg:items-center">
+            {/* ÉTAPES */}
+            <ol className="relative space-y-5 md:space-y-6">
+              {/* Ligne verticale de connexion (desktop) */}
+              <div aria-hidden className="absolute left-[27px] top-8 bottom-8 w-px bg-gradient-to-b from-emerald-300 via-sky-300 to-fuchsia-300 hidden md:block" />
+              {ETAPES.map((etape, index) => (
+                <Reveal key={etape.numero} delay={index * 100}>
+                  <li className="group relative flex gap-4 md:gap-6 rounded-2xl border border-slate-200/80 bg-white p-5 md:p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:border-transparent">
+                    {/* Badge numéroté + icône */}
+                    <div className="relative flex-shrink-0">
+                      <div
+                        className={cn(
+                          "flex size-14 items-center justify-center rounded-2xl text-white shadow-lg bg-gradient-to-br transition-transform group-hover:scale-110",
+                          etape.grad,
+                        )}
+                      >
+                        <etape.icone className="size-6" />
+                      </div>
+                      <span className="absolute -top-2 -right-2 flex size-7 items-center justify-center rounded-full bg-slate-900 text-[11px] font-bold text-white shadow-md ring-2 ring-white">
+                        {etape.numero}
+                      </span>
+                    </div>
+                    {/* Contenu */}
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-display text-lg md:text-xl font-bold text-slate-900">
+                        {etape.titre}
+                      </h3>
+                      <p className="mt-1.5 text-sm md:text-base leading-relaxed text-slate-600">
+                        {etape.texte}
+                      </p>
+                    </div>
+                  </li>
+                </Reveal>
+              ))}
+
+              {/* CTA sous les étapes */}
+              <Reveal delay={350}>
+                <div className="mt-2 flex flex-wrap gap-3 pl-0 md:pl-[86px]">
+                  <Button asChild className="h-12 bg-gradient-to-r from-accent to-accent-dark px-6 text-base font-semibold text-accent-foreground shadow-lg shadow-accent/25 hover:shadow-accent/40 group">
+                    <Link to="/a/$number" params={{ number: "GN-CKY-582741" }}>
+                      Voir un exemple réel
+                      <ArrowRight className="size-4 ml-1 group-hover:translate-x-0.5 transition-transform" />
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" className="h-12 border-slate-300 bg-white px-6 text-base font-medium text-slate-700 hover:bg-slate-50">
+                    <Link to="/commander">Créer mon Adresse GN</Link>
+                  </Button>
                 </div>
-                <div className="relative flex-1 bg-slate-100">
-                  <MapPin className="absolute left-1/2 top-1/2 size-8 -translate-x-1/2 -translate-y-1/2 text-accent" />
-                </div>
-                <div className="space-y-3 bg-white p-4">
-                  <div className="rounded-xl border border-slate-200 bg-white p-3">
-                    <p className="text-sm font-bold text-slate-900">{t("home.product.mockName")}</p>
-                    <p className="mt-1 font-mono text-xs text-slate-500">GN-CKY-582741</p>
-                    <p className="mt-1 text-xs text-slate-500">{t("home.product.mockZone")}</p>
-                  </div>
-                  <div className="rounded-xl bg-accent px-4 py-2.5 text-center text-sm font-medium text-accent-foreground">
-                    {t("home.product.goThere")}
+              </Reveal>
+            </ol>
+
+            {/* MOCKUP RÉSULTAT */}
+            <Reveal delay={200} className="relative order-first lg:order-last">
+              <div aria-hidden className="absolute left-1/2 top-1/2 size-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/25 blur-3xl" />
+              {/* Étiquette "Résultat" au-dessus du mockup */}
+              <div className="relative mx-auto flex max-w-[280px] flex-col items-center">
+                <span className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-white shadow-md">
+                  <Check className="size-3 text-accent" />
+                  Résultat sur mobile
+                </span>
+                <div className="aspect-9/19 w-full rotate-[-3deg] overflow-hidden rounded-[2.5rem] border-8 border-slate-900 bg-white shadow-2xl">
+                  <div className="flex h-full flex-col">
+                    <div className="gradient-signature-soft px-4 py-3 text-center text-[10px] font-semibold uppercase tracking-[0.2em] text-white">
+                      Adresse GN
+                    </div>
+                    <div className="relative flex-1 bg-slate-100">
+                      {/* Pin animé */}
+                      <span aria-hidden className="absolute left-1/2 top-1/2 size-16 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/30 animate-ping" />
+                      <MapPin className="absolute left-1/2 top-1/2 size-9 -translate-x-1/2 -translate-y-1/2 text-accent drop-shadow-lg" />
+                    </div>
+                    <div className="space-y-3 bg-white p-4">
+                      <div className="rounded-xl border border-slate-200 bg-white p-3">
+                        <p className="text-sm font-bold text-slate-900">Restaurant Le Damier</p>
+                        <p className="mt-1 font-mono text-xs text-slate-500">GN-CKY-582741</p>
+                        <p className="mt-1 text-xs text-slate-500">Kaloum · Conakry</p>
+                      </div>
+                      <div className="rounded-xl bg-accent px-4 py-2.5 text-center text-sm font-medium text-accent-foreground flex items-center justify-center gap-1.5">
+                        <Navigation2 className="size-4" />
+                        S'y rendre
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </Reveal>
+            </Reveal>
+          </div>
         </div>
       </section>
 
@@ -329,4 +398,3 @@ function Home() {
     </div>
   );
 }
-
