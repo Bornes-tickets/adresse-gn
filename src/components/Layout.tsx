@@ -467,7 +467,7 @@ function Header() {
 }
 
 /* =========================================================
-   FOOTER
+   FOOTER — VERSION ULTRA COMPACTE & RESPONSIVE
    ========================================================= */
 
 const FOCUS =
@@ -493,7 +493,6 @@ const FOOTER_COLS: {
 }[] = [
   {
     cle: "footer.cols.product",
-
     links: [
       {
         cle: "footer.links.pricing",
@@ -513,10 +512,8 @@ const FOOTER_COLS: {
       },
     ],
   },
-
   {
     cle: "footer.cols.resources",
-
     links: [
       {
         cle: "footer.links.howItWorks",
@@ -540,10 +537,8 @@ const FOOTER_COLS: {
       },
     ],
   },
-
   {
     cle: "footer.cols.company",
-
     links: [
       {
         cle: "footer.links.about",
@@ -563,10 +558,8 @@ const FOOTER_COLS: {
       },
     ],
   },
-
   {
     cle: "footer.cols.legal",
-
     links: [
       {
         cle: "footer.links.legalNotice",
@@ -598,11 +591,10 @@ function FooterLinkItem({
   link: FooterLink;
 }) {
   const { t } = useTranslation();
-
   const label = t(link.cle);
 
   const base = cn(
-    "inline-flex w-fit rounded-sm text-[12px] leading-5 transition-colors",
+    "inline-flex w-fit rounded-sm text-[11px] leading-4 transition-colors xl:text-[12px]",
     FOCUS,
   );
 
@@ -662,11 +654,11 @@ function FooterColumn({
 
   return (
     <div className="min-w-0">
-      <h2 className="mb-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+      <h2 className="mb-2.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-500 xl:text-[10px]">
         {t(col.cle)}
       </h2>
 
-      <nav className="flex flex-col gap-2.5">
+      <nav className="flex flex-col gap-1.5 xl:gap-2">
         {col.links.map((link) => (
           <FooterLinkItem
             key={link.cle}
@@ -679,7 +671,7 @@ function FooterColumn({
 }
 
 /* =========================================================
-   FOOTER COMPLET RESPONSIVE
+   FOOTER COMPLET — HAUTEUR MINIMALE
    ========================================================= */
 
 function Footer() {
@@ -697,189 +689,192 @@ function Footer() {
 
   return (
     <footer className="relative overflow-hidden bg-slate-950 text-slate-300">
-      {/* Légers halos de marque */}
-
+      {/* Halos très discrets */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -left-40 top-0 size-[360px] rounded-full bg-blue-900/15 blur-[120px]"
+        className="pointer-events-none absolute -left-32 top-0 size-[260px] rounded-full bg-blue-900/10 blur-[100px]"
       />
 
       <div
         aria-hidden
-        className="pointer-events-none absolute -right-40 top-0 size-[360px] rounded-full bg-cyan-900/10 blur-[120px]"
+        className="pointer-events-none absolute -right-32 top-0 size-[260px] rounded-full bg-cyan-900/[0.08] blur-[100px]"
       />
 
       <div
         className={cn(
           FOOTER_CONTAINER,
-          "relative pb-5 pt-9 sm:pb-6 sm:pt-10 lg:pt-12 xl:pt-14",
+          "relative pb-3 pt-5 sm:pb-4 sm:pt-6 lg:pb-3 lg:pt-6 xl:pt-7",
         )}
       >
         {/* =================================================
-            CONTENU PRINCIPAL
+            DESKTOP — 5 COLONNES SUR UNE SEULE LIGNE
             ================================================= */}
 
-        <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(250px,0.82fr)_minmax(0,2.18fr)] lg:gap-10 xl:gap-14 2xl:gap-20">
-          {/* ===============================================
-              IDENTITÉ
-              =============================================== */}
+        <div className="hidden min-w-0 lg:grid lg:grid-cols-[1.45fr_repeat(4,minmax(0,1fr))] lg:items-start lg:gap-x-8 xl:gap-x-10 2xl:gap-x-14">
+          {/* Identité */}
+          <div className="min-w-0 pr-2">
+            <Logo tone="light" />
 
-          <div className="min-w-0">
-            <div className="max-w-sm">
-              <Logo tone="light" />
+            <p className="mt-2.5 max-w-[270px] text-[11px] leading-4 text-slate-400 xl:text-xs">
+              {t("footer.tagline")}
+            </p>
 
-              <p className="mt-4 max-w-xs text-xs leading-5 text-slate-400 sm:text-[13px]">
-                {t("footer.tagline")}
-              </p>
-
-              {/* Coordonnées */}
-
-              <div className="mt-5 flex flex-col gap-2">
-                <span className="flex min-w-0 items-start gap-2 text-xs leading-5 text-slate-400">
-                  <MapPin className="mt-0.5 size-3.5 shrink-0 text-slate-500" />
-
-                  <span className="min-w-0 break-words">
-                    {t("footer.location")}
-                  </span>
+            <div className="mt-3 grid gap-1.5">
+              <span className="flex min-w-0 items-center gap-2 text-[11px] leading-4 text-slate-400 xl:text-xs">
+                <MapPin className="size-3.5 shrink-0 text-slate-500" />
+                <span className="min-w-0 truncate">
+                  {t("footer.location")}
                 </span>
-
-                <a
-                  href="mailto:contact@adresse.gn"
-                  className={cn(
-                    "flex w-fit max-w-full min-w-0 items-center gap-2 rounded-sm text-xs text-slate-300 transition-colors hover:text-accent",
-                    FOCUS,
-                  )}
-                >
-                  <Mail className="size-3.5 shrink-0 text-slate-500" />
-
-                  <span className="min-w-0 break-all sm:break-normal">
-                    contact@adresse.gn
-                  </span>
-                </a>
-
-                <a
-                  href={`https://wa.me/${WHATSAPP_SERVICE}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={cn(
-                    "flex w-fit max-w-full items-center gap-2 rounded-sm text-xs text-slate-300 transition-colors hover:text-accent",
-                    FOCUS,
-                  )}
-                >
-                  <MessageCircle className="size-3.5 shrink-0 text-slate-500" />
-
-                  {t("footer.whatsapp")}
-                </a>
-              </div>
-
-              {/* Pilote */}
-
-              <span className="mt-5 inline-flex items-center rounded-full border border-accent/20 bg-accent/10 px-3 py-1 text-[10px] font-medium text-accent sm:text-[11px]">
-                <span className="mr-1.5 size-1.5 rounded-full bg-accent" />
-
-                {t("footer.pilot")}
               </span>
+
+              <a
+                href="mailto:contact@adresse.gn"
+                className={cn(
+                  "flex w-fit max-w-full min-w-0 items-center gap-2 rounded-sm text-[11px] leading-4 text-slate-300 transition-colors hover:text-accent xl:text-xs",
+                  FOCUS,
+                )}
+              >
+                <Mail className="size-3.5 shrink-0 text-slate-500" />
+                <span className="truncate">
+                  contact@adresse.gn
+                </span>
+              </a>
+
+              <a
+                href={`https://wa.me/${WHATSAPP_SERVICE}`}
+                target="_blank"
+                rel="noreferrer"
+                className={cn(
+                  "flex w-fit items-center gap-2 rounded-sm text-[11px] leading-4 text-slate-300 transition-colors hover:text-accent xl:text-xs",
+                  FOCUS,
+                )}
+              >
+                <MessageCircle className="size-3.5 shrink-0 text-slate-500" />
+                {t("footer.whatsapp")}
+              </a>
             </div>
+
+            <span className="mt-3 inline-flex items-center rounded-full border border-accent/20 bg-accent/10 px-2.5 py-0.5 text-[9px] font-medium leading-4 text-accent xl:text-[10px]">
+              <span className="mr-1.5 size-1.5 rounded-full bg-accent" />
+              {t("footer.pilot")}
+            </span>
           </div>
 
-          {/* ===============================================
-              DESKTOP / GRANDES TABLETTES
+          {FOOTER_COLS.map((col) => (
+            <FooterColumn
+              key={col.cle}
+              col={col}
+            />
+          ))}
+        </div>
 
-              1024-1279 : 2 colonnes
-              1280+    : 4 colonnes
-              =============================================== */}
+        {/* =================================================
+            MOBILE / TABLETTE
+            ================================================= */}
 
-          <div className="hidden min-w-0 lg:grid lg:grid-cols-2 lg:gap-x-10 lg:gap-y-9 xl:grid-cols-4 xl:gap-x-8 2xl:gap-x-14">
-            {FOOTER_COLS.map(
-              (col) => (
-                <FooterColumn
-                  key={col.cle}
-                  col={col}
-                />
-              ),
-            )}
+        <div className="lg:hidden">
+          {/* Identité compacte */}
+          <div className="pb-4">
+            <Logo tone="light" />
+
+            <p className="mt-2.5 max-w-sm text-[11px] leading-4 text-slate-400">
+              {t("footer.tagline")}
+            </p>
+
+            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
+              <span className="flex items-center gap-1.5 text-[11px] text-slate-400">
+                <MapPin className="size-3.5 shrink-0 text-slate-500" />
+                {t("footer.location")}
+              </span>
+
+              <a
+                href="mailto:contact@adresse.gn"
+                className={cn(
+                  "flex items-center gap-1.5 rounded-sm text-[11px] text-slate-300 transition-colors hover:text-accent",
+                  FOCUS,
+                )}
+              >
+                <Mail className="size-3.5 shrink-0 text-slate-500" />
+                contact@adresse.gn
+              </a>
+
+              <a
+                href={`https://wa.me/${WHATSAPP_SERVICE}`}
+                target="_blank"
+                rel="noreferrer"
+                className={cn(
+                  "flex items-center gap-1.5 rounded-sm text-[11px] text-slate-300 transition-colors hover:text-accent",
+                  FOCUS,
+                )}
+              >
+                <MessageCircle className="size-3.5 shrink-0 text-slate-500" />
+                {t("footer.whatsapp")}
+              </a>
+            </div>
+
+            <span className="mt-3 inline-flex items-center rounded-full border border-accent/20 bg-accent/10 px-2.5 py-0.5 text-[9px] font-medium text-accent">
+              <span className="mr-1.5 size-1.5 rounded-full bg-accent" />
+              {t("footer.pilot")}
+            </span>
           </div>
 
-          {/* ===============================================
-              MOBILE / TABLETTE
-
-              Accordéons jusqu'à 1023 px.
-              =============================================== */}
-
-          <div className="min-w-0 border-y border-slate-800/80 lg:hidden">
-            {FOOTER_COLS.map(
-              (col) => (
-                <details
-                  key={col.cle}
-                  className="group border-b border-slate-800/70 last:border-b-0"
+          {/* Accordéons très compacts */}
+          <div className="border-y border-slate-800/80">
+            {FOOTER_COLS.map((col) => (
+              <details
+                key={col.cle}
+                className="group border-b border-slate-800/70 last:border-b-0"
+              >
+                <summary
+                  className={cn(
+                    "flex min-h-10 cursor-pointer list-none items-center justify-between gap-4 rounded-sm py-2 text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-400 marker:hidden",
+                    FOCUS,
+                  )}
                 >
-                  <summary
-                    className={cn(
-                      "flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 rounded-sm py-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 marker:hidden",
-                      FOCUS,
-                    )}
-                  >
-                    <span>
-                      {t(col.cle)}
-                    </span>
+                  <span>{t(col.cle)}</span>
 
-                    <ChevronDown className="size-4 shrink-0 text-slate-500 transition-transform duration-200 group-open:rotate-180" />
-                  </summary>
+                  <ChevronDown className="size-3.5 shrink-0 text-slate-500 transition-transform duration-200 group-open:rotate-180" />
+                </summary>
 
-                  <nav className="flex flex-col gap-2.5 pb-4 pl-1">
-                    {col.links.map(
-                      (link) => (
-                        <FooterLinkItem
-                          key={
-                            link.cle
-                          }
-                          link={
-                            link
-                          }
-                        />
-                      ),
-                    )}
-                  </nav>
-                </details>
-              ),
-            )}
+                <nav className="flex flex-col gap-1.5 pb-3 pl-1">
+                  {col.links.map((link) => (
+                    <FooterLinkItem
+                      key={link.cle}
+                      link={link}
+                    />
+                  ))}
+                </nav>
+              </details>
+            ))}
           </div>
         </div>
 
         {/* =================================================
-            SÉPARATEUR
+            BARRE BASSE COMPACTE
             ================================================= */}
 
-        <div className="mb-5 mt-8 border-t border-slate-800/80 sm:mt-10 lg:mt-12" />
+        <div className="mb-3 mt-5 border-t border-slate-800/80 lg:mb-2.5 lg:mt-5" />
 
-        {/* =================================================
-            BARRE BASSE
-            ================================================= */}
-
-        <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          {/* Copyright + langue */}
-
-          <div className="flex min-w-0 flex-col gap-2 text-[10px] text-slate-500 xs:flex-row xs:flex-wrap xs:items-center sm:text-[11px]">
-            <span className="leading-5">
+        <div className="flex min-w-0 flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[9px] text-slate-500 sm:text-[10px]">
+            <span className="leading-4">
               {t("footer.rights")}
             </span>
 
             <span
               aria-hidden="true"
-              className="hidden text-slate-700 xs:inline"
+              className="hidden text-slate-700 sm:inline"
             >
               ·
             </span>
 
             <LanguageSwitcher
               tone="light"
-              className="h-7 w-fit px-2 text-[11px] text-slate-400"
+              className="h-6 w-fit px-1.5 text-[10px] text-slate-400"
             />
           </div>
 
-          {/* Réseaux sociaux */}
-
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {[
               {
                 Icon: Facebook,
@@ -893,20 +888,15 @@ function Footer() {
                 Icon: Twitter,
                 label: "X",
               },
-            ].map(
-              ({
-                Icon,
-                label,
-              }) => (
-                <span
-                  key={label}
-                  title={label}
-                  className="grid size-8 place-items-center rounded-lg border border-slate-800 bg-slate-950/50 text-slate-500 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-600 hover:bg-slate-900 hover:text-white sm:size-9"
-                >
-                  <Icon className="size-3.5" />
-                </span>
-              ),
-            )}
+            ].map(({ Icon, label }) => (
+              <span
+                key={label}
+                title={label}
+                className="grid size-7 place-items-center rounded-lg border border-slate-800 bg-slate-950/50 text-slate-500 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-600 hover:bg-slate-900 hover:text-white"
+              >
+                <Icon className="size-3" />
+              </span>
+            ))}
           </div>
         </div>
 
