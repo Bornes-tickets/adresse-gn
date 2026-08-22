@@ -54,7 +54,7 @@ const EXEMPLE_DEMO = "GN-CKY-582741";
    Même logique à réutiliser dans Header / Footer / autres pages.
    ========================================================= */
 const SITE_CONTAINER =
-  "mx-auto w-full max-w-[1580px] px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12";
+  "mx-auto w-full max-w-[1760px] px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16";
 
 /* =========================================================
    DÉMONSTRATION ITINÉRAIRE RÉEL
@@ -434,7 +434,7 @@ function Home() {
   );
 
   return (
-    <div className="bg-white">
+    <div className="w-full overflow-x-hidden bg-white">
       {/* =====================================================
           HERO
           NE PAS MODIFIER
@@ -595,7 +595,7 @@ function Home() {
 
       <section
         id="comment-ca-marche"
-        className="relative overflow-hidden bg-white pb-12 pt-8 md:pb-14 md:pt-10 lg:pb-14 lg:pt-10"
+        className="relative w-full overflow-hidden bg-white pb-10 pt-7 sm:pb-12 sm:pt-8 md:pb-14 md:pt-9 lg:pb-14 lg:pt-10 xl:pb-16"
       >
         <div
           aria-hidden
@@ -627,14 +627,14 @@ function Home() {
               </span>
             </div>
 
-            <h2 className="text-display mx-auto mt-4 text-center text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl md:text-[2.25rem] lg:whitespace-nowrap xl:text-[2.65rem] xl:leading-[1.08] 2xl:text-[2.85rem]">
+            <h2 className="text-display mx-auto mt-4 max-w-[1500px] text-center font-bold tracking-tight text-slate-950 text-[clamp(1.75rem,2.45vw,3rem)] leading-[1.08] xl:whitespace-nowrap">
               Un numéro. Une destination.{" "}
               <span className="bg-gradient-to-r from-accent via-sky-500 to-blue-600 bg-clip-text text-transparent">
                 Aucun détour.
               </span>
             </h2>
 
-            <p className="mx-auto mt-3 text-center text-sm leading-6 text-slate-600 md:max-w-none md:whitespace-nowrap lg:text-[15px] xl:text-base">
+            <p className="mx-auto mt-3 max-w-4xl text-center text-sm leading-6 text-slate-600 md:text-[15px] xl:max-w-none xl:whitespace-nowrap xl:text-base">
               Adresse GN transforme chaque lieu en une adresse simple à identifier, partager et rejoindre.
             </p>
 
@@ -656,7 +656,7 @@ function Home() {
             </div>
           </Reveal>
 
-          <div className="mt-8 grid gap-8 lg:mt-9 lg:grid-cols-[0.94fr_1.06fr] lg:items-center lg:gap-10 xl:gap-12 2xl:gap-16">
+          <div className="mx-auto mt-7 grid w-full max-w-[1540px] gap-8 md:mt-8 lg:mt-9 lg:grid-cols-[minmax(0,0.96fr)_minmax(420px,1.04fr)] lg:items-center lg:gap-8 xl:gap-10 2xl:max-w-[1640px] 2xl:gap-14">
             <div>
               <ol className="space-y-3">
                 {ETAPES.map(
@@ -667,7 +667,7 @@ function Home() {
                         index * 80
                       }
                     >
-                      <li className="group relative overflow-hidden rounded-[22px] border border-slate-200/80 bg-white p-5 shadow-[0_8px_28px_rgba(15,23,42,0.035)] transition-all duration-300 hover:-translate-y-1 hover:border-accent/20 hover:shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
+                      <li className="group relative w-full overflow-hidden rounded-[20px] border border-slate-200/80 bg-white p-4 shadow-[0_8px_28px_rgba(15,23,42,0.035)] transition-all duration-300 hover:-translate-y-1 hover:border-accent/20 hover:shadow-[0_18px_45px_rgba(15,23,42,0.08)] sm:p-5 xl:rounded-[22px] xl:p-6">
                         <div
                           aria-hidden
                           className="absolute -right-14 -top-14 size-28 rounded-full bg-accent/0 blur-2xl transition-colors group-hover:bg-accent/[0.08]"
@@ -769,7 +769,7 @@ function Home() {
               delay={150}
               className="relative"
             >
-              <div className="relative mx-auto flex max-w-[520px] flex-col items-center">
+              <div className="relative mx-auto flex w-full max-w-[620px] flex-col items-center">
                 <div
                   aria-hidden
                   className="absolute left-1/2 top-1/2 h-[470px] w-[470px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-accent/20 via-cyan-100/35 to-blue-100/25 blur-[80px]"
@@ -785,7 +785,7 @@ function Home() {
                   Google Maps
                 </div>
 
-                <div className="relative z-[2] aspect-[9/19] w-[290px] rotate-[-1deg] overflow-hidden rounded-[2.9rem] border-[9px] border-slate-950 bg-white shadow-[0_45px_95px_-28px_rgba(15,23,42,0.58)] transition-all duration-500 hover:rotate-0 hover:scale-[1.012] sm:w-[305px] md:w-[320px] xl:w-[340px] 2xl:w-[360px]">
+                <div className="relative z-[2] aspect-[9/19] w-[min(82vw,290px)] rotate-[-1deg] overflow-hidden rounded-[2.55rem] border-[8px] border-slate-950 bg-white shadow-[0_45px_95px_-28px_rgba(15,23,42,0.58)] transition-all duration-500 hover:rotate-0 hover:scale-[1.012] sm:w-[305px] sm:rounded-[2.7rem] md:w-[320px] lg:w-[330px] xl:w-[355px] 2xl:w-[390px] 2xl:rounded-[3rem] 2xl:border-[9px]">
                   <div
                     aria-hidden
                     className="absolute left-1/2 top-1 z-30 h-4 w-16 -translate-x-1/2 rounded-full bg-slate-950"
@@ -999,12 +999,12 @@ function Home() {
                   </span>
                 </h3>
 
-                <p className="mx-auto mt-2.5 text-sm leading-6 text-slate-600 md:max-w-none md:whitespace-nowrap">
+                <p className="mx-auto mt-2.5 max-w-4xl text-sm leading-6 text-slate-600 xl:max-w-none xl:whitespace-nowrap">
                   Un numéro Adresse GN remplace les longues indications et simplifie l’arrivée à destination.
                 </p>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-2 xl:gap-5">
                 <div className="relative overflow-hidden rounded-[26px] border border-rose-100 bg-gradient-to-br from-rose-50/55 via-white to-white p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
                   <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-rose-100 bg-white px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-rose-600 shadow-sm">
                     <X className="size-3.5" />
@@ -1102,7 +1102,7 @@ function Home() {
 
           <Reveal delay={140}>
             <div className="mt-7 overflow-hidden rounded-[24px] border border-slate-200 bg-slate-50/60 shadow-[0_8px_30px_rgba(15,23,42,0.04)]">
-              <div className="grid grid-cols-1 divide-y divide-slate-200/70 sm:grid-cols-2 lg:grid-cols-4 lg:divide-x lg:divide-y-0">
+              <div className="grid grid-cols-1 divide-y divide-slate-200/70 sm:grid-cols-2 lg:grid-cols-4 lg:divide-x lg:divide-y-0 2xl:grid-cols-4">
                 {AVANTAGES.map(
                   (
                     avantage,
@@ -1145,7 +1145,7 @@ function Home() {
 
       <section
         id="usages"
-        className="relative overflow-hidden border-t border-slate-100 bg-slate-50 py-12 md:py-14 xl:py-16"
+        className="relative w-full overflow-hidden border-t border-slate-100 bg-slate-50 py-10 sm:py-12 md:py-14 xl:py-16"
       >
         <div
           aria-hidden
@@ -1174,7 +1174,7 @@ function Home() {
             </p>
           </Reveal>
 
-          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:mt-9 lg:grid-cols-4 lg:gap-4 xl:gap-5">
+          <div className="mx-auto mt-8 grid w-full max-w-[1660px] grid-cols-1 gap-4 sm:grid-cols-2 lg:mt-9 lg:grid-cols-4 lg:gap-4 xl:gap-5 2xl:gap-6">
             {USAGES.map((item, index) => (
               <Reveal
                 key={item.cle}
@@ -1182,7 +1182,7 @@ function Home() {
               >
                 <article
                   className={cn(
-                    "group relative flex h-full min-h-[260px] flex-col overflow-hidden rounded-[24px] border border-slate-200/90 bg-gradient-to-br p-5 xl:min-h-[275px] xl:p-6 shadow-[0_8px_28px_rgba(15,23,42,0.035)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_24px_55px_rgba(15,23,42,0.10)]",
+                    "group relative flex h-full min-h-[240px] flex-col overflow-hidden rounded-[22px] border border-slate-200/90 bg-gradient-to-br p-5 shadow-[0_8px_28px_rgba(15,23,42,0.035)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_24px_55px_rgba(15,23,42,0.10)] lg:min-h-[250px] xl:min-h-[260px] xl:rounded-[24px] xl:p-6",
                     item.fond,
                     item.bordure,
                   )}
@@ -1254,7 +1254,7 @@ function Home() {
           CTA FINAL — VERSION PREMIUM COMPACTE & RESPONSIVE
           ===================================================== */}
 
-      <section className="relative overflow-hidden bg-white py-9 sm:py-10 md:py-12 xl:py-14">
+      <section className="relative w-full overflow-hidden bg-white py-8 sm:py-9 md:py-10 xl:py-12">
         {/* Halos décoratifs */}
         <div
           aria-hidden
@@ -1267,7 +1267,7 @@ function Home() {
         />
 
         <Reveal className={cn(SITE_CONTAINER, "relative")}>
-          <div className="grid overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_24px_70px_-32px_rgba(15,23,42,0.30)] sm:rounded-[28px] lg:grid-cols-[1.02fr_0.98fr]">
+          <div className="mx-auto grid w-full max-w-[1660px] overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-[0_24px_70px_-32px_rgba(15,23,42,0.30)] sm:rounded-[26px] lg:grid-cols-[1.02fr_0.98fr] xl:rounded-[28px]">
             {/* =================================================
                 PARTIE GAUCHE
                 ================================================= */}
@@ -1449,7 +1449,7 @@ function Home() {
                           Numéro unique
                         </p>
 
-                        <p className="mt-1.5 whitespace-nowrap font-mono text-[0.98rem] font-extrabold tracking-[0.035em] text-slate-950 min-[390px]:text-[1.08rem] sm:text-[1.3rem] md:text-[1.45rem]">
+                        <p className="mt-1.5 whitespace-nowrap font-mono text-[clamp(0.78rem,4vw,1.45rem)] font-extrabold tracking-[0.025em] text-slate-950 sm:tracking-[0.035em]">
                           GN-CKY-582741
                         </p>
 
