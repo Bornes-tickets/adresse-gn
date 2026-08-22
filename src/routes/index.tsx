@@ -1417,17 +1417,17 @@ function Home() {
         <div className={cn(SITE_CONTAINER, "relative")}>
           <Reveal>
             <div className="mx-auto w-full max-w-[1320px] rounded-[24px] border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-cyan-50/70 p-4 shadow-[0_16px_44px_-32px_rgba(15,23,42,0.18)] sm:p-5 md:p-5 xl:p-6">
-              <div className="mx-auto max-w-3xl text-center">
+              <div className="mx-auto w-full text-center">
                 <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-500 shadow-sm">
                   <Sparkles className="size-3 text-accent" />
                   Pourquoi nous faire confiance
                 </span>
 
-                <h2 className="text-display mt-3 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl md:text-[2rem]">
+                <h2 className="text-display mx-auto mt-3 max-w-3xl text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl md:text-[2rem]">
                   Conçu pour les réalités du terrain.
                 </h2>
 
-                <p className="mx-auto mt-2 max-w-3xl text-center text-sm leading-5 text-slate-600 md:text-[14px] lg:max-w-none lg:whitespace-nowrap">
+                <p className="mx-auto mt-2 w-full max-w-[1180px] text-center text-sm leading-5 text-slate-600 md:text-[14px] lg:whitespace-nowrap">
                   Adresse GN relie un numéro unique, une position GPS et des outils que les utilisateurs connaissent déjà pour rendre l’adresse simple à créer, à partager et à rejoindre.
                 </p>
               </div>
