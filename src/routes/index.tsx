@@ -2,83 +2,177 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Bike, Building2, Check, Home as HomeIcon, MapPin, Mic, MicOff,
-  QrCode, Search, UtensilsCrossed, ArrowRight, Navigation2,
-  Zap, Wifi, Globe2, Sparkles, X,
+  Bike,
+  Building2,
+  Check,
+  Home as HomeIcon,
+  MapPin,
+  Mic,
+  MicOff,
+  QrCode,
+  Search,
+  UtensilsCrossed,
+  ArrowRight,
+  Navigation2,
+  Zap,
+  Smartphone,
+  Globe2,
+  Sparkles,
+  X,
+  Share2,
+  MapPinned,
 } from "lucide-react";
 import { toast } from "sonner";
+
 import { Reveal } from "@/components/Reveal";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { getDefaultZone, isValidBeaconNumber, normalizeBeaconNumber } from "@/lib/geo";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  getDefaultZone,
+  isValidBeaconNumber,
+  normalizeBeaconNumber,
+} from "@/lib/geo";
 import { searchBeacon } from "@/lib/search.functions";
 import { InstallBanner } from "@/components/InstallBanner";
 import { QrScanner } from "@/components/QrScanner";
 import { cn } from "@/lib/utils";
 
-const EXEMPLES = ["GN-CKY-582741", "GN-CKY-152963", "GN-CKY-759482"];
-const USAGES = [
-  { icone: HomeIcon, cle: "individuals", grad: "from-emerald-500 to-teal-600" },
-  { icone: UtensilsCrossed, cle: "shops", grad: "from-orange-500 to-rose-600" },
-  { icone: Bike, cle: "delivery", grad: "from-violet-500 to-fuchsia-600" },
-  { icone: Building2, cle: "companies", grad: "from-sky-500 to-blue-600" },
+const EXEMPLES = [
+  "GN-CKY-582741",
+  "GN-CKY-152963",
+  "GN-CKY-759482",
 ];
+
+const USAGES = [
+  {
+    icone: HomeIcon,
+    cle: "individuals",
+    grad: "from-emerald-500 to-teal-600",
+  },
+  {
+    icone: UtensilsCrossed,
+    cle: "shops",
+    grad: "from-orange-500 to-rose-600",
+  },
+  {
+    icone: Bike,
+    cle: "delivery",
+    grad: "from-violet-500 to-fuchsia-600",
+  },
+  {
+    icone: Building2,
+    cle: "companies",
+    grad: "from-sky-500 to-blue-600",
+  },
+];
+
+/* =========================================================
+   COMMENT ÇA MARCHE
+   ========================================================= */
 
 const ETAPES = [
   {
     numero: "01",
-    icone: QrCode,
-    grad: "from-emerald-500 to-teal-600",
-    couleur: "emerald",
-    titre: "Obtenez votre numéro",
+    icone: MapPinned,
+    titre: "Obtenez votre Adresse GN",
     texte:
-      "Une adresse déjà créée ? Notez son numéro (ex. GN-CKY-582741) ou son QR code. Sinon, un agent Adresse GN vient la créer sur place.",
-    tags: ["Créée en < 5 min", "Par un agent local"],
+      "Chaque lieu reçoit un numéro Adresse GN unique associé à sa localisation. Il peut être communiqué directement ou affiché avec son QR Code.",
+    tags: ["Numéro unique", "QR Code associé"],
   },
   {
     numero: "02",
     icone: Search,
-    grad: "from-sky-500 to-blue-600",
-    couleur: "sky",
     titre: "Saisissez ou scannez",
     texte:
-      "Tapez le numéro sur adresse.gn ou pointez votre caméra sur le QR code. Fonctionne sur téléphone, tablette et ordinateur.",
-    tags: ["Aucune app requise", "Voix + QR"],
+      "Entrez le numéro Adresse GN dans la barre de recherche ou scannez le QR Code depuis votre téléphone pour retrouver immédiatement le lieu.",
+    tags: ["Sans application obligatoire", "Mobile & ordinateur"],
   },
   {
     numero: "03",
     icone: Navigation2,
-    grad: "from-violet-500 to-fuchsia-600",
-    couleur: "violet",
-    titre: "L'itinéraire s'ouvre",
+    titre: "Lancez votre itinéraire",
     texte:
-      "Un clic et Google Maps, Waze ou Apple Plans lance la navigation vers le point exact. Aucune installation supplémentaire.",
-    tags: ["1 clic", "GPS précis à ±3 m"],
+      "Une fois l'adresse retrouvée, ouvrez votre application de navigation préférée et laissez-vous guider jusqu'à la destination.",
+    tags: ["Navigation GPS", "Accès en quelques gestes"],
   },
 ];
 
 const AVANTAGES = [
-  { icone: Zap, texte: "Sous 30 secondes" },
-  { icone: Wifi, texte: "Fonctionne aussi hors ligne" },
-  { icone: Globe2, texte: "Compatible tout mobile & PC" },
-  { icone: Sparkles, texte: "Aucune installation" },
+  {
+    icone: Zap,
+    titre: "Accès rapide",
+    texte: "Du numéro à l'adresse",
+  },
+  {
+    icone: QrCode,
+    titre: "QR Code",
+    texte: "Scannez pour localiser",
+  },
+  {
+    icone: Share2,
+    titre: "Facile à partager",
+    texte: "Numéro, lien ou QR",
+  },
+  {
+    icone: Smartphone,
+    titre: "Web & mobile",
+    texte: "Aucune app obligatoire",
+  },
 ];
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "ADRESSE GN — Votre adresse, enfin facile à trouver" },
-      { name: "description", content: "Un numéro unique par lieu. Fini les explications, les repères et les appels perdus. Trouvez ou partagez n'importe quelle adresse en Guinée en un numéro." },
-      { property: "og:title", content: "ADRESSE GN — Votre adresse, enfin facile à trouver" },
-      { property: "og:description", content: "Un numéro unique par lieu. Fini les explications, les repères et les appels perdus." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:url", content: "https://place-id-finder.lovable.app/" },
-      { property: "og:image", content: "https://place-id-finder.lovable.app/og-cover.jpg" },
-      { name: "twitter:image", content: "https://place-id-finder.lovable.app/og-cover.jpg" },
+      {
+        title: "ADRESSE GN — Votre adresse, enfin facile à trouver",
+      },
+      {
+        name: "description",
+        content:
+          "Un numéro unique par lieu. Fini les explications, les repères et les appels perdus. Trouvez ou partagez n'importe quelle adresse en Guinée avec Adresse GN.",
+      },
+      {
+        property: "og:title",
+        content: "ADRESSE GN — Votre adresse, enfin facile à trouver",
+      },
+      {
+        property: "og:description",
+        content:
+          "Un numéro unique par lieu. Localisez, partagez et rejoignez facilement chaque adresse.",
+      },
+      {
+        property: "og:type",
+        content: "website",
+      },
+      {
+        name: "twitter:card",
+        content: "summary_large_image",
+      },
+      {
+        property: "og:url",
+        content: "https://place-id-finder.lovable.app/",
+      },
+      {
+        property: "og:image",
+        content: "https://place-id-finder.lovable.app/og-cover.jpg",
+      },
+      {
+        name: "twitter:image",
+        content: "https://place-id-finder.lovable.app/og-cover.jpg",
+      },
     ],
-    links: [{ rel: "canonical", href: "https://place-id-finder.lovable.app/" }],
+    links: [
+      {
+        rel: "canonical",
+        href: "https://place-id-finder.lovable.app/",
+      },
+    ],
   }),
+
   component: Home,
 });
 
@@ -92,143 +186,325 @@ function Eyebrow({ children }: { children: string }) {
 
 function hasSpeechRecognition(): boolean {
   if (typeof window === "undefined") return false;
-  return "SpeechRecognition" in window || "webkitSpeechRecognition" in window;
+
+  return (
+    "SpeechRecognition" in window ||
+    "webkitSpeechRecognition" in window
+  );
 }
 
 function Home() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+
   const [numero, setNumero] = useState("");
   const [erreur, setErreur] = useState<string | null>(null);
   const [enCours, setEnCours] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
   const [ecoute, setEcoute] = useState(false);
+
   const recognitionRef = useRef<any>(null);
 
   const rechercher = async (valeur: string) => {
-    const propre = normalizeBeaconNumber(valeur, getDefaultZone());
+    const propre = normalizeBeaconNumber(
+      valeur,
+      getDefaultZone(),
+    );
+
     if (!propre) return;
-    if (!isValidBeaconNumber(propre)) { setErreur(t("home.errors.incomplete")); return; }
-    setErreur(null); setEnCours(true);
-    const reponse = await searchBeacon({ data: { number: propre } }).catch(() => null);
+
+    if (!isValidBeaconNumber(propre)) {
+      setErreur(t("home.errors.incomplete"));
+      return;
+    }
+
+    setErreur(null);
+    setEnCours(true);
+
+    const reponse = await searchBeacon({
+      data: { number: propre },
+    }).catch(() => null);
+
     setEnCours(false);
-    if (reponse?.status === "rate_limited") { setErreur(reponse.message ?? t("home.errors.rateLimited")); return; }
-    if (reponse?.status === "not_found") { setErreur(t("home.errors.notFound")); return; }
-    navigate({ to: "/a/$number", params: { number: propre } });
+
+    if (reponse?.status === "rate_limited") {
+      setErreur(
+        reponse.message ??
+          t("home.errors.rateLimited"),
+      );
+      return;
+    }
+
+    if (reponse?.status === "not_found") {
+      setErreur(t("home.errors.notFound"));
+      return;
+    }
+
+    navigate({
+      to: "/a/$number",
+      params: { number: propre },
+    });
   };
 
   const gererScanQr = (contenu: string) => {
     setScannerOpen(false);
-    const match = contenu.match(/GN-[A-Z]{3}-\d{6}/i);
-    if (match) { setNumero(match[0].toUpperCase()); void rechercher(match[0].toUpperCase()); }
-    else toast.error("QR non reconnu — format attendu : GN-CKY-XXXXXX");
+
+    const match = contenu.match(
+      /GN-[A-Z]{3}-\d{6}/i,
+    );
+
+    if (match) {
+      const valeur = match[0].toUpperCase();
+
+      setNumero(valeur);
+      void rechercher(valeur);
+    } else {
+      toast.error(
+        "QR non reconnu — format attendu : GN-CKY-XXXXXX",
+      );
+    }
   };
 
   const demarrerVoix = () => {
-    if (!hasSpeechRecognition()) { toast.error("Reconnaissance vocale non supportée"); return; }
-    const SR: any = (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition;
+    if (!hasSpeechRecognition()) {
+      toast.error(
+        "Reconnaissance vocale non supportée",
+      );
+      return;
+    }
+
+    const SR: any =
+      (window as any).SpeechRecognition ??
+      (window as any).webkitSpeechRecognition;
+
     const reco = new SR();
-    reco.lang = "fr-FR"; reco.interimResults = false; reco.maxAlternatives = 1; reco.continuous = false;
-    reco.onstart = () => { setEcoute(true); try { navigator.vibrate?.(30); } catch {} };
+
+    reco.lang = "fr-FR";
+    reco.interimResults = false;
+    reco.maxAlternatives = 1;
+    reco.continuous = false;
+
+    reco.onstart = () => {
+      setEcoute(true);
+
+      try {
+        navigator.vibrate?.(30);
+      } catch {}
+    };
+
     reco.onresult = (e: any) => {
-      const brut = String(e.results[0][0].transcript || "").toUpperCase();
-      const nettoye = brut.replace(/\s+/g, "").replace(/[^A-Z0-9]/g, "");
-      const match = nettoye.match(/GN[A-Z]{3}\d{6}/) || nettoye.match(/\d{6}/);
+      const brut = String(
+        e.results[0][0].transcript || "",
+      ).toUpperCase();
+
+      const nettoye = brut
+        .replace(/\s+/g, "")
+        .replace(/[^A-Z0-9]/g, "");
+
+      const match =
+        nettoye.match(/GN[A-Z]{3}\d{6}/) ||
+        nettoye.match(/\d{6}/);
+
       if (match) {
         const raw = match[0];
-        const nombre = raw.length === 6 ? `GN-CKY-${raw}` : `${raw.slice(0, 2)}-${raw.slice(2, 5)}-${raw.slice(5)}`;
-        setNumero(nombre); void rechercher(nombre);
-      } else toast.error(`Non compris : "${brut}"`);
+
+        const nombre =
+          raw.length === 6
+            ? `GN-CKY-${raw}`
+            : `${raw.slice(0, 2)}-${raw.slice(
+                2,
+                5,
+              )}-${raw.slice(5)}`;
+
+        setNumero(nombre);
+        void rechercher(nombre);
+      } else {
+        toast.error(`Non compris : "${brut}"`);
+      }
     };
+
     reco.onerror = (e: any) => {
       setEcoute(false);
-      if (e.error === "not-allowed") toast.error("Autorisation micro refusée");
-      else if (e.error !== "aborted") toast.error(`Erreur voix : ${e.error}`);
+
+      if (e.error === "not-allowed") {
+        toast.error(
+          "Autorisation micro refusée",
+        );
+      } else if (e.error !== "aborted") {
+        toast.error(
+          `Erreur voix : ${e.error}`,
+        );
+      }
     };
+
     reco.onend = () => setEcoute(false);
-    recognitionRef.current = reco; reco.start();
+
+    recognitionRef.current = reco;
+    reco.start();
   };
 
-  const arreterVoix = () => { try { recognitionRef.current?.stop(); } catch {} setEcoute(false); };
+  const arreterVoix = () => {
+    try {
+      recognitionRef.current?.stop();
+    } catch {}
 
-  useEffect(() => () => { try { recognitionRef.current?.abort(); } catch {} }, []);
+    setEcoute(false);
+  };
+
+  useEffect(
+    () => () => {
+      try {
+        recognitionRef.current?.abort();
+      } catch {}
+    },
+    [],
+  );
 
   return (
     <div className="bg-white">
-      {/* ==================== HÉROS ==================== */}
+
+      {/* =====================================================
+          HERO
+          ===================================================== */}
+
       <section className="relative overflow-hidden gradient-signature-soft">
-        <div aria-hidden className="absolute top-0 left-1/2 -translate-x-1/2 h-[500px] w-[500px] rounded-full bg-white/10 blur-3xl pointer-events-none" />
-        <div className="relative mx-auto w-full max-w-5xl px-5 pt-6 pb-8 sm:px-6 md:pt-12 md:pb-16 lg:px-8">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 top-0 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-white/10 blur-3xl"
+        />
+
+        <div className="relative mx-auto w-full max-w-5xl px-5 pb-8 pt-6 sm:px-6 md:pb-16 md:pt-12 lg:px-8">
+
           <h1
-            className="text-display text-center font-extrabold leading-[1.05] text-white whitespace-nowrap"
-            style={{ textShadow: "0 2px 20px rgb(15 23 42 / 0.25)", fontSize: "clamp(0.95rem, 4.7vw, 3.75rem)" }}
+            className="text-display whitespace-nowrap text-center font-extrabold leading-[1.05] text-white"
+            style={{
+              textShadow:
+                "0 2px 20px rgb(15 23 42 / 0.25)",
+              fontSize:
+                "clamp(0.95rem, 4.7vw, 3.75rem)",
+            }}
           >
             Votre adresse, enfin facile à trouver.
           </h1>
-          <p className="mx-auto mt-4 md:mt-6 max-w-md md:max-w-none text-center text-base md:text-xl leading-relaxed text-white/90 md:whitespace-nowrap">
-            Un numéro unique par lieu. Fini les explications, les repères et les appels perdus.
+
+          <p className="mx-auto mt-4 max-w-md text-center text-base leading-relaxed text-white/90 md:mt-6 md:max-w-none md:whitespace-nowrap md:text-xl">
+            Un numéro unique par lieu. Fini les
+            explications, les repères et les appels
+            perdus.
           </p>
-          <div className="mt-8 md:mt-12 rounded-3xl bg-white/95 backdrop-blur-xl p-2.5 shadow-[0_20px_60px_-15px_rgba(15,23,42,0.35)] ring-1 ring-white/50">
-            <form className="flex flex-col gap-2 md:flex-row md:gap-2" onSubmit={(e) => { e.preventDefault(); void rechercher(numero); }}>
-              <div className="flex min-w-0 flex-1 items-center gap-1 rounded-2xl bg-slate-50/80 pl-4 pr-1.5 border border-transparent focus-within:border-accent focus-within:bg-white focus-within:ring-2 focus-within:ring-accent/20 transition-all">
+
+          <div className="mt-8 rounded-3xl bg-white/95 p-2.5 shadow-[0_20px_60px_-15px_rgba(15,23,42,0.35)] ring-1 ring-white/50 backdrop-blur-xl md:mt-12">
+
+            <form
+              className="flex flex-col gap-2 md:flex-row"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void rechercher(numero);
+              }}
+            >
+
+              <div className="flex min-w-0 flex-1 items-center gap-1 rounded-2xl border border-transparent bg-slate-50/80 pl-4 pr-1.5 transition-all focus-within:border-accent focus-within:bg-white focus-within:ring-2 focus-within:ring-accent/20">
+
                 <input
                   value={numero}
-                  onChange={(e) => { setNumero(e.target.value); setErreur(null); }}
+                  onChange={(e) => {
+                    setNumero(e.target.value);
+                    setErreur(null);
+                  }}
                   placeholder="GN-CKY-______"
-                  aria-label={t("home.hero.inputLabel")}
+                  aria-label={t(
+                    "home.hero.inputLabel",
+                  )}
                   aria-invalid={!!erreur}
                   className="h-14 w-full min-w-0 bg-transparent font-mono text-lg font-semibold tracking-[0.08em] text-slate-900 outline-hidden placeholder:font-normal placeholder:text-slate-400 sm:text-xl"
                 />
+
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
                       type="button"
-                      onClick={ecoute ? arreterVoix : demarrerVoix}
-                      aria-label={ecoute ? "Arrêter" : "Dicter"}
-                      className={cn(
-                        "shrink-0 h-11 w-11 rounded-xl flex items-center justify-center transition-all active:scale-90",
+                      onClick={
                         ecoute
-                          ? "bg-rose-500 text-white shadow-md shadow-rose-500/40 animate-pulse"
-                          : "text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+                          ? arreterVoix
+                          : demarrerVoix
+                      }
+                      aria-label={
+                        ecoute
+                          ? "Arrêter"
+                          : "Dicter"
+                      }
+                      className={cn(
+                        "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-all active:scale-90",
+                        ecoute
+                          ? "animate-pulse bg-rose-500 text-white shadow-md shadow-rose-500/40"
+                          : "text-slate-500 hover:bg-slate-100 hover:text-slate-800",
                       )}
                     >
-                      {ecoute ? <MicOff className="size-5" /> : <Mic className="size-5" />}
+                      {ecoute ? (
+                        <MicOff className="size-5" />
+                      ) : (
+                        <Mic className="size-5" />
+                      )}
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent>{ecoute ? "En écoute…" : "Dicter"}</TooltipContent>
+
+                  <TooltipContent>
+                    {ecoute
+                      ? "En écoute…"
+                      : "Dicter"}
+                  </TooltipContent>
                 </Tooltip>
+
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
                       type="button"
-                      onClick={() => setScannerOpen(true)}
+                      onClick={() =>
+                        setScannerOpen(true)
+                      }
                       aria-label="Scanner un QR"
-                      className="shrink-0 h-11 w-11 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-800 flex items-center justify-center transition-all active:scale-90"
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-slate-500 transition-all hover:bg-slate-100 hover:text-slate-800 active:scale-90"
                     >
                       <QrCode className="size-5" />
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent>Scanner un QR</TooltipContent>
+
+                  <TooltipContent>
+                    Scanner un QR
+                  </TooltipContent>
                 </Tooltip>
               </div>
+
               <Button
                 type="submit"
                 disabled={enCours}
                 className="h-14 w-full rounded-2xl bg-gradient-to-r from-accent to-accent-dark px-8 text-base font-semibold text-accent-foreground shadow-lg shadow-accent/25 transition-all hover:shadow-accent/40 active:scale-[0.98] md:w-auto md:min-w-[160px]"
               >
                 <Search className="size-5" />
-                {enCours ? "Recherche…" : "Localiser"}
+
+                {enCours
+                  ? "Recherche…"
+                  : "Localiser"}
               </Button>
             </form>
-            {erreur && <p role="alert" className="mt-3 px-2 text-sm text-destructive">{erreur}</p>}
+
+            {erreur && (
+              <p
+                role="alert"
+                className="mt-3 px-2 text-sm text-destructive"
+              >
+                {erreur}
+              </p>
+            )}
           </div>
-          <div className="mt-5 md:mt-6 flex flex-nowrap items-center justify-center gap-1.5 overflow-x-auto scrollbar-hide px-1">
+
+          <div className="scrollbar-hide mt-5 flex flex-nowrap items-center justify-center gap-1.5 overflow-x-auto px-1 md:mt-6">
             {EXEMPLES.map((exemple) => (
               <Link
                 key={exemple}
                 to="/a/$number"
                 params={{ number: exemple }}
-                className="shrink-0 rounded-full border border-white/20 bg-white/5 px-2.5 py-1 font-mono text-[10px] sm:text-xs text-white/75 backdrop-blur-sm transition-all hover:border-white/50 hover:bg-white/15 hover:text-white active:scale-95 whitespace-nowrap"
+                className="shrink-0 whitespace-nowrap rounded-full border border-white/20 bg-white/5 px-2.5 py-1 font-mono text-[10px] text-white/75 backdrop-blur-sm transition-all hover:border-white/50 hover:bg-white/15 hover:text-white active:scale-95 sm:text-xs"
               >
                 {exemple}
               </Link>
@@ -237,340 +513,699 @@ function Home() {
         </div>
       </section>
 
-      {/* ==================== COMMENT ÇA MARCHE ==================== */}
+      {/* =====================================================
+          COMMENT ÇA MARCHE
+          ===================================================== */}
+
       <section
         id="comment-ca-marche"
-        className="relative overflow-hidden bg-gradient-to-b from-white via-slate-50/50 to-white px-6 py-16 md:px-8 md:py-28"
+        className="relative overflow-hidden bg-white px-5 py-20 sm:px-6 md:px-8 md:py-32"
       >
-        {/* Motif de fond subtil */}
+        {/* Fond subtil */}
+
         <div
           aria-hidden
-          className="absolute inset-0 opacity-[0.03] pointer-events-none"
+          className="pointer-events-none absolute inset-0 opacity-[0.025]"
           style={{
             backgroundImage:
               "radial-gradient(circle at 1px 1px, rgb(15 23 42) 1px, transparent 0)",
-            backgroundSize: "32px 32px",
+            backgroundSize: "34px 34px",
           }}
         />
-        <div aria-hidden className="absolute top-40 right-10 h-80 w-80 rounded-full bg-emerald-100/40 blur-3xl pointer-events-none" />
-        <div aria-hidden className="absolute bottom-20 left-10 h-80 w-80 rounded-full bg-violet-100/40 blur-3xl pointer-events-none" />
+
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-48 top-40 h-[500px] w-[500px] rounded-full bg-cyan-100/40 blur-[120px]"
+        />
+
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -left-48 bottom-20 h-[420px] w-[420px] rounded-full bg-blue-100/40 blur-[120px]"
+        />
 
         <div className="relative mx-auto max-w-6xl">
-          {/* En-tête */}
+
+          {/* =================================================
+              EN-TÊTE
+              ================================================= */}
+
           <Reveal>
             <div className="flex justify-center">
-              <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600 shadow-sm">
+              <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600 shadow-sm">
                 <Sparkles className="size-3.5 text-accent" />
                 Comment ça marche
               </span>
             </div>
-            <h2 className="text-display mt-4 text-center text-3xl md:text-5xl font-bold tracking-tight text-slate-900">
-              En 3 étapes,{" "}
-              <span className="bg-gradient-to-r from-emerald-600 via-sky-600 to-violet-600 bg-clip-text text-transparent">
-                du numéro à l'itinéraire.
+
+            <h2 className="text-display mx-auto mt-6 max-w-4xl text-center text-3xl font-bold tracking-tight text-slate-950 md:text-5xl lg:text-[3.4rem] lg:leading-[1.08]">
+              Un numéro. Une destination.{" "}
+              <span className="bg-gradient-to-r from-accent via-sky-500 to-blue-600 bg-clip-text text-transparent">
+                Aucun détour.
               </span>
             </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-center text-base md:text-lg leading-relaxed text-slate-600">
-              Pas d'installation, pas de compte obligatoire. Un numéro suffit pour lancer la navigation.
+
+            <p className="mx-auto mt-5 max-w-2xl text-center text-base leading-7 text-slate-600 md:text-lg">
+              Adresse GN transforme un emplacement
+              en un identifiant simple à saisir,
+              scanner ou partager. En quelques
+              gestes, passez du numéro à
+              l&apos;itinéraire.
             </p>
           </Reveal>
 
-          {/* Grille 2 colonnes : étapes + mockup */}
-          <div className="mt-12 md:mt-16 grid gap-10 lg:grid-cols-[1.15fr_1fr] lg:items-center">
-            {/* ÉTAPES */}
-            <ol className="relative space-y-5 md:space-y-6">
-              <div
-                aria-hidden
-                className="absolute left-[27px] top-8 bottom-8 w-px bg-gradient-to-b from-emerald-300 via-sky-300 to-fuchsia-300 hidden md:block"
-              />
-              {ETAPES.map((etape, index) => (
-                <Reveal key={etape.numero} delay={index * 100}>
-                  <li className="group relative flex gap-4 md:gap-6 rounded-2xl border border-slate-200/80 bg-white p-5 md:p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:border-transparent">
-                    {/* Badge numéroté + icône */}
-                    <div className="relative flex-shrink-0">
-                      <div
-                        className={cn(
-                          "flex size-14 items-center justify-center rounded-2xl text-white shadow-lg bg-gradient-to-br transition-transform group-hover:scale-110 group-hover:rotate-3",
-                          etape.grad,
-                        )}
-                      >
-                        <etape.icone className="size-6" />
-                      </div>
-                      <span className="absolute -top-2 -right-2 flex size-7 items-center justify-center rounded-full bg-slate-900 text-[11px] font-bold text-white shadow-md ring-2 ring-white">
-                        {etape.numero}
-                      </span>
-                    </div>
-                    {/* Contenu */}
-                    <div className="min-w-0 flex-1">
-                      <h3 className="text-display text-lg md:text-xl font-bold text-slate-900">
-                        {etape.titre}
-                      </h3>
-                      <p className="mt-1.5 text-sm md:text-base leading-relaxed text-slate-600">
-                        {etape.texte}
-                      </p>
-                      {/* Chips micro-features */}
-                      <div className="mt-3 flex flex-wrap gap-1.5">
-                        {etape.tags.map((tag) => (
-                          <span
-                            key={tag}
-                            className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-medium text-slate-700"
-                          >
-                            <Check className="size-3 text-emerald-600" />
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </li>
-                </Reveal>
-              ))}
+          {/* =================================================
+              ÉTAPES + TÉLÉPHONE
+              ================================================= */}
+
+          <div className="mt-14 grid gap-14 lg:mt-20 lg:grid-cols-[1.08fr_0.92fr] lg:items-center lg:gap-20">
+
+            {/* ===========================
+                ÉTAPES
+                =========================== */}
+
+            <div>
+
+              <ol className="space-y-4">
+
+                {ETAPES.map(
+                  (etape, index) => (
+                    <Reveal
+                      key={etape.numero}
+                      delay={index * 90}
+                    >
+                      <li className="group relative overflow-hidden rounded-[26px] border border-slate-200/80 bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_20px_50px_rgba(15,23,42,0.09)] md:p-6">
+
+                        {/* légère lumière au hover */}
+
+                        <div
+                          aria-hidden
+                          className="absolute -right-16 -top-16 h-32 w-32 rounded-full bg-accent/0 blur-2xl transition-colors duration-300 group-hover:bg-accent/10"
+                        />
+
+                        <div className="relative flex gap-4 md:gap-5">
+
+                          {/* Icône */}
+
+                          <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-slate-950 text-white shadow-lg shadow-slate-950/10 transition-transform duration-300 group-hover:scale-105 md:size-14">
+                            <etape.icone className="size-5 md:size-6" />
+                          </div>
+
+                          {/* Texte */}
+
+                          <div className="min-w-0 flex-1">
+
+                            <div className="mb-1 flex items-center gap-2">
+
+                              <span className="font-mono text-[11px] font-bold tracking-[0.15em] text-accent">
+                                ÉTAPE {etape.numero}
+                              </span>
+
+                              <span className="h-px flex-1 bg-slate-100" />
+                            </div>
+
+                            <h3 className="text-display text-lg font-bold tracking-tight text-slate-950 md:text-xl">
+                              {etape.titre}
+                            </h3>
+
+                            <p className="mt-2 text-sm leading-6 text-slate-600 md:text-[15px]">
+                              {etape.texte}
+                            </p>
+
+                            <div className="mt-4 flex flex-wrap gap-2">
+
+                              {etape.tags.map(
+                                (tag) => (
+                                  <span
+                                    key={tag}
+                                    className="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-600 ring-1 ring-inset ring-slate-200/70"
+                                  >
+                                    <Check className="size-3 text-accent" />
+                                    {tag}
+                                  </span>
+                                ),
+                              )}
+
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+                    </Reveal>
+                  ),
+                )}
+
+              </ol>
 
               {/* CTA */}
-              <Reveal delay={350}>
-                <div className="mt-2 flex flex-wrap gap-3 pl-0 md:pl-[86px]">
+
+              <Reveal delay={320}>
+                <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+
                   <Button
                     asChild
-                    className="h-12 bg-gradient-to-r from-accent to-accent-dark px-6 text-base font-semibold text-accent-foreground shadow-lg shadow-accent/25 hover:shadow-accent/40 group"
+                    className="group h-12 rounded-xl bg-gradient-to-r from-accent to-accent-dark px-6 text-sm font-semibold text-accent-foreground shadow-lg shadow-accent/20 transition-all hover:shadow-accent/30"
                   >
-                    <Link to="/a/$number" params={{ number: "GN-CKY-582741" }}>
-                      Voir un exemple réel
-                      <ArrowRight className="size-4 ml-1 group-hover:translate-x-0.5 transition-transform" />
+                    <Link
+                      to="/a/$number"
+                      params={{
+                        number:
+                          "GN-CKY-582741",
+                      }}
+                    >
+                      Tester une adresse
+                      <ArrowRight className="ml-1 size-4 transition-transform group-hover:translate-x-1" />
                     </Link>
                   </Button>
+
                   <Button
                     asChild
                     variant="outline"
-                    className="h-12 border-slate-300 bg-white px-6 text-base font-medium text-slate-700 hover:bg-slate-50"
+                    className="h-12 rounded-xl border-slate-300 bg-white px-6 text-sm font-semibold text-slate-700 hover:bg-slate-50"
                   >
-                    <Link to="/commander">Créer mon Adresse GN</Link>
+                    <Link to="/commander">
+                      Créer mon Adresse GN
+                    </Link>
                   </Button>
+
                 </div>
               </Reveal>
-            </ol>
+            </div>
 
-            {/* MOCKUP RÉSULTAT */}
-            <Reveal delay={200} className="relative order-first lg:order-last">
-              <div aria-hidden className="absolute left-1/2 top-1/2 size-80 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/25 blur-3xl" />
-              <div className="relative mx-auto flex max-w-[300px] flex-col items-center">
-                <span className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-white shadow-md">
-                  <Check className="size-3 text-accent" />
-                  Résultat sur mobile
-                </span>
+            {/* ===========================
+                TÉLÉPHONE / PREUVE PRODUIT
+                =========================== */}
 
-                {/* Device frame */}
-                <div className="relative aspect-9/19 w-full rotate-[-3deg] overflow-hidden rounded-[2.75rem] border-[10px] border-slate-900 bg-white shadow-[0_30px_80px_-15px_rgba(15,23,42,0.5)]">
-                  {/* Notch */}
-                  <div aria-hidden className="absolute left-1/2 top-1 z-10 h-4 w-16 -translate-x-1/2 rounded-full bg-slate-900" />
+            <Reveal
+              delay={180}
+              className="relative"
+            >
+
+              <div className="relative mx-auto flex max-w-[340px] flex-col items-center">
+
+                {/* halo */}
+
+                <div
+                  aria-hidden
+                  className="absolute left-1/2 top-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-accent/20 via-sky-100/40 to-blue-100/20 blur-[70px]"
+                />
+
+                {/* badge */}
+
+                <div className="relative z-10 mb-5 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-700 shadow-md">
+                  <span className="flex size-5 items-center justify-center rounded-full bg-emerald-100">
+                    <Check className="size-3 text-emerald-600" />
+                  </span>
+                  Adresse retrouvée
+                </div>
+
+                {/* Téléphone */}
+
+                <div className="relative z-[2] aspect-9/19 w-[285px] rotate-[-2deg] overflow-hidden rounded-[2.85rem] border-[9px] border-slate-950 bg-white shadow-[0_40px_90px_-25px_rgba(15,23,42,0.55)] transition-transform duration-500 hover:rotate-0 md:w-[305px]">
+
+                  {/* notch */}
+
+                  <div
+                    aria-hidden
+                    className="absolute left-1/2 top-1 z-20 h-4 w-16 -translate-x-1/2 rounded-full bg-slate-950"
+                  />
+
                   <div className="flex h-full flex-col">
-                    <div className="gradient-signature-soft px-4 pt-6 pb-3 text-center text-[10px] font-semibold uppercase tracking-[0.2em] text-white">
-                      Adresse GN
+
+                    {/* App header */}
+
+                    <div className="gradient-signature-soft px-4 pb-3 pt-7 text-center">
+                      <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white">
+                        ADRESSE GN
+                      </span>
                     </div>
-                    {/* Fausse carte avec grille */}
+
+                    {/* Carte */}
+
                     <div
-                      className="relative flex-1 bg-slate-100"
+                      className="relative flex-1 overflow-hidden bg-slate-100"
                       style={{
                         backgroundImage:
-                          "linear-gradient(rgb(203 213 225 / 0.5) 1px, transparent 1px), linear-gradient(90deg, rgb(203 213 225 / 0.5) 1px, transparent 1px)",
-                        backgroundSize: "20px 20px",
+                          "linear-gradient(rgb(203 213 225 / 0.55) 1px, transparent 1px), linear-gradient(90deg, rgb(203 213 225 / 0.55) 1px, transparent 1px)",
+                        backgroundSize:
+                          "24px 24px",
                       }}
                     >
-                      {/* Routes fictives */}
-                      <div aria-hidden className="absolute top-1/3 left-0 right-0 h-1 bg-slate-300/70" />
-                      <div aria-hidden className="absolute top-0 bottom-0 left-1/3 w-1 bg-slate-300/70" />
-                      {/* Pin animé */}
-                      <span
+
+                      {/* Routes */}
+
+                      <div
                         aria-hidden
-                        className="absolute left-1/2 top-1/2 size-20 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/30 animate-ping"
+                        className="absolute left-[-10%] right-[-10%] top-[35%] h-2 rotate-[-7deg] rounded-full bg-white/90 shadow-sm"
                       />
-                      <span
+
+                      <div
                         aria-hidden
-                        className="absolute left-1/2 top-1/2 size-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/20"
+                        className="absolute bottom-[-10%] left-[33%] top-[-10%] w-2 rotate-[8deg] rounded-full bg-white/90 shadow-sm"
                       />
-                      <MapPin className="absolute left-1/2 top-1/2 size-10 -translate-x-1/2 -translate-y-[calc(50%+2px)] text-accent drop-shadow-lg" />
-                    </div>
-                    <div className="space-y-3 bg-white p-4">
-                      <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <p className="text-sm font-bold text-slate-900 truncate">Restaurant Le Damier</p>
-                            <p className="mt-0.5 font-mono text-[11px] text-slate-500">GN-CKY-582741</p>
-                          </div>
-                          <span className="shrink-0 rounded-md bg-emerald-50 px-1.5 py-0.5 text-[9px] font-bold text-emerald-700">
-                            OUVERT
-                          </span>
-                        </div>
-                        <p className="mt-1 text-[11px] text-slate-500">Kaloum · Conakry</p>
+
+                      <div
+                        aria-hidden
+                        className="absolute bottom-[20%] left-[-10%] right-[-10%] h-1.5 rotate-[13deg] rounded-full bg-white/80"
+                      />
+
+                      {/* halo pin */}
+
+                      <div
+                        aria-hidden
+                        className="absolute left-1/2 top-1/2 size-24 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/10"
+                      />
+
+                      <div
+                        aria-hidden
+                        className="absolute left-1/2 top-1/2 size-14 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/15"
+                      />
+
+                      <div className="absolute left-1/2 top-1/2 flex size-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-xl ring-1 ring-slate-200">
+                        <MapPin className="size-6 fill-accent/15 text-accent" />
                       </div>
-                      <div className="flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-accent to-accent-dark px-4 py-2.5 text-sm font-semibold text-accent-foreground shadow-md">
-                        <Navigation2 className="size-4" />
-                        S'y rendre
+
+                      {/* micro badge */}
+
+                      <div className="absolute left-4 top-4 rounded-full border border-white/70 bg-white/90 px-3 py-1.5 text-[9px] font-semibold text-slate-700 shadow-md backdrop-blur">
+                        Kaloum · Conakry
+                      </div>
+
+                    </div>
+
+                    {/* Résultat */}
+
+                    <div className="space-y-3 bg-white p-4">
+
+                      <div className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-sm">
+
+                        <div className="flex items-start justify-between gap-3">
+
+                          <div className="min-w-0">
+
+                            <p className="truncate text-sm font-bold text-slate-950">
+                              Restaurant Le Damier
+                            </p>
+
+                            <p className="mt-1 font-mono text-[10px] font-semibold tracking-wide text-accent">
+                              GN-CKY-582741
+                            </p>
+
+                            <p className="mt-1 text-[10px] text-slate-500">
+                              Kaloum · Conakry
+                            </p>
+
+                          </div>
+
+                          <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-1 text-[8px] font-bold uppercase tracking-wide text-emerald-700">
+                            Trouvé
+                          </span>
+
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-[1fr_auto] gap-2">
+
+                        <div className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-accent to-accent-dark px-3 py-3 text-xs font-semibold text-accent-foreground shadow-md">
+                          <Navigation2 className="size-4" />
+                          S&apos;y rendre
+                        </div>
+
+                        <div className="flex size-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600">
+                          <Share2 className="size-4" />
+                        </div>
+
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Petites cartes flottantes autour du téléphone */}
-                <div className="pointer-events-none absolute -left-4 top-16 hidden rotate-[-8deg] rounded-xl border border-slate-200 bg-white p-2 shadow-xl md:block">
-                  <div className="flex items-center gap-1.5">
-                    <div className="flex size-6 items-center justify-center rounded-full bg-emerald-100">
-                      <Check className="size-3 text-emerald-600" />
+                {/* Cartes flottantes */}
+
+                <div className="pointer-events-none absolute -left-12 top-28 z-10 hidden rotate-[-6deg] rounded-2xl border border-slate-200 bg-white px-3 py-2.5 shadow-xl md:block">
+
+                  <div className="flex items-center gap-2">
+
+                    <div className="flex size-7 items-center justify-center rounded-full bg-emerald-100">
+                      <Check className="size-3.5 text-emerald-600" />
                     </div>
-                    <span className="text-[10px] font-semibold text-slate-700">Adresse trouvée</span>
+
+                    <div>
+                      <p className="text-[9px] font-semibold text-slate-900">
+                        Adresse trouvée
+                      </p>
+
+                      <p className="text-[8px] text-slate-500">
+                        Prête à partager
+                      </p>
+                    </div>
+
                   </div>
                 </div>
-                <div className="pointer-events-none absolute -right-6 bottom-32 hidden rotate-[6deg] rounded-xl border border-slate-200 bg-white p-2 shadow-xl md:block">
-                  <div className="flex items-center gap-1.5">
-                    <Zap className="size-3.5 text-amber-500" />
-                    <span className="text-[10px] font-semibold text-slate-700">~30 s</span>
+
+                <div className="pointer-events-none absolute -right-14 bottom-36 z-10 hidden rotate-[5deg] rounded-2xl border border-slate-200 bg-white px-3 py-2.5 shadow-xl md:block">
+
+                  <div className="flex items-center gap-2">
+
+                    <div className="flex size-7 items-center justify-center rounded-full bg-accent/10">
+                      <Navigation2 className="size-3.5 text-accent" />
+                    </div>
+
+                    <div>
+                      <p className="text-[9px] font-semibold text-slate-900">
+                        Itinéraire
+                      </p>
+
+                      <p className="text-[8px] text-slate-500">
+                        Prêt à démarrer
+                      </p>
+                    </div>
+
                   </div>
                 </div>
+
               </div>
             </Reveal>
           </div>
 
-          {/* Comparatif Avant / Après */}
+          {/* =================================================
+              AVANT / APRÈS
+              ================================================= */}
+
           <Reveal delay={100}>
-            <div className="mt-16 md:mt-20 grid gap-4 md:gap-5 md:grid-cols-2">
-              {/* Sans Adresse GN */}
-              <div className="relative overflow-hidden rounded-2xl border border-rose-200 bg-rose-50/50 p-6 md:p-8">
-                <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-rose-100 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-rose-700">
-                  <X className="size-3.5" />
-                  Sans Adresse GN
-                </div>
-                <p className="text-base md:text-lg font-semibold text-slate-800 leading-snug">
-                  "C'est après la station Total, tu tournes à droite, tu demandes le tailleur…"
+
+            <div className="mt-24 md:mt-32">
+
+              <div className="mx-auto mb-9 max-w-2xl text-center">
+
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  LA DIFFÉRENCE ADRESSE GN
                 </p>
-                <ul className="mt-4 space-y-1.5 text-sm text-slate-600">
-                  <li className="flex items-start gap-2">
-                    <X className="mt-0.5 size-3.5 shrink-0 text-rose-500" />
-                    10 minutes d'explications par téléphone
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <X className="mt-0.5 size-3.5 shrink-0 text-rose-500" />
-                    Livreurs et taxis qui se perdent
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <X className="mt-0.5 size-3.5 shrink-0 text-rose-500" />
-                    Rendez-vous en retard, colis mal livrés
-                  </li>
-                </ul>
+
+                <h3 className="text-display mt-3 text-2xl font-bold tracking-tight text-slate-950 md:text-3xl">
+                  Avant, on expliquait.{" "}
+                  <span className="text-accent">
+                    Maintenant, on partage.
+                  </span>
+                </h3>
+
+                <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-600 md:text-base">
+                  Remplacez les longues indications
+                  par une référence simple,
+                  identifiable et directement
+                  exploitable.
+                </p>
+
               </div>
 
-              {/* Avec Adresse GN */}
-              <div className="relative overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 p-6 md:p-8 shadow-md">
-                <div aria-hidden className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-emerald-200/40 blur-2xl" />
-                <div className="relative mb-3 inline-flex items-center gap-2 rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow">
-                  <Check className="size-3.5" />
-                  Avec Adresse GN
-                </div>
-                <p className="relative font-mono text-base md:text-lg font-bold tracking-wide text-slate-900">
-                  "GN-CKY-582741"
-                </p>
-                <ul className="relative mt-4 space-y-1.5 text-sm text-slate-700">
-                  <li className="flex items-start gap-2">
-                    <Check className="mt-0.5 size-3.5 shrink-0 text-emerald-600" />
-                    Un numéro unique, partagé en 1 SMS
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="mt-0.5 size-3.5 shrink-0 text-emerald-600" />
-                    Navigation GPS lancée en 1 clic
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="mt-0.5 size-3.5 shrink-0 text-emerald-600" />
-                    Zéro perte de temps, zéro appel supplémentaire
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </Reveal>
+              <div className="grid gap-5 md:grid-cols-2">
 
-          {/* Barre d'avantages */}
-          <Reveal delay={150}>
-            <div className="mt-10 md:mt-12 rounded-2xl border border-slate-200 bg-white/70 backdrop-blur-sm p-4 md:p-5 shadow-sm">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {AVANTAGES.map((av) => (
-                  <div key={av.texte} className="flex items-center gap-2.5">
-                    <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
-                      <av.icone className="size-4" />
-                    </div>
-                    <span className="text-sm font-semibold text-slate-800">{av.texte}</span>
+                {/* Sans */}
+
+                <div className="relative overflow-hidden rounded-[28px] border border-slate-200 bg-slate-50/70 p-6 md:p-8">
+
+                  <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 shadow-sm">
+                    <X className="size-3.5" />
+                    Sans identifiant clair
                   </div>
-                ))}
+
+                  <p className="text-lg font-semibold leading-snug text-slate-900 md:text-xl">
+                    « Après la station, tournez à
+                    droite puis demandez le
+                    restaurant… »
+                  </p>
+
+                  <div className="mt-6 space-y-3">
+
+                    {[
+                      "Des repères parfois difficiles à transmettre",
+                      "Des appels supplémentaires pour guider",
+                      "Des arrivées plus longues et moins prévisibles",
+                    ].map((item) => (
+                      <div
+                        key={item}
+                        className="flex items-start gap-3"
+                      >
+                        <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-slate-200">
+                          <X className="size-3 text-slate-500" />
+                        </span>
+
+                        <span className="text-sm leading-5 text-slate-600">
+                          {item}
+                        </span>
+                      </div>
+                    ))}
+
+                  </div>
+                </div>
+
+                {/* Avec */}
+
+                <div className="relative overflow-hidden rounded-[28px] border border-accent/20 bg-gradient-to-br from-accent/[0.07] via-white to-sky-50 p-6 shadow-[0_20px_60px_-30px_rgba(13,148,136,0.35)] md:p-8">
+
+                  <div
+                    aria-hidden
+                    className="absolute -right-14 -top-14 size-40 rounded-full bg-accent/10 blur-3xl"
+                  />
+
+                  <div className="relative mb-5 inline-flex items-center gap-2 rounded-full bg-slate-950 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white shadow-sm">
+                    <Check className="size-3.5 text-accent" />
+                    Avec Adresse GN
+                  </div>
+
+                  <div className="relative">
+
+                    <p className="font-mono text-xl font-bold tracking-[0.06em] text-slate-950 md:text-2xl">
+                      GN-CKY-582741
+                    </p>
+
+                    <p className="mt-2 text-sm text-slate-500">
+                      Une référence unique pour
+                      retrouver le lieu.
+                    </p>
+
+                    <div className="mt-6 space-y-3">
+
+                      {[
+                        "Un numéro simple à communiquer",
+                        "Un QR Code ou un lien facile à partager",
+                        "Un accès direct à la navigation",
+                      ].map((item) => (
+                        <div
+                          key={item}
+                          className="flex items-start gap-3"
+                        >
+                          <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-accent/10">
+                            <Check className="size-3 text-accent" />
+                          </span>
+
+                          <span className="text-sm font-medium leading-5 text-slate-700">
+                            {item}
+                          </span>
+                        </div>
+                      ))}
+
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
           </Reveal>
+
+          {/* =================================================
+              AVANTAGES
+              ================================================= */}
+
+          <Reveal delay={150}>
+            <div className="mt-10 overflow-hidden rounded-[26px] border border-slate-200 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.04)] md:mt-12">
+
+              <div className="grid grid-cols-1 divide-y divide-slate-100 sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-4">
+
+                {AVANTAGES.map(
+                  (avantage) => (
+                    <div
+                      key={avantage.titre}
+                      className="group flex items-center gap-3 p-5 transition-colors hover:bg-slate-50/80 md:p-6"
+                    >
+
+                      <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent transition-transform group-hover:scale-105">
+                        <avantage.icone className="size-4.5" />
+                      </div>
+
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900">
+                          {avantage.titre}
+                        </p>
+
+                        <p className="mt-0.5 text-xs text-slate-500">
+                          {avantage.texte}
+                        </p>
+                      </div>
+
+                    </div>
+                  ),
+                )}
+
+              </div>
+            </div>
+          </Reveal>
+
         </div>
       </section>
 
-      {/* ==================== USAGES ==================== */}
-      <section id="usages" className="bg-slate-50 px-6 py-14 md:px-8 md:py-24">
+      {/* =====================================================
+          USAGES
+          ===================================================== */}
+
+      <section
+        id="usages"
+        className="bg-slate-50 px-6 py-14 md:px-8 md:py-24"
+      >
         <div className="mx-auto max-w-6xl">
+
           <Reveal>
-            <Eyebrow>{t("home.usages.eyebrow")}</Eyebrow>
-            <h2 className="text-display mt-3 md:mt-4 text-center text-2xl md:text-4xl font-bold tracking-tight text-slate-900">
+            <Eyebrow>
+              {t("home.usages.eyebrow")}
+            </Eyebrow>
+
+            <h2 className="text-display mt-3 text-center text-2xl font-bold tracking-tight text-slate-900 md:mt-4 md:text-4xl">
               {t("home.usages.title")}
             </h2>
           </Reveal>
-          <div className="mt-8 md:mt-12 grid grid-cols-1 gap-3 md:gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {USAGES.map((item, index) => (
-              <Reveal key={item.cle} delay={index * 80}>
-                <div className="group h-full rounded-2xl border border-slate-200 bg-white p-5 md:p-8 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:border-transparent">
-                  <span className={cn("flex size-11 md:size-14 items-center justify-center rounded-2xl text-white shadow-md bg-gradient-to-br group-hover:scale-110 transition-transform", item.grad)}>
-                    <item.icone className="size-5 md:size-6" />
-                  </span>
-                  <h3 className="text-display mt-4 md:mt-5 text-base md:text-lg font-bold text-slate-900">
-                    {t(`home.usages.${item.cle}.title`)}
-                  </h3>
-                  <p className="mt-1.5 md:mt-2 text-sm leading-relaxed text-slate-600">
-                    {t(`home.usages.${item.cle}.text`)}
-                  </p>
-                </div>
-              </Reveal>
-            ))}
+
+          <div className="mt-8 grid grid-cols-1 gap-3 md:mt-12 md:grid-cols-2 md:gap-6 lg:grid-cols-4">
+
+            {USAGES.map(
+              (item, index) => (
+                <Reveal
+                  key={item.cle}
+                  delay={index * 80}
+                >
+
+                  <div className="group h-full rounded-2xl border border-slate-200 bg-white p-5 transition-all duration-200 hover:-translate-y-1 hover:border-transparent hover:shadow-xl md:p-8">
+
+                    <span
+                      className={cn(
+                        "flex size-11 items-center justify-center rounded-2xl bg-gradient-to-br text-white shadow-md transition-transform group-hover:scale-110 md:size-14",
+                        item.grad,
+                      )}
+                    >
+                      <item.icone className="size-5 md:size-6" />
+                    </span>
+
+                    <h3 className="text-display mt-4 text-base font-bold text-slate-900 md:mt-5 md:text-lg">
+                      {t(
+                        `home.usages.${item.cle}.title`,
+                      )}
+                    </h3>
+
+                    <p className="mt-1.5 text-sm leading-relaxed text-slate-600 md:mt-2">
+                      {t(
+                        `home.usages.${item.cle}.text`,
+                      )}
+                    </p>
+
+                  </div>
+                </Reveal>
+              ),
+            )}
+
           </div>
         </div>
       </section>
 
-      {/* ==================== CTA FINAL ==================== */}
+      {/* =====================================================
+          CTA FINAL
+          ===================================================== */}
+
       <section className="bg-white px-4 py-14 md:px-8 md:py-24">
+
         <Reveal className="mx-auto max-w-5xl">
+
           <div className="grid overflow-hidden rounded-3xl border border-slate-200 shadow-xl lg:grid-cols-5">
+
             <div className="gradient-signature-soft p-8 md:p-14 lg:col-span-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/70">{t("home.cta.eyebrow")}</p>
-              <h2 className="text-display mt-3 md:mt-4 text-2xl md:text-3xl font-bold tracking-tight text-white">{t("home.cta.title")}</h2>
-              <p className="mt-3 md:mt-4 text-sm md:text-base leading-relaxed text-white/85">{t("home.cta.text")}</p>
-              <div className="mt-6 md:mt-8 flex flex-col gap-3 sm:flex-row">
-                <Button asChild className="h-12 bg-white px-8 text-base font-medium text-slate-900 hover:bg-white/90">
-                  <Link to="/tarifs">{t("home.cta.pricing")}</Link>
+
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/70">
+                {t("home.cta.eyebrow")}
+              </p>
+
+              <h2 className="text-display mt-3 text-2xl font-bold tracking-tight text-white md:mt-4 md:text-3xl">
+                {t("home.cta.title")}
+              </h2>
+
+              <p className="mt-3 text-sm leading-relaxed text-white/85 md:mt-4 md:text-base">
+                {t("home.cta.text")}
+              </p>
+
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row md:mt-8">
+
+                <Button
+                  asChild
+                  className="h-12 bg-white px-8 text-base font-medium text-slate-900 hover:bg-white/90"
+                >
+                  <Link to="/tarifs">
+                    {t(
+                      "home.cta.pricing",
+                    )}
+                  </Link>
                 </Button>
-                <Button asChild variant="outline" className="h-12 border-white/40 bg-transparent px-8 text-base font-medium text-white hover:bg-white/10 hover:text-white">
-                  <Link to="/a-propos">{t("home.cta.contact")}</Link>
+
+                <Button
+                  asChild
+                  variant="outline"
+                  className="h-12 border-white/40 bg-transparent px-8 text-base font-medium text-white hover:bg-white/10 hover:text-white"
+                >
+                  <Link to="/a-propos">
+                    {t(
+                      "home.cta.contact",
+                    )}
+                  </Link>
                 </Button>
+
               </div>
             </div>
+
             <div className="flex flex-col justify-center bg-white p-6 md:p-10 lg:col-span-2">
+
               <div className="flex items-center gap-4 rounded-lg bg-slate-100 p-4 md:p-6">
-                <span className="min-w-0 flex-1 font-mono text-sm md:text-base font-bold tracking-tight text-slate-900 sm:text-lg">
+
+                <span className="min-w-0 flex-1 font-mono text-sm font-bold tracking-tight text-slate-900 sm:text-lg md:text-base">
                   GN-CKY-582741
                 </span>
-                <svg viewBox="0 0 21 21" aria-hidden className="size-10 md:size-12 shrink-0 text-slate-900" fill="currentColor">
+
+                <svg
+                  viewBox="0 0 21 21"
+                  aria-hidden
+                  className="size-10 shrink-0 text-slate-900 md:size-12"
+                  fill="currentColor"
+                >
                   <path d="M0 0h7v7H0V0zm2 2v3h3V2H2zM14 0h7v7h-7V0zm2 2v3h3V2h-3zM0 14h7v7H0v-7zm2 2v3h3v-3H2z" />
                   <path d="M9 0h2v2H9V0zM9 3h2v2H9V3zM12 9h2v2h-2V9zM9 9h2v2H9V9zM9 12h2v2H9v-2zM12 12h2v2h-2v-2zM16 9h2v2h-2V9zM19 9h2v2h-2V9zM16 12h2v2h-2v-2zM19 14h2v2h-2v-2zM16 16h2v2h-2v-2zM12 16h2v2h-2v-2zM9 19h2v2H9v-2zM12 19h2v2h-2v-2zM16 19h2v2h-2v-2zM19 19h2v2h-2v-2zM0 9h2v2H0V9zM3 9h2v2H3V9zM6 9h2v2H6V9zM3 12h2v2H3v-2z" />
                 </svg>
+
               </div>
-              <p className="mt-3 md:mt-4 text-xs text-slate-500">{t("home.cta.plate")}</p>
+
+              <p className="mt-3 text-xs text-slate-500 md:mt-4">
+                {t("home.cta.plate")}
+              </p>
+
             </div>
           </div>
+
         </Reveal>
       </section>
 
       <InstallBanner variant="bottom" />
+
       <QrScanner
         open={scannerOpen}
-        onClose={() => setScannerOpen(false)}
+        onClose={() =>
+          setScannerOpen(false)
+        }
         onDetected={gererScanQr}
         title="Scanner un QR d'adresse"
       />
+
     </div>
   );
 }
