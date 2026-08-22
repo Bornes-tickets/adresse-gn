@@ -89,41 +89,49 @@ const USAGES = [
     icone: HomeIcon,
     cle: "individuals",
     titre: "Particuliers",
-    accroche: "Recevez sans avoir à expliquer.",
+    accroche: "Recevez facilement chez vous.",
     texte:
       "Partagez votre Adresse GN avec vos proches, visiteurs et livreurs.",
+    avantages: ["Partage en 1 clic", "Itinéraire direct"],
     grad: "from-emerald-500 to-teal-600",
-    fond: "from-emerald-50/80 to-white",
+    fond: "from-emerald-50/70 via-white to-white",
+    bordure: "hover:border-emerald-200",
   },
   {
     icone: UtensilsCrossed,
     cle: "shops",
     titre: "Commerces",
-    accroche: "Aidez vos clients à vous trouver.",
+    accroche: "Soyez trouvé sans explication.",
     texte:
-      "Rendez votre boutique, restaurant ou établissement facilement identifiable.",
-    grad: "from-orange-500 to-rose-600",
-    fond: "from-orange-50/80 to-white",
+      "Aidez vos clients à rejoindre facilement votre boutique, restaurant ou établissement.",
+    avantages: ["Adresse partageable", "Navigation GPS"],
+    grad: "from-orange-500 to-rose-500",
+    fond: "from-orange-50/70 via-white to-white",
+    bordure: "hover:border-orange-200",
   },
   {
     icone: Bike,
     cle: "delivery",
     titre: "Livraisons",
-    accroche: "Livrez au bon endroit, plus simplement.",
+    accroche: "Livrez plus vite, au bon endroit.",
     texte:
-      "Moins d’appels d’orientation et moins de temps perdu à chercher.",
+      "Réduisez les appels d’orientation et le temps perdu à rechercher une destination.",
+    avantages: ["Moins d’appels", "Destination précise"],
     grad: "from-violet-500 to-fuchsia-600",
-    fond: "from-violet-50/80 to-white",
+    fond: "from-violet-50/70 via-white to-white",
+    bordure: "hover:border-violet-200",
   },
   {
     icone: Building2,
     cle: "companies",
     titre: "Entreprises",
-    accroche: "Identifiez et partagez tous vos sites.",
+    accroche: "Centralisez toutes vos adresses.",
     texte:
-      "Adresses professionnelles, gestion multi-sites et intégration API.",
+      "Identifiez vos bureaux, agences et établissements avec une solution adaptée aux organisations.",
+    avantages: ["Gestion multi-sites", "Intégration API"],
     grad: "from-sky-500 to-blue-600",
-    fond: "from-sky-50/80 to-white",
+    fond: "from-sky-50/70 via-white to-white",
+    bordure: "hover:border-sky-200",
   },
 ];
 
@@ -395,8 +403,7 @@ function Home() {
       }
     };
 
-    reco.onend = () =>
-      setEcoute(false);
+    reco.onend = () => setEcoute(false);
 
     recognitionRef.current = reco;
     reco.start();
@@ -463,9 +470,7 @@ function Home() {
                 <input
                   value={numero}
                   onChange={(e) => {
-                    setNumero(
-                      e.target.value,
-                    );
+                    setNumero(e.target.value);
                     setErreur(null);
                   }}
                   placeholder="GN-CKY-______"
@@ -1128,197 +1133,165 @@ function Home() {
       </section>
 
       {/* =====================================================
-          USAGES — NOUVELLE VERSION
+          USAGES — VERSION MARKETING
           ===================================================== */}
 
       <section
         id="usages"
-        className="relative overflow-hidden bg-slate-50 px-5 py-16 sm:px-6 md:px-8 md:py-24"
+        className="relative overflow-hidden border-t border-slate-100 bg-slate-50 px-5 py-16 sm:px-6 md:px-8 md:py-20"
       >
         <div
           aria-hidden
-          className="pointer-events-none absolute left-1/2 top-0 h-[340px] w-[650px] -translate-x-1/2 rounded-full bg-white/80 blur-[100px]"
+          className="pointer-events-none absolute left-1/2 top-0 h-[360px] w-[700px] -translate-x-1/2 rounded-full bg-white/90 blur-[100px]"
         />
 
         <div className="relative mx-auto max-w-6xl">
           <Reveal>
-            <Eyebrow>
-              {t(
-                "home.usages.eyebrow",
-                {
-                  defaultValue:
-                    "Usages",
-                },
-              )}
-            </Eyebrow>
+            <div className="flex justify-center">
+              <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-500 shadow-sm">
+                <Sparkles className="size-3 text-accent" />
+                Usages
+              </span>
+            </div>
 
-            <h2 className="text-display mx-auto mt-3 max-w-4xl text-center text-3xl font-bold tracking-tight text-slate-950 md:mt-4 md:text-4xl lg:text-[2.75rem]">
-              {t(
-                "home.usages.marketingTitle",
-                {
-                  defaultValue:
-                    "Une adresse utile, quel que soit votre quotidien.",
-                },
-              )}
+            <h2 className="text-display mx-auto mt-4 max-w-4xl text-center text-3xl font-bold tracking-tight text-slate-950 md:text-4xl lg:text-[2.65rem]">
+              Pensé pour{" "}
+              <span className="bg-gradient-to-r from-accent via-sky-500 to-blue-600 bg-clip-text text-transparent">
+                tous les usages du quotidien.
+              </span>
             </h2>
 
-            <p className="mx-auto mt-4 max-w-2xl text-center text-sm leading-6 text-slate-600 md:text-base">
-              {t(
-                "home.usages.marketingSubtitle",
-                {
-                  defaultValue:
-                    "Pour recevoir, livrer, accueillir des clients ou gérer plusieurs sites.",
-                },
-              )}
+            <p className="mx-auto mt-4 max-w-3xl text-center text-sm leading-6 text-slate-600 md:text-base">
+              Que vous receviez, livriez, vendiez ou gériez plusieurs sites,
+              Adresse GN simplifie la façon de vous trouver.
             </p>
           </Reveal>
 
-          <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 md:mt-12 lg:grid-cols-4 lg:gap-5">
-            {USAGES.map(
-              (
-                item,
-                index,
-              ) => (
-                <Reveal
-                  key={
-                    item.cle
-                  }
-                  delay={
-                    index *
-                    70
-                  }
+          <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
+            {USAGES.map((item, index) => (
+              <Reveal
+                key={item.cle}
+                delay={index * 70}
+              >
+                <article
+                  className={cn(
+                    "group relative flex h-full min-h-[300px] flex-col overflow-hidden rounded-[26px] border border-slate-200/90 bg-gradient-to-br p-6 shadow-[0_8px_28px_rgba(15,23,42,0.035)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_24px_55px_rgba(15,23,42,0.10)]",
+                    item.fond,
+                    item.bordure,
+                  )}
                 >
-                  <article
+                  <div
+                    aria-hidden
                     className={cn(
-                      "group relative h-full overflow-hidden rounded-[26px] border border-slate-200/80 bg-gradient-to-br p-6 shadow-[0_8px_30px_rgba(15,23,42,0.035)] transition-all duration-300 hover:-translate-y-1.5 hover:border-transparent hover:shadow-[0_22px_55px_rgba(15,23,42,0.10)] md:p-7",
-                      item.fond,
+                      "absolute -right-16 -top-16 size-40 rounded-full bg-gradient-to-br opacity-0 blur-3xl transition-opacity duration-300 group-hover:opacity-20",
+                      item.grad,
                     )}
-                  >
-                    <div
-                      aria-hidden
-                      className={cn(
-                        "absolute -right-12 -top-12 size-32 rounded-full bg-gradient-to-br opacity-0 blur-3xl transition-opacity duration-300 group-hover:opacity-15",
-                        item.grad,
-                      )}
-                    />
+                  />
 
-                    <div className="relative">
-                      <div className="flex items-start justify-between gap-4">
-                        <span
-                          className={cn(
-                            "flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-white shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl",
-                            item.grad,
-                          )}
-                        >
-                          <item.icone className="size-5" />
-                        </span>
-
-                        <span className="mt-1 flex size-8 translate-x-2 items-center justify-center rounded-full border border-slate-200 bg-white/80 text-slate-400 opacity-0 shadow-sm transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">
-                          <ArrowRight className="size-3.5" />
-                        </span>
-                      </div>
-
-                      <p className="mt-6 text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-400">
-                        {t(
-                          `home.usages.${item.cle}.title`,
-                          {
-                            defaultValue:
-                              item.titre,
-                          },
+                  <div className="relative flex h-full flex-col">
+                    <div className="flex items-center justify-between gap-3">
+                      <span
+                        className={cn(
+                          "flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-white shadow-lg transition-all duration-300 group-hover:scale-105",
+                          item.grad,
                         )}
-                      </p>
+                      >
+                        <item.icone className="size-5" />
+                      </span>
 
-                      <h3 className="text-display mt-2 text-lg font-bold leading-snug tracking-tight text-slate-950 md:text-xl">
-                        {t(
-                          `home.usages.${item.cle}.headline`,
-                          {
-                            defaultValue:
-                              item.accroche,
-                          },
-                        )}
-                      </h3>
-
-                      <p className="mt-3 text-sm leading-6 text-slate-600">
-                        {t(
-                          `home.usages.${item.cle}.marketingText`,
-                          {
-                            defaultValue:
-                              item.texte,
-                          },
-                        )}
-                      </p>
+                      <span className="rounded-full border border-slate-200 bg-white/85 px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.12em] text-slate-400 shadow-sm">
+                        {item.titre}
+                      </span>
                     </div>
-                  </article>
-                </Reveal>
-              ),
-            )}
+
+                    <h3 className="text-display mt-6 text-lg font-bold leading-snug tracking-tight text-slate-950 md:text-xl">
+                      {item.accroche}
+                    </h3>
+
+                    <p className="mt-3 text-[13px] leading-6 text-slate-600">
+                      {item.texte}
+                    </p>
+
+                    <div className="mt-5 space-y-2.5">
+                      {item.avantages.map((avantage) => (
+                        <div
+                          key={avantage}
+                          className="flex items-center gap-2"
+                        >
+                          <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-slate-200/80">
+                            <Check className="size-3 text-accent" />
+                          </span>
+
+                          <span className="text-xs font-medium text-slate-700">
+                            {avantage}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mt-auto pt-6">
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 transition-colors group-hover:text-accent">
+                        Une adresse adaptée à votre besoin
+                        <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
+                      </span>
+                    </div>
+                  </div>
+                </article>
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>
 
       {/* =====================================================
-          CTA FINAL — NOUVELLE VERSION
+          CTA FINAL — VERSION PREMIUM
           ===================================================== */}
 
-      <section className="relative overflow-hidden bg-white px-5 py-16 sm:px-6 md:px-8 md:py-24">
+      <section className="relative overflow-hidden bg-white px-5 py-16 sm:px-6 md:px-8 md:py-20">
         <div
           aria-hidden
-          className="pointer-events-none absolute left-0 top-1/2 h-[450px] w-[450px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-50 blur-[120px]"
+          className="pointer-events-none absolute -left-52 top-1/2 size-[480px] -translate-y-1/2 rounded-full bg-blue-100/50 blur-[130px]"
         />
 
         <div
           aria-hidden
-          className="pointer-events-none absolute right-0 top-1/2 h-[420px] w-[420px] translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-50 blur-[120px]"
+          className="pointer-events-none absolute -right-52 top-1/2 size-[480px] -translate-y-1/2 rounded-full bg-cyan-100/50 blur-[130px]"
         />
 
         <Reveal className="relative mx-auto max-w-6xl">
-          <div className="relative grid overflow-hidden rounded-[34px] border border-slate-200 bg-white shadow-[0_30px_90px_-35px_rgba(15,23,42,0.30)] lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="grid overflow-hidden rounded-[34px] border border-slate-200 bg-white shadow-[0_30px_90px_-35px_rgba(15,23,42,0.32)] lg:grid-cols-[1.02fr_0.98fr]">
             {/* =================================================
-                TEXTE / CONVERSION
+                PARTIE GAUCHE
                 ================================================= */}
 
-            <div className="relative overflow-hidden gradient-signature-soft p-7 sm:p-9 md:p-12 lg:p-14">
+            <div className="relative overflow-hidden gradient-signature-soft p-7 sm:p-9 md:p-11 lg:p-12 xl:p-14">
               <div
                 aria-hidden
-                className="absolute -left-20 -top-20 size-64 rounded-full bg-white/10 blur-[60px]"
+                className="absolute -left-20 -top-20 size-64 rounded-full bg-white/10 blur-[70px]"
               />
 
               <div
                 aria-hidden
-                className="absolute -bottom-24 right-0 size-72 rounded-full bg-cyan-300/10 blur-[70px]"
+                className="absolute -bottom-24 right-[-30px] size-72 rounded-full bg-cyan-300/10 blur-[80px]"
               />
 
-              <div className="relative">
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/85 backdrop-blur-sm">
+              <div className="relative flex h-full flex-col justify-center">
+                <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-white/85 backdrop-blur-sm">
                   <Sparkles className="size-3.5" />
-
-                  {t(
-                    "home.cta.eyebrow",
-                    {
-                      defaultValue:
-                        "Commencer",
-                    },
-                  )}
+                  Commencer
                 </span>
 
-                <h2 className="text-display mt-5 max-w-xl text-3xl font-bold leading-[1.12] tracking-tight text-white md:text-4xl lg:text-[2.65rem]">
-                  {t(
-                    "home.cta.marketingTitle",
-                    {
-                      defaultValue:
-                        "Créez votre Adresse GN. Soyez facile à trouver.",
-                    },
-                  )}
+                <h2 className="text-display mt-5 max-w-xl text-3xl font-bold leading-[1.1] tracking-tight text-white md:text-4xl lg:text-[2.55rem]">
+                  Créez votre Adresse GN.
+                  <span className="mt-1 block text-cyan-200">
+                    Soyez facile à trouver.
+                  </span>
                 </h2>
 
                 <p className="mt-5 max-w-xl text-sm leading-7 text-white/85 md:text-base">
-                  {t(
-                    "home.cta.marketingText",
-                    {
-                      defaultValue:
-                        "Obtenez votre numéro unique, associez-le à votre localisation et choisissez la formule adaptée à votre besoin.",
-                    },
-                  )}
+                  Obtenez un numéro unique associé à votre localisation,
+                  partagez-le instantanément et choisissez la formule adaptée à
+                  votre besoin.
                 </p>
 
                 {/* bénéfices */}
@@ -1327,45 +1300,31 @@ function Home() {
                     "Numéro unique",
                     "QR Code intégré",
                     "Localisation GPS",
-                    "Plaque disponible selon l’offre",
-                  ].map(
-                    (
-                      item,
-                    ) => (
-                      <div
-                        key={
-                          item
-                        }
-                        className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.07] px-3 py-2.5 backdrop-blur-sm"
-                      >
-                        <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-white/15">
-                          <Check className="size-3 text-white" />
-                        </span>
+                    "Plaque selon l’offre",
+                  ].map((item) => (
+                    <div
+                      key={item}
+                      className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.07] px-3 py-2.5 backdrop-blur-sm"
+                    >
+                      <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-white/15">
+                        <Check className="size-3 text-white" />
+                      </span>
 
-                        <span className="text-xs font-medium text-white/90 md:text-[13px]">
-                          {
-                            item
-                          }
-                        </span>
-                      </div>
-                    ),
-                  )}
+                      <span className="text-xs font-medium text-white/90 md:text-[13px]">
+                        {item}
+                      </span>
+                    </div>
+                  ))}
                 </div>
 
-                {/* CTA */}
+                {/* boutons */}
                 <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                   <Button
                     asChild
                     className="group h-12 rounded-xl bg-white px-7 text-sm font-semibold text-slate-950 shadow-xl shadow-slate-950/10 transition-all hover:-translate-y-0.5 hover:bg-white hover:shadow-2xl"
                   >
                     <Link to="/commander">
-                      {t(
-                        "home.cta.createAddress",
-                        {
-                          defaultValue:
-                            "Créer mon Adresse GN",
-                        },
-                      )}
+                      Créer mon Adresse GN
 
                       <ArrowRight className="ml-1 size-4 transition-transform group-hover:translate-x-1" />
                     </Link>
@@ -1374,78 +1333,81 @@ function Home() {
                   <Button
                     asChild
                     variant="outline"
-                    className="h-12 rounded-xl border-white/35 bg-white/[0.05] px-7 text-sm font-semibold text-white backdrop-blur-sm hover:border-white/60 hover:bg-white/10 hover:text-white"
+                    className="h-12 rounded-xl border-white/35 bg-white/[0.04] px-7 text-sm font-semibold text-white backdrop-blur-sm hover:border-white/60 hover:bg-white/10 hover:text-white"
                   >
                     <Link to="/tarifs">
-                      {t(
-                        "home.cta.discoverOffers",
-                        {
-                          defaultValue:
-                            "Découvrir les offres",
-                        },
-                      )}
-
-                      <ArrowRight className="ml-1 size-4" />
+                      Découvrir les offres
                     </Link>
                   </Button>
                 </div>
 
-                <p className="mt-5 flex items-center gap-2 text-[11px] text-white/65">
-                  <Check className="size-3.5" />
-                  Adresse numérique disponible indépendamment de la plaque physique.
+                <p className="mt-5 flex items-center gap-2 text-[10px] leading-5 text-white/65">
+                  <Check className="size-3.5 shrink-0" />
+                  L’adresse numérique peut être créée sans commander de plaque
+                  physique.
                 </p>
               </div>
             </div>
 
             {/* =================================================
-                MOCKUP PLAQUE ADRESSE GN
+                PARTIE DROITE — PLAQUE
                 ================================================= */}
 
-            <div className="relative flex min-h-[480px] items-center justify-center overflow-hidden bg-gradient-to-br from-slate-50 via-white to-cyan-50/60 p-7 sm:p-10 md:p-12">
-              {/* éléments décoratifs */}
+            <div className="relative flex min-h-[500px] items-center justify-center overflow-hidden bg-gradient-to-br from-slate-50 via-white to-cyan-50/60 p-6 sm:p-9 md:p-10">
               <div
                 aria-hidden
-                className="absolute right-[-80px] top-[-70px] size-64 rounded-full bg-accent/10 blur-[70px]"
+                className="absolute -right-20 -top-20 size-72 rounded-full bg-accent/10 blur-[90px]"
               />
 
               <div
                 aria-hidden
-                className="absolute bottom-[-100px] left-[-70px] size-72 rounded-full bg-blue-100/70 blur-[80px]"
+                className="absolute -bottom-28 -left-20 size-72 rounded-full bg-blue-100/80 blur-[90px]"
               />
 
-              <div className="relative w-full max-w-[430px]">
+              <div
+                aria-hidden
+                className="absolute inset-x-16 bottom-16 h-10 rounded-full bg-slate-950/10 blur-2xl"
+              />
+
+              <div className="relative w-full max-w-[500px]">
                 {/* label */}
                 <div className="mb-5 flex justify-center">
                   <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-[9px] font-bold uppercase tracking-[0.16em] text-slate-600 shadow-sm">
                     <QrCode className="size-3.5 text-accent" />
-                    Votre Adresse GN
+                    Exemple de plaque
                   </span>
                 </div>
 
-                {/* PLAQUE */}
-                <div className="relative mx-auto rotate-[1deg] overflow-hidden rounded-[26px] border border-slate-300/80 bg-white shadow-[0_30px_70px_-25px_rgba(15,23,42,0.35)] transition-transform duration-500 hover:rotate-0">
-                  {/* bande haute */}
-                  <div className="gradient-signature-soft px-6 py-4 sm:px-8">
+                {/* PLAQUE PRINCIPALE */}
+                <div className="relative mx-auto w-full max-w-[470px] rotate-[0.8deg] overflow-hidden rounded-[28px] border border-slate-300/80 bg-white shadow-[0_32px_75px_-24px_rgba(15,23,42,0.38)] transition-all duration-500 hover:rotate-0 hover:scale-[1.01]">
+                  {/* bande supérieure */}
+                  <div className="gradient-signature-soft px-6 py-4 sm:px-8 sm:py-5">
                     <div className="flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-2.5">
-                        <div className="flex size-8 items-center justify-center rounded-xl bg-white/15 backdrop-blur-sm">
-                          <MapPin className="size-4 text-white" />
-                        </div>
-
-                        <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-white">
-                          ADRESSE GN
+                      <div className="flex items-center gap-3">
+                        <span className="flex size-9 items-center justify-center rounded-xl bg-white/15 backdrop-blur">
+                          <MapPin className="size-4.5 text-white" />
                         </span>
+
+                        <div>
+                          <p className="text-[8px] font-medium uppercase tracking-[0.18em] text-white/60">
+                            Votre adresse
+                          </p>
+
+                          <p className="mt-0.5 text-[11px] font-bold uppercase tracking-[0.2em] text-white">
+                            ADRESSE GN
+                          </p>
+                        </div>
                       </div>
 
-                      <span className="rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[8px] font-semibold uppercase tracking-wide text-white/85">
+                      <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[8px] font-semibold uppercase tracking-[0.12em] text-white/85">
                         Guinée
                       </span>
                     </div>
                   </div>
 
-                  {/* contenu */}
+                  {/* contenu plaque */}
                   <div className="relative p-6 sm:p-8">
-                    {/* vis de fixation */}
+                    {/* fixations */}
                     <span
                       aria-hidden
                       className="absolute left-3 top-3 size-2 rounded-full border border-slate-300 bg-slate-100 shadow-inner"
@@ -1466,39 +1428,40 @@ function Home() {
                       className="absolute bottom-3 right-3 size-2 rounded-full border border-slate-300 bg-slate-100 shadow-inner"
                     />
 
-                    <div className="grid grid-cols-[1fr_auto] items-center gap-6">
+                    <div className="grid grid-cols-[1fr_auto] items-center gap-5 sm:gap-8">
+                      {/* numéro */}
                       <div className="min-w-0">
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                          Numéro d&apos;adresse
+                        <p className="text-[9px] font-semibold uppercase tracking-[0.17em] text-slate-400">
+                          Numéro unique
                         </p>
 
-                        <p className="mt-2 font-mono text-xl font-extrabold tracking-[0.06em] text-slate-950 sm:text-2xl">
+                        <p className="mt-2 whitespace-nowrap font-mono text-xl font-extrabold tracking-[0.055em] text-slate-950 sm:text-[1.75rem]">
                           GN-CKY-582741
                         </p>
 
-                        <div className="mt-4 flex items-center gap-2">
-                          <span className="flex size-7 items-center justify-center rounded-lg bg-accent/10 text-accent">
-                            <MapPin className="size-3.5" />
+                        <div className="mt-5 flex items-center gap-2.5">
+                          <span className="flex size-8 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                            <MapPin className="size-4" />
                           </span>
 
                           <div>
-                            <p className="text-xs font-semibold text-slate-800">
+                            <p className="text-xs font-bold text-slate-900">
                               Kaloum
                             </p>
 
-                            <p className="text-[10px] text-slate-500">
+                            <p className="mt-0.5 text-[10px] text-slate-500">
                               Conakry · Guinée
                             </p>
                           </div>
                         </div>
                       </div>
 
-                      {/* QR CODE VISUEL */}
-                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 shadow-inner">
+                      {/* QR */}
+                      <div className="rounded-[20px] border border-slate-200 bg-slate-50 p-3.5 shadow-inner">
                         <svg
                           viewBox="0 0 21 21"
                           aria-label="QR Code Adresse GN"
-                          className="size-20 text-slate-950 sm:size-24"
+                          className="size-24 text-slate-950 sm:size-28"
                           fill="currentColor"
                         >
                           <path d="M0 0h7v7H0V0zm2 2v3h3V2H2zM14 0h7v7h-7V0zm2 2v3h3V2h-3zM0 14h7v7H0v-7zm2 2v3h3v-3H2z" />
@@ -1508,52 +1471,56 @@ function Home() {
                       </div>
                     </div>
 
-                    <div className="mt-6 flex items-center justify-between gap-3 border-t border-slate-100 pt-4">
-                      <p className="text-[10px] font-medium text-slate-500">
-                        Scannez pour localiser cette adresse
-                      </p>
+                    <div className="mt-6 flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex items-center gap-2">
+                        <QrCode className="size-3.5 text-accent" />
 
-                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[9px] font-semibold text-emerald-700">
-                        <Check className="size-3" />
-                        Active
+                        <p className="text-[10px] font-medium text-slate-500">
+                          Scannez pour localiser cette adresse
+                        </p>
+                      </div>
+
+                      <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[9px] font-semibold text-emerald-700">
+                        <span className="size-1.5 rounded-full bg-emerald-500" />
+                        Adresse active
                       </span>
                     </div>
                   </div>
                 </div>
 
-                {/* numérique / physique */}
-                <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-[0_8px_25px_rgba(15,23,42,0.04)] backdrop-blur">
-                    <div className="flex items-start gap-3">
-                      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
-                        <Smartphone className="size-4" />
+                {/* 2 formats */}
+                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                  <div className="group rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-[0_10px_28px_rgba(15,23,42,0.045)] backdrop-blur transition-all hover:-translate-y-0.5 hover:shadow-md">
+                    <div className="flex items-center gap-3">
+                      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                        <Smartphone className="size-4.5" />
                       </span>
 
                       <div>
-                        <p className="text-xs font-bold text-slate-900">
+                        <p className="text-xs font-bold text-slate-950">
                           Adresse numérique
                         </p>
 
                         <p className="mt-1 text-[10px] leading-4 text-slate-500">
-                          Disponible dès l&apos;activation.
+                          Disponible dès l’activation.
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-[0_8px_25px_rgba(15,23,42,0.04)] backdrop-blur">
-                    <div className="flex items-start gap-3">
-                      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-slate-950 text-white">
-                        <QrCode className="size-4" />
+                  <div className="group rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-[0_10px_28px_rgba(15,23,42,0.045)] backdrop-blur transition-all hover:-translate-y-0.5 hover:shadow-md">
+                    <div className="flex items-center gap-3">
+                      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-slate-950 text-white">
+                        <QrCode className="size-4.5" />
                       </span>
 
                       <div>
-                        <p className="text-xs font-bold text-slate-900">
+                        <p className="text-xs font-bold text-slate-950">
                           Plaque physique
                         </p>
 
                         <p className="mt-1 text-[10px] leading-4 text-slate-500">
-                          Disponible selon la formule choisie.
+                          Disponible selon votre offre.
                         </p>
                       </div>
                     </div>
