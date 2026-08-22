@@ -1244,58 +1244,62 @@ function Home() {
       </section>
 
       {/* =====================================================
-          CTA FINAL — VERSION PREMIUM
+          CTA FINAL — VERSION PREMIUM COMPACTE & RESPONSIVE
           ===================================================== */}
 
-      <section className="relative overflow-hidden bg-white px-5 py-16 sm:px-6 md:px-8 md:py-20">
+      <section className="relative overflow-hidden bg-white px-4 py-10 sm:px-5 sm:py-12 md:px-8 md:py-14">
+        {/* Halos décoratifs */}
         <div
           aria-hidden
-          className="pointer-events-none absolute -left-52 top-1/2 size-[480px] -translate-y-1/2 rounded-full bg-blue-100/50 blur-[130px]"
+          className="pointer-events-none absolute -left-52 top-1/2 size-[420px] -translate-y-1/2 rounded-full bg-blue-100/45 blur-[120px]"
         />
 
         <div
           aria-hidden
-          className="pointer-events-none absolute -right-52 top-1/2 size-[480px] -translate-y-1/2 rounded-full bg-cyan-100/50 blur-[130px]"
+          className="pointer-events-none absolute -right-52 top-1/2 size-[420px] -translate-y-1/2 rounded-full bg-cyan-100/45 blur-[120px]"
         />
 
         <Reveal className="relative mx-auto max-w-6xl">
-          <div className="grid overflow-hidden rounded-[34px] border border-slate-200 bg-white shadow-[0_30px_90px_-35px_rgba(15,23,42,0.32)] lg:grid-cols-[1.02fr_0.98fr]">
+          <div className="grid overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_24px_70px_-32px_rgba(15,23,42,0.30)] sm:rounded-[28px] lg:grid-cols-[1.02fr_0.98fr]">
             {/* =================================================
                 PARTIE GAUCHE
                 ================================================= */}
 
-            <div className="relative overflow-hidden gradient-signature-soft p-7 sm:p-9 md:p-11 lg:p-12 xl:p-14">
+            <div className="relative overflow-hidden gradient-signature-soft px-6 py-8 sm:px-8 sm:py-9 md:px-9 md:py-10 lg:px-10 lg:py-9 xl:px-12">
               <div
                 aria-hidden
-                className="absolute -left-20 -top-20 size-64 rounded-full bg-white/10 blur-[70px]"
+                className="absolute -left-20 -top-20 size-56 rounded-full bg-white/10 blur-[65px]"
               />
 
               <div
                 aria-hidden
-                className="absolute -bottom-24 right-[-30px] size-72 rounded-full bg-cyan-300/10 blur-[80px]"
+                className="absolute -bottom-24 right-[-30px] size-64 rounded-full bg-cyan-300/10 blur-[70px]"
               />
 
               <div className="relative flex h-full flex-col justify-center">
+                {/* Label */}
                 <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-white/85 backdrop-blur-sm">
                   <Sparkles className="size-3.5" />
                   Commencer
                 </span>
 
-                <h2 className="text-display mt-5 max-w-xl text-3xl font-bold leading-[1.1] tracking-tight text-white md:text-4xl lg:text-[2.55rem]">
+                {/* Titre */}
+                <h2 className="text-display mt-4 max-w-xl text-[1.8rem] font-bold leading-[1.08] tracking-tight text-white sm:text-3xl md:text-[2.15rem] lg:text-[2.35rem]">
                   Créez votre Adresse GN.
                   <span className="mt-1 block text-cyan-200">
                     Soyez facile à trouver.
                   </span>
                 </h2>
 
-                <p className="mt-5 max-w-xl text-sm leading-7 text-white/85 md:text-base">
+                {/* Description */}
+                <p className="mt-4 max-w-xl text-sm leading-6 text-white/85 md:text-[15px]">
                   Obtenez un numéro unique associé à votre localisation,
                   partagez-le instantanément et choisissez la formule adaptée à
                   votre besoin.
                 </p>
 
-                {/* bénéfices */}
-                <div className="mt-7 grid gap-2.5 sm:grid-cols-2">
+                {/* Bénéfices */}
+                <div className="mt-5 grid grid-cols-2 gap-2">
                   {[
                     "Numéro unique",
                     "QR Code intégré",
@@ -1304,28 +1308,27 @@ function Home() {
                   ].map((item) => (
                     <div
                       key={item}
-                      className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.07] px-3 py-2.5 backdrop-blur-sm"
+                      className="flex min-h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.07] px-2.5 py-2 backdrop-blur-sm sm:px-3"
                     >
                       <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-white/15">
                         <Check className="size-3 text-white" />
                       </span>
 
-                      <span className="text-xs font-medium text-white/90 md:text-[13px]">
+                      <span className="text-[10px] font-medium leading-4 text-white/90 sm:text-xs">
                         {item}
                       </span>
                     </div>
                   ))}
                 </div>
 
-                {/* boutons */}
-                <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                {/* CTA */}
+                <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
                   <Button
                     asChild
-                    className="group h-12 rounded-xl bg-white px-7 text-sm font-semibold text-slate-950 shadow-xl shadow-slate-950/10 transition-all hover:-translate-y-0.5 hover:bg-white hover:shadow-2xl"
+                    className="group h-11 w-full rounded-xl bg-white px-6 text-sm font-semibold text-slate-950 shadow-lg shadow-slate-950/10 transition-all hover:-translate-y-0.5 hover:bg-white hover:shadow-xl sm:w-auto"
                   >
                     <Link to="/commander">
                       Créer mon Adresse GN
-
                       <ArrowRight className="ml-1 size-4 transition-transform group-hover:translate-x-1" />
                     </Link>
                   </Button>
@@ -1333,7 +1336,7 @@ function Home() {
                   <Button
                     asChild
                     variant="outline"
-                    className="h-12 rounded-xl border-white/35 bg-white/[0.04] px-7 text-sm font-semibold text-white backdrop-blur-sm hover:border-white/60 hover:bg-white/10 hover:text-white"
+                    className="h-11 w-full rounded-xl border-white/35 bg-white/[0.04] px-6 text-sm font-semibold text-white backdrop-blur-sm hover:border-white/60 hover:bg-white/10 hover:text-white sm:w-auto"
                   >
                     <Link to="/tarifs">
                       Découvrir les offres
@@ -1341,8 +1344,9 @@ function Home() {
                   </Button>
                 </div>
 
-                <p className="mt-5 flex items-center gap-2 text-[10px] leading-5 text-white/65">
-                  <Check className="size-3.5 shrink-0" />
+                {/* Note */}
+                <p className="mt-4 flex items-start gap-2 text-[10px] leading-4 text-white/65">
+                  <Check className="mt-0.5 size-3 shrink-0" />
                   L’adresse numérique peut être créée sans commander de plaque
                   physique.
                 </p>
@@ -1353,103 +1357,106 @@ function Home() {
                 PARTIE DROITE — PLAQUE
                 ================================================= */}
 
-            <div className="relative flex min-h-[500px] items-center justify-center overflow-hidden bg-gradient-to-br from-slate-50 via-white to-cyan-50/60 p-6 sm:p-9 md:p-10">
+            <div className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-50 via-white to-cyan-50/60 px-5 py-8 sm:px-7 sm:py-9 md:px-8 lg:px-8 lg:py-7">
               <div
                 aria-hidden
-                className="absolute -right-20 -top-20 size-72 rounded-full bg-accent/10 blur-[90px]"
+                className="absolute -right-20 -top-20 size-60 rounded-full bg-accent/10 blur-[80px]"
               />
 
               <div
                 aria-hidden
-                className="absolute -bottom-28 -left-20 size-72 rounded-full bg-blue-100/80 blur-[90px]"
+                className="absolute -bottom-28 -left-20 size-64 rounded-full bg-blue-100/70 blur-[80px]"
               />
 
               <div
                 aria-hidden
-                className="absolute inset-x-16 bottom-16 h-10 rounded-full bg-slate-950/10 blur-2xl"
+                className="absolute inset-x-16 bottom-10 h-8 rounded-full bg-slate-950/10 blur-2xl"
               />
 
-              <div className="relative w-full max-w-[500px]">
-                {/* label */}
-                <div className="mb-5 flex justify-center">
-                  <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-[9px] font-bold uppercase tracking-[0.16em] text-slate-600 shadow-sm">
+              <div className="relative w-full max-w-[450px]">
+                {/* Label */}
+                <div className="mb-3 flex justify-center">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[8px] font-bold uppercase tracking-[0.16em] text-slate-600 shadow-sm sm:text-[9px]">
                     <QrCode className="size-3.5 text-accent" />
                     Exemple de plaque
                   </span>
                 </div>
 
-                {/* PLAQUE PRINCIPALE */}
-                <div className="relative mx-auto w-full max-w-[470px] rotate-[0.8deg] overflow-hidden rounded-[28px] border border-slate-300/80 bg-white shadow-[0_32px_75px_-24px_rgba(15,23,42,0.38)] transition-all duration-500 hover:rotate-0 hover:scale-[1.01]">
-                  {/* bande supérieure */}
-                  <div className="gradient-signature-soft px-6 py-4 sm:px-8 sm:py-5">
+                {/* =================================================
+                    PLAQUE PRINCIPALE
+                    ================================================= */}
+
+                <div className="relative mx-auto w-full max-w-[430px] rotate-[0.5deg] overflow-hidden rounded-[22px] border border-slate-300/80 bg-white shadow-[0_26px_60px_-24px_rgba(15,23,42,0.36)] transition-all duration-500 hover:rotate-0 hover:scale-[1.005]">
+                  {/* Bande supérieure */}
+                  <div className="gradient-signature-soft px-5 py-3 sm:px-6 sm:py-3.5">
                     <div className="flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-3">
-                        <span className="flex size-9 items-center justify-center rounded-xl bg-white/15 backdrop-blur">
-                          <MapPin className="size-4.5 text-white" />
+                      <div className="flex items-center gap-2.5">
+                        <span className="flex size-8 items-center justify-center rounded-xl bg-white/15 backdrop-blur">
+                          <MapPin className="size-4 text-white" />
                         </span>
 
                         <div>
-                          <p className="text-[8px] font-medium uppercase tracking-[0.18em] text-white/60">
+                          <p className="text-[7px] font-medium uppercase tracking-[0.18em] text-white/60">
                             Votre adresse
                           </p>
 
-                          <p className="mt-0.5 text-[11px] font-bold uppercase tracking-[0.2em] text-white">
+                          <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.2em] text-white">
                             ADRESSE GN
                           </p>
                         </div>
                       </div>
 
-                      <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[8px] font-semibold uppercase tracking-[0.12em] text-white/85">
+                      <span className="rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[7px] font-semibold uppercase tracking-[0.12em] text-white/85">
                         Guinée
                       </span>
                     </div>
                   </div>
 
-                  {/* contenu plaque */}
-                  <div className="relative p-6 sm:p-8">
-                    {/* fixations */}
+                  {/* Corps plaque */}
+                  <div className="relative p-5 sm:p-6">
+                    {/* Fixations */}
                     <span
                       aria-hidden
-                      className="absolute left-3 top-3 size-2 rounded-full border border-slate-300 bg-slate-100 shadow-inner"
+                      className="absolute left-3 top-3 size-1.5 rounded-full border border-slate-300 bg-slate-100 shadow-inner"
                     />
 
                     <span
                       aria-hidden
-                      className="absolute right-3 top-3 size-2 rounded-full border border-slate-300 bg-slate-100 shadow-inner"
+                      className="absolute right-3 top-3 size-1.5 rounded-full border border-slate-300 bg-slate-100 shadow-inner"
                     />
 
                     <span
                       aria-hidden
-                      className="absolute bottom-3 left-3 size-2 rounded-full border border-slate-300 bg-slate-100 shadow-inner"
+                      className="absolute bottom-3 left-3 size-1.5 rounded-full border border-slate-300 bg-slate-100 shadow-inner"
                     />
 
                     <span
                       aria-hidden
-                      className="absolute bottom-3 right-3 size-2 rounded-full border border-slate-300 bg-slate-100 shadow-inner"
+                      className="absolute bottom-3 right-3 size-1.5 rounded-full border border-slate-300 bg-slate-100 shadow-inner"
                     />
 
-                    <div className="grid grid-cols-[1fr_auto] items-center gap-5 sm:gap-8">
-                      {/* numéro */}
+                    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:gap-5">
+                      {/* Informations */}
                       <div className="min-w-0">
-                        <p className="text-[9px] font-semibold uppercase tracking-[0.17em] text-slate-400">
+                        <p className="text-[8px] font-semibold uppercase tracking-[0.17em] text-slate-400">
                           Numéro unique
                         </p>
 
-                        <p className="mt-2 whitespace-nowrap font-mono text-xl font-extrabold tracking-[0.055em] text-slate-950 sm:text-[1.75rem]">
+                        <p className="mt-1.5 whitespace-nowrap font-mono text-[0.98rem] font-extrabold tracking-[0.035em] text-slate-950 min-[390px]:text-[1.08rem] sm:text-[1.3rem] md:text-[1.45rem]">
                           GN-CKY-582741
                         </p>
 
-                        <div className="mt-5 flex items-center gap-2.5">
-                          <span className="flex size-8 items-center justify-center rounded-xl bg-accent/10 text-accent">
-                            <MapPin className="size-4" />
+                        <div className="mt-3.5 flex items-center gap-2">
+                          <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
+                            <MapPin className="size-3.5" />
                           </span>
 
                           <div>
-                            <p className="text-xs font-bold text-slate-900">
+                            <p className="text-[11px] font-bold text-slate-900">
                               Kaloum
                             </p>
 
-                            <p className="mt-0.5 text-[10px] text-slate-500">
+                            <p className="mt-0.5 text-[9px] text-slate-500">
                               Conakry · Guinée
                             </p>
                           </div>
@@ -1457,11 +1464,11 @@ function Home() {
                       </div>
 
                       {/* QR */}
-                      <div className="rounded-[20px] border border-slate-200 bg-slate-50 p-3.5 shadow-inner">
+                      <div className="rounded-[16px] border border-slate-200 bg-slate-50 p-2 shadow-inner sm:rounded-[18px] sm:p-2.5">
                         <svg
                           viewBox="0 0 21 21"
                           aria-label="QR Code Adresse GN"
-                          className="size-24 text-slate-950 sm:size-28"
+                          className="size-16 text-slate-950 min-[390px]:size-[72px] sm:size-20 md:size-24"
                           fill="currentColor"
                         >
                           <path d="M0 0h7v7H0V0zm2 2v3h3V2H2zM14 0h7v7h-7V0zm2 2v3h3V2h-3zM0 14h7v7H0v-7zm2 2v3h3v-3H2z" />
@@ -1471,16 +1478,17 @@ function Home() {
                       </div>
                     </div>
 
-                    <div className="mt-6 flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                    {/* Bas plaque */}
+                    <div className="mt-4 flex flex-col gap-2 border-t border-slate-100 pt-3 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex items-center gap-2">
-                        <QrCode className="size-3.5 text-accent" />
+                        <QrCode className="size-3.5 shrink-0 text-accent" />
 
-                        <p className="text-[10px] font-medium text-slate-500">
+                        <p className="text-[9px] font-medium text-slate-500">
                           Scannez pour localiser cette adresse
                         </p>
                       </div>
 
-                      <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[9px] font-semibold text-emerald-700">
+                      <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[8px] font-semibold text-emerald-700">
                         <span className="size-1.5 rounded-full bg-emerald-500" />
                         Adresse active
                       </span>
@@ -1488,38 +1496,41 @@ function Home() {
                   </div>
                 </div>
 
-                {/* 2 formats */}
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                  <div className="group rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-[0_10px_28px_rgba(15,23,42,0.045)] backdrop-blur transition-all hover:-translate-y-0.5 hover:shadow-md">
-                    <div className="flex items-center gap-3">
-                      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
-                        <Smartphone className="size-4.5" />
+                {/* =================================================
+                    ADRESSE NUMÉRIQUE / PLAQUE PHYSIQUE
+                    ================================================= */}
+
+                <div className="mt-3 grid grid-cols-2 gap-2.5">
+                  <div className="rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-[0_8px_22px_rgba(15,23,42,0.04)] backdrop-blur">
+                    <div className="flex items-center gap-2.5">
+                      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                        <Smartphone className="size-4" />
                       </span>
 
-                      <div>
-                        <p className="text-xs font-bold text-slate-950">
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-bold leading-4 text-slate-950 sm:text-[11px]">
                           Adresse numérique
                         </p>
 
-                        <p className="mt-1 text-[10px] leading-4 text-slate-500">
+                        <p className="mt-0.5 hidden text-[9px] leading-4 text-slate-500 min-[390px]:block">
                           Disponible dès l’activation.
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="group rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-[0_10px_28px_rgba(15,23,42,0.045)] backdrop-blur transition-all hover:-translate-y-0.5 hover:shadow-md">
-                    <div className="flex items-center gap-3">
-                      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-slate-950 text-white">
-                        <QrCode className="size-4.5" />
+                  <div className="rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-[0_8px_22px_rgba(15,23,42,0.04)] backdrop-blur">
+                    <div className="flex items-center gap-2.5">
+                      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-slate-950 text-white">
+                        <QrCode className="size-4" />
                       </span>
 
-                      <div>
-                        <p className="text-xs font-bold text-slate-950">
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-bold leading-4 text-slate-950 sm:text-[11px]">
                           Plaque physique
                         </p>
 
-                        <p className="mt-1 text-[10px] leading-4 text-slate-500">
+                        <p className="mt-0.5 hidden text-[9px] leading-4 text-slate-500 min-[390px]:block">
                           Disponible selon votre offre.
                         </p>
                       </div>
