@@ -50,50 +50,35 @@ const EXEMPLES = [
 const EXEMPLE_DEMO = "GN-CKY-582741";
 
 /* =========================================================
-   DÉMONSTRATION GOOGLE MAPS
+   DÉMONSTRATION ITINÉRAIRE RÉEL
    ========================================================= */
 
-/*
- * Exemple fixe pour la page d'accueil.
- * Sur les vraies pages Adresse GN, la destination devra être
- * remplacée par les coordonnées GPS réelles de l'adresse.
- */
 const DEMO_ORIGIN = "Kaloum, Conakry, Guinea";
 const DEMO_DESTINATION = "Hôtel Kaloum, Conakry, Guinea";
-const DEMO_DESTINATION_LABEL = "Hôtel Kaloum";
 
-const GOOGLE_MAPS_API_KEY = (
+const GOOGLE_MAPS_EMBED_KEY = (
   import.meta.env.VITE_GOOGLE_MAPS_EMBED_API_KEY as string | undefined
 )?.trim();
 
-/*
- * Google Maps Embed API — mode DIRECTIONS.
- * Cette URL affiche un véritable itinéraire Google Maps
- * directement à l'intérieur du téléphone.
- */
-const GOOGLE_MAPS_EMBED_URL = GOOGLE_MAPS_API_KEY
+const GOOGLE_MAPS_EMBED_URL = GOOGLE_MAPS_EMBED_KEY
   ? `https://www.google.com/maps/embed/v1/directions?key=${encodeURIComponent(
-      GOOGLE_MAPS_API_KEY,
+      GOOGLE_MAPS_EMBED_KEY,
     )}&origin=${encodeURIComponent(
       DEMO_ORIGIN,
     )}&destination=${encodeURIComponent(
       DEMO_DESTINATION,
     )}&mode=driving&language=fr&region=GN`
-  : "";
+  : null;
 
-/*
- * Liens externes de navigation.
- */
-const GOOGLE_MAPS_ROUTE_URL =
-  `https://www.google.com/maps/dir/?api=1` +
-  `&origin=${encodeURIComponent(DEMO_ORIGIN)}` +
-  `&destination=${encodeURIComponent(DEMO_DESTINATION)}` +
-  `&travelmode=driving`;
+const GOOGLE_MAPS_ROUTE_URL = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(
+  DEMO_ORIGIN,
+)}&destination=${encodeURIComponent(
+  DEMO_DESTINATION,
+)}&travelmode=driving`;
 
-const WAZE_ROUTE_URL =
-  `https://www.waze.com/ul?q=${encodeURIComponent(
-    DEMO_DESTINATION,
-  )}&navigate=yes`;
+const WAZE_ROUTE_URL = `https://www.waze.com/ul?q=${encodeURIComponent(
+  DEMO_DESTINATION,
+)}&navigate=yes`;
 
 const USAGES = [
   {
@@ -144,7 +129,7 @@ const ETAPES = [
     icone: Navigation2,
     titre: "Lancez votre itinéraire",
     texte:
-      "Choisissez Google Maps ou Waze et laissez-vous guider jusqu’à destination.",
+      "Choisissez votre application de navigation et laissez-vous guider jusqu’à destination.",
     tags: ["Google Maps", "Waze"],
   },
 ];
@@ -386,9 +371,8 @@ function Home() {
       }
     };
 
-    reco.onend = () => {
+    reco.onend = () =>
       setEcoute(false);
-    };
 
     recognitionRef.current = reco;
     reco.start();
@@ -577,6 +561,7 @@ function Home() {
         id="comment-ca-marche"
         className="relative overflow-hidden bg-white px-5 pb-14 pt-10 sm:px-6 md:px-8 md:pb-16 md:pt-14 lg:pb-16 lg:pt-14"
       >
+        {/* Motif discret */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 opacity-[0.022]"
@@ -588,6 +573,7 @@ function Home() {
           }}
         />
 
+        {/* Halos */}
         <div
           aria-hidden
           className="pointer-events-none absolute -right-48 top-24 h-[500px] w-[500px] rounded-full bg-cyan-100/30 blur-[130px]"
@@ -599,9 +585,9 @@ function Home() {
         />
 
         <div className="relative mx-auto max-w-6xl">
-          {/* =================================================
+          {/* =============================
               EN-TÊTE
-              ================================================= */}
+              ============================= */}
 
           <Reveal>
             <div className="flex justify-center">
@@ -618,11 +604,12 @@ function Home() {
               </span>
             </h2>
 
-            {/* Une seule ligne sur desktop */}
+            {/* PHRASE SUR UNE LIGNE DESKTOP */}
             <p className="mx-auto mt-4 text-center text-sm leading-6 text-slate-600 md:max-w-none md:whitespace-nowrap md:text-base">
               Adresse GN transforme chaque lieu en une adresse simple à identifier, partager et rejoindre.
             </p>
 
+            {/* Micro bénéfices */}
             <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
               {[
                 "Numéro unique",
@@ -642,22 +629,20 @@ function Home() {
           </Reveal>
 
           {/* =================================================
-              ÉTAPES + GOOGLE MAPS
+              ÉTAPES + DÉMONSTRATION
               ================================================= */}
 
           <div className="mt-9 grid gap-9 lg:mt-10 lg:grid-cols-[0.88fr_1.12fr] lg:items-center lg:gap-12 xl:gap-16">
-            {/* =================================================
+            {/* ===========================
                 ÉTAPES
-                ================================================= */}
+                =========================== */}
 
             <div>
               <ol className="space-y-3">
                 {ETAPES.map(
                   (etape, index) => (
                     <Reveal
-                      key={
-                        etape.numero
-                      }
+                      key={etape.numero}
                       delay={
                         index * 80
                       }
@@ -724,6 +709,7 @@ function Home() {
                 )}
               </ol>
 
+              {/* CTA */}
               <Reveal delay={280}>
                 <div className="mt-5 flex flex-col gap-2.5 sm:flex-row">
                   <Button
@@ -738,7 +724,6 @@ function Home() {
                       }}
                     >
                       Voir un exemple
-
                       <ArrowRight className="ml-1 size-4 transition-transform group-hover:translate-x-1" />
                     </Link>
                   </Button>
@@ -757,112 +742,160 @@ function Home() {
             </div>
 
             {/* =================================================
-                TÉLÉPHONE AVEC GOOGLE MAPS RÉEL
+                GOOGLE MAPS — ITINÉRAIRE RÉEL
                 ================================================= */}
 
             <Reveal
               delay={150}
               className="relative"
             >
-              <div className="relative mx-auto flex max-w-[480px] flex-col items-center">
+              <div className="relative mx-auto flex max-w-[470px] flex-col items-center">
                 {/* Halo */}
                 <div
                   aria-hidden
-                  className="absolute left-1/2 top-1/2 h-[480px] w-[480px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-accent/20 via-cyan-100/35 to-blue-100/25 blur-[80px]"
+                  className="absolute left-1/2 top-1/2 h-[470px] w-[470px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-accent/20 via-cyan-100/35 to-blue-100/25 blur-[80px]"
                 />
 
-                {/* Badge */}
+                {/* Label */}
                 <div className="relative z-10 mb-3 inline-flex items-center gap-2 rounded-full border border-accent/15 bg-white px-3.5 py-1.5 text-[9px] font-bold uppercase tracking-[0.15em] text-slate-700 shadow-md">
                   <Navigation2 className="size-3.5 text-accent" />
-
                   Itinéraire réel
-
-                  <span className="size-1 rounded-full bg-slate-300" />
-
+                  <span className="h-1 w-1 rounded-full bg-slate-300" />
                   Google Maps
                 </div>
 
-                {/* =================================================
+                {/* =============================
                     TÉLÉPHONE
-                    ================================================= */}
+                    ============================= */}
 
-                <div className="relative z-[2] aspect-[9/19] w-[320px] rotate-[-1deg] overflow-hidden rounded-[2.95rem] border-[9px] border-slate-950 bg-white shadow-[0_45px_95px_-28px_rgba(15,23,42,0.58)] transition-all duration-500 hover:rotate-0 hover:scale-[1.012] md:w-[345px] xl:w-[360px]">
+                <div className="relative z-[2] aspect-[9/19] w-[315px] rotate-[-1deg] overflow-hidden rounded-[2.9rem] border-[9px] border-slate-950 bg-white shadow-[0_45px_95px_-28px_rgba(15,23,42,0.58)] transition-all duration-500 hover:rotate-0 hover:scale-[1.012] md:w-[340px] xl:w-[355px]">
                   {/* Notch */}
                   <div
                     aria-hidden
-                    className="absolute left-1/2 top-1 z-40 h-4 w-16 -translate-x-1/2 rounded-full bg-slate-950"
+                    className="absolute left-1/2 top-1 z-30 h-4 w-16 -translate-x-1/2 rounded-full bg-slate-950"
                   />
 
                   <div className="flex h-full flex-col">
-                    {/* Header Adresse GN */}
-                    <div className="relative z-30 shrink-0 gradient-signature-soft px-4 pb-3 pt-7">
+                    {/* Header */}
+                    <div className="relative z-20 gradient-signature-soft px-4 pb-3 pt-7">
                       <div className="flex items-center justify-between">
                         <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white">
                           ADRESSE GN
                         </span>
 
                         <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2 py-1 text-[7px] font-medium text-white backdrop-blur">
-                          <MapPin className="size-2.5" />
-                          Kaloum
+                          <Navigation2 className="size-2.5" />
+                          Navigation
                         </span>
                       </div>
                     </div>
 
-                    {/* =================================================
-                        GOOGLE MAPS DIRECTEMENT DANS LE TÉLÉPHONE
-                        ================================================= */}
+                    {/* =========================================
+                        VRAIE CARTE GOOGLE MAPS
+                        ========================================= */}
 
-                    <div className="relative min-h-0 flex-1 overflow-hidden bg-slate-100">
+                    <div className="relative flex-1 overflow-hidden bg-slate-100">
                       {GOOGLE_MAPS_EMBED_URL ? (
                         <iframe
-                          title="Itinéraire Google Maps Adresse GN"
+                          title="Itinéraire Google Maps de démonstration"
                           src={
                             GOOGLE_MAPS_EMBED_URL
                           }
                           className="absolute inset-0 h-full w-full border-0"
-                          loading="eager"
-                          allowFullScreen
+                          loading="lazy"
                           referrerPolicy="no-referrer-when-downgrade"
+                          allowFullScreen
                         />
                       ) : (
-                        /*
-                         * Aucun faux itinéraire.
-                         *
-                         * Si tu vois ce message après collage,
-                         * cela signifie simplement que la clé
-                         * Google Maps n'a pas encore été ajoutée
-                         * dans Lovable.
-                         */
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-slate-50 to-slate-100 px-8 text-center">
-                          <div className="flex size-14 items-center justify-center rounded-2xl bg-white text-accent shadow-lg ring-1 ring-slate-200">
-                            <MapPin className="size-7" />
+                        /* =================================================
+                           FALLBACK VISUEL SI LA CLÉ GOOGLE N'EST PAS ENCORE
+                           CONFIGURÉE. LA PAGE NE CASSE PAS.
+                           ================================================= */
+                        <div className="absolute inset-0 overflow-hidden bg-[#edf2f4]">
+                          {/* fond carte */}
+                          <div
+                            aria-hidden
+                            className="absolute inset-0 opacity-50"
+                            style={{
+                              backgroundImage:
+                                "linear-gradient(rgb(203 213 225 / 0.55) 1px, transparent 1px), linear-gradient(90deg, rgb(203 213 225 / 0.55) 1px, transparent 1px)",
+                              backgroundSize:
+                                "26px 26px",
+                            }}
+                          />
+
+                          {/* routes */}
+                          <div className="absolute -left-10 right-[-10%] top-[25%] h-3 rotate-[-7deg] rounded-full bg-white shadow-sm" />
+                          <div className="absolute -bottom-10 left-[31%] top-[-5%] w-3 rotate-[10deg] rounded-full bg-white shadow-sm" />
+                          <div className="absolute -left-8 right-[-10%] top-[68%] h-2 rotate-[11deg] rounded-full bg-white/90" />
+
+                          {/* itinéraire fallback */}
+                          <svg
+                            viewBox="0 0 300 420"
+                            className="absolute inset-0 h-full w-full"
+                            aria-hidden
+                          >
+                            <path
+                              d="M74 360 C86 330 110 317 113 284 C117 247 93 221 108 185 C124 147 164 158 181 128 C195 103 198 81 220 61"
+                              fill="none"
+                              stroke="white"
+                              strokeWidth="11"
+                              strokeLinecap="round"
+                            />
+
+                            <path
+                              d="M74 360 C86 330 110 317 113 284 C117 247 93 221 108 185 C124 147 164 158 181 128 C195 103 198 81 220 61"
+                              fill="none"
+                              stroke="rgb(13 148 136)"
+                              strokeWidth="6"
+                              strokeLinecap="round"
+                            />
+                          </svg>
+
+                          {/* départ */}
+                          <div className="absolute bottom-[12%] left-[19%]">
+                            <span className="flex size-6 items-center justify-center rounded-full border-[3px] border-white bg-blue-600 shadow-xl">
+                              <span className="size-2 rounded-full bg-white" />
+                            </span>
                           </div>
 
-                          <p className="mt-4 text-sm font-bold text-slate-950">
-                            Google Maps
-                          </p>
+                          {/* destination */}
+                          <div className="absolute right-[19%] top-[10%]">
+                            <div className="flex size-11 items-center justify-center rounded-full bg-white shadow-xl">
+                              <MapPin className="size-7 fill-accent/15 text-accent" />
+                            </div>
+                          </div>
 
-                          <p className="mt-1.5 text-[11px] leading-5 text-slate-500">
-                            Ajoutez votre clé Maps Embed API pour afficher
-                            l&apos;itinéraire réel ici.
-                          </p>
-
-                          <div className="mt-4 rounded-xl border border-slate-200 bg-white px-3 py-2 font-mono text-[8px] text-slate-500 shadow-sm">
-                            VITE_GOOGLE_MAPS_EMBED_API_KEY
+                          {/* information */}
+                          <div className="absolute left-3 top-3 rounded-xl border border-slate-200 bg-white/95 px-3 py-2 shadow-lg backdrop-blur">
+                            <p className="text-[9px] font-bold text-slate-900">
+                              Aperçu de navigation
+                            </p>
+                            <p className="mt-0.5 text-[7px] text-slate-500">
+                              Google Maps
+                            </p>
                           </div>
                         </div>
                       )}
+
+                      {/* Badge overlay */}
+                      <div className="pointer-events-none absolute left-3 top-3 z-10">
+                        <span className="inline-flex items-center gap-1.5 rounded-full border border-white/80 bg-white/95 px-2.5 py-1 text-[8px] font-semibold text-slate-700 shadow-md backdrop-blur">
+                          <span className="size-1.5 rounded-full bg-emerald-500" />
+                          Itinéraire
+                        </span>
+                      </div>
                     </div>
 
-                    {/* =================================================
-                        FICHE DESTINATION
-                        ================================================= */}
+                    {/* =========================================
+                        DESTINATION
+                        ========================================= */}
 
-                    <div className="relative z-30 shrink-0 border-t border-slate-100 bg-white p-3.5">
+                    <div className="relative z-20 border-t border-slate-100 bg-white p-3.5">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="text-xs font-bold text-slate-950">
-                            {DEMO_DESTINATION_LABEL}
+                            Hôtel Kaloum
                           </p>
 
                           <p className="mt-0.5 font-mono text-[10px] font-bold tracking-[0.04em] text-accent">
@@ -879,7 +912,10 @@ function Home() {
                         </div>
                       </div>
 
-                      {/* Navigation */}
+                      {/* =====================================
+                          VRAIS LIENS DE NAVIGATION
+                          ===================================== */}
+
                       <div className="mt-3 grid grid-cols-2 gap-2">
                         <a
                           href={
@@ -890,9 +926,7 @@ function Home() {
                           className="group flex h-10 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-accent to-accent-dark px-2 text-[9px] font-semibold text-white shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg"
                         >
                           <Navigation2 className="size-3.5" />
-
                           Google Maps
-
                           <ExternalLink className="size-2.5 opacity-70" />
                         </a>
 
@@ -905,9 +939,7 @@ function Home() {
                           className="group flex h-10 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2 text-[9px] font-semibold text-slate-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-accent/30 hover:text-accent hover:shadow-md"
                         >
                           <Navigation2 className="size-3.5" />
-
                           Waze
-
                           <ExternalLink className="size-2.5 opacity-60" />
                         </a>
                       </div>
@@ -915,11 +947,11 @@ function Home() {
                   </div>
                 </div>
 
-                {/* =================================================
-                    CALLOUT GAUCHE
-                    ================================================= */}
+                {/* =========================================
+                    CALLOUTS
+                    ========================================= */}
 
-                <div className="pointer-events-none absolute -left-1 top-[29%] z-10 hidden rotate-[-4deg] rounded-2xl border border-slate-200 bg-white px-3 py-2.5 shadow-xl md:block xl:-left-9">
+                <div className="pointer-events-none absolute -left-2 top-[27%] z-10 hidden rotate-[-4deg] rounded-2xl border border-slate-200 bg-white px-3 py-2.5 shadow-xl md:block xl:-left-8">
                   <div className="flex items-center gap-2">
                     <div className="flex size-7 items-center justify-center rounded-full bg-accent/10">
                       <Share2 className="size-3.5 text-accent" />
@@ -937,11 +969,7 @@ function Home() {
                   </div>
                 </div>
 
-                {/* =================================================
-                    CALLOUT DROITE
-                    ================================================= */}
-
-                <div className="pointer-events-none absolute -right-1 top-[40%] z-10 hidden rotate-[4deg] rounded-2xl border border-slate-200 bg-white px-3 py-2.5 shadow-xl md:block xl:-right-9">
+                <div className="pointer-events-none absolute -right-2 top-[39%] z-10 hidden rotate-[4deg] rounded-2xl border border-slate-200 bg-white px-3 py-2.5 shadow-xl md:block xl:-right-8">
                   <div className="flex items-center gap-2">
                     <div className="flex size-7 items-center justify-center rounded-full bg-emerald-100">
                       <Check className="size-3.5 text-emerald-600" />
@@ -959,25 +987,22 @@ function Home() {
                   </div>
                 </div>
 
-                {/* =================================================
-                    BADGES SOUS TÉLÉPHONE
-                    ================================================= */}
-
+                {/* Légende */}
                 <div className="relative z-10 mt-4 flex flex-wrap items-center justify-center gap-2">
-                  {[
-                    "Google Maps",
-                    "Waze",
-                    "Navigation en 1 clic",
-                  ].map((item) => (
-                    <span
-                      key={item}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[9px] font-medium text-slate-600 shadow-sm"
-                    >
-                      <Check className="size-3 text-emerald-600" />
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[9px] font-medium text-slate-600 shadow-sm">
+                    <Check className="size-3 text-emerald-600" />
+                    Google Maps
+                  </span>
 
-                      {item}
-                    </span>
-                  ))}
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[9px] font-medium text-slate-600 shadow-sm">
+                    <Check className="size-3 text-emerald-600" />
+                    Waze
+                  </span>
+
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[9px] font-medium text-slate-600 shadow-sm">
+                    <Check className="size-3 text-emerald-600" />
+                    Navigation en 1 clic
+                  </span>
                 </div>
               </div>
             </Reveal>
@@ -1001,24 +1026,25 @@ function Home() {
                   </span>
                 </h3>
 
-                {/* Une seule ligne sur desktop */}
+                {/* PHRASE SUR UNE SEULE LIGNE DESKTOP */}
                 <p className="mx-auto mt-2.5 text-sm leading-6 text-slate-600 md:max-w-none md:whitespace-nowrap">
                   Un numéro Adresse GN remplace les longues indications et simplifie l’arrivée à destination.
                 </p>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
-                {/* SANS ADRESSE GN */}
+                {/* ======================
+                    SANS ADRESSE GN
+                    ====================== */}
+
                 <div className="relative overflow-hidden rounded-[26px] border border-rose-100 bg-gradient-to-br from-rose-50/55 via-white to-white p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
                   <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-rose-100 bg-white px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-rose-600 shadow-sm">
                     <X className="size-3.5" />
-
                     Sans Adresse GN
                   </div>
 
                   <p className="text-base font-semibold leading-snug text-slate-900 md:text-lg">
-                    « Après la station, tournez à droite puis demandez le
-                    restaurant… »
+                    « Après la station, tournez à droite puis demandez le restaurant… »
                   </p>
 
                   <div className="mt-5 space-y-2.5">
@@ -1026,24 +1052,33 @@ function Home() {
                       "Des indications longues à transmettre",
                       "Des appels répétés pour guider",
                       "Une destination plus difficile à trouver",
-                    ].map((item) => (
-                      <div
-                        key={item}
-                        className="flex items-start gap-2.5"
-                      >
-                        <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-rose-100">
-                          <X className="size-3 text-rose-500" />
-                        </span>
+                    ].map(
+                      (item) => (
+                        <div
+                          key={
+                            item
+                          }
+                          className="flex items-start gap-2.5"
+                        >
+                          <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-rose-100">
+                            <X className="size-3 text-rose-500" />
+                          </span>
 
-                        <span className="text-[13px] leading-5 text-slate-600">
-                          {item}
-                        </span>
-                      </div>
-                    ))}
+                          <span className="text-[13px] leading-5 text-slate-600">
+                            {
+                              item
+                            }
+                          </span>
+                        </div>
+                      ),
+                    )}
                   </div>
                 </div>
 
-                {/* AVEC ADRESSE GN */}
+                {/* ======================
+                    AVEC ADRESSE GN
+                    ====================== */}
+
                 <div className="relative overflow-hidden rounded-[26px] border border-accent/25 bg-gradient-to-br from-accent/[0.11] via-white to-cyan-50 p-6 shadow-[0_20px_55px_-30px_rgba(13,148,136,0.45)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_25px_65px_-30px_rgba(13,148,136,0.55)]">
                   <div
                     aria-hidden
@@ -1052,7 +1087,6 @@ function Home() {
 
                   <div className="relative mb-4 inline-flex items-center gap-2 rounded-full bg-slate-950 px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-white shadow-sm">
                     <Check className="size-3.5 text-accent" />
-
                     Avec Adresse GN
                   </div>
 
@@ -1070,20 +1104,26 @@ function Home() {
                         "Un numéro unique facile à partager",
                         "Un QR Code ou un lien accessible instantanément",
                         "Un itinéraire Google Maps ou Waze prêt à être lancé",
-                      ].map((item) => (
-                        <div
-                          key={item}
-                          className="flex items-start gap-2.5"
-                        >
-                          <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-accent/10">
-                            <Check className="size-3 text-accent" />
-                          </span>
+                      ].map(
+                        (item) => (
+                          <div
+                            key={
+                              item
+                            }
+                            className="flex items-start gap-2.5"
+                          >
+                            <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-accent/10">
+                              <Check className="size-3 text-accent" />
+                            </span>
 
-                          <span className="text-[13px] font-medium leading-5 text-slate-700">
-                            {item}
-                          </span>
-                        </div>
-                      ))}
+                            <span className="text-[13px] font-medium leading-5 text-slate-700">
+                              {
+                                item
+                              }
+                            </span>
+                          </div>
+                        ),
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1266,6 +1306,7 @@ function Home() {
                   fill="currentColor"
                 >
                   <path d="M0 0h7v7H0V0zm2 2v3h3V2H2zM14 0h7v7h-7V0zm2 2v3h3V2h-3zM0 14h7v7H0v-7zm2 2v3h3v-3H2z" />
+
                   <path d="M9 0h2v2H9V0zM9 3h2v2H9V3zM12 9h2v2h-2V9zM9 9h2v2H9V9zM9 12h2v2H9v-2zM12 12h2v2h-2v-2zM16 9h2v2h-2V9zM19 9h2v2h-2V9zM16 12h2v2h-2v-2zM19 14h2v2h-2v-2zM16 16h2v2h-2v-2zM12 16h2v2h-2v-2zM9 19h2v2H9v-2zM12 19h2v2h-2v-2zM16 19h2v2h-2v-2zM19 19h2v2h-2v-2zM0 9h2v2H0V9zM3 9h2v2H3V9zM6 9h2v2H6V9zM3 12h2v2H3v-2z" />
                 </svg>
               </div>
