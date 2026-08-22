@@ -50,6 +50,13 @@ const EXEMPLES = [
 const EXEMPLE_DEMO = "GN-CKY-582741";
 
 /* =========================================================
+   LARGEUR RESPONSIVE DU SITE
+   Même logique à réutiliser dans Header / Footer / autres pages.
+   ========================================================= */
+const SITE_CONTAINER =
+  "mx-auto w-full max-w-[1580px] px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12";
+
+/* =========================================================
    DÉMONSTRATION ITINÉRAIRE RÉEL
    ========================================================= */
 
@@ -439,26 +446,26 @@ function Home() {
           className="pointer-events-none absolute left-1/2 top-0 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-white/10 blur-3xl"
         />
 
-        <div className="relative mx-auto w-full max-w-5xl px-5 pb-8 pt-6 sm:px-6 md:pb-16 md:pt-12 lg:px-8">
+        <div className={cn(SITE_CONTAINER, "relative pb-7 pt-5 md:pb-11 md:pt-8 xl:pb-12 xl:pt-9")}>
           <h1
             className="text-display whitespace-nowrap text-center font-extrabold leading-[1.05] text-white"
             style={{
               textShadow:
                 "0 2px 20px rgb(15 23 42 / 0.25)",
               fontSize:
-                "clamp(0.95rem, 4.7vw, 3.75rem)",
+                "clamp(1.9rem, 3.15vw, 3.35rem)",
             }}
           >
             Votre adresse, enfin facile à trouver.
           </h1>
 
-          <p className="mx-auto mt-4 max-w-md text-center text-base leading-relaxed text-white/90 md:mt-6 md:max-w-none md:whitespace-nowrap md:text-xl">
+          <p className="mx-auto mt-3 max-w-4xl text-center text-sm leading-relaxed text-white/90 sm:text-base md:mt-4 md:max-w-none md:whitespace-nowrap lg:text-lg xl:text-xl">
             Un numéro unique par lieu. Fini les
             explications, les repères et les appels
             perdus.
           </p>
 
-          <div className="mt-8 rounded-3xl bg-white/95 p-2.5 shadow-[0_20px_60px_-15px_rgba(15,23,42,0.35)] ring-1 ring-white/50 backdrop-blur-xl md:mt-12">
+          <div className="mx-auto mt-6 max-w-[1280px] rounded-[22px] bg-white/95 p-2 shadow-[0_20px_60px_-15px_rgba(15,23,42,0.35)] ring-1 ring-white/50 backdrop-blur-xl md:mt-8 xl:mt-9">
             <form
               className="flex flex-col gap-2 md:flex-row"
               onSubmit={(e) => {
@@ -478,7 +485,7 @@ function Home() {
                     "home.hero.inputLabel",
                   )}
                   aria-invalid={!!erreur}
-                  className="h-14 w-full min-w-0 bg-transparent font-mono text-lg font-semibold tracking-[0.08em] text-slate-900 outline-hidden placeholder:font-normal placeholder:text-slate-400 sm:text-xl"
+                  className="h-12 w-full min-w-0 bg-transparent font-mono text-lg font-semibold tracking-[0.08em] text-slate-900 outline-hidden placeholder:font-normal placeholder:text-slate-400 sm:text-xl"
                 />
 
                 <Tooltip>
@@ -542,7 +549,7 @@ function Home() {
               <Button
                 type="submit"
                 disabled={enCours}
-                className="h-14 w-full rounded-2xl bg-gradient-to-r from-accent to-accent-dark px-8 text-base font-semibold text-accent-foreground shadow-lg shadow-accent/25 transition-all hover:shadow-accent/40 active:scale-[0.98] md:w-auto md:min-w-[160px]"
+                className="h-12 w-full rounded-2xl bg-gradient-to-r from-accent to-accent-dark px-8 text-base font-semibold text-accent-foreground shadow-lg shadow-accent/25 transition-all hover:shadow-accent/40 active:scale-[0.98] md:w-auto md:min-w-[160px]"
               >
                 <Search className="size-5" />
 
@@ -562,7 +569,7 @@ function Home() {
             )}
           </div>
 
-          <div className="scrollbar-hide mt-5 flex flex-nowrap items-center justify-center gap-1.5 overflow-x-auto px-1 md:mt-6">
+          <div className="scrollbar-hide mx-auto mt-4 flex max-w-[1280px] flex-nowrap items-center justify-center gap-1.5 overflow-x-auto px-1 md:mt-5">
             {EXEMPLES.map(
               (exemple) => (
                 <Link
@@ -588,7 +595,7 @@ function Home() {
 
       <section
         id="comment-ca-marche"
-        className="relative overflow-hidden bg-white px-5 pb-14 pt-10 sm:px-6 md:px-8 md:pb-16 md:pt-14 lg:pb-16 lg:pt-14"
+        className="relative overflow-hidden bg-white pb-12 pt-8 md:pb-14 md:pt-10 lg:pb-14 lg:pt-10"
       >
         <div
           aria-hidden
@@ -611,7 +618,7 @@ function Home() {
           className="pointer-events-none absolute -left-48 bottom-20 h-[430px] w-[430px] rounded-full bg-blue-100/25 blur-[130px]"
         />
 
-        <div className="relative mx-auto max-w-6xl">
+        <div className={cn(SITE_CONTAINER, "relative")}>
           <Reveal>
             <div className="flex justify-center">
               <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-600 shadow-sm">
@@ -620,14 +627,14 @@ function Home() {
               </span>
             </div>
 
-            <h2 className="text-display mx-auto mt-5 text-center text-3xl font-bold tracking-tight text-slate-950 md:text-[2.5rem] lg:whitespace-nowrap lg:text-[2.8rem] lg:leading-[1.08]">
+            <h2 className="text-display mx-auto mt-4 text-center text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl md:text-[2.25rem] lg:whitespace-nowrap xl:text-[2.65rem] xl:leading-[1.08] 2xl:text-[2.85rem]">
               Un numéro. Une destination.{" "}
               <span className="bg-gradient-to-r from-accent via-sky-500 to-blue-600 bg-clip-text text-transparent">
                 Aucun détour.
               </span>
             </h2>
 
-            <p className="mx-auto mt-4 text-center text-sm leading-6 text-slate-600 md:max-w-none md:whitespace-nowrap md:text-base">
+            <p className="mx-auto mt-3 text-center text-sm leading-6 text-slate-600 md:max-w-none md:whitespace-nowrap lg:text-[15px] xl:text-base">
               Adresse GN transforme chaque lieu en une adresse simple à identifier, partager et rejoindre.
             </p>
 
@@ -649,7 +656,7 @@ function Home() {
             </div>
           </Reveal>
 
-          <div className="mt-9 grid gap-9 lg:mt-10 lg:grid-cols-[0.88fr_1.12fr] lg:items-center lg:gap-12 xl:gap-16">
+          <div className="mt-8 grid gap-8 lg:mt-9 lg:grid-cols-[0.94fr_1.06fr] lg:items-center lg:gap-10 xl:gap-12 2xl:gap-16">
             <div>
               <ol className="space-y-3">
                 {ETAPES.map(
@@ -762,7 +769,7 @@ function Home() {
               delay={150}
               className="relative"
             >
-              <div className="relative mx-auto flex max-w-[470px] flex-col items-center">
+              <div className="relative mx-auto flex max-w-[520px] flex-col items-center">
                 <div
                   aria-hidden
                   className="absolute left-1/2 top-1/2 h-[470px] w-[470px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-accent/20 via-cyan-100/35 to-blue-100/25 blur-[80px]"
@@ -778,7 +785,7 @@ function Home() {
                   Google Maps
                 </div>
 
-                <div className="relative z-[2] aspect-[9/19] w-[315px] rotate-[-1deg] overflow-hidden rounded-[2.9rem] border-[9px] border-slate-950 bg-white shadow-[0_45px_95px_-28px_rgba(15,23,42,0.58)] transition-all duration-500 hover:rotate-0 hover:scale-[1.012] md:w-[340px] xl:w-[355px]">
+                <div className="relative z-[2] aspect-[9/19] w-[290px] rotate-[-1deg] overflow-hidden rounded-[2.9rem] border-[9px] border-slate-950 bg-white shadow-[0_45px_95px_-28px_rgba(15,23,42,0.58)] transition-all duration-500 hover:rotate-0 hover:scale-[1.012] sm:w-[305px] md:w-[320px] xl:w-[340px] 2xl:w-[360px]">
                   <div
                     aria-hidden
                     className="absolute left-1/2 top-1 z-30 h-4 w-16 -translate-x-1/2 rounded-full bg-slate-950"
@@ -979,7 +986,7 @@ function Home() {
               ================================================= */}
 
           <Reveal delay={100}>
-            <div className="mt-12 md:mt-14">
+            <div className="mt-10 md:mt-12">
               <div className="mx-auto mb-7 text-center">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
                   LA DIFFÉRENCE ADRESSE GN
@@ -1009,7 +1016,7 @@ function Home() {
                     restaurant… »
                   </p>
 
-                  <div className="mt-5 space-y-2.5">
+                  <div className="mt-4 space-y-2.5">
                     {[
                       "Des indications longues à transmettre",
                       "Des appels répétés pour guider",
@@ -1138,14 +1145,14 @@ function Home() {
 
       <section
         id="usages"
-        className="relative overflow-hidden border-t border-slate-100 bg-slate-50 px-5 py-16 sm:px-6 md:px-8 md:py-20"
+        className="relative overflow-hidden border-t border-slate-100 bg-slate-50 py-12 md:py-14 xl:py-16"
       >
         <div
           aria-hidden
           className="pointer-events-none absolute left-1/2 top-0 h-[360px] w-[700px] -translate-x-1/2 rounded-full bg-white/90 blur-[100px]"
         />
 
-        <div className="relative mx-auto max-w-6xl">
+        <div className={cn(SITE_CONTAINER, "relative")}>
           <Reveal>
             <div className="flex justify-center">
               <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-500 shadow-sm">
@@ -1154,7 +1161,7 @@ function Home() {
               </span>
             </div>
 
-            <h2 className="text-display mx-auto mt-4 max-w-4xl text-center text-3xl font-bold tracking-tight text-slate-950 md:text-4xl lg:text-[2.65rem]">
+            <h2 className="text-display mx-auto mt-4 max-w-5xl text-center text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl md:text-[2.15rem] xl:text-[2.45rem] 2xl:text-[2.6rem]">
               Pensé pour{" "}
               <span className="bg-gradient-to-r from-accent via-sky-500 to-blue-600 bg-clip-text text-transparent">
                 tous les usages du quotidien.
@@ -1167,7 +1174,7 @@ function Home() {
             </p>
           </Reveal>
 
-          <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
+          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:mt-9 lg:grid-cols-4 lg:gap-4 xl:gap-5">
             {USAGES.map((item, index) => (
               <Reveal
                 key={item.cle}
@@ -1175,7 +1182,7 @@ function Home() {
               >
                 <article
                   className={cn(
-                    "group relative flex h-full min-h-[300px] flex-col overflow-hidden rounded-[26px] border border-slate-200/90 bg-gradient-to-br p-6 shadow-[0_8px_28px_rgba(15,23,42,0.035)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_24px_55px_rgba(15,23,42,0.10)]",
+                    "group relative flex h-full min-h-[260px] flex-col overflow-hidden rounded-[24px] border border-slate-200/90 bg-gradient-to-br p-5 xl:min-h-[275px] xl:p-6 shadow-[0_8px_28px_rgba(15,23,42,0.035)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_24px_55px_rgba(15,23,42,0.10)]",
                     item.fond,
                     item.bordure,
                   )}
@@ -1204,7 +1211,7 @@ function Home() {
                       </span>
                     </div>
 
-                    <h3 className="text-display mt-6 text-lg font-bold leading-snug tracking-tight text-slate-950 md:text-xl">
+                    <h3 className="text-display mt-5 text-lg font-bold leading-snug tracking-tight text-slate-950 md:text-xl">
                       {item.accroche}
                     </h3>
 
@@ -1229,7 +1236,7 @@ function Home() {
                       ))}
                     </div>
 
-                    <div className="mt-auto pt-6">
+                    <div className="mt-auto pt-5">
                       <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 transition-colors group-hover:text-accent">
                         Une adresse adaptée à votre besoin
                         <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
@@ -1247,7 +1254,7 @@ function Home() {
           CTA FINAL — VERSION PREMIUM COMPACTE & RESPONSIVE
           ===================================================== */}
 
-      <section className="relative overflow-hidden bg-white px-4 py-10 sm:px-5 sm:py-12 md:px-8 md:py-14">
+      <section className="relative overflow-hidden bg-white py-9 sm:py-10 md:py-12 xl:py-14">
         {/* Halos décoratifs */}
         <div
           aria-hidden
@@ -1259,13 +1266,13 @@ function Home() {
           className="pointer-events-none absolute -right-52 top-1/2 size-[420px] -translate-y-1/2 rounded-full bg-cyan-100/45 blur-[120px]"
         />
 
-        <Reveal className="relative mx-auto max-w-6xl">
+        <Reveal className={cn(SITE_CONTAINER, "relative")}>
           <div className="grid overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_24px_70px_-32px_rgba(15,23,42,0.30)] sm:rounded-[28px] lg:grid-cols-[1.02fr_0.98fr]">
             {/* =================================================
                 PARTIE GAUCHE
                 ================================================= */}
 
-            <div className="relative overflow-hidden gradient-signature-soft px-6 py-8 sm:px-8 sm:py-9 md:px-9 md:py-10 lg:px-10 lg:py-9 xl:px-12">
+            <div className="relative overflow-hidden gradient-signature-soft px-6 py-7 sm:px-8 sm:py-8 md:px-9 md:py-9 lg:px-9 lg:py-8 xl:px-11">
               <div
                 aria-hidden
                 className="absolute -left-20 -top-20 size-56 rounded-full bg-white/10 blur-[65px]"
