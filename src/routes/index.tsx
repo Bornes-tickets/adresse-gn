@@ -112,6 +112,7 @@ const USAGES = [
     cle: "individuals",
     titre: "Particuliers",
     accroche: "Recevez facilement chez vous.",
+    mobileAccroche: "Recevez facilement.",
     texte:
       "Partagez votre Adresse GN avec vos proches, visiteurs et livreurs.",
     avantages: ["Partage en 1 clic", "Itinéraire direct"],
@@ -124,6 +125,7 @@ const USAGES = [
     cle: "shops",
     titre: "Commerces",
     accroche: "Soyez trouvé sans explication.",
+    mobileAccroche: "Soyez trouvé.",
     texte:
       "Aidez vos clients à rejoindre facilement votre boutique, restaurant ou établissement.",
     avantages: ["Adresse partageable", "Navigation GPS"],
@@ -136,6 +138,7 @@ const USAGES = [
     cle: "delivery",
     titre: "Livraisons",
     accroche: "Livrez plus vite, au bon endroit.",
+    mobileAccroche: "Livrez au bon endroit.",
     texte:
       "Réduisez les appels d’orientation et le temps perdu à rechercher une destination.",
     avantages: ["Moins d’appels", "Destination précise"],
@@ -148,6 +151,7 @@ const USAGES = [
     cle: "companies",
     titre: "Entreprises",
     accroche: "Centralisez vos adresses.",
+    mobileAccroche: "Centralisez vos adresses.",
     texte:
       "Identifiez vos bureaux, agences et sites dans une même solution.",
     avantages: ["Multi-sites", "Intégration API"],
@@ -218,6 +222,7 @@ const POINTS_CONFIANCE = [
     texte:
       "Chaque Adresse GN est associée à une position géographique exploitable pour retrouver le lieu sans approximation.",
     badge: "Repère fiable",
+    mobileTexte: "Une position GPS associée à chaque adresse.",
   },
   {
     icone: Handshake,
@@ -225,6 +230,7 @@ const POINTS_CONFIANCE = [
     texte:
       "Des agents peuvent accompagner la création et l’installation de votre Adresse GN selon l’offre choisie.",
     badge: "Support terrain",
+    mobileTexte: "Des agents disponibles selon l’offre choisie.",
   },
   {
     icone: Smartphone,
@@ -232,6 +238,7 @@ const POINTS_CONFIANCE = [
     texte:
       "Google Maps, Waze, QR Code, web et mobile : votre adresse reste simple à partager et facile à utiliser.",
     badge: "Utilisation immédiate",
+    mobileTexte: "Google Maps, Waze, QR Code, web et mobile.",
   },
 ];
 
@@ -568,7 +575,7 @@ function Home() {
 
         <div className={cn(SITE_CONTAINER, "relative pb-7 pt-5 md:pb-11 md:pt-8 xl:pb-12 xl:pt-9")}>
           <h1
-            className="text-display whitespace-nowrap text-center font-extrabold leading-[1.05] text-white"
+            className="text-display text-center font-extrabold leading-[1.05] text-white md:whitespace-nowrap"
             style={{
               textShadow:
                 "0 2px 20px rgb(15 23 42 / 0.25)",
@@ -580,9 +587,12 @@ function Home() {
           </h1>
 
           <p className="mx-auto mt-3 max-w-4xl text-center text-sm leading-relaxed text-white/90 sm:text-base md:mt-4 md:max-w-none md:whitespace-nowrap lg:text-lg xl:text-xl">
-            Un numéro unique par lieu. Fini les
-            explications, les repères et les appels
-            perdus.
+            <span className="md:hidden">
+              Un numéro unique pour trouver et partager un lieu.
+            </span>
+            <span className="hidden md:inline">
+              Un numéro unique par lieu. Fini les explications, les repères et les appels perdus.
+            </span>
           </p>
 
           <div className="mx-auto mt-6 max-w-[1280px] rounded-[22px] bg-white/95 p-2 shadow-[0_20px_60px_-15px_rgba(15,23,42,0.35)] ring-1 ring-white/50 backdrop-blur-xl md:mt-8 xl:mt-9">
@@ -689,23 +699,230 @@ function Home() {
             )}
           </div>
 
-          <div className="scrollbar-hide mx-auto mt-4 flex max-w-[1280px] flex-nowrap items-center justify-center gap-1.5 overflow-x-auto px-1 md:mt-5">
-            {EXEMPLES.map(
-              (exemple) => (
+          <div className="mx-auto mt-3 flex max-w-[1280px] items-center justify-center md:mt-5">
+            <Link
+              to="/a/$number"
+              params={{ number: EXEMPLE_DEMO }}
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[10px] font-medium text-white/85 backdrop-blur-sm transition-colors hover:bg-white/15 md:hidden"
+            >
+              Essayer un exemple
+              <ArrowRight className="size-3" />
+            </Link>
+
+            <div className="scrollbar-hide hidden flex-nowrap items-center justify-center gap-1.5 overflow-x-auto px-1 md:flex">
+              {EXEMPLES.map((exemple) => (
                 <Link
                   key={exemple}
                   to="/a/$number"
-                  params={{
-                    number:
-                      exemple,
-                  }}
+                  params={{ number: exemple }}
                   className="shrink-0 whitespace-nowrap rounded-full border border-white/20 bg-white/5 px-2.5 py-1 font-mono text-[10px] text-white/75 backdrop-blur-sm transition-all hover:border-white/50 hover:bg-white/15 hover:text-white active:scale-95 sm:text-xs"
                 >
                   {exemple}
                 </Link>
-              ),
-            )}
+              ))}
+            </div>
           </div>
+        </div>
+      </section>
+
+      {/* =====================================================
+          MOBILE — COMMENT ÇA MARCHE
+          Version volontairement simplifiée pour petits écrans.
+          ===================================================== */}
+
+      <section
+        id="comment-ca-marche"
+        className="relative overflow-hidden bg-white px-4 py-8 md:hidden"
+      >
+        <div className="mx-auto max-w-md">
+          <Reveal>
+            <div className="text-center">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-slate-500 shadow-sm">
+                <Sparkles className="size-3 text-accent" />
+                Comment ça marche
+              </span>
+
+              <h2 className="text-display mt-3 text-2xl font-bold leading-tight tracking-tight text-slate-950">
+                Un numéro. Une destination.
+              </h2>
+
+              <p className="mt-2 text-sm font-medium text-accent">
+                Saisissez, scannez, naviguez.
+              </p>
+            </div>
+          </Reveal>
+
+          <div className="mt-5 space-y-2.5">
+            {ETAPES.map((etape, index) => (
+              <Reveal key={etape.numero} delay={index * 50}>
+                <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-slate-950 text-white">
+                    <etape.icone className="size-4.5" />
+                  </span>
+
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[8px] font-bold uppercase tracking-[0.15em] text-accent">
+                      Étape {etape.numero}
+                    </p>
+                    <h3 className="mt-0.5 text-sm font-bold text-slate-950">
+                      {etape.titre}
+                    </h3>
+                    <p className="mt-0.5 text-[11px] leading-4 text-slate-500">
+                      {index === 0
+                        ? "Un numéro unique lié à votre position."
+                        : index === 1
+                          ? "Entrez le numéro ou scannez le QR Code."
+                          : "Google Maps ou Waze vous guide."}
+                    </p>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+
+          <Reveal delay={120}>
+            <div className="mt-6 text-center">
+              <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                Exemple en situation
+              </p>
+
+              <div className="relative mx-auto mt-3 aspect-[9/17] w-[205px] overflow-hidden rounded-[2.1rem] border-[7px] border-slate-950 bg-white shadow-[0_28px_65px_-24px_rgba(15,23,42,0.5)]">
+                <div className="absolute left-1/2 top-1 z-30 h-3.5 w-14 -translate-x-1/2 rounded-full bg-slate-950" />
+
+                <div className="flex h-full flex-col">
+                  <div className="gradient-signature-soft px-3 pb-2.5 pt-6 text-left">
+                    <span className="text-[7px] font-bold uppercase tracking-[0.18em] text-white">
+                      ADRESSE GN
+                    </span>
+                  </div>
+
+                  <div className="relative min-h-0 flex-1 overflow-hidden bg-slate-100">
+                    {GOOGLE_MAPS_EMBED_URL ? (
+                      <iframe
+                        title="Itinéraire Google Maps Adresse GN mobile"
+                        src={GOOGLE_MAPS_EMBED_URL}
+                        className="absolute inset-0 h-full w-full border-0"
+                        loading="lazy"
+                        referrerPolicy="strict-origin-when-cross-origin"
+                        allowFullScreen
+                      />
+                    ) : (
+                      <div className="absolute inset-0 overflow-hidden bg-[#edf2f4]">
+                        <div
+                          aria-hidden
+                          className="absolute inset-0 opacity-45"
+                          style={{
+                            backgroundImage:
+                              "linear-gradient(rgb(203 213 225 / 0.5) 1px, transparent 1px), linear-gradient(90deg, rgb(203 213 225 / 0.5) 1px, transparent 1px)",
+                            backgroundSize: "22px 22px",
+                          }}
+                        />
+
+                        <svg
+                          viewBox="0 0 220 320"
+                          className="absolute inset-0 h-full w-full"
+                          aria-hidden
+                        >
+                          <path
+                            d="M52 285 C68 263 76 241 74 216 C72 181 58 165 70 136 C82 106 118 112 135 88 C150 68 154 52 174 40"
+                            fill="none"
+                            stroke="white"
+                            strokeWidth="10"
+                            strokeLinecap="round"
+                          />
+                          <path
+                            d="M52 285 C68 263 76 241 74 216 C72 181 58 165 70 136 C82 106 118 112 135 88 C150 68 154 52 174 40"
+                            fill="none"
+                            stroke="rgb(13 148 136)"
+                            strokeWidth="5"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+
+                        <span className="absolute bottom-[9%] left-[21%] flex size-5 items-center justify-center rounded-full border-[3px] border-white bg-blue-600 shadow-lg">
+                          <span className="size-1.5 rounded-full bg-white" />
+                        </span>
+
+                        <span className="absolute right-[14%] top-[9%] flex size-9 items-center justify-center rounded-full bg-white shadow-lg">
+                          <MapPin className="size-5 text-accent" />
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="border-t border-slate-100 bg-white p-2.5 text-left">
+                    <p className="font-mono text-[10px] font-extrabold tracking-[0.08em] text-slate-950">
+                      GN-CKY-582741
+                    </p>
+                    <p className="mt-0.5 text-[9px] font-semibold text-slate-700">
+                      Hôtel Kaloum · Conakry
+                    </p>
+
+                    <div className="mt-2 grid grid-cols-2 gap-1.5">
+                      <a
+                        href={GOOGLE_MAPS_ROUTE_URL}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex h-8 items-center justify-center gap-1 rounded-lg bg-accent text-[8px] font-semibold text-white"
+                      >
+                        <Navigation2 className="size-3" />
+                        Google Maps
+                      </a>
+                      <a
+                        href={WAZE_ROUTE_URL}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex h-8 items-center justify-center gap-1 rounded-lg border border-slate-200 bg-white text-[8px] font-semibold text-slate-700"
+                      >
+                        Waze
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <Button
+                asChild
+                className="mt-4 h-10 rounded-xl bg-accent px-5 text-xs font-semibold text-white"
+              >
+                <Link to="/a/$number" params={{ number: EXEMPLE_DEMO }}>
+                  Voir un exemple
+                  <ArrowRight className="ml-1 size-3.5" />
+                </Link>
+              </Button>
+            </div>
+          </Reveal>
+
+          <Reveal delay={160}>
+            <div className="mt-7">
+              <p className="text-center text-[9px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                La différence Adresse GN
+              </p>
+
+              <div className="mt-3 space-y-2.5">
+                <div className="rounded-2xl border border-rose-100 bg-rose-50/60 p-4">
+                  <span className="text-[8px] font-bold uppercase tracking-[0.14em] text-rose-500">
+                    Sans Adresse GN
+                  </span>
+                  <p className="mt-1.5 text-sm font-semibold leading-5 text-slate-800">
+                    « Après la station, tournez à droite… »
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-accent/25 bg-gradient-to-br from-emerald-50 to-cyan-50 p-4 shadow-[0_10px_28px_rgba(13,148,136,0.08)]">
+                  <span className="text-[8px] font-bold uppercase tracking-[0.14em] text-accent">
+                    Avec Adresse GN
+                  </span>
+                  <p className="mt-1.5 font-mono text-lg font-extrabold tracking-[0.06em] text-slate-950">
+                    GN-CKY-582741
+                  </p>
+                  <p className="mt-1 text-[11px] font-medium text-slate-600">
+                    Partagez. Localisez. Naviguez.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Reveal>
         </div>
       </section>
 
@@ -714,8 +931,7 @@ function Home() {
           ===================================================== */}
 
       <section
-        id="comment-ca-marche"
-        className="relative w-full overflow-hidden bg-white pb-10 pt-8 sm:pb-11 sm:pt-9 md:pb-12 md:pt-10 lg:pb-12 lg:pt-10 xl:pb-14"
+        className="hidden w-full overflow-hidden bg-white pb-10 pt-8 sm:pb-11 sm:pt-9 md:relative md:block md:pb-12 md:pt-10 lg:pb-12 lg:pt-10 xl:pb-14"
       >
         <div
           aria-hidden
@@ -1318,12 +1534,54 @@ function Home() {
       </section>
 
       {/* =====================================================
+          MOBILE — USAGES
+          ===================================================== */}
+
+      <section id="usages" className="border-t border-slate-100 bg-slate-50 px-4 py-8 md:hidden">
+        <div className="mx-auto max-w-md">
+          <Reveal>
+            <div className="text-center">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-slate-500 shadow-sm">
+                <Sparkles className="size-3 text-accent" />
+                Usages
+              </span>
+              <h2 className="text-display mt-3 text-2xl font-bold tracking-tight text-slate-950">
+                Pour tous les usages.
+              </h2>
+            </div>
+          </Reveal>
+
+          <div className="mt-5 grid grid-cols-2 gap-2.5">
+            {USAGES.map((item, index) => (
+              <Reveal key={item.cle} delay={index * 40}>
+                <article className="h-full rounded-2xl border border-slate-200 bg-white p-3.5 shadow-[0_6px_20px_rgba(15,23,42,0.035)]">
+                  <span
+                    className={cn(
+                      "flex size-9 items-center justify-center rounded-xl bg-gradient-to-br text-white shadow-md",
+                      item.grad,
+                    )}
+                  >
+                    <item.icone className="size-4" />
+                  </span>
+                  <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                    {item.titre}
+                  </p>
+                  <h3 className="mt-1 text-sm font-bold leading-5 text-slate-950">
+                    {item.mobileAccroche}
+                  </h3>
+                </article>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* =====================================================
           USAGES — VERSION MARKETING
           ===================================================== */}
 
       <section
-        id="usages"
-        className="relative w-full overflow-hidden border-t border-slate-100 bg-slate-50 py-10 sm:py-11 md:py-12 xl:py-14"
+        className="hidden w-full overflow-hidden border-t border-slate-100 bg-slate-50 py-10 sm:py-11 md:relative md:block md:py-12 xl:py-14"
       >
         <div
           aria-hidden
@@ -1438,10 +1696,50 @@ function Home() {
       </section>
 
       {/* =====================================================
+          MOBILE — CONFIANCE
+          ===================================================== */}
+
+      <section className="bg-white px-4 py-8 md:hidden">
+        <div className="mx-auto max-w-md">
+          <Reveal>
+            <div className="text-center">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-slate-500 shadow-sm">
+                <Sparkles className="size-3 text-accent" />
+                Confiance
+              </span>
+              <h2 className="text-display mt-3 text-2xl font-bold tracking-tight text-slate-950">
+                Conçu pour le terrain.
+              </h2>
+            </div>
+          </Reveal>
+
+          <div className="mt-5 space-y-2.5">
+            {POINTS_CONFIANCE.map((point, index) => (
+              <Reveal key={point.titre} delay={index * 40}>
+                <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-[0_6px_20px_rgba(15,23,42,0.035)]">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                    <point.icone className="size-4.5" />
+                  </span>
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-bold text-slate-950">
+                      {point.titre}
+                    </h3>
+                    <p className="mt-0.5 text-[11px] leading-4 text-slate-500">
+                      {point.mobileTexte}
+                    </p>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* =====================================================
           CONFIANCE — PREUVES TERRAIN
           ===================================================== */}
 
-      <section className="relative w-full overflow-hidden bg-white py-4 sm:py-5 md:py-6 xl:py-7">
+      <section className="hidden w-full overflow-hidden bg-white py-4 sm:py-5 md:relative md:block md:py-6 xl:py-7">
         <div
           aria-hidden
           className="pointer-events-none absolute left-1/2 top-0 h-[240px] w-[680px] -translate-x-1/2 rounded-full bg-cyan-50 blur-[90px]"
@@ -1509,10 +1807,85 @@ function Home() {
       </section>
 
       {/* =====================================================
+          MOBILE — CTA FINAL
+          ===================================================== */}
+
+      <section className="bg-white px-4 pb-8 pt-1 md:hidden">
+        <Reveal className="mx-auto max-w-md">
+          <div className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_20px_55px_-30px_rgba(15,23,42,0.28)]">
+            <div className="gradient-signature-soft px-5 py-6 text-white">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-white/85">
+                <Zap className="size-3" />
+                Commencer
+              </span>
+
+              <h2 className="text-display mt-3 text-2xl font-bold leading-tight tracking-tight">
+                Prêt à être facile à trouver ?
+              </h2>
+
+              <p className="mt-2.5 text-[13px] leading-5 text-white/85">
+                Créez votre Adresse GN et partagez votre localisation simplement.
+              </p>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                {["Numéro unique", "QR Code", "GPS"].map((item) => (
+                  <span
+                    key={item}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-2.5 py-1.5 text-[10px] font-medium text-white/90"
+                  >
+                    <Check className="size-3" />
+                    {item}
+                  </span>
+                ))}
+              </div>
+
+              <Button
+                asChild
+                className="mt-5 h-11 w-full rounded-xl bg-white text-sm font-bold text-slate-950 shadow-lg hover:bg-white"
+              >
+                <Link to="/commander">
+                  Créer mon Adresse GN
+                  <ArrowRight className="ml-1 size-4" />
+                </Link>
+              </Button>
+
+              <Link
+                to="/tarifs"
+                className="mt-3 flex items-center justify-center gap-1 text-xs font-semibold text-white/80"
+              >
+                Voir les offres
+                <ArrowRight className="size-3.5" />
+              </Link>
+            </div>
+
+            <div className="bg-gradient-to-br from-slate-50 to-cyan-50/60 p-4">
+              <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-sm">
+                <div className="min-w-0">
+                  <p className="text-[8px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                    Votre Adresse GN
+                  </p>
+                  <p className="mt-1 font-mono text-sm font-extrabold tracking-[0.06em] text-slate-950">
+                    GN-CKY-582741
+                  </p>
+                  <p className="mt-1 text-[10px] text-slate-500">
+                    Disponible avec ou sans plaque physique.
+                  </p>
+                </div>
+
+                <div className="rounded-xl bg-slate-50 p-2 ring-1 ring-slate-200">
+                  <QrCode className="size-8 text-slate-950" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </Reveal>
+      </section>
+
+      {/* =====================================================
           CTA FINAL — VERSION PREMIUM COMPACTE & RESPONSIVE
           ===================================================== */}
 
-      <section className="relative w-full overflow-hidden bg-white pb-7 pt-1 sm:pb-8 sm:pt-2 md:pb-8 md:pt-2 xl:pb-9 xl:pt-2">
+      <section className="hidden w-full overflow-hidden bg-white pb-7 pt-1 sm:pb-8 sm:pt-2 md:relative md:block md:pb-8 md:pt-2 xl:pb-9 xl:pt-2">
         {/* Halos décoratifs */}
         <div
           aria-hidden
