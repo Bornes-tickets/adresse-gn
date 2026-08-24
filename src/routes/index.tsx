@@ -487,29 +487,37 @@ function Home() {
         </section>
 
         {/* ---------------------------------------------------------------
-            3. DÉMONSTRATION ITINÉRAIRE — PAS DE TÉLÉPHONE DANS LE TÉLÉPHONE
+            3. DÉMONSTRATION ITINÉRAIRE — VERSION MOBILE COMPACTE
             --------------------------------------------------------------- */}
-        <section className="bg-white px-4 py-6">
+        <section className="bg-white px-4 py-4">
           <div className="mx-auto max-w-[430px]">
-            <div className="mb-4 flex items-end justify-between gap-3">
-              <div>
-                <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-accent">
-                  Démonstration
-                </p>
+            <div className="overflow-hidden rounded-[24px] border border-slate-200/90 bg-white shadow-[0_16px_38px_-24px_rgba(15,23,42,0.28)]">
+              {/* En-tête compact */}
+              <div className="flex items-center justify-between gap-3 px-4 pb-3 pt-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/8 px-2.5 py-1 text-[8px] font-bold uppercase tracking-[0.14em] text-accent ring-1 ring-accent/10">
+                      <Navigation2 className="size-3" />
+                      Itinéraire réel
+                    </span>
+                  </div>
 
-                <h2 className="text-display mt-1 text-[22px] font-bold tracking-tight text-slate-950">
-                  Du numéro à l’itinéraire.
-                </h2>
+                  <p className="mt-2 font-mono text-[15px] font-extrabold tracking-[0.09em] text-slate-950">
+                    GN-CKY-582741
+                  </p>
+
+                  <p className="mt-0.5 text-[11px] font-medium text-slate-500">
+                    → Hôtel Kaloum · Kaloum
+                  </p>
+                </div>
+
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-[13px] bg-accent/10 text-accent">
+                  <MapPin className="size-[18px]" />
+                </span>
               </div>
 
-              <span className="mb-0.5 inline-flex items-center gap-1.5 rounded-full border border-accent/15 bg-accent/5 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-accent">
-                <Navigation2 className="size-3" />
-                Itinéraire réel
-              </span>
-            </div>
-
-            <div className="overflow-hidden rounded-[26px] border border-slate-200 bg-white shadow-[0_18px_45px_-22px_rgba(15,23,42,0.28)]">
-              <div className="relative h-[250px] overflow-hidden bg-slate-100">
+              {/* Carte compacte */}
+              <div className="relative h-[178px] overflow-hidden border-y border-slate-100 bg-slate-100">
                 {GOOGLE_MAPS_EMBED_URL ? (
                   <iframe
                     title="Itinéraire Google Maps Adresse GN sur mobile"
@@ -527,92 +535,95 @@ function Home() {
                       style={{
                         backgroundImage:
                           "linear-gradient(rgb(203 213 225 / 0.55) 1px, transparent 1px), linear-gradient(90deg, rgb(203 213 225 / 0.55) 1px, transparent 1px)",
-                        backgroundSize: "24px 24px",
+                        backgroundSize: "22px 22px",
                       }}
                     />
 
-                    <div className="absolute -left-[8%] right-[20%] top-[18%] h-3 rotate-[102deg] rounded-full bg-white shadow-sm" />
-                    <div className="absolute left-[2%] right-[-10%] top-[48%] h-3 rotate-[8deg] rounded-full bg-white shadow-sm" />
-                    <div className="absolute left-[8%] right-[-8%] top-[75%] h-2.5 rotate-[14deg] rounded-full bg-white/95 shadow-sm" />
+                    <div className="absolute -left-[10%] right-[23%] top-[15%] h-2.5 rotate-[103deg] rounded-full bg-white shadow-sm" />
+                    <div className="absolute left-[1%] right-[-10%] top-[47%] h-2.5 rotate-[8deg] rounded-full bg-white shadow-sm" />
+                    <div className="absolute left-[7%] right-[-8%] top-[76%] h-2 rotate-[14deg] rounded-full bg-white/95 shadow-sm" />
 
                     <svg
-                      viewBox="0 0 360 250"
+                      viewBox="0 0 360 178"
                       className="absolute inset-0 h-full w-full"
                       aria-hidden
                     >
                       <path
-                        d="M66 220 C92 190 112 180 113 151 C115 120 91 102 108 77 C130 44 171 63 199 43 C217 31 231 22 254 16"
+                        d="M64 156 C86 133 104 125 106 103 C109 81 91 67 102 49 C119 23 153 39 178 24 C193 15 207 10 226 8"
                         fill="none"
                         stroke="white"
-                        strokeWidth="12"
+                        strokeWidth="11"
                         strokeLinecap="round"
                       />
+
                       <path
-                        d="M66 220 C92 190 112 180 113 151 C115 120 91 102 108 77 C130 44 171 63 199 43 C217 31 231 22 254 16"
+                        d="M64 156 C86 133 104 125 106 103 C109 81 91 67 102 49 C119 23 153 39 178 24 C193 15 207 10 226 8"
                         fill="none"
                         stroke="rgb(13 148 136)"
-                        strokeWidth="6"
+                        strokeWidth="5.5"
                         strokeLinecap="round"
                       />
                     </svg>
 
-                    <span className="absolute bottom-[8%] left-[16%] flex size-6 items-center justify-center rounded-full border-[3px] border-white bg-blue-600 shadow-lg">
-                      <span className="size-2 rounded-full bg-white" />
+                    <span className="absolute bottom-[8%] left-[16%] flex size-5.5 items-center justify-center rounded-full border-[3px] border-white bg-blue-600 shadow-lg">
+                      <span className="size-1.5 rounded-full bg-white" />
                     </span>
 
-                    <span className="absolute right-[22%] top-[7%] flex size-10 items-center justify-center rounded-full bg-white text-accent shadow-lg">
-                      <MapPin className="size-6 fill-accent/10" />
+                    <span className="absolute right-[24%] top-[7%] flex size-9 items-center justify-center rounded-full bg-white text-accent shadow-lg">
+                      <MapPin className="size-5 fill-accent/10" />
                     </span>
                   </div>
                 )}
 
-                <div className="pointer-events-none absolute left-3 top-3 z-20 rounded-[14px] border border-white/80 bg-white/95 px-3 py-2 shadow-lg backdrop-blur">
-                  <p className="text-[7px] font-bold uppercase tracking-[0.16em] text-slate-400">
+                {/* Numéro visible sur la carte */}
+                <div className="pointer-events-none absolute left-3 top-3 z-20 rounded-[13px] border border-white/80 bg-white/94 px-2.5 py-1.5 shadow-md backdrop-blur">
+                  <p className="text-[7px] font-bold uppercase tracking-[0.14em] text-slate-400">
                     Adresse GN
                   </p>
 
-                  <p className="mt-1 font-mono text-[14px] font-extrabold tracking-[0.1em] text-slate-950">
+                  <p className="mt-0.5 font-mono text-[11px] font-extrabold tracking-[0.09em] text-slate-950">
                     GN-CKY-582741
                   </p>
                 </div>
               </div>
 
-              <div className="p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-[14px] font-bold text-slate-950">
-                      Hôtel Kaloum
-                    </p>
-
-                    <p className="mt-0.5 text-[11px] text-slate-500">
-                      Kaloum · Conakry
-                    </p>
-                  </div>
-
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
-                    <MapPin className="size-[18px]" />
-                  </span>
-                </div>
-
-                <div className="mt-3 grid grid-cols-2 gap-2">
+              {/* Action principale */}
+              <div className="p-3">
+                <div className="grid grid-cols-[1fr_auto] gap-2">
                   <a
                     href={GOOGLE_MAPS_ROUTE_URL}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex h-11 items-center justify-center gap-1.5 rounded-[14px] bg-gradient-to-r from-accent to-accent-dark text-[11px] font-bold text-white shadow-md shadow-accent/15"
+                    className="flex h-11 items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-accent to-accent-dark px-4 text-[11px] font-bold text-white shadow-md shadow-accent/15 transition-all active:scale-[0.99]"
                   >
                     <Navigation2 className="size-4" />
-                    Google Maps
+                    Ouvrir dans Google Maps
                   </a>
 
                   <a
                     href={WAZE_ROUTE_URL}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex h-11 items-center justify-center gap-1.5 rounded-[14px] border border-slate-200 bg-white text-[11px] font-bold text-slate-700"
+                    aria-label="Ouvrir dans Waze"
+                    className="flex h-11 min-w-11 items-center justify-center rounded-[14px] border border-slate-200 bg-white px-3 text-slate-700 transition-all active:scale-[0.98] active:bg-slate-50"
                   >
                     <Navigation2 className="size-4" />
+                  </a>
+                </div>
+
+                <div className="mt-2 flex items-center justify-between gap-3 px-0.5">
+                  <span className="text-[9px] font-medium text-slate-400">
+                    Navigation directe vers la destination
+                  </span>
+
+                  <a
+                    href={WAZE_ROUTE_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-[9px] font-semibold text-slate-500"
+                  >
                     Waze
+                    <ArrowRight className="size-3" />
                   </a>
                 </div>
               </div>
