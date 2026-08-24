@@ -125,12 +125,16 @@ const PAIEMENTS: { code: Paiement; label: string; icone: any; desc: string; disp
 type CommanderSearch = { type?: ClientType; formule?: string };
 
 export const Route = createFileRoute("/commander")({
-  validateSearch: (search: Record<string, unknown>): CommanderSearch => ({
-    type: (["particulier", "professionnel", "institutionnel"].includes(search.type as string)
-      ? search.type
-      : undefined) as ClientType | undefined,
-    formule: typeof search.formule === "string" ? search.formule : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): CommanderSearch => {
+    const type = search["type"];
+    const formule = search["formule"];
+    const valid: CommanderSearch = {};
+    if (type === "particulier" || type === "professionnel" || type === "institutionnel") {
+      valid.type = type;
+    }
+    if (typeof formule === "string") valid.formule = formule;
+    return valid;
+  },
   head: () => ({
     meta: [
       { title: "Commander votre Adresse GN" },
