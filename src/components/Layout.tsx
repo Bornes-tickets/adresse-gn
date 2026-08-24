@@ -98,8 +98,10 @@ function useRoleUtilisateur(userId: string | null | undefined) {
 }
 
 /* =========================================================
-   HEADER — Mobile ultra épuré : Logo + Burger uniquement
-   Sur ≥ sm : LanguageSwitcher, "Se connecter", CTA visibles
+   HEADER
+   - Mobile / PWA Android / iOS : fixed + safe-area
+   - Desktop : sticky comme auparavant
+   - Le contenu principal réserve automatiquement la hauteur du header
    ========================================================= */
 function Header() {
   const { t } = useTranslation();
@@ -110,8 +112,8 @@ function Header() {
   const espace = role ? ESPACES_METIER[role] : null;
 
   return (
-    <header className="sticky top-0 z-[900] border-b border-border/70 bg-background">
-      <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-2.5 sm:gap-4 sm:px-6 sm:py-3.5">
+    <header className="fixed inset-x-0 top-0 z-[1000] border-b border-border/70 bg-background/95 pt-[env(safe-area-inset-top)] shadow-[0_6px_24px_-18px_rgba(15,23,42,0.35)] backdrop-blur-xl supports-[backdrop-filter]:bg-background/90 md:sticky md:pt-0 md:shadow-none">
+      <div className="mx-auto grid h-16 max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 sm:h-[72px] sm:gap-4 sm:px-6 md:h-auto md:py-3.5">
         <Link to="/" aria-label={t("nav.home")} className="min-w-0">
           <Logo />
         </Link>
@@ -223,7 +225,10 @@ function Header() {
                 <Menu className="size-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[280px]">
+            <SheetContent
+              side="right"
+              className="w-[280px] pt-[calc(1.5rem+env(safe-area-inset-top))] md:pt-6"
+            >
               <SheetHeader>
                 <SheetTitle className="text-left rtl:text-right">
                   <Logo />
@@ -579,9 +584,19 @@ export function Layout({ children }: { children: ReactNode }) {
   const isBackoffice = BACKOFFICE_PREFIXES.some((prefix) => location.pathname.startsWith(prefix));
   if (isBackoffice) return <div className="min-h-screen">{children}</div>;
   return (
-    <div className="flex min-h-screen min-w-0 flex-col overflow-x-hidden bg-background">
+    <div className="flex min-h-screen min-w-0 flex-col overflow-x-clip bg-background">
       <Header />
-      <main className="min-w-0 flex-1">{children}</main>
+
+      {/*
+        Mobile / application installée :
+        le header est fixed pour rester visible pendant le scroll.
+        On réserve sa hauteur + la safe-area système afin que le Hero
+        ne passe jamais sous la barre de titre Android/iOS.
+      */}
+      <main className="min-w-0 flex-1 pt-[calc(64px+env(safe-area-inset-top))] sm:pt-[calc(72px+env(safe-area-inset-top))] md:pt-0">
+        {children}
+      </main>
+
       <Footer />
     </div>
   );
