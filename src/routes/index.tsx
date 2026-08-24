@@ -806,9 +806,9 @@ function Home() {
         {/* ---------------------------------------------------------------
             7. CTA FINAL — MOBILE SIGNATURE / ULTRA PREMIUM COMPACT
             --------------------------------------------------------------- */}
-        <section className="bg-white px-4 py-3.5">
-          <div className="mx-auto max-w-[430px]">
-            <div className="relative isolate overflow-hidden rounded-[26px] border border-slate-800/70 bg-[#071426] px-4.5 pb-4 pt-3.5 text-white shadow-[0_24px_55px_-28px_rgba(2,8,23,0.68)]">
+        <section className="bg-white px-3 py-3.5">
+          <div className="mx-auto max-w-[446px]">
+            <div className="relative isolate overflow-hidden rounded-[26px] border border-slate-800/70 bg-[#071426] px-4 pb-4 pt-3.5 text-white shadow-[0_24px_55px_-28px_rgba(2,8,23,0.68)]">
               {/* Fond signature */}
               <div
                 aria-hidden
@@ -839,9 +839,9 @@ function Home() {
                   </span>
                 </div>
 
-                {/* Titre — UNE SEULE LIGNE SUR MOBILE */}
-                <h2 className="text-display mt-3 whitespace-nowrap text-[clamp(15px,4.8vw,19px)] font-extrabold leading-none tracking-[-0.025em] text-white">
-                  Une adresse claire.{" "}
+                {/* Titre — UNE SEULE LIGNE, TOUJOURS ENTIÈREMENT VISIBLE SUR MOBILE */}
+                <h2 className="text-display mt-3 w-full whitespace-nowrap text-[clamp(13.5px,3.85vw,16px)] font-extrabold leading-none tracking-[-0.04em] text-white">
+                  <span>Une adresse claire.</span>{" "}
                   <span className="bg-gradient-to-r from-cyan-200 via-sky-200 to-emerald-200 bg-clip-text text-transparent">
                     Un accès immédiat.
                   </span>
