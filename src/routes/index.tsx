@@ -2,42 +2,15 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  ArrowRight,
-  Bike,
-  Building2,
-  Check,
-  ChevronDown,
-  Download,
-  ExternalLink,
-  Handshake,
-  Home as HomeIcon,
-  MapPin,
-  MapPinned,
-  Mic,
-  MicOff,
-  Navigation2,
-  QrCode,
-  Search,
-  Share2,
-  Smartphone,
-  Sparkles,
-  UtensilsCrossed,
-  X,
-  Zap,
+  ArrowRight, Bike, Building2, Check, ChevronDown, Download, ExternalLink,
+  Handshake, Home as HomeIcon, MapPin, MapPinned, Mic, MicOff, Navigation2,
+  QrCode, Search, Share2, Smartphone, Sparkles, UtensilsCrossed, X, Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Reveal } from "@/components/Reveal";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  getDefaultZone,
-  isValidBeaconNumber,
-  normalizeBeaconNumber,
-} from "@/lib/geo";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { getDefaultZone, isValidBeaconNumber, normalizeBeaconNumber } from "@/lib/geo";
 import { searchBeacon } from "@/lib/search.functions";
 import { InstallBanner } from "@/components/InstallBanner";
 import { QrScanner } from "@/components/QrScanner";
@@ -53,12 +26,9 @@ const SECTION_TITLE_CLASS =
   "text-display text-center font-bold leading-[1.08] tracking-tight text-slate-950 text-[clamp(1.8rem,2.35vw,2.75rem)]";
 const SECTION_COPY_CLASS =
   "text-center text-sm leading-6 text-slate-600 md:text-[15px]";
-
 const DEMO_ORIGIN = "Kaloum, Conakry, Guinea";
 const DEMO_DESTINATION = "Hôtel Kaloum, Conakry, Guinea";
-const GOOGLE_MAPS_EMBED_KEY = (
-  import.meta.env.VITE_GOOGLE_MAPS_EMBED_API_KEY as string | undefined
-)?.trim();
+const GOOGLE_MAPS_EMBED_KEY = (import.meta.env.VITE_GOOGLE_MAPS_EMBED_API_KEY as string | undefined)?.trim();
 const GOOGLE_MAPS_EMBED_URL = GOOGLE_MAPS_EMBED_KEY
   ? `https://www.google.com/maps/embed/v1/directions?key=${encodeURIComponent(GOOGLE_MAPS_EMBED_KEY)}&origin=${encodeURIComponent(DEMO_ORIGIN)}&destination=${encodeURIComponent(DEMO_DESTINATION)}&mode=driving&language=fr&region=GN`
   : null;
@@ -71,20 +41,17 @@ const USAGES = [
   { icone: Bike, cle: "delivery", titre: "Livraisons", accroche: "Livrez plus vite, au bon endroit.", texte: "Réduisez les appels d'orientation et le temps perdu à rechercher une destination.", avantages: ["Moins d'appels", "Destination précise"], grad: "from-violet-500 to-fuchsia-600", fond: "from-violet-50/70 via-white to-white", bordure: "hover:border-violet-200" },
   { icone: Building2, cle: "companies", titre: "Entreprises", accroche: "Centralisez vos adresses.", texte: "Identifiez vos bureaux, agences et sites dans une même solution.", avantages: ["Multi-sites", "Intégration API"], grad: "from-sky-500 to-blue-600", fond: "from-sky-50/70 via-white to-white", bordure: "hover:border-sky-200" },
 ];
-
 const ETAPES = [
   { numero: "01", icone: MapPinned, titre: "Obtenez votre Adresse GN", texte: "Votre emplacement reçoit un numéro unique associé à sa localisation et à son QR Code.", tags: ["Numéro unique", "QR Code"], titreCourt: "Obtenez" },
   { numero: "02", icone: Search, titre: "Saisissez ou scannez", texte: "Entrez le numéro ou scannez le QR Code pour retrouver instantanément l'adresse.", tags: ["Sans application", "Web & mobile"], titreCourt: "Scannez" },
   { numero: "03", icone: Navigation2, titre: "Lancez votre itinéraire", texte: "Choisissez votre application de navigation et laissez-vous guider jusqu'à destination.", tags: ["Google Maps", "Waze"], titreCourt: "Naviguez" },
 ];
-
 const AVANTAGES = [
   { icone: Zap, titre: "Localisation immédiate", texte: "Du numéro à la destination" },
   { icone: QrCode, titre: "QR Code intégré", texte: "Scannez pour ouvrir l'adresse" },
   { icone: Share2, titre: "Partage simplifié", texte: "Numéro, lien ou QR Code" },
   { icone: Smartphone, titre: "Accessible partout", texte: "Téléphone, tablette et ordinateur" },
 ];
-
 const POINTS_CONFIANCE = [
   { icone: MapPinned, titre: "Précision GPS", texte: "Chaque Adresse GN est associée à une position géographique exploitable pour retrouver le lieu sans approximation.", badge: "Repère fiable" },
   { icone: Handshake, titre: "Accompagnement local", texte: "Des agents peuvent accompagner la création et l'installation de votre Adresse GN selon l'offre choisie.", badge: "Support terrain" },
@@ -109,9 +76,6 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-function Eyebrow({ children }: { children: string }) {
-  return <p className="text-center text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">{children}</p>;
-}
 type DesktopInstallPromptEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform?: string }> };
 function hasSpeechRecognition(): boolean {
   if (typeof window === "undefined") return false;
@@ -128,7 +92,6 @@ function Home() {
   const [ecoute, setEcoute] = useState(false);
   const [desktopInstallPrompt, setDesktopInstallPrompt] = useState<DesktopInstallPromptEvent | null>(null);
   const [desktopInstallVisible, setDesktopInstallVisible] = useState(false);
-  // ➊ MOBILE : afficher ou non le contenu marketing détaillé
   const [voirPlusMobile, setVoirPlusMobile] = useState(false);
   const recognitionRef = useRef<any>(null);
 
@@ -146,7 +109,7 @@ function Home() {
   const gererScanQr = (contenu: string) => {
     setScannerOpen(false);
     const match = contenu.match(/GN-[A-Z]{3}-\d{6}/i);
-    if (match) { const valeur = match[0].toUpperCase(); setNumero(valeur); void rechercher(valeur); }
+    if (match) { const v = match[0].toUpperCase(); setNumero(v); void rechercher(v); }
     else toast.error("QR non reconnu — format attendu : GN-CKY-XXXXXX");
   };
   const demarrerVoix = () => {
@@ -175,7 +138,6 @@ function Home() {
   };
   const arreterVoix = () => { try { recognitionRef.current?.stop(); } catch {} setEcoute(false); };
   useEffect(() => () => { try { recognitionRef.current?.abort(); } catch {} }, []);
-
   useEffect(() => {
     if (typeof window === "undefined") return;
     const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
@@ -205,12 +167,97 @@ function Home() {
     setDesktopInstallPrompt(null);
   };
 
+  const submitSearch = (e: React.FormEvent) => { e.preventDefault(); void rechercher(numero); };
+
   return (
     <div className="w-full overflow-x-hidden bg-white">
       {/* ===================================================================
-          HERO — commun mobile / desktop (INCHANGÉ)
+          🅜 MOBILE HERO — Ultra moderne, dédié, PWA-quality (< md)
           =================================================================== */}
-      <section className="relative overflow-hidden gradient-signature-soft">
+      <section className="relative overflow-hidden gradient-signature-soft md:hidden">
+        {/* Décors premium */}
+        <div aria-hidden className="pointer-events-none absolute -top-24 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-white/10 blur-3xl" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-24 -right-20 h-[280px] w-[280px] rounded-full bg-accent/30 blur-3xl" />
+        <div aria-hidden className="pointer-events-none absolute top-1/3 -left-16 h-[200px] w-[200px] rounded-full bg-cyan-300/20 blur-3xl" />
+
+        <div className="relative px-5 pb-8 pt-6">
+          {/* Mini-badge de confiance */}
+          <div className="flex justify-center">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-white backdrop-blur-md">
+              <span className="flex size-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgb(52_211_153)]" />
+              Pilote actif à Conakry
+            </span>
+          </div>
+
+          {/* Titre — wrap naturel, ultra lisible */}
+          <h1
+            className="mt-5 text-center font-extrabold leading-[1.05] text-white text-balance"
+            style={{
+              textShadow: "0 2px 20px rgb(15 23 42 / 0.28)",
+              fontSize: "clamp(1.9rem, 8.5vw, 2.6rem)",
+            }}
+          >
+            Votre adresse,<br />
+            enfin facile à trouver.
+          </h1>
+
+          {/* Sous-titre court */}
+          <p className="mx-auto mt-3 max-w-[22rem] text-center text-[15px] leading-6 text-white/85">
+            Un numéro unique par lieu. Fini les explications.
+          </p>
+
+          {/* Barre de recherche premium */}
+          <form onSubmit={submitSearch} className="mt-6">
+            <div className="rounded-3xl bg-white/95 p-2 shadow-[0_20px_50px_-12px_rgba(15,23,42,0.4)] ring-1 ring-white/50 backdrop-blur-xl">
+              <div className="flex items-center gap-1 rounded-2xl bg-slate-50/80 pl-4 pr-1.5 focus-within:bg-white focus-within:ring-2 focus-within:ring-accent/25">
+                <input
+                  value={numero}
+                  onChange={(e) => { setNumero(e.target.value); setErreur(null); }}
+                  placeholder="GN-CKY-______"
+                  aria-label={t("home.hero.inputLabel")}
+                  className="h-12 w-full min-w-0 bg-transparent font-mono text-base font-semibold tracking-[0.08em] text-slate-900 outline-none placeholder:font-normal placeholder:text-slate-400"
+                />
+                <button
+                  type="button"
+                  onClick={ecoute ? arreterVoix : demarrerVoix}
+                  aria-label={ecoute ? "Arrêter" : "Dicter"}
+                  className={cn("flex size-10 shrink-0 items-center justify-center rounded-xl transition active:scale-90",
+                    ecoute ? "animate-pulse bg-rose-500 text-white" : "text-slate-500 hover:bg-slate-100")}
+                >
+                  {ecoute ? <MicOff className="size-[18px]" /> : <Mic className="size-[18px]" />}
+                </button>
+              </div>
+              <Button
+                type="submit"
+                disabled={enCours}
+                className="mt-2 h-12 w-full rounded-2xl bg-gradient-to-r from-accent to-accent-dark text-[15px] font-bold text-white shadow-md shadow-accent/30 transition active:scale-[0.98]"
+              >
+                <Search className="size-[18px]" />
+                {enCours ? "Recherche…" : "Localiser cette adresse"}
+              </Button>
+            </div>
+            {erreur && <p role="alert" className="mt-2 px-2 text-[13px] font-medium text-rose-100">{erreur}</p>}
+          </form>
+
+          {/* Chip "essayer un exemple" — 1 seul, plus lisible */}
+          <div className="mt-4 flex justify-center">
+            <Link
+              to="/a/$number"
+              params={{ number: EXEMPLE_DEMO }}
+              className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3.5 py-1.5 text-xs font-medium text-white/90 backdrop-blur transition active:scale-95"
+            >
+              <Sparkles className="size-3.5 text-accent" />
+              Essayer un exemple
+              <span className="font-mono text-[11px] font-bold text-white">GN-CKY-582741</span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ===================================================================
+          💻 DESKTOP HERO — INCHANGÉ (visible ≥ md uniquement)
+          =================================================================== */}
+      <section className="relative hidden overflow-hidden gradient-signature-soft md:block">
         <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-white/10 blur-3xl" />
         <div className={cn(SITE_CONTAINER, "relative pb-7 pt-5 md:pb-11 md:pt-8 xl:pb-12 xl:pt-9")}>
           <h1
@@ -223,7 +270,7 @@ function Home() {
             Un numéro unique par lieu. Fini les explications, les repères et les appels perdus.
           </p>
           <div className="mx-auto mt-6 max-w-[1280px] rounded-[22px] bg-white/95 p-2 shadow-[0_20px_60px_-15px_rgba(15,23,42,0.35)] ring-1 ring-white/50 backdrop-blur-xl md:mt-8 xl:mt-9">
-            <form className="flex flex-col gap-2 md:flex-row" onSubmit={(e) => { e.preventDefault(); void rechercher(numero); }}>
+            <form className="flex flex-col gap-2 md:flex-row" onSubmit={submitSearch}>
               <div className="flex min-w-0 flex-1 items-center gap-1 rounded-2xl border border-transparent bg-slate-50/80 pl-4 pr-1.5 transition-all focus-within:border-accent focus-within:bg-white focus-within:ring-2 focus-within:ring-accent/20">
                 <input value={numero} onChange={(e) => { setNumero(e.target.value); setErreur(null); }} placeholder="GN-CKY-______" aria-label={t("home.hero.inputLabel")} aria-invalid={!!erreur}
                   className="h-12 w-full min-w-0 bg-transparent font-mono text-lg font-semibold tracking-[0.08em] text-slate-900 outline-hidden placeholder:font-normal placeholder:text-slate-400 sm:text-xl" />
@@ -267,64 +314,111 @@ function Home() {
       </section>
 
       {/* ===================================================================
-          🅜 MOBILE ONLY — Bloc compact focus utilisateur (< md)
+          🅜 MOBILE — Bloc premium ultra-moderne (< md)
+          Glassmorphism · grosses cibles tactiles · micro-parcours
           =================================================================== */}
-      <section className="block bg-white px-4 py-6 md:hidden">
-        {/* Actions rapides — 2 grosses tuiles tactiles */}
-        <div className="grid grid-cols-2 gap-3">
+      <section className="relative block bg-gradient-to-b from-slate-50 via-white to-white px-5 pb-6 pt-7 md:hidden">
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-slate-50 to-transparent" />
+
+        {/* Actions rapides — 2 tuiles premium avec accent visuel */}
+        <div className="relative grid grid-cols-2 gap-3">
+          {/* Scanner QR */}
           <button
             type="button"
             onClick={() => setScannerOpen(true)}
-            className="group flex flex-col items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all active:scale-95 active:bg-slate-50"
+            className="group relative flex flex-col overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-4 text-left shadow-[0_10px_30px_-8px_rgba(15,23,42,0.12)] transition active:scale-[0.97]"
           >
-            <span className="flex size-12 items-center justify-center rounded-xl bg-gradient-to-br from-accent to-accent-dark text-white shadow-md shadow-accent/20">
-              <QrCode className="size-6" />
+            <div aria-hidden className="absolute -right-8 -top-8 size-28 rounded-full bg-accent/[0.07] blur-2xl" />
+            <span className="relative flex size-11 items-center justify-center rounded-2xl bg-gradient-to-br from-accent to-accent-dark text-white shadow-lg shadow-accent/25">
+              <QrCode className="size-5" strokeWidth={2.25} />
             </span>
-            <span className="text-sm font-bold text-slate-900">Scanner un QR</span>
-            <span className="text-[11px] text-slate-500">Trouver une adresse</span>
+            <p className="relative mt-3 text-[15px] font-bold leading-tight text-slate-950">
+              Scanner un QR
+            </p>
+            <p className="relative mt-1 text-[11.5px] leading-4 text-slate-500">
+              Trouver une adresse
+            </p>
+            <ArrowRight className="absolute bottom-3 right-3 size-4 text-slate-300 transition group-hover:text-accent" />
           </button>
+
+          {/* Créer mon adresse */}
           <Link
             to="/commander"
-            className="group flex flex-col items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-950 p-4 shadow-md transition-all active:scale-95"
+            className="group relative flex flex-col overflow-hidden rounded-3xl border border-slate-900 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-4 shadow-[0_10px_30px_-8px_rgba(15,23,42,0.35)] transition active:scale-[0.97]"
           >
-            <span className="flex size-12 items-center justify-center rounded-xl bg-white/10 text-white">
-              <Sparkles className="size-6" />
+            <div aria-hidden className="absolute -right-6 -top-10 size-32 rounded-full bg-accent/25 blur-2xl" />
+            <div aria-hidden className="absolute -bottom-8 -left-6 size-24 rounded-full bg-cyan-500/15 blur-2xl" />
+            <span className="relative flex size-11 items-center justify-center rounded-2xl bg-white/10 text-white ring-1 ring-white/15 backdrop-blur">
+              <Sparkles className="size-5" strokeWidth={2.25} />
             </span>
-            <span className="text-sm font-bold text-white">Créer mon adresse</span>
-            <span className="text-[11px] text-white/70">15 min par un agent</span>
+            <p className="relative mt-3 text-[15px] font-bold leading-tight text-white">
+              Créer mon adresse
+            </p>
+            <p className="relative mt-1 text-[11.5px] leading-4 text-white/70">
+              15 min par un agent
+            </p>
+            <ArrowRight className="absolute bottom-3 right-3 size-4 text-white/40 transition group-hover:text-white" />
           </Link>
         </div>
 
-        {/* Mini "Comment ça marche" — 3 icônes horizontales */}
-        <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-          <p className="text-center text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
-            Comment ça marche
-          </p>
-          <div className="mt-3 flex items-center justify-between gap-2">
-            {ETAPES.map((etape, i) => (
-              <div key={etape.numero} className="flex flex-1 flex-col items-center gap-1.5 text-center">
-                <div className="relative">
-                  <span className="flex size-11 items-center justify-center rounded-xl bg-slate-950 text-white">
-                    <etape.icone className="size-5" />
-                  </span>
-                  <span className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-accent text-[9px] font-bold text-white ring-2 ring-white">
-                    {i + 1}
-                  </span>
+        {/* Comment ça marche — pastilles reliées, moderne */}
+        <div className="mt-6 rounded-3xl border border-slate-200/80 bg-white p-5 shadow-[0_8px_24px_-8px_rgba(15,23,42,0.08)]">
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
+              Comment ça marche
+            </p>
+            <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold text-emerald-700">
+              &lt; 30 sec
+            </span>
+          </div>
+          {/* Timeline horizontale avec ligne de connexion */}
+          <div className="relative mt-4">
+            <div aria-hidden className="absolute left-[14%] right-[14%] top-5 h-0.5 bg-gradient-to-r from-emerald-300 via-sky-300 to-fuchsia-300" />
+            <div className="relative flex items-start justify-between gap-2">
+              {ETAPES.map((etape, i) => (
+                <div key={etape.numero} className="flex flex-1 flex-col items-center gap-2 text-center">
+                  <div className="relative">
+                    <span className="flex size-11 items-center justify-center rounded-2xl bg-slate-950 text-white shadow-md ring-4 ring-white">
+                      <etape.icone className="size-[18px]" strokeWidth={2.25} />
+                    </span>
+                    <span className="absolute -right-1.5 -top-1.5 flex size-5 items-center justify-center rounded-full bg-accent text-[10px] font-black text-white shadow-sm ring-2 ring-white">
+                      {i + 1}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-[12px] font-bold leading-tight text-slate-900">{etape.titreCourt}</p>
+                    <p className="mt-0.5 text-[10px] leading-tight text-slate-500">
+                      {i === 0 ? "Un numéro" : i === 1 ? "En 1 clic" : "GPS direct"}
+                    </p>
+                  </div>
                 </div>
-                <span className="text-[11px] font-semibold text-slate-800">{etape.titreCourt}</span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Toggle "Voir plus" — révèle le contenu marketing détaillé */}
+        {/* Preuves rapides */}
+        <div className="mt-5 grid grid-cols-3 gap-2">
+          {[
+            { icone: Zap, label: "Instant" },
+            { icone: QrCode, label: "QR + Numéro" },
+            { icone: Navigation2, label: "GPS direct" },
+          ].map((item) => (
+            <div key={item.label} className="flex flex-col items-center gap-1.5 rounded-2xl border border-slate-200/70 bg-white/70 p-3 backdrop-blur">
+              <item.icone className="size-4 text-accent" strokeWidth={2.25} />
+              <span className="text-[10.5px] font-semibold text-slate-700">{item.label}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Toggle "Voir plus" */}
         {!voirPlusMobile && (
           <button
             type="button"
             onClick={() => setVoirPlusMobile(true)}
-            className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition-all active:scale-[0.98] active:bg-slate-50"
+            className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-[13px] font-semibold text-slate-700 transition active:scale-[0.98] active:bg-slate-100"
           >
-            En savoir plus
+            En savoir plus sur Adresse GN
             <ChevronDown className="size-4" />
           </button>
         )}
@@ -332,12 +426,10 @@ function Home() {
 
       {/* ===================================================================
           💻 DESKTOP (≥ md) ou MOBILE si "Voir plus" activé
-          Tout le contenu marketing existant, INCHANGÉ côté desktop.
+          Contenu marketing existant, INCHANGÉ.
           =================================================================== */}
       <div className={cn(voirPlusMobile ? "block" : "hidden md:block")}>
-        {/* =====================================================
-            COMMENT ÇA MARCHE
-            ===================================================== */}
+        {/* ===== COMMENT ÇA MARCHE ===== */}
         <section id="comment-ca-marche" className="relative w-full overflow-hidden bg-white pb-10 pt-8 sm:pb-11 sm:pt-9 md:pb-12 md:pt-10 lg:pb-12 lg:pt-10 xl:pb-14">
           <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.022]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, rgb(15 23 42) 1px, transparent 0)", backgroundSize: "34px 34px" }} />
           <div aria-hidden className="pointer-events-none absolute -right-48 top-24 h-[500px] w-[500px] rounded-full bg-cyan-100/30 blur-[130px]" />
@@ -412,7 +504,6 @@ function Home() {
                   </div>
                 </Reveal>
               </div>
-              {/* GOOGLE MAPS MOCKUP */}
               <Reveal delay={150} className="relative">
                 <div className="relative mx-auto flex w-full max-w-[620px] flex-col items-center">
                   <div aria-hidden className="absolute left-1/2 top-1/2 h-[470px] w-[470px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-accent/20 via-cyan-100/35 to-blue-100/25 blur-[80px]" />
@@ -465,18 +556,6 @@ function Home() {
                           <p className="text-[7px] font-semibold uppercase tracking-[0.16em] text-slate-400">Numéro recherché</p>
                           <p className="mt-0.5 font-mono text-[11px] font-extrabold tracking-[0.12em] text-slate-950">GN-CKY-582741</p>
                         </div>
-                        <div className="pointer-events-none absolute left-[6%] top-[17%] z-20 rounded-xl border border-slate-200 bg-white/96 px-2.5 py-1.5 shadow-lg backdrop-blur">
-                          <p className="text-[10px] font-bold leading-none text-amber-600">24 min</p>
-                          <p className="mt-0.5 text-[8px] text-slate-500">10 km</p>
-                        </div>
-                        <div className="pointer-events-none absolute right-[10%] top-[34%] z-20 rounded-xl border border-slate-200 bg-white/96 px-2.5 py-1.5 shadow-lg backdrop-blur">
-                          <p className="text-[10px] font-bold leading-none text-slate-700">25 min</p>
-                          <p className="mt-0.5 text-[8px] text-slate-500">9,9 km</p>
-                        </div>
-                        <div className="pointer-events-none absolute bottom-[13%] left-[37%] z-20 rounded-xl border border-slate-200 bg-white/96 px-2.5 py-1.5 shadow-lg backdrop-blur">
-                          <p className="text-[10px] font-bold leading-none text-slate-700">28 min</p>
-                          <p className="mt-0.5 text-[8px] text-slate-500">10,3 km</p>
-                        </div>
                       </div>
                       <div className="relative z-20 border-t border-slate-100 bg-white p-3.5">
                         <div className="flex items-start justify-between gap-3">
@@ -505,39 +584,9 @@ function Home() {
                       </div>
                     </div>
                   </div>
-                  <div className="pointer-events-none absolute -left-2 top-[27%] z-10 hidden rotate-[-4deg] rounded-2xl border border-slate-200 bg-white px-3 py-2.5 shadow-xl md:block xl:-left-8">
-                    <div className="flex items-center gap-2">
-                      <div className="flex size-7 items-center justify-center rounded-full bg-accent/10"><Share2 className="size-3.5 text-accent" /></div>
-                      <div>
-                        <p className="text-[9px] font-bold text-slate-900">Adresse partagée</p>
-                        <p className="text-[8px] text-slate-500">Numéro ou QR Code</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="pointer-events-none absolute -right-2 top-[39%] z-10 hidden rotate-[4deg] rounded-2xl border border-slate-200 bg-white px-3 py-2.5 shadow-xl md:block xl:-right-8">
-                    <div className="flex items-center gap-2">
-                      <div className="flex size-7 items-center justify-center rounded-full bg-emerald-100"><Check className="size-3.5 text-emerald-600" /></div>
-                      <div>
-                        <p className="text-[9px] font-bold text-slate-900">Destination trouvée</p>
-                        <p className="text-[8px] text-slate-500">Navigation disponible</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="relative z-10 mt-4 flex flex-wrap items-center justify-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[9px] font-medium text-slate-600 shadow-sm">
-                      <Check className="size-3 text-emerald-600" /> Google Maps
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[9px] font-medium text-slate-600 shadow-sm">
-                      <Check className="size-3 text-emerald-600" /> Waze
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[9px] font-medium text-slate-600 shadow-sm">
-                      <Check className="size-3 text-emerald-600" /> Navigation en 1 clic
-                    </span>
-                  </div>
                 </div>
               </Reveal>
             </div>
-            {/* AVANT / APRÈS */}
             <Reveal delay={100}>
               <div className="mt-9 md:mt-10 xl:mt-11">
                 <div className="mx-auto mb-6 text-center">
@@ -550,13 +599,11 @@ function Home() {
                   </p>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2 xl:gap-5">
-                  <div className="relative overflow-hidden rounded-[26px] border border-rose-100 bg-gradient-to-br from-rose-50/55 via-white to-white p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                  <div className="relative overflow-hidden rounded-[26px] border border-rose-100 bg-gradient-to-br from-rose-50/55 via-white to-white p-6">
                     <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-rose-100 bg-white px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-rose-600 shadow-sm">
                       <X className="size-3.5" /> Sans Adresse GN
                     </div>
-                    <p className="text-base font-semibold leading-snug text-slate-900 md:text-lg">
-                      « Après la station, tournez à droite puis demandez le restaurant… »
-                    </p>
+                    <p className="text-base font-semibold leading-snug text-slate-900 md:text-lg">« Après la station, tournez à droite puis demandez le restaurant… »</p>
                     <div className="mt-4 space-y-2.5">
                       {["Des indications longues à transmettre", "Des appels répétés pour guider", "Une destination plus difficile à trouver"].map((item) => (
                         <div key={item} className="flex items-start gap-2.5">
@@ -566,13 +613,12 @@ function Home() {
                       ))}
                     </div>
                   </div>
-                  <div className="relative overflow-hidden rounded-[26px] border border-accent/35 bg-gradient-to-br from-white via-emerald-50/70 to-cyan-50 p-6 ring-1 ring-accent/10 shadow-[0_24px_65px_-30px_rgba(13,148,136,0.55)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_28px_75px_-28px_rgba(13,148,136,0.62)]">
+                  <div className="relative overflow-hidden rounded-[26px] border border-accent/35 bg-gradient-to-br from-white via-emerald-50/70 to-cyan-50 p-6 ring-1 ring-accent/10 shadow-[0_24px_65px_-30px_rgba(13,148,136,0.55)]">
                     <div aria-hidden className="absolute -right-14 -top-14 size-44 rounded-full bg-accent/20 blur-3xl" />
                     <div className="relative flex flex-wrap items-center gap-2">
                       <div className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-white shadow-sm">
                         <Check className="size-3.5 text-accent" /> Avec Adresse GN
                       </div>
-                      <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.12em] text-emerald-700">Situation idéale</div>
                     </div>
                     <div className="relative mt-4">
                       <div className="inline-flex rounded-2xl bg-slate-950 px-4 py-2 shadow-md shadow-slate-950/10">
@@ -592,13 +638,12 @@ function Home() {
                 </div>
               </div>
             </Reveal>
-            {/* BÉNÉFICES */}
             <Reveal delay={140}>
               <div className="mt-6 overflow-hidden rounded-[22px] border border-slate-200 bg-slate-50/60 shadow-[0_8px_30px_rgba(15,23,42,0.04)]">
-                <div className="grid grid-cols-1 divide-y divide-slate-200/70 sm:grid-cols-2 lg:grid-cols-4 lg:divide-x lg:divide-y-0 2xl:grid-cols-4">
+                <div className="grid grid-cols-1 divide-y divide-slate-200/70 sm:grid-cols-2 lg:grid-cols-4 lg:divide-x lg:divide-y-0">
                   {AVANTAGES.map((avantage) => (
                     <div key={avantage.titre} className="group flex min-h-[80px] items-center gap-3 bg-white/55 p-4 transition-all hover:bg-white md:px-5 md:py-4">
-                      <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-accent to-accent-dark text-white shadow-md shadow-accent/15 transition-transform group-hover:scale-105">
+                      <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-accent to-accent-dark text-white shadow-md shadow-accent/15">
                         <avantage.icone className="size-4" />
                       </div>
                       <div className="min-w-0">
@@ -618,11 +663,7 @@ function Home() {
           <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 h-[360px] w-[700px] -translate-x-1/2 rounded-full bg-white/90 blur-[100px]" />
           <div className={cn(SITE_CONTAINER, "relative")}>
             <Reveal>
-              <div className="flex justify-center">
-                <span className={SECTION_BADGE_CLASS}>
-                  <Sparkles className="size-3 text-accent" /> Usages
-                </span>
-              </div>
+              <div className="flex justify-center"><span className={SECTION_BADGE_CLASS}><Sparkles className="size-3 text-accent" /> Usages</span></div>
               <h2 className={cn(SECTION_TITLE_CLASS, "mx-auto mt-4 max-w-5xl")}>
                 Pensé pour{" "}
                 <span className="bg-gradient-to-r from-accent via-sky-500 to-blue-600 bg-clip-text text-transparent">tous les usages du quotidien.</span>
@@ -674,9 +715,7 @@ function Home() {
             <Reveal>
               <div className="mx-auto w-full max-w-[1320px] rounded-[24px] border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-cyan-50/70 p-4 shadow-[0_16px_44px_-32px_rgba(15,23,42,0.18)] sm:p-5 xl:p-5">
                 <div className="mx-auto w-full text-center">
-                  <span className={SECTION_BADGE_CLASS}>
-                    <Sparkles className="size-3 text-accent" /> Pourquoi nous faire confiance
-                  </span>
+                  <span className={SECTION_BADGE_CLASS}><Sparkles className="size-3 text-accent" /> Pourquoi nous faire confiance</span>
                   <h2 className={cn(SECTION_TITLE_CLASS, "mx-auto mt-3 max-w-3xl")}>Conçu pour les réalités du terrain.</h2>
                   <p className={cn(SECTION_COPY_CLASS, "mx-auto mt-2 w-full max-w-[1180px] xl:whitespace-nowrap")}>
                     Adresse GN relie un numéro unique, une position GPS et des outils que les utilisateurs connaissent déjà pour rendre l'adresse simple à créer, à partager et à rejoindre.
@@ -723,9 +762,6 @@ function Home() {
                   <p className="mt-3 max-w-xl text-sm leading-5 text-white/85 md:text-[14px] lg:max-w-none lg:text-[11px] xl:whitespace-nowrap xl:text-xs 2xl:text-[13px]">
                     Obtenez un numéro unique associé à votre localisation, partagez-le instantanément et choisissez la formule adaptée à votre besoin.
                   </p>
-                  <div className="mt-4 flex items-center gap-2 text-[11px] font-semibold text-cyan-100">
-                    <Sparkles className="size-3.5 shrink-0" /> Votre adresse numérique est prête à être partagée dès son activation.
-                  </div>
                   <div className="mt-3 grid grid-cols-2 gap-2">
                     {["Numéro unique prêt à partager", "QR Code intégré", "Localisation GPS", "Plaque physique en option"].map((item) => (
                       <div key={item} className="flex min-h-10 items-center gap-2 rounded-xl border border-white/12 bg-white/[0.08] px-2.5 py-2 backdrop-blur-sm sm:px-3">
@@ -735,33 +771,28 @@ function Home() {
                     ))}
                   </div>
                   <div className="mt-5 flex flex-col gap-2.5 sm:flex-row sm:items-center">
-                    <Button asChild className="group h-12 w-full rounded-xl bg-white px-7 text-sm font-bold text-slate-950 shadow-[0_12px_30px_rgba(15,23,42,0.18)] transition-all hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_16px_36px_rgba(15,23,42,0.24)] sm:w-auto sm:min-w-[220px]">
+                    <Button asChild className="group h-12 w-full rounded-xl bg-white px-7 text-sm font-bold text-slate-950 shadow-[0_12px_30px_rgba(15,23,42,0.18)] sm:w-auto sm:min-w-[220px]">
                       <Link to="/commander">
                         Créer mon Adresse GN
                         <ArrowRight className="ml-1 size-4 transition-transform group-hover:translate-x-1" />
                       </Link>
                     </Button>
-                    <Button asChild variant="outline" className="h-12 w-full rounded-xl border-white/35 bg-white/[0.04] px-6 text-sm font-semibold text-white backdrop-blur-sm hover:border-white/60 hover:bg-white/10 hover:text-white sm:w-auto">
+                    <Button asChild variant="outline" className="h-12 w-full rounded-xl border-white/35 bg-white/[0.04] px-6 text-sm font-semibold text-white backdrop-blur-sm hover:bg-white/10 hover:text-white sm:w-auto">
                       <Link to="/tarifs">Voir les offres</Link>
                     </Button>
-                  </div>
-                  <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] font-medium text-white/65 sm:text-[10px]">
-                    <span className="inline-flex items-center gap-1.5"><Check className="size-3 shrink-0" /> Sans application obligatoire</span>
-                    <span className="inline-flex items-center gap-1.5"><Check className="size-3 shrink-0" /> Plaque physique selon l'offre</span>
                   </div>
                 </div>
               </div>
               <div className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-50 via-white to-cyan-50/60 px-5 py-5 sm:px-7 md:px-8 lg:px-7 lg:py-5">
                 <div aria-hidden className="absolute -right-20 -top-20 size-60 rounded-full bg-accent/10 blur-[80px]" />
                 <div aria-hidden className="absolute -bottom-28 -left-20 size-64 rounded-full bg-blue-100/70 blur-[80px]" />
-                <div aria-hidden className="absolute inset-x-16 bottom-10 h-8 rounded-full bg-slate-950/10 blur-2xl" />
                 <div className="relative w-full max-w-[420px]">
                   <div className="mb-2 flex justify-center">
                     <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[8px] font-bold uppercase tracking-[0.16em] text-slate-600 shadow-sm sm:text-[9px]">
                       <QrCode className="size-3.5 text-accent" /> Aperçu de votre Adresse GN
                     </span>
                   </div>
-                  <div className="relative mx-auto w-full max-w-[395px] rotate-[0.5deg] overflow-hidden rounded-[22px] border border-slate-300/80 bg-white shadow-[0_26px_60px_-24px_rgba(15,23,42,0.36)] transition-all duration-500 hover:rotate-0 hover:scale-[1.005]">
+                  <div className="relative mx-auto w-full max-w-[395px] rotate-[0.5deg] overflow-hidden rounded-[22px] border border-slate-300/80 bg-white shadow-[0_26px_60px_-24px_rgba(15,23,42,0.36)]">
                     <div className="gradient-signature-soft px-5 py-3 sm:px-6 sm:py-3.5">
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-2.5">
@@ -775,14 +806,10 @@ function Home() {
                       </div>
                     </div>
                     <div className="relative p-4 sm:p-5">
-                      <span aria-hidden className="absolute left-3 top-3 size-1.5 rounded-full border border-slate-300 bg-slate-100 shadow-inner" />
-                      <span aria-hidden className="absolute right-3 top-3 size-1.5 rounded-full border border-slate-300 bg-slate-100 shadow-inner" />
-                      <span aria-hidden className="absolute bottom-3 left-3 size-1.5 rounded-full border border-slate-300 bg-slate-100 shadow-inner" />
-                      <span aria-hidden className="absolute bottom-3 right-3 size-1.5 rounded-full border border-slate-300 bg-slate-100 shadow-inner" />
                       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:gap-5">
                         <div className="min-w-0">
                           <p className="text-[8px] font-semibold uppercase tracking-[0.17em] text-slate-400">Numéro unique</p>
-                          <p className="mt-1.5 whitespace-nowrap font-mono text-[clamp(0.78rem,4vw,1.45rem)] font-extrabold tracking-[0.025em] text-slate-950 sm:tracking-[0.035em]">GN-CKY-582741</p>
+                          <p className="mt-1.5 whitespace-nowrap font-mono text-[clamp(0.78rem,4vw,1.45rem)] font-extrabold tracking-[0.025em] text-slate-950">GN-CKY-582741</p>
                           <div className="mt-3.5 flex items-center gap-2">
                             <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent"><MapPin className="size-3.5" /></span>
                             <div>
@@ -798,35 +825,6 @@ function Home() {
                           </svg>
                         </div>
                       </div>
-                      <div className="mt-4 flex flex-col gap-2 border-t border-slate-100 pt-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex items-center gap-2">
-                          <QrCode className="size-3.5 shrink-0 text-accent" />
-                          <p className="text-[9px] font-medium text-slate-500">Scannez pour localiser cette adresse</p>
-                        </div>
-                        <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[8px] font-semibold text-emerald-700">
-                          <span className="size-1.5 rounded-full bg-emerald-500" /> Adresse active
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-2.5 grid grid-cols-2 gap-2">
-                    <div className="rounded-2xl border border-slate-200 bg-white/95 p-2.5 shadow-[0_8px_22px_rgba(15,23,42,0.04)] backdrop-blur">
-                      <div className="flex items-center gap-2.5">
-                        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent"><Smartphone className="size-4" /></span>
-                        <div className="min-w-0">
-                          <p className="text-[10px] font-bold leading-4 text-slate-950 sm:text-[11px]">Adresse numérique</p>
-                          <p className="mt-0.5 hidden text-[9px] leading-4 text-slate-500 min-[390px]:block">Disponible dès l'activation.</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="rounded-2xl border border-slate-200 bg-white/95 p-2.5 shadow-[0_8px_22px_rgba(15,23,42,0.04)] backdrop-blur">
-                      <div className="flex items-center gap-2.5">
-                        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-slate-950 text-white"><QrCode className="size-4" /></span>
-                        <div className="min-w-0">
-                          <p className="text-[10px] font-bold leading-4 text-slate-950 sm:text-[11px]">Plaque physique</p>
-                          <p className="mt-0.5 hidden text-[9px] leading-4 text-slate-500 min-[390px]:block">Disponible selon votre offre.</p>
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -835,13 +833,13 @@ function Home() {
           </Reveal>
         </section>
 
-        {/* Toggle "Voir moins" — visible seulement sur mobile quand tout est déplié */}
+        {/* Toggle "Voir moins" mobile */}
         {voirPlusMobile && (
-          <div className="block bg-white px-4 pb-8 md:hidden">
+          <div className="block bg-white px-5 pb-8 md:hidden">
             <button
               type="button"
               onClick={() => { setVoirPlusMobile(false); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-              className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition-all active:scale-[0.98] active:bg-slate-50"
+              className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-[13px] font-semibold text-slate-700 transition active:scale-[0.98] active:bg-slate-50"
             >
               Voir moins
               <ChevronDown className="size-4 rotate-180" />
@@ -867,7 +865,7 @@ function Home() {
                 <p className="mt-1 text-[12px] leading-4 text-white/90">Accès rapide depuis votre bureau, mode hors-ligne et expérience proche d'une application.</p>
                 <div className="mt-3 flex items-center gap-2">
                   <button type="button" onClick={() => void installerSurDesktop()}
-                    className="inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-white px-4 text-xs font-semibold text-orange-600 shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg">
+                    className="inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-white px-4 text-xs font-semibold text-orange-600 shadow-md">
                     <Download className="size-4" /> Installer
                   </button>
                   <button type="button" onClick={fermerInstallationDesktop}
