@@ -692,21 +692,25 @@ function Home() {
         </section>
 
         {/* ---------------------------------------------------------------
-            5. USAGES — GRILLE 2 × 2
+            5. USAGES — MOBILE PREMIUM / COMPACT
             --------------------------------------------------------------- */}
         <section
           id="usages-mobile"
-          className="bg-white px-4 py-5"
+          className="bg-white px-4 py-4.5"
         >
           <div className="mx-auto max-w-[430px]">
             <div className="text-center">
-              <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-accent">
+              <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-accent">
                 Usages
               </p>
 
-              <h2 className="text-display mt-1.5 text-[22px] font-bold tracking-tight text-slate-950">
-                Pour tous les usages.
+              <h2 className="text-display mt-1.5 text-[21px] font-bold tracking-[-0.02em] text-slate-950">
+                Une adresse adaptée à chaque besoin.
               </h2>
+
+              <p className="mx-auto mt-1.5 max-w-[300px] text-[10.5px] leading-4 text-slate-500">
+                Recevoir, vendre, livrer ou gérer plusieurs sites devient plus simple.
+              </p>
             </div>
 
             <div className="mt-4 grid grid-cols-2 gap-2.5">
@@ -720,30 +724,55 @@ function Home() {
                         ? "Livrez au bon endroit."
                         : "Centralisez vos adresses.";
 
+                const micro =
+                  item.cle === "individuals"
+                    ? "Maison & visiteurs"
+                    : item.cle === "shops"
+                      ? "Boutique & clients"
+                      : item.cle === "delivery"
+                        ? "Coursiers & commandes"
+                        : "Bureaux & multi-sites";
+
                 return (
                   <article
                     key={item.cle}
                     className={cn(
-                      "relative min-h-[122px] overflow-hidden rounded-[20px] border border-slate-200/90 bg-gradient-to-br p-3 shadow-[0_8px_22px_-18px_rgba(15,23,42,0.18)]",
+                      "group relative min-h-[116px] overflow-hidden rounded-[18px] border border-slate-200/90 bg-gradient-to-br p-3.5 shadow-[0_10px_28px_-22px_rgba(15,23,42,0.22)]",
                       item.fond,
                     )}
                   >
-                    <span
+                    <div
+                      aria-hidden
                       className={cn(
-                        "flex size-9 items-center justify-center rounded-[13px] bg-gradient-to-br text-white shadow-md",
+                        "absolute -right-7 -top-7 size-20 rounded-full bg-gradient-to-br opacity-[0.10] blur-2xl",
                         item.grad,
                       )}
-                    >
-                      <item.icone className="size-4" />
-                    </span>
+                    />
 
-                    <p className="mt-2.5 text-[9px] font-semibold uppercase tracking-[0.08em] text-slate-500">
-                      {item.titre}
-                    </p>
+                    <div className="relative flex items-start justify-between gap-2">
+                      <span
+                        className={cn(
+                          "flex size-9 shrink-0 items-center justify-center rounded-[12px] bg-gradient-to-br text-white shadow-md",
+                          item.grad,
+                        )}
+                      >
+                        <item.icone className="size-4" />
+                      </span>
 
-                    <h3 className="mt-1 text-[13px] font-bold leading-[1.3] text-slate-950">
-                      {mobileLabel}
-                    </h3>
+                      <span className="rounded-full border border-slate-200/80 bg-white/80 px-2 py-1 text-[6.5px] font-semibold uppercase tracking-[0.11em] text-slate-400 backdrop-blur">
+                        {micro}
+                      </span>
+                    </div>
+
+                    <div className="relative mt-3">
+                      <p className="text-[8px] font-semibold uppercase tracking-[0.11em] text-slate-400">
+                        {item.titre}
+                      </p>
+
+                      <h3 className="mt-1 text-[12.5px] font-extrabold leading-[1.25] tracking-[-0.01em] text-slate-950">
+                        {mobileLabel}
+                      </h3>
+                    </div>
                   </article>
                 );
               })}
@@ -752,53 +781,73 @@ function Home() {
         </section>
 
         {/* ---------------------------------------------------------------
-            6. CONFIANCE — 3 GARANTIES SANS PARAGRAPHES
+            6. CONFIANCE — MOBILE PREMIUM / SIGNATURE
             --------------------------------------------------------------- */}
-        <section className="border-y border-slate-100 bg-slate-50/70 px-4 py-5">
+        <section className="border-y border-slate-100 bg-gradient-to-b from-slate-50/80 to-white px-4 py-4.5">
           <div className="mx-auto max-w-[430px]">
             <div className="text-center">
-              <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-accent">
+              <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-accent">
                 Confiance
               </p>
 
-              <h2 className="text-display mt-1.5 text-[21px] font-bold tracking-tight text-slate-950">
+              <h2 className="text-display mt-1.5 text-[20px] font-bold tracking-[-0.02em] text-slate-950">
                 Conçu pour le terrain.
               </h2>
+
+              <p className="mx-auto mt-1.5 max-w-[310px] text-[10.5px] leading-4 text-slate-500">
+                Une solution pensée pour être simple, locale et immédiatement utilisable.
+              </p>
             </div>
 
-            <div className="mt-4 overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-sm">
+            <div className="mt-4 overflow-hidden rounded-[18px] border border-slate-200/90 bg-white shadow-[0_14px_34px_-24px_rgba(15,23,42,0.24)]">
               {[
                 {
                   icon: MapPinned,
                   label: "Localisation GPS précise",
+                  detail: "Position fiable",
                 },
                 {
                   icon: Handshake,
                   label: "Accompagnement local",
+                  detail: "Support terrain",
                 },
                 {
                   icon: Smartphone,
                   label: "Google Maps, Waze & QR Code",
+                  detail: "Compatible partout",
                 },
               ].map((item, index) => (
                 <div
                   key={item.label}
                   className={cn(
-                    "flex items-center gap-3 px-4 py-3.5",
+                    "flex items-center gap-3 px-3.5 py-3",
                     index !== 2 && "border-b border-slate-100",
                   )}
                 >
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-[13px] bg-accent/10 text-accent">
-                    <item.icon className="size-[17px]" />
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-[12px] bg-gradient-to-br from-accent/10 to-cyan-100 text-accent ring-1 ring-inset ring-accent/10">
+                    <item.icon className="size-4" />
                   </span>
 
-                  <p className="text-[13px] font-semibold text-slate-800">
-                    {item.label}
-                  </p>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[12px] font-bold text-slate-900">
+                      {item.label}
+                    </p>
 
-                  <Check className="ml-auto size-4 shrink-0 text-emerald-500" />
+                    <p className="mt-0.5 text-[8px] font-medium uppercase tracking-[0.08em] text-slate-400">
+                      {item.detail}
+                    </p>
+                  </div>
+
+                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 ring-1 ring-inset ring-emerald-100">
+                    <Check className="size-3" />
+                  </span>
                 </div>
               ))}
+            </div>
+
+            <div className="mt-2.5 flex items-center justify-center gap-1.5 text-[8px] font-medium text-slate-400">
+              <span className="size-1.5 rounded-full bg-emerald-500" />
+              Pensé pour les réalités de la Guinée
             </div>
           </div>
         </section>
