@@ -804,87 +804,87 @@ function Home() {
         </section>
 
         {/* ---------------------------------------------------------------
-            7. CTA FINAL — MOBILE SIGNATURE / ULTRA PREMIUM
+            7. CTA FINAL — MOBILE SIGNATURE / ULTRA PREMIUM COMPACT
             --------------------------------------------------------------- */}
-        <section className="bg-white px-4 py-4">
+        <section className="bg-white px-4 py-3.5">
           <div className="mx-auto max-w-[430px]">
-            <div className="relative isolate overflow-hidden rounded-[30px] border border-slate-800/70 bg-[#071426] px-5 pb-5 pt-4 text-white shadow-[0_28px_65px_-28px_rgba(2,8,23,0.72)]">
+            <div className="relative isolate overflow-hidden rounded-[26px] border border-slate-800/70 bg-[#071426] px-4.5 pb-4 pt-3.5 text-white shadow-[0_24px_55px_-28px_rgba(2,8,23,0.68)]">
               {/* Fond signature */}
               <div
                 aria-hidden
-                className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_85%_8%,rgba(34,211,238,0.26),transparent_34%),radial-gradient(circle_at_8%_100%,rgba(59,130,246,0.20),transparent_36%),linear-gradient(135deg,#071426_0%,#102f58_50%,#078b8d_100%)]"
+                className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_88%_10%,rgba(34,211,238,0.23),transparent_31%),radial-gradient(circle_at_6%_100%,rgba(59,130,246,0.16),transparent_34%),linear-gradient(135deg,#071426_0%,#102f58_52%,#078b8d_100%)]"
               />
+
               <div
                 aria-hidden
-                className="pointer-events-none absolute -right-16 top-8 -z-10 h-36 w-36 rounded-full border border-white/[0.06]"
+                className="pointer-events-none absolute -right-14 top-7 -z-10 size-32 rounded-full border border-white/[0.05]"
               />
+
               <div
                 aria-hidden
-                className="pointer-events-none absolute -right-8 top-16 -z-10 h-20 w-20 rounded-full border border-white/[0.05]"
+                className="pointer-events-none absolute -right-5 top-14 -z-10 size-16 rounded-full border border-white/[0.04]"
               />
 
               <div className="relative">
                 {/* Sur-ligne */}
-                <div className="flex items-center justify-between gap-3">
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.07] px-2.5 py-1 text-[8px] font-bold uppercase tracking-[0.17em] text-cyan-100 backdrop-blur-md">
-                    <Sparkles className="size-3" />
-                    Votre adresse commence ici
+                <div className="flex items-center justify-between gap-2">
+                  <span className="inline-flex min-w-0 items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.07] px-2.5 py-1 text-[7.5px] font-bold uppercase tracking-[0.14em] text-cyan-100 backdrop-blur-md">
+                    <Sparkles className="size-2.5 shrink-0" />
+                    <span className="truncate">Votre adresse commence ici</span>
                   </span>
 
-                  <span className="inline-flex items-center gap-1 rounded-full border border-emerald-300/15 bg-emerald-300/[0.08] px-2 py-1 text-[8px] font-semibold text-emerald-100">
-                    <span className="size-1.5 rounded-full bg-emerald-300 shadow-[0_0_8px_rgba(110,231,183,0.9)]" />
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-300/15 bg-emerald-300/[0.08] px-2 py-1 text-[7.5px] font-semibold text-emerald-100">
+                    <span className="size-1.5 rounded-full bg-emerald-300 shadow-[0_0_7px_rgba(110,231,183,0.9)]" />
                     Simple
                   </span>
                 </div>
 
-                {/* Titre */}
-                <h2 className="text-display mt-4 text-[25px] font-extrabold leading-[1.04] tracking-[-0.032em] text-white">
-                  Une adresse claire.
-                  <span className="mt-0.5 block bg-gradient-to-r from-cyan-200 via-sky-200 to-emerald-200 bg-clip-text text-transparent">
+                {/* Titre — UNE SEULE LIGNE SUR MOBILE */}
+                <h2 className="text-display mt-3 whitespace-nowrap text-[clamp(15px,4.8vw,19px)] font-extrabold leading-none tracking-[-0.025em] text-white">
+                  Une adresse claire.{" "}
+                  <span className="bg-gradient-to-r from-cyan-200 via-sky-200 to-emerald-200 bg-clip-text text-transparent">
                     Un accès immédiat.
                   </span>
                 </h2>
 
-                <p className="mt-2.5 max-w-[345px] text-[12px] leading-5 text-white/72">
+                <p className="mt-2 text-[10.5px] leading-4 text-white/70">
                   Créez votre numéro Adresse GN et partagez votre localisation en quelques secondes.
                 </p>
 
-                {/* Aperçu produit compact */}
-                <div className="mt-4 rounded-[18px] border border-white/10 bg-white/[0.075] p-3 shadow-inner shadow-white/[0.03] backdrop-blur-md">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-[7px] font-semibold uppercase tracking-[0.16em] text-white/40">
-                        Exemple d’adresse
-                      </p>
+                {/* Aperçu produit — version ultra compacte */}
+                <div className="mt-3 flex items-center justify-between gap-3 rounded-[15px] border border-white/10 bg-white/[0.065] px-3 py-2.5 backdrop-blur-md">
+                  <div className="min-w-0">
+                    <p className="text-[6.5px] font-semibold uppercase tracking-[0.15em] text-white/38">
+                      Exemple d’adresse
+                    </p>
 
-                      <p className="mt-1 truncate font-mono text-[15px] font-extrabold tracking-[0.10em] text-white">
-                        GN-CKY-582741
-                      </p>
+                    <p className="mt-0.5 truncate font-mono text-[13px] font-extrabold tracking-[0.09em] text-white">
+                      GN-CKY-582741
+                    </p>
 
-                      <div className="mt-1.5 flex items-center gap-1.5 text-[9px] font-medium text-white/55">
-                        <MapPin className="size-3 text-cyan-200" />
-                        Kaloum · Conakry
-                      </div>
+                    <div className="mt-1 flex items-center gap-1 text-[8px] font-medium text-white/50">
+                      <MapPin className="size-2.5 shrink-0 text-cyan-200" />
+                      Kaloum · Conakry
                     </div>
+                  </div>
 
-                    <div className="flex size-12 shrink-0 items-center justify-center rounded-[15px] border border-white/10 bg-white/[0.08] text-cyan-100 shadow-[0_10px_26px_-16px_rgba(34,211,238,0.5)]">
-                      <QrCode className="size-5" />
-                    </div>
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-[13px] border border-white/10 bg-white/[0.07] text-cyan-100">
+                    <QrCode className="size-[18px]" />
                   </div>
                 </div>
 
                 {/* Valeur clé */}
-                <div className="mt-3 grid grid-cols-3 gap-1.5">
+                <div className="mt-2.5 grid grid-cols-3 gap-1.5">
                   {[
-                    { label: "Numéro unique", icon: MapPinned },
+                    { label: "Numéro", icon: MapPinned },
                     { label: "QR Code", icon: QrCode },
                     { label: "GPS", icon: Navigation2 },
                   ].map(({ label, icon: Icon }) => (
                     <div
                       key={label}
-                      className="flex min-h-[38px] items-center justify-center gap-1.5 rounded-[12px] border border-white/[0.08] bg-white/[0.045] px-2 text-[8.5px] font-semibold text-white/82"
+                      className="flex min-h-9 items-center justify-center gap-1.5 rounded-[11px] border border-white/[0.08] bg-white/[0.04] px-1.5 text-[8px] font-semibold text-white/80"
                     >
-                      <Icon className="size-3.5 shrink-0 text-cyan-200" />
+                      <Icon className="size-3 shrink-0 text-cyan-200" />
                       <span className="truncate">{label}</span>
                     </div>
                   ))}
@@ -893,38 +893,39 @@ function Home() {
                 {/* CTA principal */}
                 <Button
                   asChild
-                  className="group mt-4 h-[50px] w-full rounded-[16px] bg-white px-4 text-[14px] font-extrabold text-slate-950 shadow-[0_14px_32px_-10px_rgba(255,255,255,0.25)] transition-all active:scale-[0.99] hover:bg-white"
+                  className="group mt-3.5 h-11 w-full rounded-[14px] bg-white px-3.5 text-[13px] font-extrabold text-slate-950 shadow-[0_12px_26px_-12px_rgba(255,255,255,0.24)] transition-all active:scale-[0.99] hover:bg-white"
                 >
                   <Link to="/commander">
                     Créer mon Adresse GN
-                    <span className="ml-auto flex size-7 items-center justify-center rounded-full bg-slate-950 text-white transition-transform group-hover:translate-x-0.5">
-                      <ArrowRight className="size-3.5" />
+                    <span className="ml-auto flex size-6.5 items-center justify-center rounded-full bg-slate-950 text-white transition-transform group-hover:translate-x-0.5">
+                      <ArrowRight className="size-3" />
                     </span>
                   </Link>
                 </Button>
 
-                {/* CTA secondaire */}
-                <Link
-                  to="/tarifs"
-                  className="mt-2.5 flex h-8 items-center justify-center gap-1.5 rounded-xl text-[10px] font-semibold text-white/68 transition-colors active:text-white"
-                >
-                  Découvrir les offres
-                  <ArrowRight className="size-3.5" />
-                </Link>
+                {/* CTA secondaire + réassurance sur une seule zone compacte */}
+                <div className="mt-2.5 flex items-center justify-between gap-2">
+                  <Link
+                    to="/tarifs"
+                    className="inline-flex items-center gap-1 text-[9px] font-semibold text-white/66 transition-colors active:text-white"
+                  >
+                    Découvrir les offres
+                    <ArrowRight className="size-3" />
+                  </Link>
 
-                {/* Réassurance ultra compacte */}
-                <div className="mt-2.5 flex items-center justify-center gap-2 border-t border-white/[0.08] pt-2.5 text-[8px] font-medium text-white/42">
-                  <span className="inline-flex items-center gap-1">
-                    <Check className="size-3 text-cyan-200" />
-                    Sans app obligatoire
-                  </span>
+                  <div className="flex items-center gap-1.5 text-[7.5px] font-medium text-white/40">
+                    <span className="inline-flex items-center gap-1">
+                      <Check className="size-2.5 text-cyan-200" />
+                      Sans app
+                    </span>
 
-                  <span className="size-1 rounded-full bg-white/20" />
+                    <span className="size-0.5 rounded-full bg-white/25" />
 
-                  <span className="inline-flex items-center gap-1">
-                    <Check className="size-3 text-cyan-200" />
-                    Plaque en option
-                  </span>
+                    <span className="inline-flex items-center gap-1">
+                      <Check className="size-2.5 text-cyan-200" />
+                      Plaque en option
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
