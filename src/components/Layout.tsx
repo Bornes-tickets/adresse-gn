@@ -379,7 +379,7 @@ function Footer() {
     <footer className="relative overflow-hidden bg-slate-950 text-slate-300">
       <div aria-hidden className="pointer-events-none absolute -left-32 top-0 size-[260px] rounded-full bg-blue-900/10 blur-[100px]" />
       <div aria-hidden className="pointer-events-none absolute -right-32 top-0 size-[260px] rounded-full bg-cyan-900/[0.08] blur-[100px]" />
-      <div className={cn(FOOTER_CONTAINER, "relative pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-5 sm:pb-4 sm:pt-6 lg:pb-3 lg:pt-6 xl:pt-7")}>
+      <div className={cn(FOOTER_CONTAINER, "relative pb-[calc(0.45rem+env(safe-area-inset-bottom))] pt-4 sm:pb-4 sm:pt-6 lg:pb-3 lg:pt-6 xl:pt-7")}>
         <div className="hidden min-w-0 lg:grid lg:grid-cols-[1.45fr_repeat(4,minmax(0,1fr))] lg:items-start lg:gap-x-8 xl:gap-x-10 2xl:gap-x-14">
           <div className="min-w-0 pr-2">
             <Logo tone="light" />
@@ -406,112 +406,96 @@ function Footer() {
           {FOOTER_COLS.map((col) => <FooterColumn key={col.cle} col={col} />)}
         </div>
         {/* =================================================
-            MOBILE / TABLETTE — FOOTER PREMIUM COMPACT
+            MOBILE / TABLETTE — FOOTER ULTRA COMPACT
             Desktop inchangé : ce bloc reste strictement < lg
             ================================================= */}
         <div className="lg:hidden">
-          {/* Identité + statut */}
-          <div className="pb-4">
+          {/* Identité compacte */}
+          <div className="pb-3">
             <div className="flex items-center justify-between gap-3">
               <Logo tone="light" />
 
-              <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-accent/20 bg-accent/10 px-2.5 py-1 text-[9px] font-semibold text-accent">
-                <span className="size-1.5 rounded-full bg-accent shadow-[0_0_8px_rgba(20,184,166,0.7)]" />
+              <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-accent/20 bg-accent/10 px-2 py-0.5 text-[8px] font-semibold text-accent">
+                <span className="size-1.5 rounded-full bg-accent shadow-[0_0_7px_rgba(20,184,166,0.7)]" />
                 Pilote 2026
               </span>
             </div>
 
-            <p className="mt-2.5 max-w-[310px] text-[11px] leading-[1.55] text-slate-400">
+            <p className="mt-2 max-w-[310px] truncate text-[10px] leading-4 text-slate-400">
               {t("footer.tagline")}
             </p>
 
-            {/* Contacts rapides */}
-            <div className="mt-3.5 grid grid-cols-2 gap-2">
-              <div className="flex min-w-0 items-center gap-2.5 rounded-[14px] border border-slate-800/80 bg-white/[0.025] px-3 py-2.5">
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-white/[0.05] text-slate-400">
-                  <MapPin className="size-3.5" />
+            {/* Contacts sur une seule rangée */}
+            <div className="mt-2.5 grid grid-cols-3 gap-1.5">
+              <div className="flex min-w-0 items-center gap-1.5 rounded-[12px] border border-slate-800/80 bg-white/[0.025] px-2 py-2">
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-[9px] bg-white/[0.05] text-slate-400">
+                  <MapPin className="size-3" />
                 </span>
 
-                <div className="min-w-0">
-                  <p className="text-[7px] font-semibold uppercase tracking-[0.14em] text-slate-600">
-                    Localisation
-                  </p>
-                  <p className="mt-0.5 truncate text-[10px] font-medium text-slate-300">
-                    {t("footer.location")}
-                  </p>
-                </div>
+                <span className="min-w-0 truncate text-[9px] font-medium text-slate-300">
+                  Conakry
+                </span>
               </div>
+
+              <a
+                href="mailto:contact@adresse.gn"
+                aria-label="Envoyer un e-mail à Adresse GN"
+                className={cn(
+                  "flex min-w-0 items-center gap-1.5 rounded-[12px] border border-slate-800/80 bg-white/[0.025] px-2 py-2 transition-all active:scale-[0.98] active:bg-white/[0.05]",
+                  FOCUS,
+                )}
+              >
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-[9px] bg-white/[0.05] text-slate-400">
+                  <Mail className="size-3" />
+                </span>
+
+                <span className="truncate text-[9px] font-medium text-slate-300">
+                  E-mail
+                </span>
+              </a>
 
               <a
                 href={`https://wa.me/${WHATSAPP_SERVICE}`}
                 target="_blank"
                 rel="noreferrer"
+                aria-label="Contacter Adresse GN sur WhatsApp"
                 className={cn(
-                  "flex min-w-0 items-center gap-2.5 rounded-[14px] border border-slate-800/80 bg-white/[0.025] px-3 py-2.5 transition-all active:scale-[0.98] active:bg-white/[0.05]",
+                  "flex min-w-0 items-center gap-1.5 rounded-[12px] border border-accent/15 bg-accent/[0.06] px-2 py-2 transition-all active:scale-[0.98] active:bg-accent/10",
                   FOCUS,
                 )}
               >
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-accent/10 text-accent">
-                  <MessageCircle className="size-3.5" />
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-[9px] bg-accent/10 text-accent">
+                  <MessageCircle className="size-3" />
                 </span>
 
-                <div className="min-w-0">
-                  <p className="text-[7px] font-semibold uppercase tracking-[0.14em] text-slate-600">
-                    WhatsApp
-                  </p>
-                  <p className="mt-0.5 truncate text-[10px] font-medium text-slate-300">
-                    Nous contacter
-                  </p>
-                </div>
+                <span className="truncate text-[9px] font-medium text-slate-300">
+                  WhatsApp
+                </span>
               </a>
             </div>
-
-            {/* E-mail */}
-            <a
-              href="mailto:contact@adresse.gn"
-              className={cn(
-                "mt-2 flex min-w-0 items-center gap-2.5 rounded-[14px] border border-slate-800/80 bg-white/[0.025] px-3 py-2.5 transition-all active:scale-[0.99] active:bg-white/[0.05]",
-                FOCUS,
-              )}
-            >
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-white/[0.05] text-slate-400">
-                <Mail className="size-3.5" />
-              </span>
-
-              <div className="min-w-0 flex-1">
-                <p className="text-[7px] font-semibold uppercase tracking-[0.14em] text-slate-600">
-                  E-mail
-                </p>
-                <p className="mt-0.5 truncate text-[10px] font-medium text-slate-300">
-                  contact@adresse.gn
-                </p>
-              </div>
-
-              <ArrowRight className="size-3.5 shrink-0 text-slate-600" />
-            </a>
           </div>
 
-          {/* Navigation accordéon */}
-          <div className="overflow-hidden rounded-[18px] border border-slate-800/80 bg-white/[0.018]">
+          {/* Navigation accordéon compacte */}
+          <div className="overflow-hidden rounded-[15px] border border-slate-800/80 bg-white/[0.018]">
             {FOOTER_COLS.map((col, index) => (
               <details key={col.cle} className="group">
                 <summary
                   className={cn(
-                    "flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-4 px-4 text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-400 transition-colors marker:hidden active:bg-white/[0.035]",
+                    "flex min-h-[38px] cursor-pointer list-none items-center justify-between gap-3 px-3.5 text-[8px] font-semibold uppercase tracking-[0.17em] text-slate-400 transition-colors marker:hidden active:bg-white/[0.035]",
                     index !== 0 && "border-t border-slate-800/70",
                     FOCUS,
                   )}
                 >
                   <span>{t(col.cle)}</span>
 
-                  <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-white/[0.035] text-slate-500 transition-all duration-200 group-open:rotate-180 group-open:bg-accent/10 group-open:text-accent">
-                    <ChevronDown className="size-3.5" />
+                  <span className="flex size-6 shrink-0 items-center justify-center rounded-[8px] bg-white/[0.03] text-slate-500 transition-all duration-200 group-open:rotate-180 group-open:bg-accent/10 group-open:text-accent">
+                    <ChevronDown className="size-3" />
                   </span>
                 </summary>
 
-                <nav className="grid gap-0.5 border-t border-slate-800/50 bg-slate-950/50 px-4 py-2.5">
+                <nav className="grid gap-0.5 border-t border-slate-800/50 bg-slate-950/50 px-3.5 py-2">
                   {col.links.map((link) => (
-                    <div key={link.cle} className="py-1">
+                    <div key={link.cle} className="py-0.5">
                       <FooterLinkItem link={link} />
                     </div>
                   ))}
@@ -521,24 +505,22 @@ function Footer() {
           </div>
         </div>
         {/* =================================================
-            BARRE BASSE — MOBILE / TABLETTE
+            BARRE BASSE — MOBILE / TABLETTE ULTRA COMPACTE
             ================================================= */}
         <div className="lg:hidden">
-          <div className="mb-3 mt-4 border-t border-slate-800/70" />
+          <div className="mb-2 mt-3 border-t border-slate-800/70" />
 
-          <div className="flex min-w-0 flex-col gap-3">
-            <div className="flex min-w-0 items-center justify-between gap-3">
-              <span className="min-w-0 text-[9px] leading-4 text-slate-600">
-                {t("footer.rights")}
-              </span>
+          <div className="flex min-w-0 items-center justify-between gap-2">
+            <span className="min-w-0 truncate text-[8px] leading-4 text-slate-600">
+              {t("footer.rights")}
+            </span>
 
+            <div className="flex shrink-0 items-center gap-1">
               <LanguageSwitcher
                 tone="light"
-                className="h-7 shrink-0 rounded-lg border border-slate-800 bg-white/[0.025] px-2 text-[10px] text-slate-400"
+                className="h-7 shrink-0 rounded-[9px] border border-slate-800 bg-white/[0.025] px-1.5 text-[9px] text-slate-400"
               />
-            </div>
 
-            <div className="flex items-center gap-1.5">
               {[
                 { Icon: Facebook, label: "Facebook" },
                 { Icon: Instagram, label: "Instagram" },
@@ -547,9 +529,9 @@ function Footer() {
                 <span
                   key={label}
                   title={label}
-                  className="grid size-8 place-items-center rounded-[10px] border border-slate-800 bg-white/[0.025] text-slate-500 transition-all duration-200 active:scale-95 active:bg-white/[0.06] active:text-white"
+                  className="grid size-7 place-items-center rounded-[9px] border border-slate-800 bg-white/[0.025] text-slate-500 transition-all duration-200 active:scale-95 active:bg-white/[0.06] active:text-white"
                 >
-                  <Icon className="size-3.5" />
+                  <Icon className="size-3" />
                 </span>
               ))}
             </div>
