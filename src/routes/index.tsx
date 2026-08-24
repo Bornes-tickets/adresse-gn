@@ -218,10 +218,10 @@ function Home() {
           className="pointer-events-none absolute -left-24 bottom-0 size-64 rounded-full bg-blue-950/15 blur-[70px]"
         />
 
-        <div className="relative px-4 pb-5 pt-6">
+        <div className="relative px-4 pb-4 pt-5">
           <div className="mx-auto max-w-[430px]">
             <h1
-              className="text-display text-balance text-center text-[clamp(1.9rem,8.6vw,2.35rem)] font-extrabold leading-[1.03] tracking-[-0.035em] text-white"
+              className="text-display text-balance text-center text-[clamp(1.85rem,8.2vw,2.25rem)] font-extrabold leading-[1.04] tracking-[-0.035em] text-white"
               style={{
                 textShadow: "0 2px 18px rgb(15 23 42 / 0.22)",
               }}
@@ -234,7 +234,7 @@ function Home() {
               Un numéro suffit pour trouver ou partager un lieu.
             </p>
 
-            <div className="mt-5 rounded-[24px] border border-white/45 bg-white/95 p-2 shadow-[0_18px_45px_-16px_rgba(15,23,42,0.4)] backdrop-blur-xl">
+            <div className="mt-4 rounded-[24px] border border-white/50 bg-white/95 p-2 shadow-[0_18px_45px_-18px_rgba(15,23,42,0.42)] backdrop-blur-xl">
               <form
                 className="space-y-2"
                 onSubmit={(e) => {
@@ -385,13 +385,13 @@ function Home() {
         {/* ---------------------------------------------------------------
             1. ACTIONS RAPIDES
             --------------------------------------------------------------- */}
-        <section className="bg-white px-4 py-5">
+        <section className="bg-white px-4 py-4">
           <div className="mx-auto max-w-[430px]">
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => setScannerOpen(true)}
-                className="group relative overflow-hidden rounded-[22px] border border-slate-200 bg-white p-4 text-left shadow-[0_8px_24px_rgba(15,23,42,0.06)] transition-all active:scale-[0.98]"
+                className="group relative overflow-hidden rounded-[22px] border border-slate-200/90 bg-white p-3.5 text-left shadow-[0_10px_26px_-18px_rgba(15,23,42,0.22)] transition-all active:scale-[0.98]"
               >
                 <div
                   aria-hidden
@@ -413,7 +413,7 @@ function Home() {
 
               <Link
                 to="/commander"
-                className="group relative overflow-hidden rounded-[22px] border border-slate-900 bg-gradient-to-br from-slate-950 via-slate-900 to-accent-dark p-4 text-left shadow-[0_12px_30px_rgba(15,23,42,0.18)] transition-all active:scale-[0.98]"
+                className="group relative overflow-hidden rounded-[22px] border border-slate-900 bg-gradient-to-br from-slate-950 via-[#11284a] to-accent-dark p-3.5 text-left shadow-[0_14px_34px_-16px_rgba(15,23,42,0.38)] transition-all active:scale-[0.98]"
               >
                 <div
                   aria-hidden
@@ -428,7 +428,7 @@ function Home() {
                   Créer mon adresse
                 </p>
 
-                <p className="relative mt-1 text-[11px] leading-4 text-white/60">
+                <p className="relative mt-1 text-[11px] leading-4 text-white/78">
                   Obtenir mon numéro GN
                 </p>
               </Link>
@@ -441,7 +441,7 @@ function Home() {
             --------------------------------------------------------------- */}
         <section
           id="comment-ca-marche-mobile"
-          className="border-y border-slate-100 bg-slate-50/70 px-4 py-5"
+          className="border-y border-slate-100 bg-gradient-to-b from-slate-50/90 to-white px-4 py-5"
         >
           <div className="mx-auto max-w-[430px]">
             <div className="text-center">
@@ -461,7 +461,7 @@ function Home() {
             <div className="relative mt-5 grid grid-cols-3 gap-2">
               <div
                 aria-hidden
-                className="absolute left-[17%] right-[17%] top-[21px] h-px bg-gradient-to-r from-accent/25 via-accent/60 to-accent/25"
+                className="absolute left-[17%] right-[17%] top-[21px] h-[2px] rounded-full bg-gradient-to-r from-accent/20 via-accent/70 to-accent/20"
               />
 
               {ETAPES.map((etape, index) => (
@@ -502,8 +502,9 @@ function Home() {
                 </h2>
               </div>
 
-              <span className="mb-0.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[9px] font-semibold text-slate-500">
-                Google Maps
+              <span className="mb-0.5 inline-flex items-center gap-1.5 rounded-full border border-accent/15 bg-accent/5 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-accent">
+                <Navigation2 className="size-3" />
+                Itinéraire réel
               </span>
             </div>
 
@@ -570,7 +571,7 @@ function Home() {
                     Adresse GN
                   </p>
 
-                  <p className="mt-0.5 font-mono text-[12px] font-extrabold tracking-[0.09em] text-slate-950">
+                  <p className="mt-1 font-mono text-[14px] font-extrabold tracking-[0.1em] text-slate-950">
                     GN-CKY-582741
                   </p>
                 </div>
@@ -654,7 +655,7 @@ function Home() {
                 </div>
               </div>
 
-              <div className="rounded-[20px] border border-accent/25 bg-gradient-to-br from-emerald-50 via-white to-cyan-50 p-4 shadow-[0_12px_30px_-22px_rgba(13,148,136,0.45)]">
+              <div className="rounded-[20px] border border-accent/40 bg-gradient-to-br from-emerald-50 via-white to-cyan-100/60 p-4 ring-1 ring-accent/10 shadow-[0_16px_36px_-20px_rgba(13,148,136,0.55)]">
                 <div className="flex items-center gap-3">
                   <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-accent text-white">
                     <Check className="size-4" />
@@ -684,7 +685,7 @@ function Home() {
             --------------------------------------------------------------- */}
         <section
           id="usages-mobile"
-          className="bg-white px-4 py-6"
+          className="bg-white px-4 py-5"
         >
           <div className="mx-auto max-w-[430px]">
             <div className="text-center">
@@ -712,7 +713,7 @@ function Home() {
                   <article
                     key={item.cle}
                     className={cn(
-                      "relative min-h-[142px] overflow-hidden rounded-[20px] border border-slate-200 bg-gradient-to-br p-3.5 shadow-[0_7px_20px_rgba(15,23,42,0.04)]",
+                      "relative min-h-[122px] overflow-hidden rounded-[20px] border border-slate-200/90 bg-gradient-to-br p-3 shadow-[0_8px_22px_-18px_rgba(15,23,42,0.18)]",
                       item.fond,
                     )}
                   >
@@ -725,7 +726,7 @@ function Home() {
                       <item.icone className="size-4" />
                     </span>
 
-                    <p className="mt-3 text-[10px] font-semibold text-slate-500">
+                    <p className="mt-2.5 text-[9px] font-semibold uppercase tracking-[0.08em] text-slate-500">
                       {item.titre}
                     </p>
 
@@ -742,7 +743,7 @@ function Home() {
         {/* ---------------------------------------------------------------
             6. CONFIANCE — 3 GARANTIES SANS PARAGRAPHES
             --------------------------------------------------------------- */}
-        <section className="border-y border-slate-100 bg-slate-50/70 px-4 py-6">
+        <section className="border-y border-slate-100 bg-slate-50/70 px-4 py-5">
           <div className="mx-auto max-w-[430px]">
             <div className="text-center">
               <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-accent">
@@ -758,7 +759,7 @@ function Home() {
               {[
                 {
                   icon: MapPinned,
-                  label: "Position GPS précise",
+                  label: "Localisation GPS précise",
                 },
                 {
                   icon: Handshake,
@@ -794,9 +795,9 @@ function Home() {
         {/* ---------------------------------------------------------------
             7. CTA FINAL — UNE ACTION DOMINANTE
             --------------------------------------------------------------- */}
-        <section className="bg-white px-4 py-6">
+        <section className="bg-white px-4 py-5">
           <div className="mx-auto max-w-[430px]">
-            <div className="relative overflow-hidden rounded-[26px] bg-gradient-to-br from-slate-950 via-[#17355f] to-accent-dark p-5 text-white shadow-[0_20px_50px_-22px_rgba(15,23,42,0.5)]">
+            <div className="relative overflow-hidden rounded-[26px] bg-gradient-to-br from-slate-950 via-[#15345f] to-accent-dark p-5 text-white shadow-[0_22px_52px_-22px_rgba(15,23,42,0.52)] ring-1 ring-white/5">
               <div
                 aria-hidden
                 className="absolute -right-16 -top-16 size-48 rounded-full bg-cyan-300/15 blur-[50px]"
