@@ -41,7 +41,6 @@ import { searchBeacon } from "@/lib/search.functions";
 import { InstallBanner } from "@/components/InstallBanner";
 import { QrScanner } from "@/components/QrScanner";
 import { cn } from "@/lib/utils";
-
 const EXEMPLES = ["GN-CKY-582741", "GN-CKY-152963", "GN-CKY-759482"];
 const EXEMPLE_DEMO = "GN-CKY-582741";
 const SITE_CONTAINER =
@@ -52,7 +51,6 @@ const SECTION_TITLE_CLASS =
   "text-display text-center font-bold leading-[1.08] tracking-tight text-slate-950 text-[clamp(1.8rem,2.35vw,2.75rem)]";
 const SECTION_COPY_CLASS =
   "text-center text-sm leading-6 text-slate-600 md:text-[15px]";
-
 const DEMO_ORIGIN = "Kaloum, Conakry, Guinea";
 const DEMO_DESTINATION = "Hôtel Kaloum, Conakry, Guinea";
 const GOOGLE_MAPS_EMBED_KEY = (
@@ -63,33 +61,28 @@ const GOOGLE_MAPS_EMBED_URL = GOOGLE_MAPS_EMBED_KEY
   : null;
 const GOOGLE_MAPS_ROUTE_URL = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(DEMO_ORIGIN)}&destination=${encodeURIComponent(DEMO_DESTINATION)}&travelmode=driving`;
 const WAZE_ROUTE_URL = `https://www.waze.com/ul?q=${encodeURIComponent(DEMO_DESTINATION)}&navigate=yes`;
-
 const USAGES = [
   { icone: HomeIcon, cle: "individuals", titre: "Particuliers", accroche: "Recevez facilement chez vous.", texte: "Partagez votre Adresse GN avec vos proches, visiteurs et livreurs.", avantages: ["Partage en 1 clic", "Itinéraire direct"], grad: "from-emerald-500 to-teal-600", fond: "from-emerald-50/70 via-white to-white", bordure: "hover:border-emerald-200" },
   { icone: UtensilsCrossed, cle: "shops", titre: "Commerces", accroche: "Soyez trouvé sans explication.", texte: "Aidez vos clients à rejoindre facilement votre boutique, restaurant ou établissement.", avantages: ["Adresse partageable", "Navigation GPS"], grad: "from-orange-500 to-rose-500", fond: "from-orange-50/70 via-white to-white", bordure: "hover:border-orange-200" },
   { icone: Bike, cle: "delivery", titre: "Livraisons", accroche: "Livrez plus vite, au bon endroit.", texte: "Réduisez les appels d'orientation et le temps perdu à rechercher une destination.", avantages: ["Moins d'appels", "Destination précise"], grad: "from-violet-500 to-fuchsia-600", fond: "from-violet-50/70 via-white to-white", bordure: "hover:border-violet-200" },
   { icone: Building2, cle: "companies", titre: "Entreprises", accroche: "Centralisez vos adresses.", texte: "Identifiez vos bureaux, agences et sites dans une même solution.", avantages: ["Multi-sites", "Intégration API"], grad: "from-sky-500 to-blue-600", fond: "from-sky-50/70 via-white to-white", bordure: "hover:border-sky-200" },
 ];
-
 const ETAPES = [
   { numero: "01", icone: MapPinned, titre: "Obtenez votre Adresse GN", texte: "Votre emplacement reçoit un numéro unique associé à sa localisation et à son QR Code.", tags: ["Numéro unique", "QR Code"], titreCourt: "Obtenez" },
   { numero: "02", icone: Search, titre: "Saisissez ou scannez", texte: "Entrez le numéro ou scannez le QR Code pour retrouver instantanément l'adresse.", tags: ["Sans application", "Web & mobile"], titreCourt: "Scannez" },
   { numero: "03", icone: Navigation2, titre: "Lancez votre itinéraire", texte: "Choisissez votre application de navigation et laissez-vous guider jusqu'à destination.", tags: ["Google Maps", "Waze"], titreCourt: "Naviguez" },
 ];
-
 const AVANTAGES = [
   { icone: Zap, titre: "Localisation immédiate", texte: "Du numéro à la destination" },
   { icone: QrCode, titre: "QR Code intégré", texte: "Scannez pour ouvrir l'adresse" },
   { icone: Share2, titre: "Partage simplifié", texte: "Numéro, lien ou QR Code" },
   { icone: Smartphone, titre: "Accessible partout", texte: "Téléphone, tablette et ordinateur" },
 ];
-
 const POINTS_CONFIANCE = [
   { icone: MapPinned, titre: "Précision GPS", texte: "Chaque Adresse GN est associée à une position géographique exploitable pour retrouver le lieu sans approximation.", badge: "Repère fiable" },
   { icone: Handshake, titre: "Accompagnement local", texte: "Des agents peuvent accompagner la création et l'installation de votre Adresse GN selon l'offre choisie.", badge: "Support terrain" },
   { icone: Smartphone, titre: "Compatible avec vos outils", texte: "Google Maps, Waze, QR Code, web et mobile : votre adresse reste simple à partager et facile à utiliser.", badge: "Utilisation immédiate" },
 ];
-
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -107,7 +100,6 @@ export const Route = createFileRoute("/")({
   }),
   component: Home,
 });
-
 function Eyebrow({ children }: { children: string }) {
   return <p className="text-center text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">{children}</p>;
 }
@@ -116,7 +108,6 @@ function hasSpeechRecognition(): boolean {
   if (typeof window === "undefined") return false;
   return "SpeechRecognition" in window || "webkitSpeechRecognition" in window;
 }
-
 function Home() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -128,7 +119,6 @@ function Home() {
   const [desktopInstallPrompt, setDesktopInstallPrompt] = useState<DesktopInstallPromptEvent | null>(null);
   const [desktopInstallVisible, setDesktopInstallVisible] = useState(false);
   const recognitionRef = useRef<any>(null);
-
   const rechercher = async (valeur: string) => {
     const propre = normalizeBeaconNumber(valeur, getDefaultZone());
     if (!propre) return;
@@ -172,7 +162,6 @@ function Home() {
   };
   const arreterVoix = () => { try { recognitionRef.current?.stop(); } catch {} setEcoute(false); };
   useEffect(() => () => { try { recognitionRef.current?.abort(); } catch {} }, []);
-
   useEffect(() => {
     if (typeof window === "undefined") return;
     const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
@@ -201,78 +190,46 @@ function Home() {
     if (choix.outcome === "accepted") setDesktopInstallVisible(false);
     setDesktopInstallPrompt(null);
   };
-
   return (
     <div className="w-full overflow-x-hidden bg-white">
       {/* ===================================================================
-          MOBILE ONLY — HERO ULTRA SIMPLE & PREMIUM
-          Le desktop reste totalement inchangé à partir de md.
+          MOBILE ONLY — HERO ULTRA SIMPLE & PREMIUM (inchangé)
           =================================================================== */}
       <section className="relative overflow-hidden gradient-signature-soft md:hidden">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-cyan-300/15 blur-[70px]"
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -left-24 bottom-0 size-64 rounded-full bg-blue-950/15 blur-[70px]"
-        />
-
+        <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-cyan-300/15 blur-[70px]" />
+        <div aria-hidden className="pointer-events-none absolute -left-24 bottom-0 size-64 rounded-full bg-blue-950/15 blur-[70px]" />
         <div className="relative px-4 pb-4 pt-5">
           <div className="mx-auto max-w-[430px]">
             <h1
               className="text-display text-balance text-center text-[clamp(1.85rem,8.2vw,2.25rem)] font-extrabold leading-[1.04] tracking-[-0.035em] text-white"
-              style={{
-                textShadow: "0 2px 18px rgb(15 23 42 / 0.22)",
-              }}
+              style={{ textShadow: "0 2px 18px rgb(15 23 42 / 0.22)" }}
             >
               Votre adresse, enfin
               <span className="block text-cyan-100">facile à trouver.</span>
             </h1>
-
             <p className="mx-auto mt-3 max-w-[330px] text-center text-[13px] leading-5 text-white/85">
               Un numéro suffit pour trouver ou partager un lieu.
             </p>
-
             <div className="mt-4 rounded-[24px] border border-white/50 bg-white/95 p-2 shadow-[0_18px_45px_-18px_rgba(15,23,42,0.42)] backdrop-blur-xl">
-              <form
-                className="space-y-2"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  void rechercher(numero);
-                }}
-              >
+              <form className="space-y-2" onSubmit={(e) => { e.preventDefault(); void rechercher(numero); }}>
                 <div className="flex min-w-0 items-center rounded-[18px] bg-slate-50 px-3 ring-1 ring-slate-200/70 focus-within:bg-white focus-within:ring-2 focus-within:ring-accent/25">
                   <input
                     value={numero}
-                    onChange={(e) => {
-                      setNumero(e.target.value);
-                      setErreur(null);
-                    }}
+                    onChange={(e) => { setNumero(e.target.value); setErreur(null); }}
                     placeholder="GN-CKY-______"
                     aria-label={t("home.hero.inputLabel")}
                     aria-invalid={!!erreur}
                     className="h-12 min-w-0 flex-1 bg-transparent font-mono text-[16px] font-bold tracking-[0.09em] text-slate-900 outline-none placeholder:font-medium placeholder:text-slate-400"
                   />
-
                   <button
                     type="button"
                     onClick={ecoute ? arreterVoix : demarrerVoix}
                     aria-label={ecoute ? "Arrêter" : "Dicter"}
-                    className={cn(
-                      "flex size-10 shrink-0 items-center justify-center rounded-xl transition-all active:scale-90",
-                      ecoute
-                        ? "animate-pulse bg-rose-500 text-white"
-                        : "text-slate-500 active:bg-slate-100",
-                    )}
+                    className={cn("flex size-10 shrink-0 items-center justify-center rounded-xl transition-all active:scale-90",
+                      ecoute ? "animate-pulse bg-rose-500 text-white" : "text-slate-500 active:bg-slate-100")}
                   >
-                    {ecoute ? (
-                      <MicOff className="size-[18px]" />
-                    ) : (
-                      <Mic className="size-[18px]" />
-                    )}
+                    {ecoute ? <MicOff className="size-[18px]" /> : <Mic className="size-[18px]" />}
                   </button>
-
                   <button
                     type="button"
                     onClick={() => setScannerOpen(true)}
@@ -282,7 +239,6 @@ function Home() {
                     <QrCode className="size-[18px]" />
                   </button>
                 </div>
-
                 <Button
                   type="submit"
                   disabled={enCours}
@@ -292,17 +248,8 @@ function Home() {
                   {enCours ? "Recherche…" : "Localiser"}
                 </Button>
               </form>
-
-              {erreur && (
-                <p
-                  role="alert"
-                  className="px-2 pb-1 pt-2 text-[11px] text-destructive"
-                >
-                  {erreur}
-                </p>
-              )}
+              {erreur && <p role="alert" className="px-2 pb-1 pt-2 text-[11px] text-destructive">{erreur}</p>}
             </div>
-
             <div className="mt-3 flex justify-center">
               <Link
                 to="/a/$number"
@@ -317,17 +264,14 @@ function Home() {
           </div>
         </div>
       </section>
-
       {/* ===================================================================
-          HERO — commun mobile / desktop (INCHANGÉ)
+          HERO — DESKTOP INCHANGÉ
           =================================================================== */}
       <section className="relative hidden overflow-hidden gradient-signature-soft md:block">
         <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-white/10 blur-3xl" />
         <div className={cn(SITE_CONTAINER, "relative pb-7 pt-5 md:pb-11 md:pt-8 xl:pb-12 xl:pt-9")}>
-          <h1
-            className="text-display whitespace-nowrap text-center font-extrabold leading-[1.05] text-white"
-            style={{ textShadow: "0 2px 20px rgb(15 23 42 / 0.25)", fontSize: "clamp(1.9rem, 3.15vw, 3.35rem)" }}
-          >
+          <h1 className="text-display whitespace-nowrap text-center font-extrabold leading-[1.05] text-white"
+            style={{ textShadow: "0 2px 20px rgb(15 23 42 / 0.25)", fontSize: "clamp(1.9rem, 3.15vw, 3.35rem)" }}>
             Votre adresse, enfin facile à trouver.
           </h1>
           <p className="mx-auto mt-3 max-w-4xl text-center text-sm leading-relaxed text-white/90 sm:text-base md:mt-4 md:max-w-none md:whitespace-nowrap lg:text-lg xl:text-xl">
@@ -376,15 +320,11 @@ function Home() {
           </div>
         </div>
       </section>
-
       {/* ===================================================================
-          MOBILE ONLY — PARCOURS SIMPLE, FLUIDE & ULTRA MODERNE
+          MOBILE ONLY — PARCOURS SIMPLE
           =================================================================== */}
-
       <div className="md:hidden">
-        {/* ---------------------------------------------------------------
-            1. ACTIONS RAPIDES
-            --------------------------------------------------------------- */}
+        {/* 1. ACTIONS RAPIDES (inchangé) */}
         <section className="bg-white px-4 py-4">
           <div className="mx-auto max-w-[430px]">
             <div className="grid grid-cols-2 gap-3">
@@ -393,106 +333,57 @@ function Home() {
                 onClick={() => setScannerOpen(true)}
                 className="group relative overflow-hidden rounded-[22px] border border-slate-200/90 bg-white p-3.5 text-left shadow-[0_10px_26px_-18px_rgba(15,23,42,0.22)] transition-all active:scale-[0.98]"
               >
-                <div
-                  aria-hidden
-                  className="absolute -right-8 -top-8 size-24 rounded-full bg-accent/10 blur-2xl"
-                />
-
+                <div aria-hidden className="absolute -right-8 -top-8 size-24 rounded-full bg-accent/10 blur-2xl" />
                 <span className="relative flex size-11 items-center justify-center rounded-2xl bg-gradient-to-br from-accent to-accent-dark text-white shadow-lg shadow-accent/20">
                   <QrCode className="size-5" />
                 </span>
-
-                <p className="relative mt-4 text-[14px] font-bold leading-5 text-slate-950">
-                  Scanner un QR
-                </p>
-
-                <p className="relative mt-1 text-[11px] leading-4 text-slate-500">
-                  Trouver une adresse
-                </p>
+                <p className="relative mt-4 text-[14px] font-bold leading-5 text-slate-950">Scanner un QR</p>
+                <p className="relative mt-1 text-[11px] leading-4 text-slate-500">Trouver une adresse</p>
               </button>
-
               <Link
                 to="/commander"
                 className="group relative overflow-hidden rounded-[22px] border border-slate-900 bg-gradient-to-br from-slate-950 via-[#11284a] to-accent-dark p-3.5 text-left shadow-[0_14px_34px_-16px_rgba(15,23,42,0.38)] transition-all active:scale-[0.98]"
               >
-                <div
-                  aria-hidden
-                  className="absolute -right-8 -top-8 size-28 rounded-full bg-cyan-300/15 blur-2xl"
-                />
-
+                <div aria-hidden className="absolute -right-8 -top-8 size-28 rounded-full bg-cyan-300/15 blur-2xl" />
                 <span className="relative flex size-11 items-center justify-center rounded-2xl bg-white/10 text-white ring-1 ring-white/10 backdrop-blur">
                   <Sparkles className="size-5" />
                 </span>
-
-                <p className="relative mt-4 text-[14px] font-bold leading-5 text-white">
-                  Créer mon adresse
-                </p>
-
-                <p className="relative mt-1 text-[11px] leading-4 text-white/78">
-                  Obtenir mon numéro GN
-                </p>
+                <p className="relative mt-4 text-[14px] font-bold leading-5 text-white">Créer mon adresse</p>
+                <p className="relative mt-1 text-[11px] leading-4 text-white/78">Obtenir mon numéro GN</p>
               </Link>
             </div>
           </div>
         </section>
 
-        {/* ---------------------------------------------------------------
-            2. COMMENT ÇA MARCHE — 3 ÉTAPES SEULEMENT
-            --------------------------------------------------------------- */}
-        <section
-          id="comment-ca-marche-mobile"
-          className="border-y border-slate-100 bg-gradient-to-b from-slate-50/90 to-white px-4 py-5"
-        >
+        {/* 2. COMMENT ÇA MARCHE (inchangé) */}
+        <section id="comment-ca-marche-mobile" className="border-y border-slate-100 bg-gradient-to-b from-slate-50/90 to-white px-4 py-5">
           <div className="mx-auto max-w-[430px]">
             <div className="text-center">
-              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-accent">
-                Comment ça marche
-              </span>
-
-              <h2 className="text-display mt-1.5 text-[22px] font-bold tracking-tight text-slate-950">
-                Un numéro. Une destination.
-              </h2>
-
-              <p className="mt-1.5 text-[12px] text-slate-500">
-                Saisissez, scannez, naviguez.
-              </p>
+              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-accent">Comment ça marche</span>
+              <h2 className="text-display mt-1.5 text-[22px] font-bold tracking-tight text-slate-950">Un numéro. Une destination.</h2>
+              <p className="mt-1.5 text-[12px] text-slate-500">Saisissez, scannez, naviguez.</p>
             </div>
-
             <div className="relative mt-5 grid grid-cols-3 gap-2">
-              <div
-                aria-hidden
-                className="absolute left-[17%] right-[17%] top-[21px] h-[2px] rounded-full bg-gradient-to-r from-accent/20 via-accent/70 to-accent/20"
-              />
-
+              <div aria-hidden className="absolute left-[17%] right-[17%] top-[21px] h-[2px] rounded-full bg-gradient-to-r from-accent/20 via-accent/70 to-accent/20" />
               {ETAPES.map((etape, index) => (
-                <div
-                  key={etape.numero}
-                  className="relative z-10 flex flex-col items-center text-center"
-                >
+                <div key={etape.numero} className="relative z-10 flex flex-col items-center text-center">
                   <span className="flex size-11 items-center justify-center rounded-[15px] border border-slate-800 bg-slate-950 text-white shadow-md">
                     <etape.icone className="size-[18px]" />
                   </span>
-
                   <span className="absolute right-[calc(50%-27px)] top-[-5px] flex size-[19px] items-center justify-center rounded-full bg-accent text-[9px] font-extrabold text-white ring-[3px] ring-slate-50">
                     {index + 1}
                   </span>
-
-                  <p className="mt-2.5 text-[11px] font-bold text-slate-800">
-                    {etape.titreCourt}
-                  </p>
+                  <p className="mt-2.5 text-[11px] font-bold text-slate-800">{etape.titreCourt}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* ---------------------------------------------------------------
-            3. DÉMONSTRATION ITINÉRAIRE — VERSION MOBILE COMPACTE
-            --------------------------------------------------------------- */}
+        {/* 3. DÉMONSTRATION (inchangé) */}
         <section className="bg-white px-4 py-4">
           <div className="mx-auto max-w-[430px]">
             <div className="overflow-hidden rounded-[24px] border border-slate-200/90 bg-white shadow-[0_16px_38px_-24px_rgba(15,23,42,0.28)]">
-              {/* En-tête compact */}
               <div className="flex items-center justify-between gap-3 px-4 pb-3 pt-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
@@ -501,127 +392,54 @@ function Home() {
                       Itinéraire réel
                     </span>
                   </div>
-
-                  <p className="mt-2 font-mono text-[15px] font-extrabold tracking-[0.09em] text-slate-950">
-                    GN-CKY-582741
-                  </p>
-
-                  <p className="mt-0.5 text-[11px] font-medium text-slate-500">
-                    → Hôtel Kaloum · Kaloum
-                  </p>
+                  <p className="mt-2 font-mono text-[15px] font-extrabold tracking-[0.09em] text-slate-950">GN-CKY-582741</p>
+                  <p className="mt-0.5 text-[11px] font-medium text-slate-500">→ Hôtel Kaloum · Kaloum</p>
                 </div>
-
                 <span className="flex size-9 shrink-0 items-center justify-center rounded-[13px] bg-accent/10 text-accent">
                   <MapPin className="size-[18px]" />
                 </span>
               </div>
-
-              {/* Carte compacte */}
               <div className="relative h-[178px] overflow-hidden border-y border-slate-100 bg-slate-100">
                 {GOOGLE_MAPS_EMBED_URL ? (
-                  <iframe
-                    title="Itinéraire Google Maps Adresse GN sur mobile"
-                    src={GOOGLE_MAPS_EMBED_URL}
-                    className="absolute inset-0 h-full w-full border-0"
-                    loading="lazy"
-                    referrerPolicy="strict-origin-when-cross-origin"
-                    allowFullScreen
-                  />
+                  <iframe title="Itinéraire Google Maps Adresse GN sur mobile" src={GOOGLE_MAPS_EMBED_URL} className="absolute inset-0 h-full w-full border-0" loading="lazy" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen />
                 ) : (
                   <div className="absolute inset-0 overflow-hidden bg-[#edf2f4]">
-                    <div
-                      aria-hidden
-                      className="absolute inset-0 opacity-45"
-                      style={{
-                        backgroundImage:
-                          "linear-gradient(rgb(203 213 225 / 0.55) 1px, transparent 1px), linear-gradient(90deg, rgb(203 213 225 / 0.55) 1px, transparent 1px)",
-                        backgroundSize: "22px 22px",
-                      }}
-                    />
-
+                    <div aria-hidden className="absolute inset-0 opacity-45" style={{ backgroundImage: "linear-gradient(rgb(203 213 225 / 0.55) 1px, transparent 1px), linear-gradient(90deg, rgb(203 213 225 / 0.55) 1px, transparent 1px)", backgroundSize: "22px 22px" }} />
                     <div className="absolute -left-[10%] right-[23%] top-[15%] h-2.5 rotate-[103deg] rounded-full bg-white shadow-sm" />
                     <div className="absolute left-[1%] right-[-10%] top-[47%] h-2.5 rotate-[8deg] rounded-full bg-white shadow-sm" />
                     <div className="absolute left-[7%] right-[-8%] top-[76%] h-2 rotate-[14deg] rounded-full bg-white/95 shadow-sm" />
-
-                    <svg
-                      viewBox="0 0 360 178"
-                      className="absolute inset-0 h-full w-full"
-                      aria-hidden
-                    >
-                      <path
-                        d="M64 156 C86 133 104 125 106 103 C109 81 91 67 102 49 C119 23 153 39 178 24 C193 15 207 10 226 8"
-                        fill="none"
-                        stroke="white"
-                        strokeWidth="11"
-                        strokeLinecap="round"
-                      />
-
-                      <path
-                        d="M64 156 C86 133 104 125 106 103 C109 81 91 67 102 49 C119 23 153 39 178 24 C193 15 207 10 226 8"
-                        fill="none"
-                        stroke="rgb(13 148 136)"
-                        strokeWidth="5.5"
-                        strokeLinecap="round"
-                      />
+                    <svg viewBox="0 0 360 178" className="absolute inset-0 h-full w-full" aria-hidden>
+                      <path d="M64 156 C86 133 104 125 106 103 C109 81 91 67 102 49 C119 23 153 39 178 24 C193 15 207 10 226 8" fill="none" stroke="white" strokeWidth="11" strokeLinecap="round" />
+                      <path d="M64 156 C86 133 104 125 106 103 C109 81 91 67 102 49 C119 23 153 39 178 24 C193 15 207 10 226 8" fill="none" stroke="rgb(13 148 136)" strokeWidth="5.5" strokeLinecap="round" />
                     </svg>
-
                     <span className="absolute bottom-[8%] left-[16%] flex size-5.5 items-center justify-center rounded-full border-[3px] border-white bg-blue-600 shadow-lg">
                       <span className="size-1.5 rounded-full bg-white" />
                     </span>
-
                     <span className="absolute right-[24%] top-[7%] flex size-9 items-center justify-center rounded-full bg-white text-accent shadow-lg">
                       <MapPin className="size-5 fill-accent/10" />
                     </span>
                   </div>
                 )}
-
-                {/* Numéro visible sur la carte */}
                 <div className="pointer-events-none absolute left-3 top-3 z-20 rounded-[13px] border border-white/80 bg-white/94 px-2.5 py-1.5 shadow-md backdrop-blur">
-                  <p className="text-[7px] font-bold uppercase tracking-[0.14em] text-slate-400">
-                    Adresse GN
-                  </p>
-
-                  <p className="mt-0.5 font-mono text-[11px] font-extrabold tracking-[0.09em] text-slate-950">
-                    GN-CKY-582741
-                  </p>
+                  <p className="text-[7px] font-bold uppercase tracking-[0.14em] text-slate-400">Adresse GN</p>
+                  <p className="mt-0.5 font-mono text-[11px] font-extrabold tracking-[0.09em] text-slate-950">GN-CKY-582741</p>
                 </div>
               </div>
-
-              {/* Action principale */}
               <div className="p-3">
                 <div className="grid grid-cols-[1fr_auto] gap-2">
-                  <a
-                    href={GOOGLE_MAPS_ROUTE_URL}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex h-11 items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-accent to-accent-dark px-4 text-[11px] font-bold text-white shadow-md shadow-accent/15 transition-all active:scale-[0.99]"
-                  >
+                  <a href={GOOGLE_MAPS_ROUTE_URL} target="_blank" rel="noreferrer"
+                    className="flex h-11 items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-accent to-accent-dark px-4 text-[11px] font-bold text-white shadow-md shadow-accent/15 transition-all active:scale-[0.99]">
                     <Navigation2 className="size-4" />
                     Ouvrir dans Google Maps
                   </a>
-
-                  <a
-                    href={WAZE_ROUTE_URL}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label="Ouvrir dans Waze"
-                    className="flex h-11 min-w-11 items-center justify-center rounded-[14px] border border-slate-200 bg-white px-3 text-slate-700 transition-all active:scale-[0.98] active:bg-slate-50"
-                  >
+                  <a href={WAZE_ROUTE_URL} target="_blank" rel="noreferrer" aria-label="Ouvrir dans Waze"
+                    className="flex h-11 min-w-11 items-center justify-center rounded-[14px] border border-slate-200 bg-white px-3 text-slate-700 transition-all active:scale-[0.98] active:bg-slate-50">
                     <Navigation2 className="size-4" />
                   </a>
                 </div>
-
                 <div className="mt-2 flex items-center justify-between gap-3 px-0.5">
-                  <span className="text-[9px] font-medium text-slate-400">
-                    Navigation directe vers la destination
-                  </span>
-
-                  <a
-                    href={WAZE_ROUTE_URL}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-[9px] font-semibold text-slate-500"
-                  >
+                  <span className="text-[9px] font-medium text-slate-400">Navigation directe vers la destination</span>
+                  <a href={WAZE_ROUTE_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[9px] font-semibold text-slate-500">
                     Waze
                     <ArrowRight className="size-3" />
                   </a>
@@ -631,59 +449,39 @@ function Home() {
           </div>
         </section>
 
-        {/* ---------------------------------------------------------------
-            4. AVANT / APRÈS — VERSION MOBILE COURTE
-            --------------------------------------------------------------- */}
+        {/* 4. AVANT / APRÈS (inchangé) */}
         <section className="border-y border-slate-100 bg-slate-50/65 px-4 py-6">
           <div className="mx-auto max-w-[430px]">
             <div className="text-center">
-              <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-slate-400">
-                La différence Adresse GN
-              </p>
-
+              <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-slate-400">La différence Adresse GN</p>
               <h2 className="text-display mt-1.5 text-[21px] font-bold tracking-tight text-slate-950">
                 Avant, on expliquait.
                 <span className="block text-accent">Maintenant, on partage.</span>
               </h2>
             </div>
-
             <div className="mt-4 space-y-2.5">
               <div className="rounded-[20px] border border-rose-100 bg-rose-50/65 p-4">
                 <div className="flex items-start gap-3">
                   <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-500">
                     <X className="size-4" />
                   </span>
-
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-rose-500">
-                      Sans Adresse GN
-                    </p>
-
+                    <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-rose-500">Sans Adresse GN</p>
                     <p className="mt-1.5 text-[13px] font-semibold leading-5 text-slate-800">
                       « Après la station, tournez à droite… »
                     </p>
                   </div>
                 </div>
               </div>
-
               <div className="rounded-[20px] border border-accent/40 bg-gradient-to-br from-emerald-50 via-white to-cyan-100/60 p-4 ring-1 ring-accent/10 shadow-[0_16px_36px_-20px_rgba(13,148,136,0.55)]">
                 <div className="flex items-center gap-3">
                   <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-accent text-white">
                     <Check className="size-4" />
                   </span>
-
                   <div className="min-w-0">
-                    <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-accent">
-                      Avec Adresse GN
-                    </p>
-
-                    <p className="mt-1 font-mono text-[15px] font-extrabold tracking-[0.08em] text-slate-950">
-                      GN-CKY-582741
-                    </p>
-
-                    <p className="mt-1 text-[11px] font-semibold text-slate-600">
-                      Partagez. Localisez. Naviguez.
-                    </p>
+                    <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-accent">Avec Adresse GN</p>
+                    <p className="mt-1 font-mono text-[15px] font-extrabold tracking-[0.08em] text-slate-950">GN-CKY-582741</p>
+                    <p className="mt-1 text-[11px] font-semibold text-slate-600">Partagez. Localisez. Naviguez.</p>
                   </div>
                 </div>
               </div>
@@ -691,28 +489,18 @@ function Home() {
           </div>
         </section>
 
-        {/* ---------------------------------------------------------------
-            5. USAGES — MOBILE PREMIUM / COMPACT
-            --------------------------------------------------------------- */}
-        <section
-          id="usages-mobile"
-          className="bg-white px-4 py-4.5"
-        >
+        {/* 5. USAGES — MOBILE ENRICHI (mini ligne de contexte ajoutée) */}
+        <section id="usages-mobile" className="bg-white px-4 py-4.5">
           <div className="mx-auto max-w-[430px]">
             <div className="text-center">
-              <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-accent">
-                Usages
-              </p>
-
+              <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-accent">Usages</p>
               <h2 className="text-display mt-1.5 text-[21px] font-bold tracking-[-0.02em] text-slate-950">
                 Une adresse adaptée à chaque besoin.
               </h2>
-
               <p className="mx-auto mt-1.5 max-w-[300px] text-[10.5px] leading-4 text-slate-500">
                 Recevoir, vendre, livrer ou gérer plusieurs sites devient plus simple.
               </p>
             </div>
-
             <div className="mt-4 grid grid-cols-2 gap-2.5">
               {USAGES.map((item) => {
                 const mobileLabel =
@@ -723,7 +511,6 @@ function Home() {
                       : item.cle === "delivery"
                         ? "Livrez au bon endroit."
                         : "Centralisez vos adresses.";
-
                 const micro =
                   item.cle === "individuals"
                     ? "Maison & visiteurs"
@@ -732,46 +519,43 @@ function Home() {
                       : item.cle === "delivery"
                         ? "Coursiers & commandes"
                         : "Bureaux & multi-sites";
-
+                // ➊ AJOUT — 1 phrase de contexte concrète (mobile uniquement)
+                const contexteMobile =
+                  item.cle === "individuals"
+                    ? "Vos proches et livreurs trouvent en un clic."
+                    : item.cle === "shops"
+                      ? "Clients et coursiers arrivent sans appeler."
+                      : item.cle === "delivery"
+                        ? "Moins d'appels, plus de destinations précises."
+                        : "API, multi-sites, adresses centralisées.";
                 return (
                   <article
                     key={item.cle}
                     className={cn(
-                      "group relative min-h-[116px] overflow-hidden rounded-[18px] border border-slate-200/90 bg-gradient-to-br p-3.5 shadow-[0_10px_28px_-22px_rgba(15,23,42,0.22)]",
+                      "group relative min-h-[138px] overflow-hidden rounded-[18px] border border-slate-200/90 bg-gradient-to-br p-3.5 shadow-[0_10px_28px_-22px_rgba(15,23,42,0.22)]",
                       item.fond,
                     )}
                   >
-                    <div
-                      aria-hidden
-                      className={cn(
-                        "absolute -right-7 -top-7 size-20 rounded-full bg-gradient-to-br opacity-[0.10] blur-2xl",
-                        item.grad,
-                      )}
-                    />
-
+                    <div aria-hidden className={cn("absolute -right-7 -top-7 size-20 rounded-full bg-gradient-to-br opacity-[0.10] blur-2xl", item.grad)} />
                     <div className="relative flex items-start justify-between gap-2">
-                      <span
-                        className={cn(
-                          "flex size-9 shrink-0 items-center justify-center rounded-[12px] bg-gradient-to-br text-white shadow-md",
-                          item.grad,
-                        )}
-                      >
+                      <span className={cn("flex size-9 shrink-0 items-center justify-center rounded-[12px] bg-gradient-to-br text-white shadow-md", item.grad)}>
                         <item.icone className="size-4" />
                       </span>
-
                       <span className="rounded-full border border-slate-200/80 bg-white/80 px-2 py-1 text-[6.5px] font-semibold uppercase tracking-[0.11em] text-slate-400 backdrop-blur">
                         {micro}
                       </span>
                     </div>
-
                     <div className="relative mt-3">
                       <p className="text-[8px] font-semibold uppercase tracking-[0.11em] text-slate-400">
                         {item.titre}
                       </p>
-
                       <h3 className="mt-1 text-[12.5px] font-extrabold leading-[1.25] tracking-[-0.01em] text-slate-950">
                         {mobileLabel}
                       </h3>
+                      {/* ➊ Ligne de contexte concrète */}
+                      <p className="mt-1.5 text-[10.5px] leading-[1.35] text-slate-600">
+                        {contexteMobile}
+                      </p>
                     </div>
                   </article>
                 );
@@ -780,71 +564,60 @@ function Home() {
           </div>
         </section>
 
-        {/* ---------------------------------------------------------------
-            6. CONFIANCE — MOBILE PREMIUM / SIGNATURE
-            --------------------------------------------------------------- */}
+        {/* 6. CONFIANCE — MOBILE ENRICHI (icônes accent solide + 1 phrase) */}
         <section className="border-y border-slate-100 bg-gradient-to-b from-slate-50/80 to-white px-4 py-4.5">
           <div className="mx-auto max-w-[430px]">
             <div className="text-center">
-              <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-accent">
-                Confiance
-              </p>
-
-              <h2 className="text-display mt-1.5 text-[20px] font-bold tracking-[-0.02em] text-slate-950">
-                Conçu pour le terrain.
-              </h2>
-
+              <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-accent">Confiance</p>
+              <h2 className="text-display mt-1.5 text-[20px] font-bold tracking-[-0.02em] text-slate-950">Conçu pour le terrain.</h2>
               <p className="mx-auto mt-1.5 max-w-[310px] text-[10.5px] leading-4 text-slate-500">
                 Une solution pensée pour être simple, locale et immédiatement utilisable.
               </p>
             </div>
-
             <div className="mt-4 overflow-hidden rounded-[18px] border border-slate-200/90 bg-white shadow-[0_14px_34px_-24px_rgba(15,23,42,0.24)]">
               {[
                 {
                   icon: MapPinned,
                   label: "Localisation GPS précise",
-                  detail: "Position fiable",
+                  detail: "Position à quelques mètres près",
                 },
                 {
                   icon: Handshake,
                   label: "Accompagnement local",
-                  detail: "Support terrain",
+                  detail: "Agents formés à Conakry",
                 },
                 {
                   icon: Smartphone,
                   label: "Google Maps, Waze & QR Code",
-                  detail: "Compatible partout",
+                  detail: "Aucune app à installer",
                 },
               ].map((item, index) => (
                 <div
                   key={item.label}
                   className={cn(
-                    "flex items-center gap-3 px-3.5 py-3",
+                    "flex items-center gap-3 px-3.5 py-3.5",
                     index !== 2 && "border-b border-slate-100",
                   )}
                 >
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-[12px] bg-gradient-to-br from-accent/10 to-cyan-100 text-accent ring-1 ring-inset ring-accent/10">
-                    <item.icon className="size-4" />
+                  {/* ➋ Icône plus contrastée : gradient accent solide */}
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-gradient-to-br from-accent to-accent-dark text-white shadow-md shadow-accent/20">
+                    <item.icon className="size-[18px]" />
                   </span>
-
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[12px] font-bold text-slate-900">
+                    <p className="truncate text-[12.5px] font-bold text-slate-950">
                       {item.label}
                     </p>
-
-                    <p className="mt-0.5 text-[8px] font-medium uppercase tracking-[0.08em] text-slate-400">
+                    {/* ➋ Description concrète au lieu du label uppercase court */}
+                    <p className="mt-0.5 text-[10.5px] leading-4 text-slate-500">
                       {item.detail}
                     </p>
                   </div>
-
                   <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 ring-1 ring-inset ring-emerald-100">
                     <Check className="size-3" />
                   </span>
                 </div>
               ))}
             </div>
-
             <div className="mt-2.5 flex items-center justify-center gap-1.5 text-[8px] font-medium text-slate-400">
               <span className="size-1.5 rounded-full bg-emerald-500" />
               Pensé pour les réalités de la Guinée
@@ -852,98 +625,57 @@ function Home() {
           </div>
         </section>
 
-        {/* ---------------------------------------------------------------
-            7. CTA FINAL — MOBILE SIGNATURE / ULTRA PREMIUM COMPACT
-            --------------------------------------------------------------- */}
+        {/* 7. CTA FINAL (inchangé) */}
         <section className="bg-white px-3 py-3.5">
           <div className="mx-auto max-w-[446px]">
             <div className="relative isolate overflow-hidden rounded-[26px] border border-slate-800/70 bg-[#071426] px-4 pb-4 pt-3.5 text-white shadow-[0_24px_55px_-28px_rgba(2,8,23,0.68)]">
-              {/* Fond signature */}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_88%_10%,rgba(34,211,238,0.23),transparent_31%),radial-gradient(circle_at_6%_100%,rgba(59,130,246,0.16),transparent_34%),linear-gradient(135deg,#071426_0%,#102f58_52%,#078b8d_100%)]"
-              />
-
-              <div
-                aria-hidden
-                className="pointer-events-none absolute -right-14 top-7 -z-10 size-32 rounded-full border border-white/[0.05]"
-              />
-
-              <div
-                aria-hidden
-                className="pointer-events-none absolute -right-5 top-14 -z-10 size-16 rounded-full border border-white/[0.04]"
-              />
-
+              <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_88%_10%,rgba(34,211,238,0.23),transparent_31%),radial-gradient(circle_at_6%_100%,rgba(59,130,246,0.16),transparent_34%),linear-gradient(135deg,#071426_0%,#102f58_52%,#078b8d_100%)]" />
+              <div aria-hidden className="pointer-events-none absolute -right-14 top-7 -z-10 size-32 rounded-full border border-white/[0.05]" />
+              <div aria-hidden className="pointer-events-none absolute -right-5 top-14 -z-10 size-16 rounded-full border border-white/[0.04]" />
               <div className="relative">
-                {/* Sur-ligne */}
                 <div className="flex items-center justify-between gap-2">
                   <span className="inline-flex min-w-0 items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.07] px-2.5 py-1 text-[7.5px] font-bold uppercase tracking-[0.14em] text-cyan-100 backdrop-blur-md">
                     <Sparkles className="size-2.5 shrink-0" />
                     <span className="truncate">Votre adresse commence ici</span>
                   </span>
-
                   <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-300/15 bg-emerald-300/[0.08] px-2 py-1 text-[7.5px] font-semibold text-emerald-100">
                     <span className="size-1.5 rounded-full bg-emerald-300 shadow-[0_0_7px_rgba(110,231,183,0.9)]" />
                     Simple
                   </span>
                 </div>
-
-                {/* Titre — UNE SEULE LIGNE, TOUJOURS ENTIÈREMENT VISIBLE SUR MOBILE */}
                 <h2 className="text-display mt-3 w-full whitespace-nowrap text-[clamp(13.5px,3.85vw,16px)] font-extrabold leading-none tracking-[-0.04em] text-white">
                   <span>Une adresse claire.</span>{" "}
-                  <span className="bg-gradient-to-r from-cyan-200 via-sky-200 to-emerald-200 bg-clip-text text-transparent">
-                    Un accès immédiat.
-                  </span>
+                  <span className="bg-gradient-to-r from-cyan-200 via-sky-200 to-emerald-200 bg-clip-text text-transparent">Un accès immédiat.</span>
                 </h2>
-
                 <p className="mt-2 text-[10.5px] leading-4 text-white/70">
                   Créez votre numéro Adresse GN et partagez votre localisation en quelques secondes.
                 </p>
-
-                {/* Aperçu produit — version ultra compacte */}
                 <div className="mt-3 flex items-center justify-between gap-3 rounded-[15px] border border-white/10 bg-white/[0.065] px-3 py-2.5 backdrop-blur-md">
                   <div className="min-w-0">
-                    <p className="text-[6.5px] font-semibold uppercase tracking-[0.15em] text-white/38">
-                      Exemple d’adresse
-                    </p>
-
-                    <p className="mt-0.5 truncate font-mono text-[13px] font-extrabold tracking-[0.09em] text-white">
-                      GN-CKY-582741
-                    </p>
-
+                    <p className="text-[6.5px] font-semibold uppercase tracking-[0.15em] text-white/38">Exemple d'adresse</p>
+                    <p className="mt-0.5 truncate font-mono text-[13px] font-extrabold tracking-[0.09em] text-white">GN-CKY-582741</p>
                     <div className="mt-1 flex items-center gap-1 text-[8px] font-medium text-white/50">
                       <MapPin className="size-2.5 shrink-0 text-cyan-200" />
                       Kaloum · Conakry
                     </div>
                   </div>
-
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-[13px] border border-white/10 bg-white/[0.07] text-cyan-100">
                     <QrCode className="size-[18px]" />
                   </div>
                 </div>
-
-                {/* Valeur clé */}
                 <div className="mt-2.5 grid grid-cols-3 gap-1.5">
                   {[
                     { label: "Numéro", icon: MapPinned },
                     { label: "QR Code", icon: QrCode },
                     { label: "GPS", icon: Navigation2 },
                   ].map(({ label, icon: Icon }) => (
-                    <div
-                      key={label}
-                      className="flex min-h-9 items-center justify-center gap-1.5 rounded-[11px] border border-white/[0.08] bg-white/[0.04] px-1.5 text-[8px] font-semibold text-white/80"
-                    >
+                    <div key={label} className="flex min-h-9 items-center justify-center gap-1.5 rounded-[11px] border border-white/[0.08] bg-white/[0.04] px-1.5 text-[8px] font-semibold text-white/80">
                       <Icon className="size-3 shrink-0 text-cyan-200" />
                       <span className="truncate">{label}</span>
                     </div>
                   ))}
                 </div>
-
-                {/* CTA principal */}
-                <Button
-                  asChild
-                  className="group mt-3.5 h-11 w-full rounded-[14px] bg-white px-3.5 text-[13px] font-extrabold text-slate-950 shadow-[0_12px_26px_-12px_rgba(255,255,255,0.24)] transition-all active:scale-[0.99] hover:bg-white"
-                >
+                <Button asChild className="group mt-3.5 h-11 w-full rounded-[14px] bg-white px-3.5 text-[13px] font-extrabold text-slate-950 shadow-[0_12px_26px_-12px_rgba(255,255,255,0.24)] transition-all active:scale-[0.99] hover:bg-white">
                   <Link to="/commander">
                     Créer mon Adresse GN
                     <span className="ml-auto flex size-6.5 items-center justify-center rounded-full bg-slate-950 text-white transition-transform group-hover:translate-x-0.5">
@@ -951,25 +683,17 @@ function Home() {
                     </span>
                   </Link>
                 </Button>
-
-                {/* CTA secondaire + réassurance sur une seule zone compacte */}
                 <div className="mt-2.5 flex items-center justify-between gap-2">
-                  <Link
-                    to="/tarifs"
-                    className="inline-flex items-center gap-1 text-[9px] font-semibold text-white/66 transition-colors active:text-white"
-                  >
+                  <Link to="/tarifs" className="inline-flex items-center gap-1 text-[9px] font-semibold text-white/66 transition-colors active:text-white">
                     Découvrir les offres
                     <ArrowRight className="size-3" />
                   </Link>
-
                   <div className="flex items-center gap-1.5 text-[7.5px] font-medium text-white/40">
                     <span className="inline-flex items-center gap-1">
                       <Check className="size-2.5 text-cyan-200" />
                       Sans app
                     </span>
-
                     <span className="size-0.5 rounded-full bg-white/25" />
-
                     <span className="inline-flex items-center gap-1">
                       <Check className="size-2.5 text-cyan-200" />
                       Plaque en option
@@ -980,17 +704,11 @@ function Home() {
             </div>
           </div>
         </section>
-
       </div>
-
       {/* ===================================================================
-          DESKTOP ONLY (≥ md)
-          Version desktop finale : contenu visuel inchangé.
+          DESKTOP ONLY (≥ md) — INCHANGÉ
           =================================================================== */}
       <div className="hidden md:block">
-        {/* =====================================================
-            COMMENT ÇA MARCHE
-            ===================================================== */}
         <section id="comment-ca-marche" className="relative w-full overflow-hidden bg-white pb-10 pt-8 sm:pb-11 sm:pt-9 md:pb-12 md:pt-10 lg:pb-12 lg:pt-10 xl:pb-14">
           <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.022]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, rgb(15 23 42) 1px, transparent 0)", backgroundSize: "34px 34px" }} />
           <div aria-hidden className="pointer-events-none absolute -right-48 top-24 h-[500px] w-[500px] rounded-full bg-cyan-100/30 blur-[130px]" />
@@ -998,10 +716,7 @@ function Home() {
           <div className={cn(SITE_CONTAINER, "relative")}>
             <Reveal>
               <div className="flex justify-center">
-                <span className={SECTION_BADGE_CLASS}>
-                  <Sparkles className="size-3 text-accent" />
-                  Comment ça marche
-                </span>
+                <span className={SECTION_BADGE_CLASS}><Sparkles className="size-3 text-accent" />Comment ça marche</span>
               </div>
               <h2 className={cn(SECTION_TITLE_CLASS, "mx-auto mt-4 max-w-[1500px] xl:whitespace-nowrap")}>
                 Un numéro. Une destination.{" "}
@@ -1065,7 +780,6 @@ function Home() {
                   </div>
                 </Reveal>
               </div>
-              {/* GOOGLE MAPS MOCKUP */}
               <Reveal delay={150} className="relative">
                 <div className="relative mx-auto flex w-full max-w-[620px] flex-col items-center">
                   <div aria-hidden className="absolute left-1/2 top-1/2 h-[470px] w-[470px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-accent/20 via-cyan-100/35 to-blue-100/25 blur-[80px]" />
@@ -1190,7 +904,6 @@ function Home() {
                 </div>
               </Reveal>
             </div>
-            {/* AVANT / APRÈS */}
             <Reveal delay={100}>
               <div className="mt-9 md:mt-10 xl:mt-11">
                 <div className="mx-auto mb-6 text-center">
@@ -1245,7 +958,6 @@ function Home() {
                 </div>
               </div>
             </Reveal>
-            {/* BÉNÉFICES */}
             <Reveal delay={140}>
               <div className="mt-6 overflow-hidden rounded-[22px] border border-slate-200 bg-slate-50/60 shadow-[0_8px_30px_rgba(15,23,42,0.04)]">
                 <div className="grid grid-cols-1 divide-y divide-slate-200/70 sm:grid-cols-2 lg:grid-cols-4 lg:divide-x lg:divide-y-0 2xl:grid-cols-4">
@@ -1265,17 +977,11 @@ function Home() {
             </Reveal>
           </div>
         </section>
-
-        {/* ===== USAGES ===== */}
         <section id="usages" className="relative w-full overflow-hidden border-t border-slate-100 bg-slate-50 py-10 sm:py-11 md:py-12 xl:py-14">
           <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 h-[360px] w-[700px] -translate-x-1/2 rounded-full bg-white/90 blur-[100px]" />
           <div className={cn(SITE_CONTAINER, "relative")}>
             <Reveal>
-              <div className="flex justify-center">
-                <span className={SECTION_BADGE_CLASS}>
-                  <Sparkles className="size-3 text-accent" /> Usages
-                </span>
-              </div>
+              <div className="flex justify-center"><span className={SECTION_BADGE_CLASS}><Sparkles className="size-3 text-accent" /> Usages</span></div>
               <h2 className={cn(SECTION_TITLE_CLASS, "mx-auto mt-4 max-w-5xl")}>
                 Pensé pour{" "}
                 <span className="bg-gradient-to-r from-accent via-sky-500 to-blue-600 bg-clip-text text-transparent">tous les usages du quotidien.</span>
@@ -1319,17 +1025,13 @@ function Home() {
             </div>
           </div>
         </section>
-
-        {/* ===== CONFIANCE ===== */}
         <section className="relative w-full overflow-hidden bg-white py-4 sm:py-5 md:py-6 xl:py-7">
           <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 h-[240px] w-[680px] -translate-x-1/2 rounded-full bg-cyan-50 blur-[90px]" />
           <div className={cn(SITE_CONTAINER, "relative")}>
             <Reveal>
               <div className="mx-auto w-full max-w-[1320px] rounded-[24px] border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-cyan-50/70 p-4 shadow-[0_16px_44px_-32px_rgba(15,23,42,0.18)] sm:p-5 xl:p-5">
                 <div className="mx-auto w-full text-center">
-                  <span className={SECTION_BADGE_CLASS}>
-                    <Sparkles className="size-3 text-accent" /> Pourquoi nous faire confiance
-                  </span>
+                  <span className={SECTION_BADGE_CLASS}><Sparkles className="size-3 text-accent" /> Pourquoi nous faire confiance</span>
                   <h2 className={cn(SECTION_TITLE_CLASS, "mx-auto mt-3 max-w-3xl")}>Conçu pour les réalités du terrain.</h2>
                   <p className={cn(SECTION_COPY_CLASS, "mx-auto mt-2 w-full max-w-[1180px] xl:whitespace-nowrap")}>
                     Adresse GN relie un numéro unique, une position GPS et des outils que les utilisateurs connaissent déjà pour rendre l'adresse simple à créer, à partager et à rejoindre.
@@ -1355,8 +1057,6 @@ function Home() {
             </Reveal>
           </div>
         </section>
-
-        {/* ===== CTA FINAL ===== */}
         <section className="relative w-full overflow-hidden bg-white pb-7 pt-1 sm:pb-8 sm:pt-2 md:pb-8 md:pt-2 xl:pb-9 xl:pt-2">
           <div aria-hidden className="pointer-events-none absolute -left-52 top-1/2 size-[420px] -translate-y-1/2 rounded-full bg-blue-100/45 blur-[120px]" />
           <div aria-hidden className="pointer-events-none absolute -right-52 top-1/2 size-[420px] -translate-y-1/2 rounded-full bg-cyan-100/45 blur-[120px]" />
@@ -1487,9 +1187,7 @@ function Home() {
             </div>
           </Reveal>
         </section>
-
       </div>
-
       {desktopInstallVisible && (
         <aside role="dialog" aria-label="Installer Adresse GN"
           className="fixed bottom-5 left-5 z-[1200] hidden w-[min(420px,calc(100vw-40px))] overflow-hidden rounded-[22px] bg-gradient-to-r from-orange-500 via-orange-500 to-rose-600 p-[1px] shadow-[0_24px_70px_-18px_rgba(244,63,94,0.45)] lg:block">
