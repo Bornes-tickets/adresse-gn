@@ -804,68 +804,103 @@ function Home() {
         </section>
 
         {/* ---------------------------------------------------------------
-            7. CTA FINAL — UNE ACTION DOMINANTE
+            7. CTA FINAL — MOBILE PREMIUM / CONVERSION
             --------------------------------------------------------------- */}
-        <section className="bg-white px-4 py-5">
+        <section className="bg-white px-4 py-4">
           <div className="mx-auto max-w-[430px]">
-            <div className="relative overflow-hidden rounded-[26px] bg-gradient-to-br from-slate-950 via-[#15345f] to-accent-dark p-5 text-white shadow-[0_22px_52px_-22px_rgba(15,23,42,0.52)] ring-1 ring-white/5">
+            <div className="relative overflow-hidden rounded-[28px] border border-slate-800/70 bg-gradient-to-br from-slate-950 via-[#17345f] to-[#078f91] px-5 py-5 text-white shadow-[0_24px_55px_-26px_rgba(15,23,42,0.58)]">
+              {/* Décor discret */}
               <div
                 aria-hidden
-                className="absolute -right-16 -top-16 size-48 rounded-full bg-cyan-300/15 blur-[50px]"
+                className="pointer-events-none absolute -right-16 -top-20 size-52 rounded-full bg-cyan-300/16 blur-[55px]"
+              />
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -bottom-24 -left-16 size-48 rounded-full bg-blue-500/12 blur-[55px]"
               />
 
               <div className="relative">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.15em] text-cyan-100 ring-1 ring-white/10">
-                  <Sparkles className="size-3" />
-                  Commencer
-                </span>
+                {/* En-tête */}
+                <div className="flex items-center justify-between gap-3">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.08] px-2.5 py-1 text-[8px] font-bold uppercase tracking-[0.16em] text-cyan-100 backdrop-blur">
+                    <Sparkles className="size-3" />
+                    Créer mon adresse
+                  </span>
 
-                <h2 className="text-display mt-3 text-[24px] font-bold leading-[1.08] tracking-tight">
-                  Prêt à être
-                  <span className="block text-cyan-200">facile à trouver ?</span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-400/10 px-2 py-1 text-[8px] font-semibold text-emerald-100 ring-1 ring-inset ring-emerald-300/15">
+                    <span className="size-1.5 rounded-full bg-emerald-300" />
+                    Adresse numérique
+                  </span>
+                </div>
+
+                {/* Message principal */}
+                <h2 className="text-display mt-4 text-[24px] font-extrabold leading-[1.07] tracking-[-0.025em] text-white">
+                  Votre Adresse GN,
+                  <span className="block bg-gradient-to-r from-cyan-200 to-emerald-200 bg-clip-text text-transparent">
+                    prête à partager.
+                  </span>
                 </h2>
 
-                <p className="mt-3 max-w-[330px] text-[12px] leading-5 text-white/75">
-                  Créez votre Adresse GN et partagez votre localisation simplement.
+                <p className="mt-2.5 max-w-[345px] text-[12px] leading-5 text-white/74">
+                  Un numéro unique lié à votre position pour être trouvé, partagé et rejoint simplement.
                 </p>
 
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {["Numéro unique", "QR Code", "GPS"].map((item) => (
-                    <span
-                      key={item}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1.5 text-[10px] font-semibold text-white/90 ring-1 ring-white/10"
+                {/* Bénéfices essentiels */}
+                <div className="mt-4 grid grid-cols-3 gap-1.5">
+                  {[
+                    { label: "Numéro", icon: MapPinned },
+                    { label: "QR Code", icon: QrCode },
+                    { label: "GPS", icon: Navigation2 },
+                  ].map(({ label, icon: Icon }) => (
+                    <div
+                      key={label}
+                      className="flex min-h-10 items-center justify-center gap-1.5 rounded-[12px] border border-white/10 bg-white/[0.07] px-2 text-[9px] font-semibold text-white/88 backdrop-blur"
                     >
-                      <Check className="size-3 text-cyan-200" />
-                      {item}
-                    </span>
+                      <Icon className="size-3.5 shrink-0 text-cyan-200" />
+                      <span className="truncate">{label}</span>
+                    </div>
                   ))}
                 </div>
 
+                {/* CTA principal */}
                 <Button
                   asChild
-                  className="mt-5 h-12 w-full rounded-[16px] bg-white text-[14px] font-bold text-slate-950 shadow-xl hover:bg-white"
+                  className="group mt-4 h-12 w-full rounded-[15px] bg-white px-4 text-[14px] font-extrabold text-slate-950 shadow-[0_12px_28px_rgba(15,23,42,0.20)] transition-all active:scale-[0.99] hover:bg-white"
                 >
                   <Link to="/commander">
                     Créer mon Adresse GN
-                    <ArrowRight className="ml-1 size-4" />
+                    <ArrowRight className="ml-1 size-4 transition-transform group-hover:translate-x-1" />
                   </Link>
                 </Button>
 
+                {/* Action secondaire */}
                 <Link
                   to="/tarifs"
-                  className="mt-3 flex items-center justify-center gap-1.5 text-[11px] font-semibold text-white/75"
+                  className="mt-2.5 flex h-8 items-center justify-center gap-1.5 rounded-xl text-[10px] font-semibold text-white/72 transition-colors active:text-white"
                 >
-                  Voir les offres
+                  Comparer les offres
                   <ArrowRight className="size-3.5" />
                 </Link>
 
-                <p className="mt-3 text-center text-[9px] leading-4 text-white/45">
-                  Adresse numérique disponible avec ou sans plaque physique.
-                </p>
+                {/* Réassurance */}
+                <div className="mt-2.5 flex items-center justify-center gap-3 border-t border-white/10 pt-2.5 text-[8px] font-medium text-white/48">
+                  <span className="inline-flex items-center gap-1">
+                    <Check className="size-3 text-cyan-200" />
+                    Sans application obligatoire
+                  </span>
+
+                  <span className="size-1 rounded-full bg-white/20" />
+
+                  <span className="inline-flex items-center gap-1">
+                    <Check className="size-3 text-cyan-200" />
+                    Plaque en option
+                  </span>
+                </div>
               </div>
             </div>
           </div>
         </section>
+
       </div>
 
       {/* ===================================================================
