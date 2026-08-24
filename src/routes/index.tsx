@@ -193,72 +193,78 @@ function Home() {
   return (
     <div className="w-full overflow-x-hidden bg-white">
       {/* ===================================================================
-          MOBILE ONLY — HERO ULTRA SIMPLE & PREMIUM (inchangé)
+          MOBILE ONLY — HERO PREMIUM COMPACT
           =================================================================== */}
       <section className="relative overflow-hidden gradient-signature-soft md:hidden">
-        <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-cyan-300/15 blur-[70px]" />
-        <div aria-hidden className="pointer-events-none absolute -left-24 bottom-0 size-64 rounded-full bg-blue-950/15 blur-[70px]" />
-        <div className="relative px-4 pb-4 pt-5">
+        <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 size-64 rounded-full bg-cyan-300/14 blur-[68px]" />
+        <div aria-hidden className="pointer-events-none absolute -left-24 bottom-0 size-56 rounded-full bg-blue-950/14 blur-[68px]" />
+
+        <div className="relative px-4 pb-3.5 pt-4">
           <div className="mx-auto max-w-[430px]">
             <h1
-              className="text-display text-balance text-center text-[clamp(1.85rem,8.2vw,2.25rem)] font-extrabold leading-[1.04] tracking-[-0.035em] text-white"
+              className="text-display text-balance text-center text-[clamp(1.72rem,7.7vw,2.08rem)] font-extrabold leading-[1.045] tracking-[-0.035em] text-white"
               style={{ textShadow: "0 2px 18px rgb(15 23 42 / 0.22)" }}
             >
               Votre adresse, enfin
               <span className="block text-cyan-100">facile à trouver.</span>
             </h1>
-            <p className="mx-auto mt-3 max-w-[330px] text-center text-[13px] leading-5 text-white/85">
+
+            <p className="mx-auto mt-2.5 max-w-[320px] text-center text-[12px] leading-[18px] text-white/84">
               Un numéro suffit pour trouver ou partager un lieu.
             </p>
-            <div className="mt-4 rounded-[24px] border border-white/50 bg-white/95 p-2 shadow-[0_18px_45px_-18px_rgba(15,23,42,0.42)] backdrop-blur-xl">
-              <form className="space-y-2" onSubmit={(e) => { e.preventDefault(); void rechercher(numero); }}>
-                <div className="flex min-w-0 items-center rounded-[18px] bg-slate-50 px-3 ring-1 ring-slate-200/70 focus-within:bg-white focus-within:ring-2 focus-within:ring-accent/25">
+
+            <div className="mt-3.5 rounded-[22px] border border-white/50 bg-white/95 p-1.5 shadow-[0_16px_40px_-20px_rgba(15,23,42,0.45)] backdrop-blur-xl">
+              <form className="space-y-1.5" onSubmit={(e) => { e.preventDefault(); void rechercher(numero); }}>
+                <div className="flex min-w-0 items-center rounded-[16px] bg-slate-50 px-2.5 ring-1 ring-slate-200/70 transition-all focus-within:bg-white focus-within:ring-2 focus-within:ring-accent/25">
                   <input
                     value={numero}
                     onChange={(e) => { setNumero(e.target.value); setErreur(null); }}
                     placeholder="GN-CKY-______"
                     aria-label={t("home.hero.inputLabel")}
                     aria-invalid={!!erreur}
-                    className="h-12 min-w-0 flex-1 bg-transparent font-mono text-[16px] font-bold tracking-[0.09em] text-slate-900 outline-none placeholder:font-medium placeholder:text-slate-400"
+                    className="h-[46px] min-w-0 flex-1 bg-transparent font-mono text-[15px] font-bold tracking-[0.09em] text-slate-900 outline-none placeholder:font-medium placeholder:text-slate-400"
                   />
                   <button
                     type="button"
                     onClick={ecoute ? arreterVoix : demarrerVoix}
                     aria-label={ecoute ? "Arrêter" : "Dicter"}
-                    className={cn("flex size-10 shrink-0 items-center justify-center rounded-xl transition-all active:scale-90",
+                    className={cn("flex size-9 shrink-0 items-center justify-center rounded-[11px] transition-all active:scale-90",
                       ecoute ? "animate-pulse bg-rose-500 text-white" : "text-slate-500 active:bg-slate-100")}
                   >
-                    {ecoute ? <MicOff className="size-[18px]" /> : <Mic className="size-[18px]" />}
+                    {ecoute ? <MicOff className="size-[17px]" /> : <Mic className="size-[17px]" />}
                   </button>
                   <button
                     type="button"
                     onClick={() => setScannerOpen(true)}
                     aria-label="Scanner un QR"
-                    className="flex size-10 shrink-0 items-center justify-center rounded-xl text-slate-500 transition-all active:scale-90 active:bg-slate-100"
+                    className="flex size-9 shrink-0 items-center justify-center rounded-[11px] text-slate-500 transition-all active:scale-90 active:bg-slate-100"
                   >
-                    <QrCode className="size-[18px]" />
+                    <QrCode className="size-[17px]" />
                   </button>
                 </div>
+
                 <Button
                   type="submit"
                   disabled={enCours}
-                  className="h-12 w-full rounded-[17px] bg-gradient-to-r from-accent to-accent-dark text-[14px] font-bold text-white shadow-lg shadow-accent/20 active:scale-[0.99]"
+                  className="h-[45px] w-full rounded-[15px] bg-gradient-to-r from-accent to-accent-dark text-[13px] font-bold text-white shadow-md shadow-accent/18 active:scale-[0.99]"
                 >
-                  <Search className="size-[17px]" />
+                  <Search className="size-4" />
                   {enCours ? "Recherche…" : "Localiser"}
                 </Button>
               </form>
-              {erreur && <p role="alert" className="px-2 pb-1 pt-2 text-[11px] text-destructive">{erreur}</p>}
+
+              {erreur && <p role="alert" className="px-2 pb-1 pt-1.5 text-[10px] text-destructive">{erreur}</p>}
             </div>
-            <div className="mt-3 flex justify-center">
+
+            <div className="mt-2.5 flex justify-center">
               <Link
                 to="/a/$number"
                 params={{ number: EXEMPLE_DEMO }}
-                className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[10px] font-semibold text-white/85 backdrop-blur-sm active:scale-95"
+                className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/[0.08] px-2.5 py-1 text-[9px] font-semibold text-white/82 backdrop-blur-sm transition-all active:scale-95"
               >
                 Essayer
                 <span className="font-mono font-bold">GN-CKY-582741</span>
-                <ArrowRight className="size-3" />
+                <ArrowRight className="size-2.5" />
               </Link>
             </div>
           </div>
@@ -324,56 +330,63 @@ function Home() {
           MOBILE ONLY — PARCOURS SIMPLE
           =================================================================== */}
       <div className="md:hidden">
-        {/* 1. ACTIONS RAPIDES (inchangé) */}
-        <section className="bg-white px-4 py-4">
+        {/* ---------------------------------------------------------------
+            1. ACTIONS RAPIDES — MOBILE PREMIUM COMPACT
+            --------------------------------------------------------------- */}
+        <section className="bg-white px-4 py-3.5">
           <div className="mx-auto max-w-[430px]">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2.5">
               <button
                 type="button"
                 onClick={() => setScannerOpen(true)}
-                className="group relative overflow-hidden rounded-[22px] border border-slate-200/90 bg-white p-3.5 text-left shadow-[0_10px_26px_-18px_rgba(15,23,42,0.22)] transition-all active:scale-[0.98]"
+                className="group relative min-h-[112px] overflow-hidden rounded-[20px] border border-slate-200/90 bg-white p-3 text-left shadow-[0_10px_26px_-20px_rgba(15,23,42,0.22)] transition-all active:scale-[0.98]"
               >
-                <div aria-hidden className="absolute -right-8 -top-8 size-24 rounded-full bg-accent/10 blur-2xl" />
-                <span className="relative flex size-11 items-center justify-center rounded-2xl bg-gradient-to-br from-accent to-accent-dark text-white shadow-lg shadow-accent/20">
-                  <QrCode className="size-5" />
+                <div aria-hidden className="absolute -right-8 -top-8 size-20 rounded-full bg-accent/10 blur-2xl" />
+                <span className="relative flex size-10 items-center justify-center rounded-[14px] bg-gradient-to-br from-accent to-accent-dark text-white shadow-md shadow-accent/20">
+                  <QrCode className="size-[18px]" />
                 </span>
-                <p className="relative mt-4 text-[14px] font-bold leading-5 text-slate-950">Scanner un QR</p>
-                <p className="relative mt-1 text-[11px] leading-4 text-slate-500">Trouver une adresse</p>
+                <p className="relative mt-3 text-[13px] font-bold leading-4 text-slate-950">Scanner un QR</p>
+                <p className="relative mt-1 text-[10px] leading-4 text-slate-500">Trouver une adresse</p>
               </button>
+
               <Link
                 to="/commander"
-                className="group relative overflow-hidden rounded-[22px] border border-slate-900 bg-gradient-to-br from-slate-950 via-[#11284a] to-accent-dark p-3.5 text-left shadow-[0_14px_34px_-16px_rgba(15,23,42,0.38)] transition-all active:scale-[0.98]"
+                className="group relative min-h-[112px] overflow-hidden rounded-[20px] border border-slate-900 bg-gradient-to-br from-slate-950 via-[#11284a] to-accent-dark p-3 text-left shadow-[0_14px_34px_-18px_rgba(15,23,42,0.38)] transition-all active:scale-[0.98]"
               >
-                <div aria-hidden className="absolute -right-8 -top-8 size-28 rounded-full bg-cyan-300/15 blur-2xl" />
-                <span className="relative flex size-11 items-center justify-center rounded-2xl bg-white/10 text-white ring-1 ring-white/10 backdrop-blur">
-                  <Sparkles className="size-5" />
+                <div aria-hidden className="absolute -right-8 -top-8 size-24 rounded-full bg-cyan-300/14 blur-2xl" />
+                <span className="relative flex size-10 items-center justify-center rounded-[14px] bg-white/10 text-white ring-1 ring-white/10 backdrop-blur">
+                  <Sparkles className="size-[18px]" />
                 </span>
-                <p className="relative mt-4 text-[14px] font-bold leading-5 text-white">Créer mon adresse</p>
-                <p className="relative mt-1 text-[11px] leading-4 text-white/78">Obtenir mon numéro GN</p>
+                <p className="relative mt-3 text-[13px] font-bold leading-4 text-white">Créer mon adresse</p>
+                <p className="relative mt-1 text-[10px] leading-4 text-white/78">Obtenir mon numéro Adresse GN</p>
               </Link>
             </div>
           </div>
         </section>
 
-        {/* 2. COMMENT ÇA MARCHE (inchangé) */}
-        <section id="comment-ca-marche-mobile" className="border-y border-slate-100 bg-gradient-to-b from-slate-50/90 to-white px-4 py-5">
+        {/* ---------------------------------------------------------------
+            2. COMMENT ÇA MARCHE — MOBILE PREMIUM / FLUIDE
+            --------------------------------------------------------------- */}
+        <section id="comment-ca-marche-mobile" className="border-y border-slate-100 bg-gradient-to-b from-slate-50/80 to-white px-4 pb-4 pt-3.5">
           <div className="mx-auto max-w-[430px]">
             <div className="text-center">
-              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-accent">Comment ça marche</span>
-              <h2 className="text-display mt-1.5 text-[22px] font-bold tracking-tight text-slate-950">Un numéro. Une destination.</h2>
-              <p className="mt-1.5 text-[12px] text-slate-500">Saisissez, scannez, naviguez.</p>
+              <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-accent">Comment ça marche</span>
+              <h2 className="text-display mt-1.5 text-[20px] font-bold tracking-[-0.02em] text-slate-950">Un numéro. Une destination.</h2>
+              <p className="mt-1 text-[11px] text-slate-500">Saisissez, scannez, naviguez.</p>
             </div>
-            <div className="relative mt-5 grid grid-cols-3 gap-2">
-              <div aria-hidden className="absolute left-[17%] right-[17%] top-[21px] h-[2px] rounded-full bg-gradient-to-r from-accent/20 via-accent/70 to-accent/20" />
+
+            <div className="relative mt-4 grid grid-cols-3 gap-2">
+              <div aria-hidden className="absolute left-[18%] right-[18%] top-[20px] h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent" />
+
               {ETAPES.map((etape, index) => (
                 <div key={etape.numero} className="relative z-10 flex flex-col items-center text-center">
-                  <span className="flex size-11 items-center justify-center rounded-[15px] border border-slate-800 bg-slate-950 text-white shadow-md">
-                    <etape.icone className="size-[18px]" />
+                  <span className="flex size-10 items-center justify-center rounded-[13px] border border-slate-800 bg-slate-950 text-white shadow-[0_8px_20px_-10px_rgba(15,23,42,0.55)]">
+                    <etape.icone className="size-[16px]" />
                   </span>
-                  <span className="absolute right-[calc(50%-27px)] top-[-5px] flex size-[19px] items-center justify-center rounded-full bg-accent text-[9px] font-extrabold text-white ring-[3px] ring-slate-50">
+                  <span className="absolute right-[calc(50%-24px)] top-[-4px] flex size-[18px] items-center justify-center rounded-full bg-accent text-[8px] font-extrabold text-white ring-[2.5px] ring-slate-50">
                     {index + 1}
                   </span>
-                  <p className="mt-2.5 text-[11px] font-bold text-slate-800">{etape.titreCourt}</p>
+                  <p className="mt-2 text-[10px] font-bold text-slate-800">{etape.titreCourt}</p>
                 </div>
               ))}
             </div>
