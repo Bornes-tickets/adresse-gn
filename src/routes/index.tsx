@@ -380,209 +380,109 @@ function Home() {
           </div>
         </section>
 
-        {/* ---------------------------------------------------------------
-            3. DÉMONSTRATION — MOBILE PREMIUM / PLUS COMPACTE
-            --------------------------------------------------------------- */}
-        <section className="bg-white px-4 pb-3 pt-3.5">
+        {/* 3. DÉMONSTRATION (inchangé) */}
+        <section className="bg-white px-4 py-4">
           <div className="mx-auto max-w-[430px]">
-            <div className="overflow-hidden rounded-[22px] border border-slate-200/90 bg-white shadow-[0_16px_38px_-24px_rgba(15,23,42,0.26)]">
-              {/* En-tête */}
-              <div className="flex items-center justify-between gap-3 px-4 pb-2.5 pt-3.5">
+            <div className="overflow-hidden rounded-[24px] border border-slate-200/90 bg-white shadow-[0_16px_38px_-24px_rgba(15,23,42,0.28)]">
+              <div className="flex items-center justify-between gap-3 px-4 pb-3 pt-4">
                 <div className="min-w-0">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/[0.07] px-2.5 py-1 text-[7.5px] font-bold uppercase tracking-[0.15em] text-accent ring-1 ring-inset ring-accent/10">
-                    <Navigation2 className="size-3" />
-                    Itinéraire réel
-                  </span>
-
-                  <p className="mt-2 font-mono text-[15px] font-extrabold tracking-[0.09em] text-slate-950">
-                    GN-CKY-582741
-                  </p>
-
-                  <p className="mt-0.5 text-[10.5px] font-medium text-slate-500">
-                    Hôtel Kaloum · Kaloum
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/8 px-2.5 py-1 text-[8px] font-bold uppercase tracking-[0.14em] text-accent ring-1 ring-accent/10">
+                      <Navigation2 className="size-3" />
+                      Itinéraire réel
+                    </span>
+                  </div>
+                  <p className="mt-2 font-mono text-[15px] font-extrabold tracking-[0.09em] text-slate-950">GN-CKY-582741</p>
+                  <p className="mt-0.5 text-[11px] font-medium text-slate-500">→ Hôtel Kaloum · Conakry</p>
                 </div>
-
-                <span className="flex size-9 shrink-0 items-center justify-center rounded-[12px] bg-accent/10 text-accent ring-1 ring-inset ring-accent/10">
-                  <MapPin className="size-[17px]" />
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-[13px] bg-accent/10 text-accent">
+                  <MapPin className="size-[18px]" />
                 </span>
               </div>
-
-              {/* Carte */}
-              <div className="relative h-[158px] overflow-hidden border-y border-slate-100 bg-slate-100">
+              <div className="relative h-[178px] overflow-hidden border-y border-slate-100 bg-slate-100">
                 {GOOGLE_MAPS_EMBED_URL ? (
-                  <iframe
-                    title="Itinéraire Google Maps Adresse GN sur mobile"
-                    src={GOOGLE_MAPS_EMBED_URL}
-                    className="absolute inset-0 h-full w-full border-0"
-                    loading="lazy"
-                    referrerPolicy="strict-origin-when-cross-origin"
-                    allowFullScreen
-                  />
+                  <iframe title="Itinéraire Google Maps Adresse GN sur mobile" src={GOOGLE_MAPS_EMBED_URL} className="absolute inset-0 h-full w-full border-0" loading="lazy" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen />
                 ) : (
                   <div className="absolute inset-0 overflow-hidden bg-[#edf2f4]">
-                    <div
-                      aria-hidden
-                      className="absolute inset-0 opacity-45"
-                      style={{
-                        backgroundImage:
-                          "linear-gradient(rgb(203 213 225 / 0.55) 1px, transparent 1px), linear-gradient(90deg, rgb(203 213 225 / 0.55) 1px, transparent 1px)",
-                        backgroundSize: "22px 22px",
-                      }}
-                    />
-
+                    <div aria-hidden className="absolute inset-0 opacity-45" style={{ backgroundImage: "linear-gradient(rgb(203 213 225 / 0.55) 1px, transparent 1px), linear-gradient(90deg, rgb(203 213 225 / 0.55) 1px, transparent 1px)", backgroundSize: "22px 22px" }} />
                     <div className="absolute -left-[10%] right-[23%] top-[15%] h-2.5 rotate-[103deg] rounded-full bg-white shadow-sm" />
                     <div className="absolute left-[1%] right-[-10%] top-[47%] h-2.5 rotate-[8deg] rounded-full bg-white shadow-sm" />
                     <div className="absolute left-[7%] right-[-8%] top-[76%] h-2 rotate-[14deg] rounded-full bg-white/95 shadow-sm" />
-
-                    <svg
-                      viewBox="0 0 360 158"
-                      className="absolute inset-0 h-full w-full"
-                      aria-hidden
-                    >
-                      <path
-                        d="M64 140 C86 121 104 114 106 94 C109 75 91 62 102 45 C119 22 153 35 178 22 C193 14 207 10 226 8"
-                        fill="none"
-                        stroke="white"
-                        strokeWidth="11"
-                        strokeLinecap="round"
-                      />
-                      <path
-                        d="M64 140 C86 121 104 114 106 94 C109 75 91 62 102 45 C119 22 153 35 178 22 C193 14 207 10 226 8"
-                        fill="none"
-                        stroke="rgb(13 148 136)"
-                        strokeWidth="5.5"
-                        strokeLinecap="round"
-                      />
+                    <svg viewBox="0 0 360 178" className="absolute inset-0 h-full w-full" aria-hidden>
+                      <path d="M64 156 C86 133 104 125 106 103 C109 81 91 67 102 49 C119 23 153 39 178 24 C193 15 207 10 226 8" fill="none" stroke="white" strokeWidth="11" strokeLinecap="round" />
+                      <path d="M64 156 C86 133 104 125 106 103 C109 81 91 67 102 49 C119 23 153 39 178 24 C193 15 207 10 226 8" fill="none" stroke="rgb(13 148 136)" strokeWidth="5.5" strokeLinecap="round" />
                     </svg>
-
                     <span className="absolute bottom-[8%] left-[16%] flex size-5.5 items-center justify-center rounded-full border-[3px] border-white bg-blue-600 shadow-lg">
                       <span className="size-1.5 rounded-full bg-white" />
                     </span>
-
                     <span className="absolute right-[24%] top-[7%] flex size-9 items-center justify-center rounded-full bg-white text-accent shadow-lg">
                       <MapPin className="size-5 fill-accent/10" />
                     </span>
                   </div>
                 )}
-
-                {/* Badge destination — évite de répéter le numéro GN */}
-                <div className="pointer-events-none absolute left-3 top-3 z-20 inline-flex items-center gap-1.5 rounded-[12px] border border-white/80 bg-white/94 px-2.5 py-1.5 shadow-md backdrop-blur">
-                  <MapPin className="size-3 text-accent" />
-                  <span className="text-[8px] font-bold uppercase tracking-[0.12em] text-slate-600">
-                    Destination
-                  </span>
+                <div className="pointer-events-none absolute left-3 top-3 z-20 rounded-[13px] border border-white/80 bg-white/94 px-2.5 py-1.5 shadow-md backdrop-blur">
+                  <p className="text-[7px] font-bold uppercase tracking-[0.14em] text-slate-400">Adresse GN</p>
+                  <p className="mt-0.5 font-mono text-[11px] font-extrabold tracking-[0.09em] text-slate-950">GN-CKY-582741</p>
                 </div>
               </div>
-
-              {/* Navigation */}
               <div className="p-3">
-                <div className="grid grid-cols-[1.35fr_0.65fr] gap-2">
-                  <a
-                    href={GOOGLE_MAPS_ROUTE_URL}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex h-10.5 items-center justify-center gap-2 rounded-[13px] bg-gradient-to-r from-accent to-accent-dark px-3 text-[10.5px] font-bold text-white shadow-md shadow-accent/15 transition-all active:scale-[0.99]"
-                  >
-                    <Navigation2 className="size-3.5" />
-                    Google Maps
+                <div className="grid grid-cols-[1fr_auto] gap-2">
+                  <a href={GOOGLE_MAPS_ROUTE_URL} target="_blank" rel="noreferrer"
+                    className="flex h-11 items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-accent to-accent-dark px-4 text-[11px] font-bold text-white shadow-md shadow-accent/15 transition-all active:scale-[0.99]">
+                    <Navigation2 className="size-4" />
+                    Ouvrir dans Google Maps
                   </a>
-
-                  <a
-                    href={WAZE_ROUTE_URL}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex h-10.5 items-center justify-center gap-1.5 rounded-[13px] border border-slate-200 bg-white px-3 text-[10.5px] font-bold text-slate-700 shadow-sm transition-all active:scale-[0.98] active:bg-slate-50"
-                  >
-                    <Navigation2 className="size-3.5" />
-                    Waze
+                  <a href={WAZE_ROUTE_URL} target="_blank" rel="noreferrer" aria-label="Ouvrir dans Waze"
+                    className="flex h-11 min-w-11 items-center justify-center rounded-[14px] border border-slate-200 bg-white px-3 text-slate-700 transition-all active:scale-[0.98] active:bg-slate-50">
+                    <Navigation2 className="size-4" />
                   </a>
                 </div>
-
-                <div className="mt-2 flex items-center justify-center gap-1.5 text-[8.5px] font-medium text-slate-400">
-                  <Check className="size-3 text-emerald-500" />
-                  Navigation directe vers la destination
+                <div className="mt-2 flex items-center justify-between gap-3 px-0.5">
+                  <span className="text-[9px] font-medium text-slate-400">Navigation directe vers la destination</span>
+                  <a href={WAZE_ROUTE_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[9px] font-semibold text-slate-500">
+                    Waze
+                    <ArrowRight className="size-3" />
+                  </a>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* ---------------------------------------------------------------
-            4. AVANT / APRÈS — MOBILE PREMIUM
-            --------------------------------------------------------------- */}
-        <section className="border-y border-slate-100 bg-gradient-to-b from-slate-50/75 to-white px-4 pb-5 pt-4">
+        {/* 4. AVANT / APRÈS (inchangé) */}
+        <section className="border-y border-slate-100 bg-slate-50/65 px-4 py-6">
           <div className="mx-auto max-w-[430px]">
             <div className="text-center">
-              <p className="text-[8px] font-bold uppercase tracking-[0.19em] text-slate-400">
-                La différence Adresse GN
-              </p>
-
-              <h2 className="text-display mt-1.5 text-[20px] font-bold tracking-[-0.02em] text-slate-950">
+              <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-slate-400">La différence Adresse GN</p>
+              <h2 className="text-display mt-1.5 text-[21px] font-bold tracking-tight text-slate-950">
                 Avant, on expliquait.
-                <span className="block bg-gradient-to-r from-accent to-cyan-500 bg-clip-text text-transparent">
-                  Maintenant, on partage.
-                </span>
+                <span className="block text-accent">Maintenant, on partage.</span>
               </h2>
-
-              <p className="mx-auto mt-1.5 max-w-[310px] text-[10.5px] leading-4 text-slate-500">
-                Une référence simple remplace les longues indications.
-              </p>
             </div>
-
-            <div className="mt-3.5 space-y-2.5">
-              {/* AVANT */}
-              <div className="rounded-[18px] border border-rose-100 bg-gradient-to-r from-rose-50/80 to-white p-3.5">
-                <div className="flex items-center gap-3">
-                  <span className="flex size-8 shrink-0 items-center justify-center rounded-[11px] bg-rose-100 text-rose-500">
+            <div className="mt-4 space-y-2.5">
+              <div className="rounded-[20px] border border-rose-100 bg-rose-50/65 p-4">
+                <div className="flex items-start gap-3">
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-500">
                     <X className="size-4" />
                   </span>
-
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[8px] font-bold uppercase tracking-[0.13em] text-rose-500">
-                      Avant
-                    </p>
-
-                    <p className="mt-1 text-[12.5px] font-semibold leading-5 text-slate-800">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-rose-500">Sans Adresse GN</p>
+                    <p className="mt-1.5 text-[13px] font-semibold leading-5 text-slate-800">
                       « Après la station, tournez à droite… »
                     </p>
                   </div>
                 </div>
               </div>
-
-              {/* AVEC ADRESSE GN */}
-              <div className="relative overflow-hidden rounded-[19px] border border-accent/45 bg-gradient-to-br from-white via-emerald-50/85 to-cyan-100/70 p-3.5 ring-1 ring-inset ring-accent/10 shadow-[0_18px_38px_-24px_rgba(13,148,136,0.62)]">
-                <div
-                  aria-hidden
-                  className="pointer-events-none absolute -right-10 -top-10 size-28 rounded-full bg-accent/12 blur-2xl"
-                />
-
-                <div className="relative flex items-center gap-3">
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-[12px] bg-gradient-to-br from-accent to-accent-dark text-white shadow-md shadow-accent/20">
+              <div className="rounded-[20px] border border-accent/40 bg-gradient-to-br from-emerald-50 via-white to-cyan-100/60 p-4 ring-1 ring-accent/10 shadow-[0_16px_36px_-20px_rgba(13,148,136,0.55)]">
+                <div className="flex items-center gap-3">
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-accent text-white">
                     <Check className="size-4" />
                   </span>
-
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="text-[8px] font-bold uppercase tracking-[0.13em] text-accent">
-                        Avec Adresse GN
-                      </p>
-
-                      <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[6.5px] font-bold uppercase tracking-[0.09em] text-emerald-700">
-                        Simple
-                      </span>
-                    </div>
-
-                    <p className="mt-1 font-mono text-[16px] font-extrabold tracking-[0.09em] text-slate-950">
-                      GN-CKY-582741
-                    </p>
-
-                    <p className="mt-1 text-[10.5px] font-semibold text-slate-600">
-                      Partagez · Localisez · Naviguez
-                    </p>
+                  <div className="min-w-0">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-accent">Avec Adresse GN</p>
+                    <p className="mt-1 font-mono text-[15px] font-extrabold tracking-[0.08em] text-slate-950">GN-CKY-582741</p>
+                    <p className="mt-1 text-[11px] font-semibold text-slate-600">Partagez. Localisez. Naviguez.</p>
                   </div>
-
-                  <ArrowRight className="size-4 shrink-0 text-accent/70" />
                 </div>
               </div>
             </div>
@@ -1323,3 +1223,4 @@ function Home() {
     </div>
   );
 }
+
