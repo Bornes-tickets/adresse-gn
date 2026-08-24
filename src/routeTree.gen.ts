@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AProposRouteImport } from './routes/a-propos'
+import { Route as CommanderRouteImport } from './routes/commander'
 import { Route as ConfidentialiteRouteImport } from './routes/confidentialite'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as LoginRouteImport } from './routes/login'
@@ -113,6 +114,11 @@ const AProposRoute = AProposRouteImport.update({
   path: '/a-propos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CommanderRoute = CommanderRouteImport.update({
+  id: '/commander',
+  path: '/commander',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ConfidentialiteRoute = ConfidentialiteRouteImport.update({
   id: '/confidentialite',
   path: '/confidentialite',
@@ -179,9 +185,9 @@ const BlogSlugRoute = BlogSlugRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const CommanderOfferCodeRoute = CommanderOfferCodeRouteImport.update({
-  id: '/commander/$offerCode',
-  path: '/commander/$offerCode',
-  getParentRoute: () => rootRouteImport,
+  id: '/$offerCode',
+  path: '/$offerCode',
+  getParentRoute: () => CommanderRoute,
 } as any)
 const EtablissementNumberRoute = EtablissementNumberRouteImport.update({
   id: '/etablissement/$number',
@@ -583,6 +589,7 @@ const ApiPublicWebhooksOrangeRoute = ApiPublicWebhooksOrangeRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/a-propos': typeof AProposRoute
+  '/commander': typeof CommanderRouteWithChildren
   '/confidentialite': typeof ConfidentialiteRoute
   '/faq': typeof FaqRoute
   '/login': typeof LoginRoute
@@ -678,6 +685,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/a-propos': typeof AProposRoute
+  '/commander': typeof CommanderRouteWithChildren
   '/confidentialite': typeof ConfidentialiteRoute
   '/faq': typeof FaqRoute
   '/login': typeof LoginRoute
@@ -766,6 +774,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/a-propos': typeof AProposRoute
+  '/commander': typeof CommanderRouteWithChildren
   '/confidentialite': typeof ConfidentialiteRoute
   '/faq': typeof FaqRoute
   '/login': typeof LoginRoute
@@ -863,6 +872,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/a-propos'
+    | '/commander'
     | '/confidentialite'
     | '/faq'
     | '/login'
@@ -958,6 +968,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/a-propos'
+    | '/commander'
     | '/confidentialite'
     | '/faq'
     | '/login'
@@ -1045,6 +1056,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/a-propos'
+    | '/commander'
     | '/confidentialite'
     | '/faq'
     | '/login'
@@ -1141,6 +1153,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AProposRoute: typeof AProposRoute
+  CommanderRoute: typeof CommanderRouteWithChildren
   ConfidentialiteRoute: typeof ConfidentialiteRoute
   FaqRoute: typeof FaqRoute
   LoginRoute: typeof LoginRoute
@@ -1159,7 +1172,6 @@ export interface RootRouteChildren {
   ANumberRoute: typeof ANumberRoute
   AgentLoginRoute: typeof AgentLoginRoute
   BlogSlugRoute: typeof BlogSlugRoute
-  CommanderOfferCodeRoute: typeof CommanderOfferCodeRoute
   EtablissementNumberRoute: typeof EtablissementNumberRoute
   PSlugRoute: typeof PSlugRoute
   ProOnboardingRoute: typeof ProOnboardingRoute
@@ -1184,6 +1196,13 @@ declare module '@tanstack/react-router' {
       path: '/a-propos'
       fullPath: '/a-propos'
       preLoaderRoute: typeof AProposRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/commander': {
+      id: '/commander'
+      path: '/commander'
+      fullPath: '/commander'
+      preLoaderRoute: typeof CommanderRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/confidentialite': {
@@ -1279,10 +1298,10 @@ declare module '@tanstack/react-router' {
     }
     '/commander/$offerCode': {
       id: '/commander/$offerCode'
-      path: '/commander/$offerCode'
+      path: '/$offerCode'
       fullPath: '/commander/$offerCode'
       preLoaderRoute: typeof CommanderOfferCodeRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof CommanderRoute
     }
     '/etablissement/$number': {
       id: '/etablissement/$number'
@@ -1826,6 +1845,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface CommanderRouteChildren {
+  CommanderOfferCodeRoute: typeof CommanderOfferCodeRoute
+}
+
+const CommanderRouteChildren: CommanderRouteChildren = {
+  CommanderOfferCodeRoute: CommanderOfferCodeRoute,
+}
+
+const CommanderRouteWithChildren = CommanderRoute._addFileChildren(
+  CommanderRouteChildren,
+)
+
 interface AdminGuardRouteRouteChildren {
   AdminGuardAbonnementsRoute: typeof AdminGuardAbonnementsRoute
   AdminGuardAddressesRoute: typeof AdminGuardAddressesRoute
@@ -2035,6 +2066,7 @@ const SupportGuardRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AProposRoute: AProposRoute,
+  CommanderRoute: CommanderRouteWithChildren,
   ConfidentialiteRoute: ConfidentialiteRoute,
   FaqRoute: FaqRoute,
   LoginRoute: LoginRoute,
@@ -2053,7 +2085,6 @@ const rootRouteChildren: RootRouteChildren = {
   ANumberRoute: ANumberRoute,
   AgentLoginRoute: AgentLoginRoute,
   BlogSlugRoute: BlogSlugRoute,
-  CommanderOfferCodeRoute: CommanderOfferCodeRoute,
   EtablissementNumberRoute: EtablissementNumberRoute,
   PSlugRoute: PSlugRoute,
   ProOnboardingRoute: ProOnboardingRoute,
