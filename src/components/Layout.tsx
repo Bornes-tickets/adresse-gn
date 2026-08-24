@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import {
+  ArrowRight,
   Briefcase,
   ChevronDown,
   Facebook,
@@ -378,7 +379,7 @@ function Footer() {
     <footer className="relative overflow-hidden bg-slate-950 text-slate-300">
       <div aria-hidden className="pointer-events-none absolute -left-32 top-0 size-[260px] rounded-full bg-blue-900/10 blur-[100px]" />
       <div aria-hidden className="pointer-events-none absolute -right-32 top-0 size-[260px] rounded-full bg-cyan-900/[0.08] blur-[100px]" />
-      <div className={cn(FOOTER_CONTAINER, "relative pb-3 pt-5 sm:pb-4 sm:pt-6 lg:pb-3 lg:pt-6 xl:pt-7")}>
+      <div className={cn(FOOTER_CONTAINER, "relative pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-5 sm:pb-4 sm:pt-6 lg:pb-3 lg:pt-6 xl:pt-7")}>
         <div className="hidden min-w-0 lg:grid lg:grid-cols-[1.45fr_repeat(4,minmax(0,1fr))] lg:items-start lg:gap-x-8 xl:gap-x-10 2xl:gap-x-14">
           <div className="min-w-0 pr-2">
             <Logo tone="light" />
@@ -404,60 +405,185 @@ function Footer() {
           </div>
           {FOOTER_COLS.map((col) => <FooterColumn key={col.cle} col={col} />)}
         </div>
+        {/* =================================================
+            MOBILE / TABLETTE — FOOTER PREMIUM COMPACT
+            Desktop inchangé : ce bloc reste strictement < lg
+            ================================================= */}
         <div className="lg:hidden">
+          {/* Identité + statut */}
           <div className="pb-4">
-            <Logo tone="light" />
-            <p className="mt-2.5 max-w-sm text-[11px] leading-4 text-slate-400">{t("footer.tagline")}</p>
-            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
-              <span className="flex items-center gap-1.5 text-[11px] text-slate-400">
-                <MapPin className="size-3.5 shrink-0 text-slate-500" />
-                {t("footer.location")}
+            <div className="flex items-center justify-between gap-3">
+              <Logo tone="light" />
+
+              <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-accent/20 bg-accent/10 px-2.5 py-1 text-[9px] font-semibold text-accent">
+                <span className="size-1.5 rounded-full bg-accent shadow-[0_0_8px_rgba(20,184,166,0.7)]" />
+                Pilote 2026
               </span>
-              <a href="mailto:contact@adresse.gn" className={cn("flex items-center gap-1.5 rounded-sm text-[11px] text-slate-300 transition-colors hover:text-accent", FOCUS)}>
-                <Mail className="size-3.5 shrink-0 text-slate-500" />
-                contact@adresse.gn
-              </a>
-              <a href={`https://wa.me/${WHATSAPP_SERVICE}`} target="_blank" rel="noreferrer" className={cn("flex items-center gap-1.5 rounded-sm text-[11px] text-slate-300 transition-colors hover:text-accent", FOCUS)}>
-                <MessageCircle className="size-3.5 shrink-0 text-slate-500" />
-                {t("footer.whatsapp")}
+            </div>
+
+            <p className="mt-2.5 max-w-[310px] text-[11px] leading-[1.55] text-slate-400">
+              {t("footer.tagline")}
+            </p>
+
+            {/* Contacts rapides */}
+            <div className="mt-3.5 grid grid-cols-2 gap-2">
+              <div className="flex min-w-0 items-center gap-2.5 rounded-[14px] border border-slate-800/80 bg-white/[0.025] px-3 py-2.5">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-white/[0.05] text-slate-400">
+                  <MapPin className="size-3.5" />
+                </span>
+
+                <div className="min-w-0">
+                  <p className="text-[7px] font-semibold uppercase tracking-[0.14em] text-slate-600">
+                    Localisation
+                  </p>
+                  <p className="mt-0.5 truncate text-[10px] font-medium text-slate-300">
+                    {t("footer.location")}
+                  </p>
+                </div>
+              </div>
+
+              <a
+                href={`https://wa.me/${WHATSAPP_SERVICE}`}
+                target="_blank"
+                rel="noreferrer"
+                className={cn(
+                  "flex min-w-0 items-center gap-2.5 rounded-[14px] border border-slate-800/80 bg-white/[0.025] px-3 py-2.5 transition-all active:scale-[0.98] active:bg-white/[0.05]",
+                  FOCUS,
+                )}
+              >
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-accent/10 text-accent">
+                  <MessageCircle className="size-3.5" />
+                </span>
+
+                <div className="min-w-0">
+                  <p className="text-[7px] font-semibold uppercase tracking-[0.14em] text-slate-600">
+                    WhatsApp
+                  </p>
+                  <p className="mt-0.5 truncate text-[10px] font-medium text-slate-300">
+                    Nous contacter
+                  </p>
+                </div>
               </a>
             </div>
-            <span className="mt-3 inline-flex items-center rounded-full border border-accent/20 bg-accent/10 px-2.5 py-0.5 text-[9px] font-medium text-accent">
-              <span className="mr-1.5 size-1.5 rounded-full bg-accent" />
-              {t("footer.pilot")}
-            </span>
+
+            {/* E-mail */}
+            <a
+              href="mailto:contact@adresse.gn"
+              className={cn(
+                "mt-2 flex min-w-0 items-center gap-2.5 rounded-[14px] border border-slate-800/80 bg-white/[0.025] px-3 py-2.5 transition-all active:scale-[0.99] active:bg-white/[0.05]",
+                FOCUS,
+              )}
+            >
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-white/[0.05] text-slate-400">
+                <Mail className="size-3.5" />
+              </span>
+
+              <div className="min-w-0 flex-1">
+                <p className="text-[7px] font-semibold uppercase tracking-[0.14em] text-slate-600">
+                  E-mail
+                </p>
+                <p className="mt-0.5 truncate text-[10px] font-medium text-slate-300">
+                  contact@adresse.gn
+                </p>
+              </div>
+
+              <ArrowRight className="size-3.5 shrink-0 text-slate-600" />
+            </a>
           </div>
-          <div className="border-y border-slate-800/80">
-            {FOOTER_COLS.map((col) => (
-              <details key={col.cle} className="group border-b border-slate-800/70 last:border-b-0">
-                <summary className={cn("flex min-h-10 cursor-pointer list-none items-center justify-between gap-4 rounded-sm py-2 text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-400 marker:hidden", FOCUS)}>
+
+          {/* Navigation accordéon */}
+          <div className="overflow-hidden rounded-[18px] border border-slate-800/80 bg-white/[0.018]">
+            {FOOTER_COLS.map((col, index) => (
+              <details key={col.cle} className="group">
+                <summary
+                  className={cn(
+                    "flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-4 px-4 text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-400 transition-colors marker:hidden active:bg-white/[0.035]",
+                    index !== 0 && "border-t border-slate-800/70",
+                    FOCUS,
+                  )}
+                >
                   <span>{t(col.cle)}</span>
-                  <ChevronDown className="size-3.5 shrink-0 text-slate-500 transition-transform duration-200 group-open:rotate-180" />
+
+                  <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-white/[0.035] text-slate-500 transition-all duration-200 group-open:rotate-180 group-open:bg-accent/10 group-open:text-accent">
+                    <ChevronDown className="size-3.5" />
+                  </span>
                 </summary>
-                <nav className="flex flex-col gap-1.5 pb-3 pl-1">
-                  {col.links.map((link) => <FooterLinkItem key={link.cle} link={link} />)}
+
+                <nav className="grid gap-0.5 border-t border-slate-800/50 bg-slate-950/50 px-4 py-2.5">
+                  {col.links.map((link) => (
+                    <div key={link.cle} className="py-1">
+                      <FooterLinkItem link={link} />
+                    </div>
+                  ))}
                 </nav>
               </details>
             ))}
           </div>
         </div>
-        <div className="mb-3 mt-5 border-t border-slate-800/80 lg:mb-2.5 lg:mt-5" />
-        <div className="flex min-w-0 flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[9px] text-slate-500 sm:text-[10px]">
-            <span className="leading-4">{t("footer.rights")}</span>
-            <span aria-hidden="true" className="hidden text-slate-700 sm:inline">·</span>
-            <LanguageSwitcher tone="light" className="h-6 w-fit px-1.5 text-[10px] text-slate-400" />
-          </div>
-          <div className="flex items-center gap-1.5">
-            {[
-              { Icon: Facebook, label: "Facebook" },
-              { Icon: Instagram, label: "Instagram" },
-              { Icon: Twitter, label: "X" },
-            ].map(({ Icon, label }) => (
-              <span key={label} title={label} className="grid size-7 place-items-center rounded-lg border border-slate-800 bg-slate-950/50 text-slate-500 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-600 hover:bg-slate-900 hover:text-white">
-                <Icon className="size-3" />
+        {/* =================================================
+            BARRE BASSE — MOBILE / TABLETTE
+            ================================================= */}
+        <div className="lg:hidden">
+          <div className="mb-3 mt-4 border-t border-slate-800/70" />
+
+          <div className="flex min-w-0 flex-col gap-3">
+            <div className="flex min-w-0 items-center justify-between gap-3">
+              <span className="min-w-0 text-[9px] leading-4 text-slate-600">
+                {t("footer.rights")}
               </span>
-            ))}
+
+              <LanguageSwitcher
+                tone="light"
+                className="h-7 shrink-0 rounded-lg border border-slate-800 bg-white/[0.025] px-2 text-[10px] text-slate-400"
+              />
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              {[
+                { Icon: Facebook, label: "Facebook" },
+                { Icon: Instagram, label: "Instagram" },
+                { Icon: Twitter, label: "X" },
+              ].map(({ Icon, label }) => (
+                <span
+                  key={label}
+                  title={label}
+                  className="grid size-8 place-items-center rounded-[10px] border border-slate-800 bg-white/[0.025] text-slate-500 transition-all duration-200 active:scale-95 active:bg-white/[0.06] active:text-white"
+                >
+                  <Icon className="size-3.5" />
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* =================================================
+            BARRE BASSE — DESKTOP INCHANGÉE
+            ================================================= */}
+        <div className="hidden lg:block">
+          <div className="mb-2.5 mt-5 border-t border-slate-800/80" />
+
+          <div className="flex min-w-0 flex-row items-center justify-between gap-2.5">
+            <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-slate-500">
+              <span className="leading-4">{t("footer.rights")}</span>
+              <span aria-hidden="true" className="text-slate-700">·</span>
+              <LanguageSwitcher tone="light" className="h-6 w-fit px-1.5 text-[10px] text-slate-400" />
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              {[
+                { Icon: Facebook, label: "Facebook" },
+                { Icon: Instagram, label: "Instagram" },
+                { Icon: Twitter, label: "X" },
+              ].map(({ Icon, label }) => (
+                <span
+                  key={label}
+                  title={label}
+                  className="grid size-7 place-items-center rounded-lg border border-slate-800 bg-slate-950/50 text-slate-500 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-600 hover:bg-slate-900 hover:text-white"
+                >
+                  <Icon className="size-3" />
+                </span>
+              ))}
+            </div>
           </div>
         </div>
         <span className="sr-only">{langueCourante.nom}</span>
