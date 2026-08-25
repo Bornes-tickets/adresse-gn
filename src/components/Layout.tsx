@@ -47,17 +47,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useLangue } from "@/hooks/useLangue";
 import { cn } from "@/lib/utils";
-
 const WHATSAPP_SERVICE = "224620000000";
-
 const FOOTER_CONTAINER =
   "mx-auto w-full max-w-[1760px] px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16";
-
 const NAV: { to: "/" | "/tarifs"; label: string; hash?: string }[] = [
   { to: "/", label: "Comment ça marche", hash: "comment-ca-marche" },
   { to: "/tarifs", label: "Nos offres" },
 ];
-
 const BACKOFFICE_PREFIXES = [
   "/supervisor",
   "/admin",
@@ -66,7 +62,6 @@ const BACKOFFICE_PREFIXES = [
   "/support",
   "/agent",
 ];
-
 type EspaceInfo = {
   role: string;
   to: string;
@@ -83,7 +78,6 @@ const ESPACES_METIER: Record<string, EspaceInfo> = {
   support: { role: "support", to: "/support", label: "Espace support", icon: Headphones, cls: "text-sky-600" },
   agent: { role: "agent", to: "/agent", label: "Espace agent terrain", icon: HardHat, cls: "text-orange-600" },
 };
-
 function useRoleUtilisateur(userId: string | null | undefined) {
   return useQuery({
     queryKey: ["user-role", userId],
@@ -96,12 +90,12 @@ function useRoleUtilisateur(userId: string | null | undefined) {
     staleTime: 10 * 60 * 1000,
   });
 }
-
 /* =========================================================
    HEADER
-   - Mobile / Android installé : sticky, donc toujours visible au scroll
-   - AUCUN safe-area top ajouté ici : Android/Capacitor gère déjà la StatusBar
-   - Le header reste dans le flux => aucun chevauchement avec le Hero
+   - Mobile / Android : header étendu jusqu'à la status bar
+     grâce à padding-top: env(safe-area-inset-top).
+   - Combiné à capacitor.config.ts { StatusBar.overlaysWebView: true }
+     → le blanc du header remonte SOUS la barre système (heure, batterie).
    ========================================================= */
 function Header() {
   const { t } = useTranslation();
@@ -110,9 +104,11 @@ function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const initiales = user?.email?.slice(0, 2).toUpperCase() ?? "GN";
   const espace = role ? ESPACES_METIER[role] : null;
-
   return (
-    <header className="sticky top-0 z-[1000] border-b border-border/70 bg-white shadow-[0_2px_12px_rgba(15,23,42,0.08)] md:bg-background md:shadow-none">
+    <header
+      className="sticky top-0 z-[1000] border-b border-border/70 bg-white shadow-[0_2px_12px_rgba(15,23,42,0.08)] md:bg-background md:shadow-none"
+      style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
+    >
       <div className="mx-auto grid h-[56px] max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 sm:h-[64px] sm:gap-4 sm:px-6 md:h-auto md:py-3.5">
         <Link to="/" aria-label={t("nav.home")} className="min-w-0">
           <Logo />
@@ -131,12 +127,10 @@ function Header() {
               </Link>
             ))}
           </nav>
-
           {/* LanguageSwitcher — masqué sur mobile pour éviter la surcharge */}
           <div className="hidden sm:block">
             <LanguageSwitcher />
           </div>
-
           {isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -202,7 +196,6 @@ function Header() {
               >
                 <Link to="/login">Se connecter</Link>
               </Button>
-
               {/* CTA "Créer mon Adresse GN" — masqué sur mobile (accessible via burger) */}
               <Button
                 asChild
@@ -212,7 +205,6 @@ function Header() {
               </Button>
             </>
           )}
-
           {/* Burger — visible < md */}
           <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
             <SheetTrigger asChild>
@@ -228,13 +220,13 @@ function Header() {
             <SheetContent
               side="right"
               className="w-[280px] pt-6"
+              style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 1.5rem)" }}
             >
               <SheetHeader>
                 <SheetTitle className="text-left rtl:text-right">
                   <Logo />
                 </SheetTitle>
               </SheetHeader>
-
               {/* CTA principal en haut du drawer mobile */}
               <div className="mt-4 px-4">
                 <Button
@@ -246,7 +238,6 @@ function Header() {
                   </Link>
                 </Button>
               </div>
-
               <nav className="mt-4 flex flex-col gap-1 px-4">
                 {NAV.map((item) => (
                   <Link
@@ -289,7 +280,6 @@ function Header() {
                   </Link>
                 )}
               </nav>
-
               {/* Langue au bas du drawer */}
               <div className="mt-6 border-t px-4 pt-4">
                 <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
@@ -304,7 +294,6 @@ function Header() {
     </header>
   );
 }
-
 /* =========================================================
    FOOTER — INCHANGÉ
    ========================================================= */
@@ -351,7 +340,6 @@ const FOOTER_COLS: { cle: string; links: FooterLink[] }[] = [
     ],
   },
 ];
-
 function FooterLinkItem({ link }: { link: FooterLink }) {
   const { t } = useTranslation();
   const label = t(link.cle);
@@ -361,7 +349,6 @@ function FooterLinkItem({ link }: { link: FooterLink }) {
   if (!link.to) return null;
   return <Link to={link.to} className={cn(base, "text-slate-400 hover:text-white")}>{label}</Link>;
 }
-
 function FooterColumn({ col }: { col: (typeof FOOTER_COLS)[number] }) {
   const { t } = useTranslation();
   return (
@@ -375,7 +362,6 @@ function FooterColumn({ col }: { col: (typeof FOOTER_COLS)[number] }) {
     </div>
   );
 }
-
 function Footer() {
   const { t } = useTranslation();
   const { langue, langues } = useLangue();
@@ -410,38 +396,27 @@ function Footer() {
           </div>
           {FOOTER_COLS.map((col) => <FooterColumn key={col.cle} col={col} />)}
         </div>
-        {/* =================================================
-            MOBILE / TABLETTE — FOOTER ULTRA COMPACT
-            Desktop inchangé : ce bloc reste strictement < lg
-            ================================================= */}
         <div className="lg:hidden">
-          {/* Identité compacte */}
           <div className="pb-3">
             <div className="flex items-center justify-between gap-3">
               <Logo tone="light" />
-
               <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-accent/20 bg-accent/10 px-2 py-0.5 text-[8px] font-semibold text-accent">
                 <span className="size-1.5 rounded-full bg-accent shadow-[0_0_7px_rgba(20,184,166,0.7)]" />
                 Pilote 2026
               </span>
             </div>
-
             <p className="mt-2 max-w-[310px] truncate text-[10px] leading-4 text-slate-400">
               {t("footer.tagline")}
             </p>
-
-            {/* Contacts sur une seule rangée */}
             <div className="mt-2.5 grid grid-cols-3 gap-1.5">
               <div className="flex min-w-0 items-center gap-1.5 rounded-[12px] border border-slate-800/80 bg-white/[0.025] px-2 py-2">
                 <span className="flex size-7 shrink-0 items-center justify-center rounded-[9px] bg-white/[0.05] text-slate-400">
                   <MapPin className="size-3" />
                 </span>
-
                 <span className="min-w-0 truncate text-[9px] font-medium text-slate-300">
                   Conakry
                 </span>
               </div>
-
               <a
                 href="mailto:contact@adresse.gn"
                 aria-label="Envoyer un e-mail à Adresse GN"
@@ -453,12 +428,10 @@ function Footer() {
                 <span className="flex size-7 shrink-0 items-center justify-center rounded-[9px] bg-white/[0.05] text-slate-400">
                   <Mail className="size-3" />
                 </span>
-
                 <span className="truncate text-[9px] font-medium text-slate-300">
                   E-mail
                 </span>
               </a>
-
               <a
                 href={`https://wa.me/${WHATSAPP_SERVICE}`}
                 target="_blank"
@@ -472,15 +445,12 @@ function Footer() {
                 <span className="flex size-7 shrink-0 items-center justify-center rounded-[9px] bg-accent/10 text-accent">
                   <MessageCircle className="size-3" />
                 </span>
-
                 <span className="truncate text-[9px] font-medium text-slate-300">
                   WhatsApp
                 </span>
               </a>
             </div>
           </div>
-
-          {/* Navigation accordéon compacte */}
           <div className="overflow-hidden rounded-[15px] border border-slate-800/80 bg-white/[0.018]">
             {FOOTER_COLS.map((col, index) => (
               <details key={col.cle} className="group">
@@ -492,12 +462,10 @@ function Footer() {
                   )}
                 >
                   <span>{t(col.cle)}</span>
-
                   <span className="flex size-6 shrink-0 items-center justify-center rounded-[8px] bg-white/[0.03] text-slate-500 transition-all duration-200 group-open:rotate-180 group-open:bg-accent/10 group-open:text-accent">
                     <ChevronDown className="size-3" />
                   </span>
                 </summary>
-
                 <nav className="grid gap-0.5 border-t border-slate-800/50 bg-slate-950/50 px-3.5 py-2">
                   {col.links.map((link) => (
                     <div key={link.cle} className="py-0.5">
@@ -509,23 +477,17 @@ function Footer() {
             ))}
           </div>
         </div>
-        {/* =================================================
-            BARRE BASSE — MOBILE / TABLETTE ULTRA COMPACTE
-            ================================================= */}
         <div className="lg:hidden">
           <div className="mb-2 mt-3 border-t border-slate-800/70" />
-
           <div className="flex min-w-0 items-center justify-between gap-2">
             <span className="min-w-0 truncate text-[8px] leading-4 text-slate-600">
               {t("footer.rights")}
             </span>
-
             <div className="flex shrink-0 items-center gap-1">
               <LanguageSwitcher
                 tone="light"
                 className="h-7 shrink-0 rounded-[9px] border border-slate-800 bg-white/[0.025] px-1.5 text-[9px] text-slate-400"
               />
-
               {[
                 { Icon: Facebook, label: "Facebook" },
                 { Icon: Instagram, label: "Instagram" },
@@ -542,20 +504,14 @@ function Footer() {
             </div>
           </div>
         </div>
-
-        {/* =================================================
-            BARRE BASSE — DESKTOP INCHANGÉE
-            ================================================= */}
         <div className="hidden lg:block">
           <div className="mb-2.5 mt-5 border-t border-slate-800/80" />
-
           <div className="flex min-w-0 flex-row items-center justify-between gap-2.5">
             <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-slate-500">
               <span className="leading-4">{t("footer.rights")}</span>
               <span aria-hidden="true" className="text-slate-700">·</span>
               <LanguageSwitcher tone="light" className="h-6 w-fit px-1.5 text-[10px] text-slate-400" />
             </div>
-
             <div className="flex items-center gap-1.5">
               {[
                 { Icon: Facebook, label: "Facebook" },
@@ -578,7 +534,6 @@ function Footer() {
     </footer>
   );
 }
-
 export function Layout({ children }: { children: ReactNode }) {
   const { location } = useRouterState();
   const isBackoffice = BACKOFFICE_PREFIXES.some((prefix) => location.pathname.startsWith(prefix));
@@ -586,19 +541,14 @@ export function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen min-w-0 flex-col overflow-x-clip bg-background">
       {/*
-        IMPORTANT — Android / Capacitor / PWA
-        -------------------------------------
-        Le WebView Android réserve déjà la zone de la barre système.
-        Le header reste donc dans le flux avec position: sticky.
-        On NE rajoute PAS env(safe-area-inset-top) ici, sinon Android
-        crée un deuxième espace blanc au-dessus de la barre de titre.
+        Android / Capacitor : le header monte SOUS la barre système
+        grâce à padding-top: env(safe-area-inset-top) sur <header>.
+        Combiné à { StatusBar.overlaysWebView: true } dans capacitor.config.ts.
       */}
       <Header />
-
       <main className="min-w-0 flex-1">
         {children}
       </main>
-
       <Footer />
     </div>
   );
