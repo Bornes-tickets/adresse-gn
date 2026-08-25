@@ -1,5 +1,6 @@
 // src/routes/commander.tsx
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import {
   Check, Home, MapPin, Phone, User, MessageCircle, ShieldCheck, Truck,
@@ -12,18 +13,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-
-const WHATSAPP_SERVICE = "224620000000";
+import { createOrder } from "@/lib/orders.functions";
 
 /* ==================== Types ==================== */
 type ClientType = "particulier" | "professionnel" | "institutionnel";
-
 const CLIENT_TYPES: { code: ClientType; label: string; desc: string; icone: any }[] = [
   { code: "particulier",    label: "Particulier",    desc: "Domicile, logement",          icone: Home },
   { code: "professionnel",  label: "Professionnel",  desc: "Commerce, entreprise",        icone: Briefcase },
   { code: "institutionnel", label: "Institutionnel", desc: "Administration, ONG, école",  icone: Landmark },
 ];
-
 interface Formule {
   code: string;
   label: string;
@@ -33,7 +31,6 @@ interface Formule {
   avantages: string[];
   populaire?: boolean;
 }
-
 const FORMULES: Record<ClientType, Formule[]> = {
   particulier: [
     {
@@ -111,7 +108,6 @@ const FORMULES: Record<ClientType, Formule[]> = {
 type Paiement =
   | "orange_money" | "mtn_money" | "carte_bancaire"
   | "paypal" | "cash" | "virement";
-
 const PAIEMENTS: { code: Paiement; label: string; icone: any; desc: string; disponiblePour: ClientType[] }[] = [
   { code: "orange_money",   label: "Orange Money",           icone: Smartphone, desc: "Paiement mobile instantané",  disponiblePour: ["particulier", "professionnel", "institutionnel"] },
   { code: "mtn_money",      label: "MTN Mobile Money",       icone: Smartphone, desc: "Paiement mobile instantané",  disponiblePour: ["particulier", "professionnel", "institutionnel"] },
@@ -123,7 +119,6 @@ const PAIEMENTS: { code: Paiement; label: string; icone: any; desc: string; disp
 
 /* ==================== Route + query params ==================== */
 type CommanderSearch = { type?: ClientType; formule?: string };
-
 export const Route = createFileRoute("/commander")({
   validateSearch: (search: Record<string, unknown>): CommanderSearch => {
     const type = search["type"];
@@ -150,12 +145,13 @@ function formatGNF(n: number): string {
 
 function Commander() {
   const search = Route.useSearch();
+  const navigate = useNavigate();
+  const submitOrder = useServerFn(createOrder);
   const [type, setType] = useState<ClientType>(search.type ?? "particulier");
   const initialFormule = search.formule ?? FORMULES[search.type ?? "particulier"][0]?.code ?? "";
   const [formuleCode, setFormuleCode] = useState<string>(initialFormule);
   const [paiement, setPaiement] = useState<Paiement>("orange_money");
   const [busy, setBusy] = useState(false);
-
   const [form, setForm] = useState({
     nom: "", telephone: "", email: "",
     commune: "", adresse: "", point_acces: "", notes: "",
@@ -163,12 +159,9 @@ function Commander() {
     nb_adresses: "1", devis_souhaite: false,
   });
   const set = (k: keyof typeof form, v: any) => setForm({ ...form, [k]: v });
-
   const formulesDispo = FORMULES[type];
   const formule = formulesDispo.find((f) => f.code === formuleCode) ?? formulesDispo[0]!;
   const paiementsDispo = useMemo(() => PAIEMENTS.filter((p) => p.disponiblePour.includes(type)), [type]);
-
-  // Synchronise depuis URL au premier rendu (?type=…&formule=…)
   useEffect(() => {
     if (search.type && search.type !== type) setType(search.type);
     if (search.formule && search.formule !== formuleCode) {
@@ -178,7 +171,6 @@ function Commander() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search.type, search.formule]);
-
   const changerType = (t: ClientType) => {
     setType(t);
     const first = FORMULES[t][0];
@@ -188,10 +180,8 @@ function Commander() {
       if (firstPay) setPaiement(firstPay.code);
     }
   };
-
   const requiresPro = type === "professionnel" || type === "institutionnel";
   const isDevis = formule.prix === 0 || form.devis_souhaite;
-
   const valide =
     form.nom.trim().length >= 2 &&
     /^(\+?224)?\s?\d{9}$/.test(form.telephone.replace(/\s/g, "")) &&
@@ -199,7 +189,6 @@ function Commander() {
     form.adresse.trim().length >= 5 &&
     (!requiresPro || form.raison_sociale.trim().length >= 2) &&
     (!requiresPro || form.email.trim().length >= 5);
-
   const nbAdresses = requiresPro ? Number(form.nb_adresses || "1") : 1;
   const prixInstallation = formule.prix * nbAdresses;
   const prixMensuel = (formule.prix_mensuel ?? 0) * nbAdresses;
@@ -207,44 +196,65 @@ function Commander() {
   const soumettre = async () => {
     if (!valide) { toast.error("Merci de remplir tous les champs obligatoires"); return; }
     setBusy(true);
-    const clientLabel = CLIENT_TYPES.find((c) => c.code === type)?.label ?? type;
-    const paiementLabel = paiementsDispo.find((p) => p.code === paiement)?.label ?? paiement;
 
-    const message = [
-      `📦 *Nouvelle commande Adresse GN — ${clientLabel}*`,
-      "",
-      `👤 *Nom :* ${form.nom}`,
-      form.raison_sociale && `🏢 *Raison sociale :* ${form.raison_sociale}`,
-      form.fonction && `💼 *Fonction :* ${form.fonction}`,
-      `📱 *Téléphone :* ${form.telephone}`,
-      form.email && `✉️ *Email :* ${form.email}`,
-      form.rccm && `📄 *RCCM :* ${form.rccm}`,
-      form.nif && `🧾 *NIF :* ${form.nif}`,
-      form.site_web && `🌐 *Site web :* ${form.site_web}`,
-      "",
-      `🗺️ *Commune :* ${form.commune}`,
-      `📍 *Adresse :* ${form.adresse}`,
-      form.point_acces && `🚪 *Point d'accès :* ${form.point_acces}`,
-      "",
-      `📦 *Formule :* ${formule.label}`,
-      requiresPro && nbAdresses > 1 && `🔢 *Nombre d'adresses :* ${nbAdresses}`,
-      isDevis
-        ? "💰 *Prix :* Sur devis"
-        : formule.prix_mensuel
-          ? `💰 *Prix :* ${formatGNF(prixInstallation)} à l'installation, puis ${formatGNF(prixMensuel)} par mois`
-          : `💰 *Prix :* ${formatGNF(prixInstallation)} (paiement unique)`,
-      `💳 *Paiement :* ${paiementLabel}`,
-      form.notes && `📝 *Notes :* ${form.notes}`,
-      "",
-      isDevis
-        ? "Merci de me faire parvenir un devis dans les meilleurs délais. 🙏"
-        : "Merci de me confirmer la disponibilité et l'horaire de pose. 🙏",
-    ].filter(Boolean).join("\n");
+    try {
+      // 1. Enregistre la commande côté serveur (retourne guest_token + tracking_url + whatsapp_url)
+      const result = await submitOrder({
+        data: {
+          client_type: type,
+          full_name: form.nom.trim(),
+          phone: form.telephone.trim(),
+          email: form.email.trim() || undefined,
+          address_line: form.adresse.trim(),
+          quartier: form.commune.trim(),
+          city: "Conakry",
+          notes: [
+            form.point_acces && `Point d'accès : ${form.point_acces}`,
+            form.notes && form.notes,
+          ].filter(Boolean).join(" | ") || undefined,
+          raison_sociale: form.raison_sociale.trim() || undefined,
+          fonction: form.fonction.trim() || undefined,
+          rccm: form.rccm.trim() || undefined,
+          nif: form.nif.trim() || undefined,
+          site_web: form.site_web.trim() || undefined,
+          nb_adresses: nbAdresses,
+          devis_demande: isDevis,
+          formule_code: formule.code,
+          formule_label: formule.label,
+          prix_ttc: isDevis ? 0 : prixInstallation,
+          payment_method: paiement,
+        },
+      });
 
-    const url = `https://wa.me/${WHATSAPP_SERVICE}?text=${encodeURIComponent(message)}`;
-    window.open(url, "_blank", "noopener");
-    setBusy(false);
-    toast.success("Ouverture de WhatsApp — envoyez le message pour confirmer votre commande.");
+      // 2. Sauvegarde locale du token pour retrouver ses commandes plus tard
+      try {
+        const existing = JSON.parse(localStorage.getItem("agn.guest_orders") || "[]");
+        localStorage.setItem(
+          "agn.guest_orders",
+          JSON.stringify([
+            ...existing,
+            {
+              token: result.guest_token,
+              formule: formule.label,
+              at: Date.now(),
+            },
+          ]),
+        );
+      } catch {}
+
+      // 3. Ouvre WhatsApp pré-rempli vers l'équipe Adresse GN
+      window.open(result.whatsapp_url, "_blank", "noopener");
+
+      // 4. Redirige vers la page de suivi (bookmarkable)
+      toast.success("Commande enregistrée ! Nous vous contactons sous 24 h.");
+      navigate({ to: "/suivi/$token", params: { token: result.guest_token } });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Erreur inconnue";
+      console.error("[commander] submit error:", err);
+      toast.error(`Enregistrement impossible : ${message}`);
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -264,12 +274,10 @@ function Commander() {
           </p>
         </div>
       </section>
-
       <section className="px-4 sm:px-6 lg:px-8 -mt-8 md:-mt-12 pb-16">
         <div className="mx-auto max-w-5xl grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Formulaire */}
           <div className="lg:col-span-3 rounded-3xl bg-white shadow-xl border border-slate-200 p-6 md:p-8 space-y-8">
-
             {/* 1. Type client */}
             <section>
               <div className="flex items-center gap-2 mb-3">
@@ -294,7 +302,6 @@ function Commander() {
                 })}
               </div>
             </section>
-
             {/* 2. Formule */}
             <section>
               <div className="flex items-center gap-2 mb-3">
@@ -346,7 +353,6 @@ function Commander() {
                 </div>
               )}
             </section>
-
             {/* 3. Coordonnées */}
             <section>
               <div className="flex items-center gap-2 mb-3">
@@ -391,7 +397,6 @@ function Commander() {
                   </div>
                 </div>
               )}
-
               <div>
                 <Label htmlFor="nom" className="text-xs font-semibold uppercase tracking-wider text-slate-600">
                   {requiresPro ? "Nom du contact *" : "Nom complet *"}
@@ -402,7 +407,6 @@ function Commander() {
                     placeholder="Ex : Aminata Diallo" className="h-11 pl-10" />
                 </div>
               </div>
-
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
                 <div>
                   <Label htmlFor="tel" className="text-xs font-semibold uppercase tracking-wider text-slate-600">Téléphone / WhatsApp *</Label>
@@ -424,7 +428,6 @@ function Commander() {
                 </div>
               </div>
             </section>
-
             {/* 4. Adresse */}
             <section>
               <div className="flex items-center gap-2 mb-3">
@@ -450,7 +453,6 @@ function Commander() {
                   placeholder="Ex : Portail vert, sonnette au 1er étage…" className="h-11 mt-1.5" />
               </div>
             </section>
-
             {/* 5. Paiement */}
             <section>
               <div className="flex items-center gap-2 mb-3">
@@ -486,25 +488,23 @@ function Commander() {
                 </label>
               )}
             </section>
-
             {/* 6. Notes */}
             <section>
               <Label htmlFor="notes" className="text-xs font-semibold uppercase tracking-wider text-slate-600">Instructions particulières (facultatif)</Label>
               <Textarea id="notes" value={form.notes} onChange={(e) => set("notes", e.target.value)}
                 placeholder="Horaire de pose souhaité, personne à joindre, urgence…" rows={2} className="mt-1.5 resize-none" />
             </section>
-
             {/* Submit */}
             <div className="pt-2 border-t border-slate-200">
               <Button onClick={soumettre} disabled={!valide || busy}
                 className={cn(
                   "w-full h-14 text-base font-semibold rounded-2xl transition-all",
-                  valide
+                  valide && !busy
                     ? "bg-gradient-to-r from-accent to-accent-dark text-accent-foreground shadow-lg shadow-accent/25 hover:shadow-accent/40 active:scale-[0.98]"
                     : "bg-slate-200 text-slate-500 cursor-not-allowed"
                 )}>
                 <MessageCircle className="size-5 mr-2" />
-                {isDevis ? "Demander un devis" : "Envoyer ma commande"}
+                {busy ? "Enregistrement…" : isDevis ? "Demander un devis" : "Envoyer ma commande"}
                 <ArrowRight className="size-5 ml-1" />
               </Button>
               <p className="text-[11px] text-center text-slate-500 mt-3">
@@ -512,7 +512,6 @@ function Commander() {
               </p>
             </div>
           </div>
-
           {/* Récapitulatif */}
           <aside className="lg:col-span-2 space-y-4 lg:sticky lg:top-24 self-start">
             <div className="rounded-3xl bg-white shadow-xl border-2 border-accent/20 overflow-hidden">
@@ -556,7 +555,6 @@ function Commander() {
                 </ul>
               </div>
             </div>
-
             <div className="rounded-2xl bg-white border border-slate-200 p-4 space-y-3">
               {[
                 { Ic: ShieldCheck, t: "Agents certifiés", d: "Pose garantie et vérifiée", cls: "bg-emerald-100 text-emerald-600" },
@@ -575,7 +573,6 @@ function Commander() {
                 </div>
               ))}
             </div>
-
             <div className="text-center">
               <Link to="/tarifs" className="text-xs text-slate-500 hover:text-slate-900 underline underline-offset-4">
                 Voir toutes les offres →
