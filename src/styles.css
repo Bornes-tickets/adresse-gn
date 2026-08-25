@@ -288,28 +288,6 @@ html.native-app .selectable-text {
   -webkit-user-select: text;
   user-select: text;
 }
-<<<<<<< HEAD
-=======
-
-/* =========================================================
-   SAFE AREAS — APPLICATION NATIVE
-   ---------------------------------------------------------
-   StatusBar overlay:false place déjà la WebView sous la barre
-   système. Ne jamais rajouter safe-area-inset-top ici.
-   ========================================================= */
-html.native-app body {
-  padding-top: 0 !important;
-  padding-bottom: env(safe-area-inset-bottom, 0);
-  padding-left: env(safe-area-inset-left, 0);
-  padding-right: env(safe-area-inset-right, 0);
-}
-
-html.native-app.native-android body,
-html.native-app.native-ios body {
-  padding-top: 0 !important;
-}
-
->>>>>>> 5ae2a1821bef9b388a1b3a65faf8675c6d4ce418
 /* Cache scrollbar mais garde scroll */
 html.native-app ::-webkit-scrollbar {
   width: 0;
@@ -341,23 +319,4 @@ html.native-app a:active,
 html.native-app [role="button"]:active {
   opacity: 0.75;
   transition: opacity 0.05s;
-<<<<<<< HEAD
 }
-=======
-}
-
-/* =========================================================
-   HEADER STICKY NATIF
-   ---------------------------------------------------------
-   La barre système est déjà hors WebView avec overlay:false.
-   Le header doit donc commencer immédiatement à top: 0.
-   ========================================================= */
-html.native-app header.sticky,
-html.native-app .sticky-top {
-  top: 0 !important;
-}
-
-html.native-app header {
-  margin-top: 0 !important;
-}
->>>>>>> 5ae2a1821bef9b388a1b3a65faf8675c6d4ce418
