@@ -33,6 +33,7 @@ import { Route as PSlugRouteImport } from './routes/p.$slug'
 import { Route as ProGuardRouteRouteImport } from './routes/pro/_guard/route'
 import { Route as ProOnboardingRouteImport } from './routes/pro/onboarding'
 import { Route as SalesGuardRouteRouteImport } from './routes/sales/_guard/route'
+import { Route as SuiviTokenRouteImport } from './routes/suivi.$token'
 import { Route as SupervisorGuardRouteRouteImport } from './routes/supervisor/_guard/route'
 import { Route as SupportGuardRouteRouteImport } from './routes/support/_guard/route'
 import { Route as AdminGuardIndexRouteImport } from './routes/admin/_guard/index'
@@ -222,6 +223,11 @@ const ProOnboardingRoute = ProOnboardingRouteImport.update({
 const SalesGuardRouteRoute = SalesGuardRouteRouteImport.update({
   id: '/sales/_guard',
   path: '/sales',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SuiviTokenRoute = SuiviTokenRouteImport.update({
+  id: '/suivi/$token',
+  path: '/suivi/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SupervisorGuardRouteRoute = SupervisorGuardRouteRouteImport.update({
@@ -612,6 +618,7 @@ export interface FileRoutesByFullPath {
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/p/$slug': typeof PSlugRoute
   '/pro/onboarding': typeof ProOnboardingRoute
+  '/suivi/$token': typeof SuiviTokenRoute
   '/blog/': typeof BlogIndexRoute
   '/admin/abonnements': typeof AdminGuardAbonnementsRoute
   '/admin/addresses': typeof AdminGuardAddressesRoute
@@ -700,6 +707,7 @@ export interface FileRoutesByTo {
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/p/$slug': typeof PSlugRoute
   '/pro/onboarding': typeof ProOnboardingRoute
+  '/suivi/$token': typeof SuiviTokenRoute
   '/blog': typeof BlogIndexRoute
   '/admin/abonnements': typeof AdminGuardAbonnementsRoute
   '/admin/addresses': typeof AdminGuardAddressesRoute
@@ -797,6 +805,7 @@ export interface FileRoutesById {
   '/etablissement/$number': typeof EtablissementNumberRoute
   '/p/$slug': typeof PSlugRoute
   '/pro/onboarding': typeof ProOnboardingRoute
+  '/suivi/$token': typeof SuiviTokenRoute
   '/blog/': typeof BlogIndexRoute
   '/admin/_guard/abonnements': typeof AdminGuardAbonnementsRoute
   '/admin/_guard/addresses': typeof AdminGuardAddressesRoute
@@ -895,6 +904,7 @@ export interface FileRouteTypes {
     | '/etablissement/$number'
     | '/p/$slug'
     | '/pro/onboarding'
+    | '/suivi/$token'
     | '/blog/'
     | '/admin/abonnements'
     | '/admin/addresses'
@@ -983,6 +993,7 @@ export interface FileRouteTypes {
     | '/etablissement/$number'
     | '/p/$slug'
     | '/pro/onboarding'
+    | '/suivi/$token'
     | '/blog'
     | '/admin/abonnements'
     | '/admin/addresses'
@@ -1079,6 +1090,7 @@ export interface FileRouteTypes {
     | '/etablissement/$number'
     | '/p/$slug'
     | '/pro/onboarding'
+    | '/suivi/$token'
     | '/blog/'
     | '/admin/_guard/abonnements'
     | '/admin/_guard/addresses'
@@ -1175,6 +1187,7 @@ export interface RootRouteChildren {
   EtablissementNumberRoute: typeof EtablissementNumberRoute
   PSlugRoute: typeof PSlugRoute
   ProOnboardingRoute: typeof ProOnboardingRoute
+  SuiviTokenRoute: typeof SuiviTokenRoute
   BlogIndexRoute: typeof BlogIndexRoute
   CommandeOrderRefPaiementRoute: typeof CommandeOrderRefPaiementRoute
   ApiPublicHooksRunBillingRoute: typeof ApiPublicHooksRunBillingRoute
@@ -1350,6 +1363,13 @@ declare module '@tanstack/react-router' {
       path: '/sales'
       fullPath: '/sales'
       preLoaderRoute: typeof SalesGuardRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/suivi/$token': {
+      id: '/suivi/$token'
+      path: '/suivi/$token'
+      fullPath: '/suivi/$token'
+      preLoaderRoute: typeof SuiviTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/supervisor/_guard': {
@@ -2088,6 +2108,7 @@ const rootRouteChildren: RootRouteChildren = {
   EtablissementNumberRoute: EtablissementNumberRoute,
   PSlugRoute: PSlugRoute,
   ProOnboardingRoute: ProOnboardingRoute,
+  SuiviTokenRoute: SuiviTokenRoute,
   BlogIndexRoute: BlogIndexRoute,
   CommandeOrderRefPaiementRoute: CommandeOrderRefPaiementRoute,
   ApiPublicHooksRunBillingRoute: ApiPublicHooksRunBillingRoute,
