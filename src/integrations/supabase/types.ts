@@ -1761,46 +1761,115 @@ export type Database = {
       }
       orders: {
         Row: {
+          address_line: string | null
           amount_gnf: number
           beacon_id: string | null
           business_id: string | null
+          city: string | null
+          client_type: string | null
+          confirmed_at: string | null
           created_at: string | null
           customer_id: string | null
+          devis_demande: boolean | null
+          email: string | null
+          fonction: string | null
+          formule_code: string | null
+          formule_label: string | null
+          full_name: string | null
+          guest_token: string
           id: string
+          installed_at: string | null
           items: Json
+          nb_adresses: number | null
+          nif: string | null
           notes: string | null
           offer_code: string
           order_ref: string
+          payment_method: string | null
+          phone: string | null
+          prix_ttc: number | null
+          quartier: string | null
+          raison_sociale: string | null
+          rccm: string | null
+          site_web: string | null
           status: string
           subscription_id: string | null
+          updated_at: string
+          user_id: string | null
         }
         Insert: {
+          address_line?: string | null
           amount_gnf: number
           beacon_id?: string | null
           business_id?: string | null
+          city?: string | null
+          client_type?: string | null
+          confirmed_at?: string | null
           created_at?: string | null
           customer_id?: string | null
+          devis_demande?: boolean | null
+          email?: string | null
+          fonction?: string | null
+          formule_code?: string | null
+          formule_label?: string | null
+          full_name?: string | null
+          guest_token?: string
           id?: string
+          installed_at?: string | null
           items?: Json
+          nb_adresses?: number | null
+          nif?: string | null
           notes?: string | null
           offer_code: string
           order_ref?: string
+          payment_method?: string | null
+          phone?: string | null
+          prix_ttc?: number | null
+          quartier?: string | null
+          raison_sociale?: string | null
+          rccm?: string | null
+          site_web?: string | null
           status?: string
           subscription_id?: string | null
+          updated_at?: string
+          user_id?: string | null
         }
         Update: {
+          address_line?: string | null
           amount_gnf?: number
           beacon_id?: string | null
           business_id?: string | null
+          city?: string | null
+          client_type?: string | null
+          confirmed_at?: string | null
           created_at?: string | null
           customer_id?: string | null
+          devis_demande?: boolean | null
+          email?: string | null
+          fonction?: string | null
+          formule_code?: string | null
+          formule_label?: string | null
+          full_name?: string | null
+          guest_token?: string
           id?: string
+          installed_at?: string | null
           items?: Json
+          nb_adresses?: number | null
+          nif?: string | null
           notes?: string | null
           offer_code?: string
           order_ref?: string
+          payment_method?: string | null
+          phone?: string | null
+          prix_ttc?: number | null
+          quartier?: string | null
+          raison_sociale?: string | null
+          rccm?: string | null
+          site_web?: string | null
           status?: string
           subscription_id?: string | null
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {
