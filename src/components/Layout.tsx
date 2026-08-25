@@ -112,7 +112,7 @@ function Header() {
   const espace = role ? ESPACES_METIER[role] : null;
 
   return (
-    <header className="sticky top-0 z-[1000] border-b border-border/70 bg-background/95 shadow-[0_6px_24px_-18px_rgba(15,23,42,0.28)] backdrop-blur-xl supports-[backdrop-filter]:bg-background/90 md:bg-background md:shadow-none">
+    <header className="sticky top-0 z-[1000] border-b border-border/70 bg-white shadow-[0_2px_12px_rgba(15,23,42,0.08)] md:bg-background md:shadow-none">
       <div className="mx-auto grid h-[56px] max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 sm:h-[64px] sm:gap-4 sm:px-6 md:h-auto md:py-3.5">
         <Link to="/" aria-label={t("nav.home")} className="min-w-0">
           <Logo />
