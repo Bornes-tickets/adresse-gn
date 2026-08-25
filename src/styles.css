@@ -288,9 +288,6 @@ html.native-app .selectable-text {
   -webkit-user-select: text;
   user-select: text;
 }
-<<<<<<< HEAD
-=======
-
 /* =========================================================
    SAFE AREAS — APPLICATION NATIVE
    ---------------------------------------------------------
@@ -309,7 +306,7 @@ html.native-app.native-ios body {
   padding-top: 0 !important;
 }
 
->>>>>>> 5ae2a1821bef9b388a1b3a65faf8675c6d4ce418
+
 /* Cache scrollbar mais garde scroll */
 html.native-app ::-webkit-scrollbar {
   width: 0;
@@ -341,9 +338,6 @@ html.native-app a:active,
 html.native-app [role="button"]:active {
   opacity: 0.75;
   transition: opacity 0.05s;
-<<<<<<< HEAD
-}
-=======
 }
 
 /* =========================================================
@@ -360,4 +354,4 @@ html.native-app .sticky-top {
 html.native-app header {
   margin-top: 0 !important;
 }
->>>>>>> 5ae2a1821bef9b388a1b3a65faf8675c6d4ce418
+
