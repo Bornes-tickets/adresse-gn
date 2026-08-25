@@ -99,9 +99,9 @@ function useRoleUtilisateur(userId: string | null | undefined) {
 
 /* =========================================================
    HEADER
-   - Mobile / PWA Android / iOS : fixed + safe-area
-   - Desktop : sticky comme auparavant
-   - Le contenu principal réserve automatiquement la hauteur du header
+   - Mobile / Android installé : sticky, donc toujours visible au scroll
+   - AUCUN safe-area top ajouté ici : Android/Capacitor gère déjà la StatusBar
+   - Le header reste dans le flux => aucun chevauchement avec le Hero
    ========================================================= */
 function Header() {
   const { t } = useTranslation();
@@ -112,8 +112,8 @@ function Header() {
   const espace = role ? ESPACES_METIER[role] : null;
 
   return (
-    <header className="fixed inset-x-0 top-0 z-[1000] border-b border-border/70 bg-background/95 pt-[env(safe-area-inset-top)] shadow-[0_6px_24px_-18px_rgba(15,23,42,0.35)] backdrop-blur-xl supports-[backdrop-filter]:bg-background/90 md:sticky md:pt-0 md:shadow-none">
-      <div className="mx-auto grid h-16 max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 sm:h-[72px] sm:gap-4 sm:px-6 md:h-auto md:py-3.5">
+    <header className="sticky top-0 z-[1000] border-b border-border/70 bg-background/95 shadow-[0_6px_24px_-18px_rgba(15,23,42,0.28)] backdrop-blur-xl supports-[backdrop-filter]:bg-background/90 md:bg-background md:shadow-none">
+      <div className="mx-auto grid h-[56px] max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 sm:h-[64px] sm:gap-4 sm:px-6 md:h-auto md:py-3.5">
         <Link to="/" aria-label={t("nav.home")} className="min-w-0">
           <Logo />
         </Link>
@@ -227,7 +227,7 @@ function Header() {
             </SheetTrigger>
             <SheetContent
               side="right"
-              className="w-[280px] pt-[calc(1.5rem+env(safe-area-inset-top))] md:pt-6"
+              className="w-[280px] pt-6"
             >
               <SheetHeader>
                 <SheetTitle className="text-left rtl:text-right">
@@ -585,15 +585,17 @@ export function Layout({ children }: { children: ReactNode }) {
   if (isBackoffice) return <div className="min-h-screen">{children}</div>;
   return (
     <div className="flex min-h-screen min-w-0 flex-col overflow-x-clip bg-background">
+      {/*
+        IMPORTANT — Android / Capacitor / PWA
+        -------------------------------------
+        Le WebView Android réserve déjà la zone de la barre système.
+        Le header reste donc dans le flux avec position: sticky.
+        On NE rajoute PAS env(safe-area-inset-top) ici, sinon Android
+        crée un deuxième espace blanc au-dessus de la barre de titre.
+      */}
       <Header />
 
-      {/*
-        Mobile / application installée :
-        le header est fixed pour rester visible pendant le scroll.
-        On réserve sa hauteur + la safe-area système afin que le Hero
-        ne passe jamais sous la barre de titre Android/iOS.
-      */}
-      <main className="min-w-0 flex-1 pt-[calc(64px+env(safe-area-inset-top))] sm:pt-[calc(72px+env(safe-area-inset-top))] md:pt-0">
+      <main className="min-w-0 flex-1">
         {children}
       </main>
 
