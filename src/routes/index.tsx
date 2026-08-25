@@ -54,7 +54,7 @@ const SECTION_COPY_CLASS =
 const DEMO_ORIGIN = "Kaloum, Conakry, Guinea";
 const DEMO_DESTINATION = "Hôtel Kaloum, Conakry, Guinea";
 const GOOGLE_MAPS_EMBED_KEY = (
-  import.meta.env.VITE_GOOGLE_MAPS_EMBED_API_KEY as string | undefined
+  import.meta.env["VITE_GOOGLE_MAPS_EMBED_API_KEY"] as string | undefined
 )?.trim();
 const GOOGLE_MAPS_EMBED_URL = GOOGLE_MAPS_EMBED_KEY
   ? `https://www.google.com/maps/embed/v1/directions?key=${encodeURIComponent(GOOGLE_MAPS_EMBED_KEY)}&origin=${encodeURIComponent(DEMO_ORIGIN)}&destination=${encodeURIComponent(DEMO_DESTINATION)}&mode=driving&language=fr&region=GN`
