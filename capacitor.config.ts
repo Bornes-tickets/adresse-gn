@@ -1,6 +1,5 @@
 // capacitor.config.ts — racine du projet
 import type { CapacitorConfig } from "@capacitor/cli";
-
 const config: CapacitorConfig = {
   appId: "com.adressegn.app",
   appName: "Adresse GN",
@@ -14,7 +13,7 @@ const config: CapacitorConfig = {
     allowMixedContent: false,
     captureInput: true,
     webContentsDebuggingEnabled: false,
-    backgroundColor: "#2E4A7B",
+    backgroundColor: "#ffffff",
     overrideUserAgent: undefined,
     appendUserAgent: "AdresseGN-Android",
   },
@@ -34,9 +33,14 @@ const config: CapacitorConfig = {
       useDialog: false,
     },
     StatusBar: {
-      style: "LIGHT",
-      backgroundColor: "#2E4A7B",
-      overlaysWebView: false,
+      // Icônes SOMBRES (heure, batterie, wifi) car le header est BLANC
+      style: "DARK",
+      // Fond de la StatusBar aligné avec le header blanc
+      backgroundColor: "#ffffff",
+      // IMPORTANT : le WebView passe SOUS la StatusBar.
+      // Le header étend son fond blanc jusqu'en haut via
+      // padding-top: env(safe-area-inset-top) dans Layout.tsx.
+      overlaysWebView: true,
     },
     PushNotifications: {
       presentationOptions: ["badge", "sound", "alert"],
@@ -48,5 +52,4 @@ const config: CapacitorConfig = {
     },
   },
 };
-
 export default config;
