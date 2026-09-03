@@ -1,69 +1,82 @@
-import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight, MapPin } from "lucide-react";
 
-export default function Home() {
+import { Button } from "@/components/ui/button";
+
+export default function HomePage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="overflow-x-hidden bg-white">
+      <section className="relative overflow-hidden gradient-signature-soft">
+        <div className="pointer-events-none absolute -right-32 -top-32 size-96 rounded-full bg-cyan-300/15 blur-[90px]" />
+        <div className="pointer-events-none absolute -left-32 bottom-0 size-80 rounded-full bg-blue-950/15 blur-[90px]" />
+
+        <div className="relative mx-auto flex min-h-[520px] w-full max-w-[1760px] items-center px-4 py-16 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16">
+          <div className="mx-auto max-w-4xl text-center">
+            <div className="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-medium text-white/90 backdrop-blur-sm">
+              <MapPin className="size-3.5" />
+              Le système d’adressage nouvelle génération
+            </div>
+
+            <h1 className="text-balance text-[clamp(2.5rem,6vw,5.2rem)] font-extrabold leading-[0.98] tracking-[-0.045em] text-white">
+              Votre adresse, enfin
+              <span className="block text-cyan-100">
+                facile à trouver.
+              </span>
+            </h1>
+
+            <p className="mx-auto mt-6 max-w-2xl text-balance text-base leading-7 text-white/80 sm:text-lg">
+              Un numéro suffit pour trouver, partager et rejoindre un lieu
+              facilement.
+            </p>
+
+            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+              <Button
+                asChild
+                size="lg"
+                className="h-12 bg-white px-6 font-semibold text-primary hover:bg-white/90"
+              >
+                <Link href="/commander">
+                  Créer mon Adresse GN
+                  <ArrowRight className="ml-2 size-4" />
+                </Link>
+              </Button>
+
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="h-12 border-white/25 bg-white/10 px-6 text-white hover:bg-white/15 hover:text-white"
+              >
+                <Link href="/#comment-ca-marche">
+                  Comment ça marche
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="comment-ca-marche"
+        className="mx-auto w-full max-w-[1760px] px-4 py-20 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16"
+      >
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+            Adresse GN
+          </p>
+
+          <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight text-slate-950 md:text-4xl">
+            Un numéro. Une destination.{" "}
+            <span className="text-accent">Aucun détour.</span>
+          </h2>
+
+          <p className="mt-4 text-sm leading-6 text-slate-600 md:text-base">
+            La migration de la page d’accueil complète va maintenant reprendre
+            les fonctionnalités et sections de l’application Adresse GN
+            existante.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </section>
+    </main>
   );
 }

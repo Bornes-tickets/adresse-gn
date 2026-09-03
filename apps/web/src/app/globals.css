@@ -128,3 +128,61 @@
     @apply font-sans;
   }
 }
+/* =========================================================
+   ADRESSE GN — Brand overrides
+   ========================================================= */
+
+:root {
+  --primary: oklch(0.412 0.089 260.89);
+  --primary-foreground: oklch(0.984 0.003 247.86);
+
+  --accent: oklch(0.654 0.11 194.03);
+  --accent-foreground: oklch(1 0 0);
+
+  --ring: oklch(0.412 0.089 260.89);
+
+  --background: oklch(0.984 0.003 247.86);
+  --foreground: oklch(0.208 0.04 265.75);
+
+  --muted: oklch(0.955 0.008 247.9);
+  --muted-foreground: oklch(0.554 0.041 257.42);
+
+  --border: oklch(0.929 0.013 255.51);
+  --input: oklch(0.929 0.013 255.51);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.gradient-signature {
+  background-image: linear-gradient(
+    135deg,
+    #1e3660 0%,
+    #2e4a7b 50%,
+    #0ea5a4 100%
+  );
+}
+
+.gradient-signature-soft {
+  background-image: linear-gradient(
+    135deg,
+    #4b5e83 0%,
+    #576e97 60%,
+    #3eb7b6 120%
+  );
+}
+
+.text-display {
+  letter-spacing: -0.02em;
+}
+
+.shadow-brand {
+  box-shadow:
+    0 4px 20px -4px rgb(46 74 123 / 0.15),
+    0 1px 3px rgb(15 23 42 / 0.06);
+}
