@@ -1,0 +1,406 @@
+/*
+ * Adresse GN
+ * Compatibilité visuelle avec l'interface historique.
+ *
+ * Ce fichier est chargé APRÈS globals.css afin que
+ * les valeurs historiques restent prioritaires.
+ */
+
+@theme inline {
+  --font-sans:
+    var(--font-inter);
+
+  --font-display:
+    var(--font-inter-tight);
+
+  --font-mono:
+    var(--font-jetbrains-mono);
+
+  --color-primary-dark:
+    var(--primary-dark);
+
+  --color-primary-light:
+    var(--primary-light);
+
+  --color-accent-dark:
+    var(--accent-dark);
+
+  --color-success:
+    var(--success);
+
+  --color-warning:
+    var(--warning);
+}
+
+
+:root {
+  --radius: 0.75rem;
+
+  --background:
+    oklch(0.984 0.003 247.86);
+
+  --foreground:
+    oklch(0.208 0.04 265.75);
+
+  --card:
+    oklch(1 0 0);
+
+  --card-foreground:
+    oklch(0.208 0.04 265.75);
+
+  --popover:
+    oklch(1 0 0);
+
+  --popover-foreground:
+    oklch(0.208 0.04 265.75);
+
+  --primary:
+    oklch(0.412 0.089 260.89);
+
+  --primary-dark:
+    oklch(0.325 0.078 261.5);
+
+  --primary-light:
+    oklch(0.522 0.084 260.5);
+
+  --primary-foreground:
+    oklch(0.984 0.003 247.86);
+
+  --secondary:
+    oklch(0.945 0.012 255.51);
+
+  --secondary-foreground:
+    oklch(0.412 0.089 260.89);
+
+  --muted:
+    oklch(0.955 0.008 247.9);
+
+  --muted-foreground:
+    oklch(0.554 0.041 257.42);
+
+  --accent:
+    oklch(0.654 0.11 194.03);
+
+  --accent-dark:
+    oklch(0.525 0.093 194.5);
+
+  --accent-foreground:
+    oklch(1 0 0);
+
+  --success:
+    oklch(0.588 0.163 149.2);
+
+  --warning:
+    oklch(0.769 0.162 70.08);
+
+  --destructive:
+    oklch(0.577 0.215 27.33);
+
+  --destructive-foreground:
+    oklch(1 0 0);
+
+  --border:
+    oklch(0.929 0.013 255.51);
+
+  --input:
+    oklch(0.929 0.013 255.51);
+
+  --ring:
+    oklch(0.412 0.089 260.89);
+}
+
+
+.gradient-signature {
+  background-image:
+    linear-gradient(
+      135deg,
+      #1e3660 0%,
+      #2e4a7b 50%,
+      #0ea5a4 100%
+    );
+}
+
+
+.gradient-signature-soft {
+  background-image:
+    linear-gradient(
+      135deg,
+      #4b5e83 0%,
+      #576e97 60%,
+      #3eb7b6 120%
+    );
+}
+
+
+.gradient-accent {
+  background-image:
+    linear-gradient(
+      135deg,
+      #0ea5a4 0%,
+      #0b7f7e 100%
+    );
+}
+
+
+.text-display {
+  font-family:
+    var(--font-inter-tight),
+    var(--font-inter),
+    ui-sans-serif,
+    system-ui,
+    sans-serif;
+
+  letter-spacing: -0.02em;
+}
+
+
+.shadow-brand {
+  box-shadow:
+    0 4px 20px -4px
+      rgb(46 74 123 / 0.15),
+    0 1px 3px
+      rgb(15 23 42 / 0.06);
+}
+
+
+.shadow-brand-lg {
+  box-shadow:
+    0 24px 60px -20px
+      rgb(30 54 96 / 0.35),
+    0 8px 24px -12px
+      rgb(15 23 42 / 0.15);
+}
+
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+
+html {
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color:
+    transparent;
+}
+
+
+button,
+a,
+[role="button"] {
+  touch-action:
+    manipulation;
+}
+
+
+@keyframes scan {
+  0% {
+    transform:
+      translateY(0);
+  }
+
+  50% {
+    transform:
+      translateY(
+        calc(100% - 2px)
+      );
+  }
+
+  100% {
+    transform:
+      translateY(0);
+  }
+}
+
+
+@supports (
+  padding: max(0px)
+) {
+  .safe-top {
+    padding-top:
+      max(
+        env(safe-area-inset-top),
+        0.5rem
+      );
+  }
+
+  .safe-bottom {
+    padding-bottom:
+      max(
+        env(safe-area-inset-bottom),
+        0.5rem
+      );
+  }
+}
+
+
+@media (pointer: coarse) {
+  button,
+  a[role="button"],
+  [role="button"],
+  input[type="button"],
+  input[type="submit"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size:
+      16px !important;
+  }
+}
+/* =========================================================
+   ADRESSE GN — TYPOGRAPHIE PROFESSIONNELLE
+   ========================================================= */
+
+/*
+ * Texte général
+ */
+body {
+  font-family:
+    var(--font-inter),
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+
+/*
+ * Titres principaux et titres de sections
+ */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.text-display {
+  font-family:
+    var(--font-inter-tight),
+    var(--font-inter),
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-style: normal;
+}
+
+
+/*
+ * H1 : impact premium
+ */
+h1 {
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+
+
+/*
+ * H2 : titres de sections
+ */
+h2 {
+  font-weight: 750;
+  letter-spacing: -0.025em;
+}
+
+
+/*
+ * H3 / cartes
+ */
+h3 {
+  font-weight: 700;
+  letter-spacing: -0.018em;
+}
+
+
+/*
+ * Paragraphes
+ */
+p {
+  font-family:
+    var(--font-inter),
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-weight: 400;
+}
+
+
+/*
+ * Navigation
+ */
+nav,
+nav a {
+  font-family:
+    var(--font-inter),
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+
+/*
+ * Boutons
+ */
+button,
+[role="button"] {
+  font-family:
+    var(--font-inter),
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-weight: 600;
+  letter-spacing: -0.012em;
+}
+
+
+/*
+ * Champs de saisie
+ */
+input,
+textarea,
+select {
+  font-family:
+    var(--font-inter),
+    Arial,
+    Helvetica,
+    sans-serif;
+}
+
+
+/*
+ * Les numéros Adresse GN conservent
+ * leur identité technique / numérique.
+ */
+.font-mono {
+  font-family:
+    var(--font-jetbrains-mono),
+    "Courier New",
+    monospace;
+
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.045em;
+}
+
+
+/*
+ * Petits labels / badges
+ */
+.uppercase {
+  letter-spacing: 0.12em;
+}
