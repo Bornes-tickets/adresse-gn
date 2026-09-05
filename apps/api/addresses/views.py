@@ -4,6 +4,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .favorites import (
+    get_favorite_state,
+    toggle_favorite,
+)
 from .reporting import (
     create_address_report,
 )
@@ -301,4 +305,150 @@ class AddressReportView(APIView):
         return Response(
             result,
             status=status.HTTP_201_CREATED,
+        )
+
+class AddressFavoriteView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+    ]
+
+    @extend_schema(
+        tags=["Addresses"],
+        description=(
+            "Retourne l'état Favori de "
+            "l'Adresse GN pour l'utilisateur connecté."
+        ),
+    )
+    def get(self, request, number):
+        user_id = getattr(
+            request.user,
+            "id",
+            None,
+        )
+
+        if not user_id:
+            return Response(
+                {
+                    "ok": False,
+                    "status": "unauthenticated",
+                    "favorited": False,
+                    "favorite_id": None,
+                    "message": (
+                        "Authentification requise."
+                    ),
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        try:
+            result = get_favorite_state(
+                raw_number=number,
+                user_id=user_id,
+            )
+        except Exception:
+            return Response(
+                {
+                    "ok": False,
+                    "status": "error",
+                    "favorited": False,
+                    "favorite_id": None,
+                    "message": (
+                        "Impossible de charger "
+                        "l'état du favori."
+                    ),
+                },
+                status=(
+                    status.HTTP_500_INTERNAL_SERVER_ERROR
+                ),
+            )
+
+        if result["status"] == "invalid":
+            return Response(
+                result,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if result["status"] == "not_found":
+            return Response(
+                result,
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        return Response(
+            result,
+            status=status.HTTP_200_OK,
+        )
+
+    @extend_schema(
+        tags=["Addresses"],
+        request=None,
+        description=(
+            "Ajoute ou retire l'Adresse GN "
+            "des favoris de l'utilisateur connecté."
+        ),
+    )
+    def post(self, request, number):
+        user_id = getattr(
+            request.user,
+            "id",
+            None,
+        )
+
+        if not user_id:
+            return Response(
+                {
+                    "ok": False,
+                    "status": "unauthenticated",
+                    "favorited": False,
+                    "favorite_id": None,
+                    "message": (
+                        "Authentification requise."
+                    ),
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        try:
+            result = toggle_favorite(
+                raw_number=number,
+                user_id=user_id,
+            )
+        except Exception:
+            return Response(
+                {
+                    "ok": False,
+                    "status": "error",
+                    "favorited": False,
+                    "favorite_id": None,
+                    "message": (
+                        "Impossible de modifier "
+                        "ce favori."
+                    ),
+                },
+                status=(
+                    status.HTTP_500_INTERNAL_SERVER_ERROR
+                ),
+            )
+
+        if result["status"] == "invalid":
+            return Response(
+                result,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if result["status"] == "not_found":
+            return Response(
+                result,
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if result["status"] == "profile_missing":
+            return Response(
+                result,
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        return Response(
+            result,
+            status=status.HTTP_200_OK,
         )

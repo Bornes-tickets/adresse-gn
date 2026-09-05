@@ -34,6 +34,15 @@ import type {
 } from "@/features/addresses/types";
 
 import {
+  getFavoriteState,
+  toggleFavorite,
+} from "@/features/favorites/api";
+
+import {
+  useAuth,
+} from "@/hooks/useAuth";
+
+import {
   formatDistance,
   haversineKm,
 } from "@/lib/geo";
@@ -89,6 +98,11 @@ function categoryLabel(
 export function AddressDetailPage({
   number,
 }: Props) {
+  const {
+    isAuthenticated,
+  } =
+    useAuth();
+
   const [
     result,
     setResult,
@@ -145,6 +159,26 @@ export function AddressDetailPage({
   const [
     reportOpen,
     setReportOpen,
+  ] =
+    useState(false);
+
+  const [
+    favoriteId,
+    setFavoriteId,
+  ] =
+    useState<string | null>(
+      null,
+    );
+
+  const [
+    favoriteLoading,
+    setFavoriteLoading,
+  ] =
+    useState(false);
+
+  const [
+    favoriteMutating,
+    setFavoriteMutating,
   ] =
     useState(false);
 
@@ -220,6 +254,120 @@ export function AddressDetailPage({
       controller.abort();
     };
   }, [number]);
+
+
+  useEffect(() => {
+    const controller =
+      new AbortController();
+
+    async function loadFavorite() {
+      if (!isAuthenticated) {
+        setFavoriteId(null);
+        setFavoriteLoading(false);
+
+        return;
+      }
+
+      setFavoriteLoading(true);
+
+      try {
+        const favorite =
+          await getFavoriteState(
+            number,
+            controller.signal,
+          );
+
+        if (
+          !controller.signal.aborted
+        ) {
+          setFavoriteId(
+            favorite.favorite_id ??
+              null,
+          );
+        }
+      } catch (err) {
+        if (
+          err instanceof
+            DOMException &&
+          err.name ===
+            "AbortError"
+        ) {
+          return;
+        }
+
+        if (
+          !controller.signal.aborted
+        ) {
+          setFavoriteId(null);
+        }
+      } finally {
+        if (
+          !controller.signal.aborted
+        ) {
+          setFavoriteLoading(false);
+        }
+      }
+    }
+
+    void loadFavorite();
+
+    return () => {
+      controller.abort();
+    };
+  }, [
+    isAuthenticated,
+    number,
+  ]);
+
+
+  async function handleFavorite() {
+    if (!isAuthenticated) {
+      toast.info(
+        "Connectez-vous pour enregistrer un favori.",
+      );
+
+      return;
+    }
+
+    if (favoriteMutating) {
+      return;
+    }
+
+    setFavoriteMutating(true);
+
+    try {
+      const favorite =
+        await toggleFavorite(
+          number,
+        );
+
+      setFavoriteId(
+        favorite.favorite_id ??
+          null,
+      );
+
+      if (favorite.favorited) {
+        toast.success(
+          "Ajouté à vos favoris.",
+        );
+      } else {
+        toast.success(
+          "Retiré des favoris.",
+        );
+      }
+    } catch (err) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : (
+              "Impossible de modifier " +
+              "ce favori."
+            ),
+      );
+    } finally {
+      setFavoriteMutating(false);
+    }
+  }
 
 
   function demanderPosition() {
@@ -610,13 +758,23 @@ export function AddressDetailPage({
             <Button
               variant="outline"
               className="h-11"
-              onClick={() =>
-                toast.info(
-                  "Les favoris seront réactivés avec l'authentification Supabase.",
-                )
+              onClick={
+                handleFavorite
+              }
+              disabled={
+                favoriteLoading ||
+                favoriteMutating
               }
             >
-              <Heart className="size-4" />
+              <Heart
+                className={
+                  `size-4 ${
+                    favoriteId
+                      ? "fill-destructive text-destructive"
+                      : ""
+                  }`
+                }
+              />
 
               <span className="hidden sm:inline">
                 Favori
