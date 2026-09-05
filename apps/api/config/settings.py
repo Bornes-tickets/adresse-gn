@@ -55,6 +55,26 @@ SUPABASE_PUBLISHABLE_KEY = env(
     "SUPABASE_PUBLISHABLE_KEY"
 )
 
+# Clé strictement serveur pour les opérations
+# administratives Supabase Storage.
+#
+# Préférence : nouvelle clé Supabase sb_secret_*.
+# Compatibilité : ancienne clé service_role JWT.
+SUPABASE_SECRET_KEY = env(
+    "SUPABASE_SECRET_KEY",
+    default="",
+).strip()
+
+SUPABASE_SERVICE_ROLE_KEY = env(
+    "SUPABASE_SERVICE_ROLE_KEY",
+    default="",
+).strip()
+
+SUPABASE_SERVER_KEY = (
+    SUPABASE_SECRET_KEY
+    or SUPABASE_SERVICE_ROLE_KEY
+)
+
 SUPABASE_JWT_ISSUER = (
     f"{SUPABASE_URL}/auth/v1"
 )

@@ -1,9 +1,15 @@
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .claims import (
+    ClaimStorageError,
+    create_address_claim,
+    get_claim_context,
+)
 from .favorites import (
     get_favorite_state,
     toggle_favorite,
@@ -12,6 +18,7 @@ from .reporting import (
     create_address_report,
 )
 from .serializers import (
+    AddressClaimSerializer,
     AddressReportSerializer,
     AddressSearchSerializer,
     RouteLogSerializer,
@@ -451,4 +458,189 @@ class AddressFavoriteView(APIView):
         return Response(
             result,
             status=status.HTTP_200_OK,
+        )
+
+class AddressClaimView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+    ]
+
+    parser_classes = [
+        MultiPartParser,
+        FormParser,
+    ]
+
+    @extend_schema(
+        tags=["Addresses"],
+        description=(
+            "Retourne le contexte de réclamation "
+            "de propriété pour l'utilisateur connecté."
+        ),
+    )
+    def get(self, request, number):
+        user_id = getattr(
+            request.user,
+            "id",
+            None,
+        )
+
+        if not user_id:
+            return Response(
+                {
+                    "ok": False,
+                    "status": "unauthenticated",
+                    "message": (
+                        "Authentification requise."
+                    ),
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        try:
+            result = get_claim_context(
+                raw_number=number,
+                user_id=user_id,
+            )
+        except Exception:
+            return Response(
+                {
+                    "ok": False,
+                    "status": "error",
+                    "message": (
+                        "Impossible de charger "
+                        "le contexte de réclamation."
+                    ),
+                },
+                status=(
+                    status.HTTP_500_INTERNAL_SERVER_ERROR
+                ),
+            )
+
+        if result["status"] == "invalid":
+            return Response(
+                result,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if result["status"] == "not_found":
+            return Response(
+                result,
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        return Response(
+            result,
+            status=status.HTTP_200_OK,
+        )
+
+    @extend_schema(
+        tags=["Addresses"],
+        request=AddressClaimSerializer,
+        description=(
+            "Crée une demande authentifiée "
+            "de réclamation d'une Adresse GN."
+        ),
+    )
+    def post(self, request, number):
+        user_id = getattr(
+            request.user,
+            "id",
+            None,
+        )
+
+        if not user_id:
+            return Response(
+                {
+                    "ok": False,
+                    "status": "unauthenticated",
+                    "claim_id": None,
+                    "message": (
+                        "Authentification requise."
+                    ),
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        serializer = AddressClaimSerializer(
+            data=request.data,
+        )
+
+        serializer.is_valid(
+            raise_exception=True,
+        )
+
+        try:
+            result = create_address_claim(
+                raw_number=number,
+                requester_id=user_id,
+                explanation=(
+                    serializer.validated_data[
+                        "explanation"
+                    ]
+                ),
+                evidence_file=(
+                    serializer.validated_data.get(
+                        "evidence_file"
+                    )
+                ),
+            )
+
+        except ClaimStorageError:
+            return Response(
+                {
+                    "ok": False,
+                    "status": "storage_error",
+                    "claim_id": None,
+                    "message": (
+                        "Envoi de la pièce "
+                        "justificative impossible."
+                    ),
+                },
+                status=(
+                    status.HTTP_503_SERVICE_UNAVAILABLE
+                ),
+            )
+
+        except Exception:
+            return Response(
+                {
+                    "ok": False,
+                    "status": "error",
+                    "claim_id": None,
+                    "message": (
+                        "La demande n'a pas "
+                        "pu être enregistrée."
+                    ),
+                },
+                status=(
+                    status.HTTP_500_INTERNAL_SERVER_ERROR
+                ),
+            )
+
+        if result["status"] == "invalid":
+            return Response(
+                result,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if result["status"] == "not_found":
+            return Response(
+                result,
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if result["status"] in {
+            "profile_missing",
+            "already_mine",
+            "already_owned",
+            "pending_exists",
+        }:
+            return Response(
+                result,
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        return Response(
+            result,
+            status=status.HTTP_201_CREATED,
         )

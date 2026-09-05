@@ -19,6 +19,7 @@ import {
 import { toast } from "sonner";
 
 import { BeaconMap } from "@/components/BeaconMap";
+import { ClaimDialog } from "@/components/ClaimDialog";
 import { InstallBanner } from "@/components/InstallBanner";
 import { ReportSheet } from "@/components/ReportSheet";
 import { ShareSheet } from "@/components/ShareSheet";
@@ -32,6 +33,11 @@ import {
 import type {
   BeaconResult,
 } from "@/features/addresses/types";
+
+import {
+  getClaimContext,
+  type ClaimStatus,
+} from "@/features/claims/api";
 
 import {
   getFavoriteState,
@@ -159,6 +165,26 @@ export function AddressDetailPage({
   const [
     reportOpen,
     setReportOpen,
+  ] =
+    useState(false);
+
+  const [
+    claimOpen,
+    setClaimOpen,
+  ] =
+    useState(false);
+
+  const [
+    claimStatus,
+    setClaimStatus,
+  ] =
+    useState<ClaimStatus>(
+      null,
+    );
+
+  const [
+    claimIsMine,
+    setClaimIsMine,
   ] =
     useState(false);
 
@@ -310,6 +336,66 @@ export function AddressDetailPage({
     }
 
     void loadFavorite();
+
+    return () => {
+      controller.abort();
+    };
+  }, [
+    isAuthenticated,
+    number,
+  ]);
+
+
+  useEffect(() => {
+    const controller =
+      new AbortController();
+
+    async function loadClaim() {
+      if (!isAuthenticated) {
+        setClaimStatus(null);
+        setClaimIsMine(false);
+
+        return;
+      }
+
+      try {
+        const context =
+          await getClaimContext(
+            number,
+            controller.signal,
+          );
+
+        if (
+          !controller.signal.aborted
+        ) {
+          setClaimStatus(
+            context.claim_status ??
+              null,
+          );
+
+          setClaimIsMine(
+            context.is_mine,
+          );
+        }
+
+      } catch (err) {
+        if (
+          err instanceof DOMException &&
+          err.name === "AbortError"
+        ) {
+          return;
+        }
+
+        if (
+          !controller.signal.aborted
+        ) {
+          setClaimStatus(null);
+          setClaimIsMine(false);
+        }
+      }
+    }
+
+    void loadClaim();
 
     return () => {
       controller.abort();
@@ -783,20 +869,28 @@ export function AddressDetailPage({
           </div>
 
 
-          <Button
-            variant="ghost"
-            className="mt-2 h-11 w-full text-sm"
-            onClick={() =>
-              toast.info(
-                "La revendication d'adresse sera migrée avec le module compte.",
-              )
-            }
-          >
-            <ShieldCheck className="size-4" />
+          {!claimIsMine && (
+            <Button
+              variant="ghost"
+              className="mt-2 h-11 w-full text-sm"
+              onClick={() =>
+                setClaimOpen(true)
+              }
+            >
+              <ShieldCheck className="size-4" />
 
-            Revendiquer cette
-            adresse
-          </Button>
+              {
+                claimStatus === "pending"
+                  ? "Demande de réclamation envoyée"
+                  : (
+                      <>
+                        Revendiquer cette
+                        adresse
+                      </>
+                    )
+              }
+            </Button>
+          )}
 
 
           {address.business_name && (
@@ -838,6 +932,19 @@ export function AddressDetailPage({
         onOpenChange={setReportOpen}
         beaconId={beaconId}
         number={address.public_number}
+      />
+
+      <ClaimDialog
+        open={claimOpen}
+        onOpenChange={setClaimOpen}
+        number={address.public_number}
+        claimStatus={claimStatus}
+        isMine={claimIsMine}
+        onClaimCreated={() => {
+          setClaimStatus(
+            "pending",
+          );
+        }}
       />
 
       <InstallBanner

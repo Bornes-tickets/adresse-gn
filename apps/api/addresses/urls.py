@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .views import (
+    AddressClaimView,
     AddressDetailView,
     AddressFavoriteView,
     AddressReportView,
@@ -32,6 +33,12 @@ urlpatterns = [
         "<str:number>/favorite/",
         AddressFavoriteView.as_view(),
         name="address-favorite",
+    ),
+
+    path(
+        "<str:number>/claim/",
+        AddressClaimView.as_view(),
+        name="address-claim",
     ),
 
     path(
