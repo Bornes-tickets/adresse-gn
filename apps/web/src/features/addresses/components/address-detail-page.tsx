@@ -20,6 +20,7 @@ import { toast } from "sonner";
 
 import { BeaconMap } from "@/components/BeaconMap";
 import { InstallBanner } from "@/components/InstallBanner";
+import { ReportSheet } from "@/components/ReportSheet";
 import { ShareSheet } from "@/components/ShareSheet";
 import { Button } from "@/components/ui/button";
 
@@ -138,6 +139,12 @@ export function AddressDetailPage({
   const [
     shareOpen,
     setShareOpen,
+  ] =
+    useState(false);
+
+  const [
+    reportOpen,
+    setReportOpen,
   ] =
     useState(false);
 
@@ -589,9 +596,7 @@ export function AddressDetailPage({
               variant="outline"
               className="h-11"
               onClick={() =>
-                toast.info(
-                  "Le signalement sera réactivé lors de la migration du module utilisateur.",
-                )
+                setReportOpen(true)
               }
             >
               <Flag className="size-4" />
@@ -668,6 +673,13 @@ export function AddressDetailPage({
         onOpenChange={setShareOpen}
         number={address.public_number}
         name={displayName(address)}
+      />
+
+      <ReportSheet
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        beaconId={beaconId}
+        number={address.public_number}
       />
 
       <InstallBanner

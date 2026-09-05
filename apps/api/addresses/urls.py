@@ -2,6 +2,7 @@ from django.urls import path
 
 from .views import (
     AddressDetailView,
+    AddressReportView,
     AddressSearchView,
     RouteLogView,
 )
@@ -18,6 +19,12 @@ urlpatterns = [
         "<str:number>/route/",
         RouteLogView.as_view(),
         name="address-route-log",
+    ),
+
+    path(
+        "<str:number>/report/",
+        AddressReportView.as_view(),
+        name="address-report",
     ),
 
     path(

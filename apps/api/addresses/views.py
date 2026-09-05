@@ -1,9 +1,14 @@
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .reporting import (
+    create_address_report,
+)
 from .serializers import (
+    AddressReportSerializer,
     AddressSearchSerializer,
     RouteLogSerializer,
 )
@@ -131,12 +136,10 @@ class AddressDetailView(APIView):
 
 
 class RouteLogView(APIView):
-    # Pas de permission IsAuthenticated :
-    # les itinéraires restent utilisables anonymement.
+    # L'itinéraire reste public.
     #
-    # En revanche, si un Bearer token est transmis,
-    # l'authentification Supabase par défaut le valide
-    # et request.user contient le véritable user_id.
+    # Si un Bearer token Supabase est présent,
+    # l'utilisateur est néanmoins identifié.
     permission_classes = []
 
     @extend_schema(
@@ -197,6 +200,102 @@ class RouteLogView(APIView):
             return Response(
                 result,
                 status=status.HTTP_404_NOT_FOUND,
+            )
+
+        return Response(
+            result,
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class AddressReportView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+    ]
+
+    @extend_schema(
+        tags=["Addresses"],
+        request=AddressReportSerializer,
+        description=(
+            "Crée un signalement authentifié "
+            "sur une Adresse GN."
+        ),
+    )
+    def post(self, request, number):
+        serializer = AddressReportSerializer(
+            data=request.data,
+        )
+
+        serializer.is_valid(
+            raise_exception=True,
+        )
+
+        user_id = getattr(
+            request.user,
+            "id",
+            None,
+        )
+
+        if not user_id:
+            return Response(
+                {
+                    "ok": False,
+                    "status": "unauthenticated",
+                    "report_id": None,
+                    "message": (
+                        "Authentification requise."
+                    ),
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        try:
+            result = create_address_report(
+                raw_number=number,
+                reporter_id=user_id,
+                reason=(
+                    serializer.validated_data[
+                        "reason"
+                    ]
+                ),
+                description=(
+                    serializer.validated_data.get(
+                        "description"
+                    )
+                ),
+            )
+        except Exception:
+            return Response(
+                {
+                    "ok": False,
+                    "status": "error",
+                    "report_id": None,
+                    "message": (
+                        "Le signalement n'a pas "
+                        "pu être enregistré."
+                    ),
+                },
+                status=(
+                    status.HTTP_500_INTERNAL_SERVER_ERROR
+                ),
+            )
+
+        if result["status"] == "invalid":
+            return Response(
+                result,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if result["status"] == "not_found":
+            return Response(
+                result,
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if result["status"] == "profile_missing":
+            return Response(
+                result,
+                status=status.HTTP_409_CONFLICT,
             )
 
         return Response(
