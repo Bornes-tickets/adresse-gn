@@ -13,6 +13,7 @@ import { Toaster } from "sonner";
 
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { SiteShell } from "@/components/layout/site-shell";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 import "leaflet/dist/leaflet.css";
@@ -122,15 +123,16 @@ export default function RootLayout({
         <TooltipProvider
           delayDuration={150}
         >
-          <div className="flex min-h-screen flex-col">
-            <SiteHeader />
-
-            <main className="flex-1">
-              {children}
-            </main>
-
-            <SiteFooter />
-          </div>
+          <SiteShell
+            header={
+              <SiteHeader />
+            }
+            footer={
+              <SiteFooter />
+            }
+          >
+            {children}
+          </SiteShell>
 
           <Toaster
             richColors

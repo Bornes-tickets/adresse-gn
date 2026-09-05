@@ -17,6 +17,11 @@ urlpatterns = [
     ),
 
     path(
+        "api/v1/backoffice/",
+        include("backoffice.urls"),
+    ),
+
+    path(
         "api/v1/auth/me/",
         AuthMeView.as_view(),
         name="auth-me",
