@@ -1,0 +1,1 @@
+"""Portail propriétaire Adresse GN."""

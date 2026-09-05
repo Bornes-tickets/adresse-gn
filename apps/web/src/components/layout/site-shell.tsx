@@ -24,13 +24,17 @@ export function SiteShell({
   const pathname =
     usePathname();
 
-  const isSupport =
+  const hasOwnLayout =
     pathname === "/support" ||
     pathname.startsWith(
       "/support/",
+    ) ||
+    pathname === "/mon-compte" ||
+    pathname.startsWith(
+      "/mon-compte/",
     );
 
-  if (isSupport) {
+  if (hasOwnLayout) {
     return <>{children}</>;
   }
 

@@ -22,6 +22,11 @@ urlpatterns = [
     ),
 
     path(
+        "api/v1/owner/",
+        include("owner_portal.urls"),
+    ),
+
+    path(
         "api/v1/auth/me/",
         AuthMeView.as_view(),
         name="auth-me",
