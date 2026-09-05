@@ -667,6 +667,7 @@ ROUTE_PROVIDER_DB_VALUES = {
 def log_route_launch(
     raw_number: str,
     provider: str,
+    user_id: str | None = None,
 ) -> dict:
     """
     Journalise le lancement d'un itinéraire depuis une fiche Adresse GN.
@@ -683,8 +684,8 @@ def log_route_launch(
     - apple
     - other
 
-    Tant que l'authentification Supabase n'est pas reconnectée côté Django,
-    user_id reste volontairement à NULL.
+    Si Django a validé un Bearer token Supabase, le véritable
+    user_id est enregistré. Sinon le lancement reste anonyme.
     """
 
     normalized_provider = (
@@ -742,13 +743,14 @@ def log_route_launch(
             VALUES
                 (
                     %s,
-                    NULL,
+                    %s,
                     %s,
                     NOW()
                 )
             """,
             [
                 beacon_id,
+                user_id,
                 db_provider,
             ],
         )

@@ -131,7 +131,12 @@ class AddressDetailView(APIView):
 
 
 class RouteLogView(APIView):
-    authentication_classes = []
+    # Pas de permission IsAuthenticated :
+    # les itinéraires restent utilisables anonymement.
+    #
+    # En revanche, si un Bearer token est transmis,
+    # l'authentification Supabase par défaut le valide
+    # et request.user contient le véritable user_id.
     permission_classes = []
 
     @extend_schema(
@@ -151,6 +156,12 @@ class RouteLogView(APIView):
             raise_exception=True,
         )
 
+        user_id = getattr(
+            request.user,
+            "id",
+            None,
+        )
+
         try:
             result = log_route_launch(
                 raw_number=number,
@@ -159,6 +170,7 @@ class RouteLogView(APIView):
                         "provider"
                     ]
                 ),
+                user_id=user_id,
             )
         except Exception:
             return Response(

@@ -23,7 +23,10 @@ import { InstallBanner } from "@/components/InstallBanner";
 import { ShareSheet } from "@/components/ShareSheet";
 import { Button } from "@/components/ui/button";
 
-import { getAddressDetail } from "@/features/addresses/api";
+import {
+  getAddressDetail,
+  logRouteLaunch,
+} from "@/features/addresses/api";
 
 import type {
   BeaconResult,
@@ -523,6 +526,15 @@ export function AddressDetailPage({
                 href={mapsUrl}
                 target="_blank"
                 rel="noreferrer"
+                onClick={() => {
+                  void logRouteLaunch(
+                    address.public_number,
+                    "google_maps",
+                  ).catch(() => {
+                    // La journalisation ne doit
+                    // jamais bloquer l'itinéraire.
+                  });
+                }}
               >
                 <Navigation className="size-5" />
 
@@ -539,6 +551,15 @@ export function AddressDetailPage({
                 href={wazeUrl}
                 target="_blank"
                 rel="noreferrer"
+                onClick={() => {
+                  void logRouteLaunch(
+                    address.public_number,
+                    "waze",
+                  ).catch(() => {
+                    // La journalisation ne doit
+                    // jamais bloquer l'itinéraire.
+                  });
+                }}
               >
                 <Navigation className="size-5" />
 

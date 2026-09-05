@@ -5,11 +5,21 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
+from config.auth_views import (
+    AuthMeView,
+)
+
 
 urlpatterns = [
     path(
         "api/v1/addresses/",
         include("addresses.urls"),
+    ),
+
+    path(
+        "api/v1/auth/me/",
+        AuthMeView.as_view(),
+        name="auth-me",
     ),
 
     path(

@@ -2,11 +2,20 @@ import type {
   AddressSearchResponse,
 } from "./types";
 
+import {
+  getAccessToken,
+} from "@/lib/supabase/browser";
+
 
 const API_BASE_URL = (
   process.env.NEXT_PUBLIC_API_URL ??
   "http://127.0.0.1:8000"
 ).replace(/\/$/, "");
+
+
+export type RouteProvider =
+  | "google_maps"
+  | "waze";
 
 
 async function readJsonResponse(
@@ -20,6 +29,26 @@ async function readJsonResponse(
     throw new Error(
       "Le serveur Adresse GN a retourné une réponse invalide.",
     );
+  }
+}
+
+
+async function optionalAuthHeaders():
+  Promise<Record<string, string>> {
+  try {
+    const token =
+      await getAccessToken();
+
+    if (!token) {
+      return {};
+    }
+
+    return {
+      Authorization:
+        `Bearer ${token}`,
+    };
+  } catch {
+    return {};
   }
 }
 
@@ -126,4 +155,45 @@ export async function getAddressDetail(
   }
 
   return payload;
+}
+
+
+export async function logRouteLaunch(
+  number: string,
+  provider: RouteProvider,
+): Promise<void> {
+  const authHeaders =
+    await optionalAuthHeaders();
+
+  const response =
+    await fetch(
+      `${API_BASE_URL}/api/v1/addresses/${encodeURIComponent(number)}/route/`,
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+
+          Accept:
+            "application/json",
+
+          ...authHeaders,
+        },
+
+        body: JSON.stringify({
+          provider,
+        }),
+
+        cache: "no-store",
+
+        keepalive: true,
+      },
+    );
+
+  if (!response.ok) {
+    throw new Error(
+      "La journalisation de l'itinéraire a échoué.",
+    );
+  }
 }

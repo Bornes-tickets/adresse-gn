@@ -28,7 +28,10 @@ environ.Env.read_env(BASE_DIR / ".env")
 
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 
-DEBUG = env.bool("DEBUG", default=True)
+DEBUG = env.bool(
+    "DEBUG",
+    default=True,
+)
 
 ALLOWED_HOSTS = env.list(
     "ALLOWED_HOSTS",
@@ -36,6 +39,34 @@ ALLOWED_HOSTS = env.list(
         "localhost",
         "127.0.0.1",
     ],
+)
+
+
+# ============================================================
+# SUPABASE AUTH
+# ============================================================
+
+SUPABASE_URL = (
+    env("SUPABASE_URL")
+    .rstrip("/")
+)
+
+SUPABASE_PUBLISHABLE_KEY = env(
+    "SUPABASE_PUBLISHABLE_KEY"
+)
+
+SUPABASE_JWT_ISSUER = (
+    f"{SUPABASE_URL}/auth/v1"
+)
+
+SUPABASE_JWKS_URL = (
+    f"{SUPABASE_URL}"
+    "/auth/v1/.well-known/jwks.json"
+)
+
+SUPABASE_JWT_AUDIENCE = env(
+    "SUPABASE_JWT_AUDIENCE",
+    default="authenticated",
 )
 
 
@@ -87,7 +118,9 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 TEMPLATES = [
     {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "BACKEND": (
+            "django.template.backends.django.DjangoTemplates"
+        ),
         "DIRS": [],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -104,7 +137,9 @@ TEMPLATES = [
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
+        "ENGINE": (
+            "django.db.backends.postgresql"
+        ),
 
         "NAME": env(
             "DB_NAME",
@@ -113,7 +148,9 @@ DATABASES = {
 
         "USER": env("DB_USER"),
 
-        "PASSWORD": env("DB_PASSWORD"),
+        "PASSWORD": env(
+            "DB_PASSWORD"
+        ),
 
         "HOST": env("DB_HOST"),
 
@@ -155,14 +192,18 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_ROOT = (
+    BASE_DIR / "staticfiles"
+)
 
 
 # ============================================================
 # DEFAULT PRIMARY KEY
 # ============================================================
 
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+DEFAULT_AUTO_FIELD = (
+    "django.db.models.BigAutoField"
+)
 
 
 # ============================================================
@@ -181,14 +222,19 @@ CORS_ALLOWED_ORIGINS = [
 # ============================================================
 
 REST_FRAMEWORK = {
-    # Pour le premier endpoint public de recherche,
-    # nous n'utilisons pas encore l'authentification Django.
-    "DEFAULT_AUTHENTICATION_CLASSES": [],
+    # Supabase Auth reste la source d'identité.
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        (
+            "config.authentication."
+            "SupabaseJWTAuthentication"
+        ),
+    ],
 
+    # Les permissions restent définies vue par vue
+    # pendant la migration progressive.
     "DEFAULT_PERMISSION_CLASSES": [],
 
-    # Évite que DRF crée un AnonymousUser Django,
-    # puisque Supabase Auth sera notre système d'identité.
+    # Pas de modèle User Django.
     "UNAUTHENTICATED_USER": None,
 
     # Génération OpenAPI / Swagger
