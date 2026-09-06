@@ -1546,3 +1546,214 @@ def list_owner_orders(
         )
 
     return result
+
+
+
+def _split_owner_report_description(
+    value: str | None,
+) -> tuple[
+    str | None,
+    str | None,
+]:
+    """
+    Compatibilité historique :
+
+    [Admin] dans description séparait
+    le texte client de la réponse équipe.
+    """
+
+    if value is None:
+        return (
+            None,
+            None,
+        )
+
+    text = str(
+        value
+    ).strip()
+
+    if not text:
+        return (
+            None,
+            None,
+        )
+
+    marker = "[Admin]"
+
+    index = text.find(
+        marker
+    )
+
+    if index < 0:
+        return (
+            text,
+            None,
+        )
+
+    description = (
+        text[:index]
+        .strip()
+        or None
+    )
+
+    admin_response = (
+        text[
+            index
+            + len(marker):
+        ]
+        .strip()
+        or None
+    )
+
+    return (
+        description,
+        admin_response,
+    )
+
+
+def list_owner_reports(
+    user_id: str,
+) -> list[dict[str, Any]]:
+    """
+    Signalements appartenant exclusivement
+    au compte authentifié.
+
+    Les déménagements restent des reports
+    avec reason='moving'.
+    """
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+                r.id,
+                r.reason,
+                r.description,
+                r.status,
+                r.created_at,
+                b.public_number
+            FROM public.reports r
+            LEFT JOIN public.beacons b
+                ON b.id = r.beacon_id
+            WHERE r.reporter_id = %s
+            ORDER BY r.created_at DESC
+            LIMIT 100
+            """,
+            [
+                user_id,
+            ],
+        )
+
+        rows = cursor.fetchall()
+
+    result: list[
+        dict[str, Any]
+    ] = []
+
+    for row in rows:
+
+        (
+            description,
+            admin_response,
+        ) = (
+            _split_owner_report_description(
+                row[2]
+            )
+        )
+
+        reason = row[1]
+
+        result.append(
+            {
+                "id": str(
+                    row[0]
+                ),
+                "type": (
+                    "moving"
+                    if reason == "moving"
+                    else "report"
+                ),
+                "reason": reason,
+                "description": (
+                    description
+                ),
+                "status": row[3],
+                "created_at": (
+                    row[4].isoformat()
+                    if row[4]
+                    else None
+                ),
+                "public_number": (
+                    row[5]
+                    or None
+                ),
+                "admin_response": (
+                    admin_response
+                ),
+            }
+        )
+
+    return result
+
+
+def list_owner_claims(
+    user_id: str,
+) -> list[dict[str, Any]]:
+    """
+    Réclamations de propriété du compte.
+
+    Important :
+    evidence n'est volontairement jamais
+    exposé dans ce payload de consultation.
+    """
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+                c.id,
+                c.status,
+                c.decision_note,
+                c.created_at,
+                c.decided_at,
+                b.public_number
+            FROM public.claim_requests c
+            LEFT JOIN public.beacons b
+                ON b.id = c.beacon_id
+            WHERE c.requester_id = %s
+            ORDER BY c.created_at DESC
+            LIMIT 100
+            """,
+            [
+                user_id,
+            ],
+        )
+
+        rows = cursor.fetchall()
+
+    return [
+        {
+            "id": str(
+                row[0]
+            ),
+            "status": row[1],
+            "decision_note": (
+                row[2]
+            ),
+            "created_at": (
+                row[3].isoformat()
+                if row[3]
+                else None
+            ),
+            "decided_at": (
+                row[4].isoformat()
+                if row[4]
+                else None
+            ),
+            "public_number": (
+                row[5]
+                or None
+            ),
+        }
+        for row in rows
+    ]

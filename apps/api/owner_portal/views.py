@@ -24,8 +24,10 @@ from .services import (
     delete_owner_favorite,
     get_owner_dashboard,
     list_owner_beacons,
+    list_owner_claims,
     list_owner_favorites,
     list_owner_orders,
+    list_owner_reports,
     suspend_owner_beacon,
     update_owner_beacon,
     update_owner_favorite,
@@ -639,6 +641,122 @@ class OwnerOrderListView(APIView):
                     "detail": (
                         "Impossible de charger "
                         "vos commandes."
+                    ),
+                },
+                status=(
+                    status.HTTP_500_INTERNAL_SERVER_ERROR
+                ),
+            )
+
+        return Response(
+            {
+                "items": items,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+
+class OwnerReportListView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+    ]
+
+    @extend_schema(
+        tags=["Owner portal"],
+        description=(
+            "Liste les signalements du "
+            "compte connecté, y compris "
+            "les signalements de déménagement."
+        ),
+    )
+    def get(self, request):
+        user_id = getattr(
+            request.user,
+            "id",
+            None,
+        )
+
+        if not user_id:
+            return Response(
+                {
+                    "detail": (
+                        "Authentification requise."
+                    ),
+                },
+                status=(
+                    status.HTTP_401_UNAUTHORIZED
+                ),
+            )
+
+        try:
+            items = list_owner_reports(
+                user_id=user_id,
+            )
+
+        except Exception:
+            return Response(
+                {
+                    "detail": (
+                        "Impossible de charger "
+                        "vos signalements."
+                    ),
+                },
+                status=(
+                    status.HTTP_500_INTERNAL_SERVER_ERROR
+                ),
+            )
+
+        return Response(
+            {
+                "items": items,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class OwnerClaimListView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+    ]
+
+    @extend_schema(
+        tags=["Owner portal"],
+        description=(
+            "Liste les réclamations "
+            "d'adresse du compte connecté."
+        ),
+    )
+    def get(self, request):
+        user_id = getattr(
+            request.user,
+            "id",
+            None,
+        )
+
+        if not user_id:
+            return Response(
+                {
+                    "detail": (
+                        "Authentification requise."
+                    ),
+                },
+                status=(
+                    status.HTTP_401_UNAUTHORIZED
+                ),
+            )
+
+        try:
+            items = list_owner_claims(
+                user_id=user_id,
+            )
+
+        except Exception:
+            return Response(
+                {
+                    "detail": (
+                        "Impossible de charger "
+                        "vos réclamations."
                     ),
                 },
                 status=(

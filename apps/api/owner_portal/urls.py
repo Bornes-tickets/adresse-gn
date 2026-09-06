@@ -9,10 +9,24 @@ from .views import (
     OwnerFavoriteListCreateView,
     OwnerMovingReportView,
     OwnerOrderListView,
+    OwnerReportListView,
+    OwnerClaimListView,
 )
 
 
 urlpatterns = [
+    path(
+        "reports/",
+        OwnerReportListView.as_view(),
+        name="owner-reports",
+    ),
+
+    path(
+        "claims/",
+        OwnerClaimListView.as_view(),
+        name="owner-claims",
+    ),
+
     path(
         "orders/",
         OwnerOrderListView.as_view(),

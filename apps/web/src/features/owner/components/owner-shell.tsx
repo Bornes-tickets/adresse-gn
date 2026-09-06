@@ -79,7 +79,7 @@ const SECTIONS: readonly OwnerSection[] = [
     icon: Receipt,
   },
   {
-    href: "/mon-compte/reports",
+    href: "/mon-compte/signalements",
     label: "Signalements",
     mobileLabel: "Signalements",
     icon: Flag,

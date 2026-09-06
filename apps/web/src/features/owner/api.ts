@@ -474,3 +474,68 @@ export async function listOwnerOrders(
 
   return payload.items;
 }
+
+
+
+export type OwnerReport = {
+  id: string;
+  type:
+    | "report"
+    | "moving";
+  reason: string;
+  description: string | null;
+  status: string;
+  created_at: string | null;
+  public_number: string | null;
+  admin_response: string | null;
+};
+
+
+export type OwnerClaim = {
+  id: string;
+  status: string;
+  decision_note: string | null;
+  created_at: string;
+  decided_at: string | null;
+  public_number: string | null;
+};
+
+
+export async function listOwnerReports(
+  accessToken: string,
+  signal?: AbortSignal,
+): Promise<OwnerReport[]> {
+  const payload =
+    await ownerFetch<{
+      items: OwnerReport[];
+    }>(
+      `${API_BASE_URL}/api/v1/owner/reports/`,
+      accessToken,
+      {
+        method: "GET",
+        signal,
+      },
+    );
+
+  return payload.items;
+}
+
+
+export async function listOwnerClaims(
+  accessToken: string,
+  signal?: AbortSignal,
+): Promise<OwnerClaim[]> {
+  const payload =
+    await ownerFetch<{
+      items: OwnerClaim[];
+    }>(
+      `${API_BASE_URL}/api/v1/owner/claims/`,
+      accessToken,
+      {
+        method: "GET",
+        signal,
+      },
+    );
+
+  return payload.items;
+}
