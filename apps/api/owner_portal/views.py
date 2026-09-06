@@ -25,6 +25,7 @@ from .services import (
     get_owner_dashboard,
     list_owner_beacons,
     list_owner_favorites,
+    list_owner_orders,
     suspend_owner_beacon,
     update_owner_beacon,
     update_owner_favorite,
@@ -590,5 +591,64 @@ class OwnerFavoriteDetailView(APIView):
 
         return Response(
             result,
+            status=status.HTTP_200_OK,
+        )
+
+
+
+class OwnerOrderListView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+    ]
+
+    @extend_schema(
+        tags=["Owner portal"],
+        description=(
+            "Liste les commandes du "
+            "compte connecté avec leurs "
+            "sites, paiement et facture."
+        ),
+    )
+    def get(self, request):
+        user_id = getattr(
+            request.user,
+            "id",
+            None,
+        )
+
+        if not user_id:
+            return Response(
+                {
+                    "detail": (
+                        "Authentification requise."
+                    ),
+                },
+                status=(
+                    status.HTTP_401_UNAUTHORIZED
+                ),
+            )
+
+        try:
+            items = list_owner_orders(
+                user_id=user_id,
+            )
+
+        except Exception:
+            return Response(
+                {
+                    "detail": (
+                        "Impossible de charger "
+                        "vos commandes."
+                    ),
+                },
+                status=(
+                    status.HTTP_500_INTERNAL_SERVER_ERROR
+                ),
+            )
+
+        return Response(
+            {
+                "items": items,
+            },
             status=status.HTTP_200_OK,
         )

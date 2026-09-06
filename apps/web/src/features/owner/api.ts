@@ -385,3 +385,92 @@ export function deleteOwnerFavorite(
     },
   );
 }
+
+
+
+export type OwnerOrderItem = {
+  kind: string | null;
+  ref: string | null;
+  qty: number;
+  unit_price_gnf: number;
+  label: string;
+};
+
+
+export type OwnerOrderPlan = {
+  id: string | null;
+  code: string;
+  label: string;
+  active: boolean | null;
+};
+
+
+export type OwnerOrderSite = {
+  id: string;
+  sequence_no: number;
+  place_type: string;
+  place_name: string | null;
+  address_line: string | null;
+  access_point_note: string | null;
+  beacon_id: string | null;
+  status: string;
+};
+
+
+export type OwnerOrderPayment = {
+  id: string;
+  provider: string | null;
+  external_ref: string | null;
+  amount_gnf: number;
+  status: string;
+  paid_at: string | null;
+  confirmed_at: string | null;
+};
+
+
+export type OwnerOrderInvoice = {
+  id: string;
+  number: string;
+  pdf_url: string | null;
+  amount_gnf: number;
+  status: string;
+  issued_at: string | null;
+  paid_at: string | null;
+};
+
+
+export type OwnerOrder = {
+  id: string;
+  order_ref: string;
+  offer_code: string;
+  amount_gnf: number;
+  status: string;
+  created_at: string | null;
+  items: OwnerOrderItem[];
+  beacon_id: string | null;
+  business_id: string | null;
+  plan: OwnerOrderPlan | null;
+  sites: OwnerOrderSite[];
+  payment: OwnerOrderPayment | null;
+  invoice: OwnerOrderInvoice | null;
+};
+
+
+export async function listOwnerOrders(
+  accessToken: string,
+  signal?: AbortSignal,
+): Promise<OwnerOrder[]> {
+  const payload =
+    await ownerFetch<{
+      items: OwnerOrder[];
+    }>(
+      `${API_BASE_URL}/api/v1/owner/orders/`,
+      accessToken,
+      {
+        method: "GET",
+        signal,
+      },
+    );
+
+  return payload.items;
+}
