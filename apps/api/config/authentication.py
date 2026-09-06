@@ -7,6 +7,7 @@ from urllib.request import Request, urlopen
 
 import jwt
 from django.conf import settings
+from django.db import connection
 from jwt import InvalidTokenError, PyJWKClient
 from rest_framework.authentication import (
     BaseAuthentication,
@@ -70,6 +71,49 @@ def _validate_common_claims(
         )
 
     return claims
+
+
+def _ensure_active_application_account(
+    subject: str,
+) -> None:
+    """
+    Vérifie l'état métier du compte Adresse GN après validation
+    cryptographique du JWT Supabase.
+
+    Sécurité :
+    - le sujet provient exclusivement du JWT Supabase validé ;
+    - un utilisateur Auth sans profil applicatif est refusé ;
+    - un profil deactivated est refusé immédiatement, même si
+      son access token Supabase n'est pas encore expiré ;
+    - aucune information de rôle métier n'est dérivée du JWT.
+    """
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT account_status
+            FROM public.profiles
+            WHERE id = %s
+            LIMIT 1
+            """,
+            [
+                subject,
+            ],
+        )
+
+        row = cursor.fetchone()
+
+    if row is None:
+        raise AuthenticationFailed(
+            "Profil utilisateur Adresse GN introuvable."
+        )
+
+    account_status = row[0]
+
+    if account_status != "active":
+        raise AuthenticationFailed(
+            "Ce compte Adresse GN est désactivé."
+        )
 
 
 def _verify_asymmetric_token(
@@ -242,7 +286,10 @@ class SupabaseJWTAuthentication(
 
     - absence de header : requête anonyme autorisée si la vue le permet ;
     - Bearer invalide : 401 ;
-    - Bearer valide : request.user devient SupabasePrincipal.
+    - Bearer valide mais profil Adresse GN absent : 401 ;
+    - Bearer valide mais compte Adresse GN désactivé : 401 ;
+    - Bearer valide et compte actif :
+      request.user devient SupabasePrincipal.
     """
 
     keyword = b"bearer"
@@ -285,10 +332,16 @@ class SupabaseJWTAuthentication(
             )
         )
 
+        subject = str(
+            claims["sub"]
+        )
+
+        _ensure_active_application_account(
+            subject
+        )
+
         principal = SupabasePrincipal(
-            id=str(
-                claims["sub"]
-            ),
+            id=subject,
             email=claims.get(
                 "email"
             ),
