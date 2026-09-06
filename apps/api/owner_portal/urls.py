@@ -11,10 +11,17 @@ from .views import (
     OwnerOrderListView,
     OwnerReportListView,
     OwnerClaimListView,
+    OwnerProfileView,
 )
 
 
 urlpatterns = [
+    path(
+        "profile/",
+        OwnerProfileView.as_view(),
+        name="owner-profile",
+    ),
+
     path(
         "reports/",
         OwnerReportListView.as_view(),

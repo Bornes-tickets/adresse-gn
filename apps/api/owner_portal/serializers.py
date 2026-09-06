@@ -82,3 +82,30 @@ class OwnerFavoriteUpdateSerializer(
         allow_null=True,
         max_length=80,
     )
+
+
+
+class OwnerProfileUpdateSerializer(
+    serializers.Serializer
+):
+    full_name = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+        max_length=120,
+    )
+
+    phone = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+        max_length=30,
+    )
+
+    def validate(self, attrs):
+        if not attrs:
+            raise serializers.ValidationError(
+                "Aucune modification fournie."
+            )
+
+        return attrs

@@ -13,16 +13,19 @@ from .serializers import (
     OwnerFavoriteCreateSerializer,
     OwnerFavoriteUpdateSerializer,
     OwnerMovingReportSerializer,
+    OwnerProfileUpdateSerializer,
 )
 from .services import (
     OwnerAddressAccessError,
     OwnerFavoriteConflictError,
     OwnerFavoriteInputError,
     OwnerFavoriteNotFoundError,
+    OwnerProfileNotFoundError,
     create_owner_favorite,
     create_owner_moving_report,
     delete_owner_favorite,
     get_owner_dashboard,
+    get_owner_profile,
     list_owner_beacons,
     list_owner_claims,
     list_owner_favorites,
@@ -31,6 +34,7 @@ from .services import (
     suspend_owner_beacon,
     update_owner_beacon,
     update_owner_favorite,
+    update_owner_profile,
 )
 
 
@@ -768,5 +772,95 @@ class OwnerClaimListView(APIView):
             {
                 "items": items,
             },
+            status=status.HTTP_200_OK,
+        )
+
+
+
+class OwnerProfileView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+    ]
+
+    @extend_schema(
+        tags=["Owner portal"],
+        description=(
+            "Retourne le profil métier "
+            "du compte connecté."
+        ),
+    )
+    def get(self, request):
+        user_id = getattr(
+            request.user,
+            "id",
+            None,
+        )
+
+        try:
+            profile = get_owner_profile(
+                user_id=user_id,
+            )
+
+        except OwnerProfileNotFoundError as exc:
+            return Response(
+                {
+                    "detail": str(exc),
+                },
+                status=(
+                    status.HTTP_404_NOT_FOUND
+                ),
+            )
+
+        return Response(
+            profile,
+            status=status.HTTP_200_OK,
+        )
+
+    @extend_schema(
+        tags=["Owner portal"],
+        request=OwnerProfileUpdateSerializer,
+        description=(
+            "Modifie uniquement le nom "
+            "et le téléphone métier "
+            "du compte connecté."
+        ),
+    )
+    def patch(self, request):
+        serializer = (
+            OwnerProfileUpdateSerializer(
+                data=request.data
+            )
+        )
+
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        user_id = getattr(
+            request.user,
+            "id",
+            None,
+        )
+
+        try:
+            result = update_owner_profile(
+                user_id=user_id,
+                changes=dict(
+                    serializer.validated_data
+                ),
+            )
+
+        except OwnerProfileNotFoundError as exc:
+            return Response(
+                {
+                    "detail": str(exc),
+                },
+                status=(
+                    status.HTTP_404_NOT_FOUND
+                ),
+            )
+
+        return Response(
+            result,
             status=status.HTTP_200_OK,
         )

@@ -1757,3 +1757,172 @@ def list_owner_claims(
         }
         for row in rows
     ]
+
+
+
+class OwnerProfileNotFoundError(Exception):
+    pass
+
+
+def get_owner_profile(
+    user_id: str,
+) -> dict[str, Any]:
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+                id,
+                full_name,
+                phone,
+                role,
+                created_at
+            FROM public.profiles
+            WHERE id = %s
+            """,
+            [user_id],
+        )
+
+        row = cursor.fetchone()
+
+    if not row:
+        raise OwnerProfileNotFoundError(
+            "Profil introuvable."
+        )
+
+    return {
+        "id": str(row[0]),
+        "full_name": (
+            row[1]
+            if row[1]
+            else None
+        ),
+        "phone": (
+            row[2]
+            if row[2]
+            else None
+        ),
+        "role": row[3],
+        "created_at": (
+            row[4].isoformat()
+            if row[4]
+            else None
+        ),
+    }
+
+
+def update_owner_profile(
+    user_id: str,
+    changes: dict[str, Any],
+) -> dict[str, Any]:
+    """
+    PATCH métier strictement partiel.
+
+    Une clé absente n'est jamais interprétée
+    comme une demande de mise à NULL.
+    """
+
+    assignments: list[str] = []
+    params: list[Any] = []
+
+    if "full_name" in changes:
+        value = changes.get(
+            "full_name"
+        )
+
+        clean_name = (
+            value.strip()
+            if isinstance(
+                value,
+                str,
+            )
+            else None
+        )
+
+        assignments.append(
+            "full_name = %s"
+        )
+
+        params.append(
+            clean_name
+            or None
+        )
+
+    if "phone" in changes:
+        value = changes.get(
+            "phone"
+        )
+
+        clean_phone = (
+            value.strip()
+            if isinstance(
+                value,
+                str,
+            )
+            else None
+        )
+
+        assignments.append(
+            "phone = %s"
+        )
+
+        params.append(
+            clean_phone
+            or None
+        )
+
+    if not assignments:
+        raise ValueError(
+            "Aucune modification fournie."
+        )
+
+    params.append(
+        user_id
+    )
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            f"""
+            UPDATE public.profiles
+            SET {", ".join(assignments)}
+            WHERE id = %s
+            RETURNING
+                id,
+                full_name,
+                phone,
+                role,
+                created_at
+            """,
+            params,
+        )
+
+        row = cursor.fetchone()
+
+    if not row:
+        raise OwnerProfileNotFoundError(
+            "Profil introuvable."
+        )
+
+    return {
+        "ok": True,
+        "status": "updated",
+        "message": "Profil mis à jour.",
+        "profile": {
+            "id": str(row[0]),
+            "full_name": (
+                row[1]
+                if row[1]
+                else None
+            ),
+            "phone": (
+                row[2]
+                if row[2]
+                else None
+            ),
+            "role": row[3],
+            "created_at": (
+                row[4].isoformat()
+                if row[4]
+                else None
+            ),
+        },
+    }

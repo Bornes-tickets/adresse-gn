@@ -539,3 +539,59 @@ export async function listOwnerClaims(
 
   return payload.items;
 }
+
+
+
+export type OwnerProfile = {
+  id: string;
+  full_name: string | null;
+  phone: string | null;
+  role: string;
+  created_at: string | null;
+};
+
+
+export function getOwnerProfile(
+  accessToken: string,
+  signal?: AbortSignal,
+) {
+  return ownerFetch<OwnerProfile>(
+    `${API_BASE_URL}/api/v1/owner/profile/`,
+    accessToken,
+    {
+      method: "GET",
+      signal,
+    },
+  );
+}
+
+
+export function updateOwnerProfile(
+  accessToken: string,
+  input: {
+    full_name: string | null;
+    phone: string | null;
+  },
+) {
+  return ownerFetch<{
+    ok: true;
+    status: "updated";
+    message: string;
+    profile: OwnerProfile;
+  }>(
+    `${API_BASE_URL}/api/v1/owner/profile/`,
+    accessToken,
+    {
+      method: "PATCH",
+
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
+
+      body: JSON.stringify(
+        input,
+      ),
+    },
+  );
+}
