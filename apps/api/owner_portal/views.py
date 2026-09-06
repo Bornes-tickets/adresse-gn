@@ -10,15 +10,24 @@ from rest_framework.views import APIView
 
 from .serializers import (
     OwnerBeaconUpdateSerializer,
+    OwnerFavoriteCreateSerializer,
+    OwnerFavoriteUpdateSerializer,
     OwnerMovingReportSerializer,
 )
 from .services import (
     OwnerAddressAccessError,
+    OwnerFavoriteConflictError,
+    OwnerFavoriteInputError,
+    OwnerFavoriteNotFoundError,
+    create_owner_favorite,
     create_owner_moving_report,
+    delete_owner_favorite,
     get_owner_dashboard,
     list_owner_beacons,
+    list_owner_favorites,
     suspend_owner_beacon,
     update_owner_beacon,
+    update_owner_favorite,
 )
 
 
@@ -370,4 +379,216 @@ class OwnerMovingReportView(APIView):
             status=(
                 status.HTTP_201_CREATED
             ),
+        )
+
+
+class OwnerFavoriteListCreateView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+    ]
+
+    @extend_schema(
+        tags=["Owner portal"],
+        description=(
+            "Liste les favoris de "
+            "l'utilisateur connecté."
+        ),
+    )
+    def get(self, request):
+        user_id = getattr(
+            request.user,
+            "id",
+            None,
+        )
+
+        items = list_owner_favorites(
+            user_id=user_id,
+        )
+
+        return Response(
+            {
+                "items": items,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    @extend_schema(
+        tags=["Owner portal"],
+        request=OwnerFavoriteCreateSerializer,
+        description=(
+            "Ajoute une Adresse GN "
+            "aux favoris du compte connecté."
+        ),
+    )
+    def post(self, request):
+        serializer = (
+            OwnerFavoriteCreateSerializer(
+                data=request.data
+            )
+        )
+
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        user_id = getattr(
+            request.user,
+            "id",
+            None,
+        )
+
+        try:
+            result = create_owner_favorite(
+                user_id=user_id,
+                raw_number=(
+                    serializer
+                    .validated_data[
+                        "number"
+                    ]
+                ),
+                alias=(
+                    serializer
+                    .validated_data
+                    .get("alias")
+                ),
+            )
+
+        except OwnerFavoriteInputError as exc:
+            return Response(
+                {
+                    "detail": str(exc),
+                },
+                status=(
+                    status.HTTP_400_BAD_REQUEST
+                ),
+            )
+
+        except OwnerFavoriteNotFoundError as exc:
+            return Response(
+                {
+                    "detail": str(exc),
+                },
+                status=(
+                    status.HTTP_404_NOT_FOUND
+                ),
+            )
+
+        except OwnerFavoriteConflictError as exc:
+            return Response(
+                {
+                    "detail": str(exc),
+                },
+                status=(
+                    status.HTTP_409_CONFLICT
+                ),
+            )
+
+        return Response(
+            result,
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class OwnerFavoriteDetailView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+    ]
+
+    @extend_schema(
+        tags=["Owner portal"],
+        request=OwnerFavoriteUpdateSerializer,
+        description=(
+            "Modifie l'alias d'un favori "
+            "appartenant au compte connecté."
+        ),
+    )
+    def patch(
+        self,
+        request,
+        favorite_id,
+    ):
+        serializer = (
+            OwnerFavoriteUpdateSerializer(
+                data=request.data
+            )
+        )
+
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        user_id = getattr(
+            request.user,
+            "id",
+            None,
+        )
+
+        try:
+            result = update_owner_favorite(
+                user_id=user_id,
+                favorite_id=str(
+                    favorite_id
+                ),
+                alias=(
+                    serializer
+                    .validated_data
+                    .get("alias")
+                ),
+            )
+
+        except OwnerFavoriteNotFoundError as exc:
+            return Response(
+                {
+                    "detail": str(exc),
+                },
+                status=(
+                    status.HTTP_404_NOT_FOUND
+                ),
+            )
+
+        return Response(
+            result,
+            status=status.HTTP_200_OK,
+        )
+
+    @extend_schema(
+        tags=["Owner portal"],
+        request=None,
+        description=(
+            "Retire un favori appartenant "
+            "au compte connecté."
+        ),
+    )
+    def delete(
+        self,
+        request,
+        favorite_id,
+    ):
+        user_id = getattr(
+            request.user,
+            "id",
+            None,
+        )
+
+        try:
+            result = delete_owner_favorite(
+                user_id=user_id,
+                favorite_id=str(
+                    favorite_id
+                ),
+            )
+
+        except OwnerFavoriteNotFoundError as exc:
+            return Response(
+                {
+                    "detail": str(exc),
+                },
+                status=(
+                    status.HTTP_404_NOT_FOUND
+                ),
+            )
+
+        return Response(
+            result,
+            status=status.HTTP_200_OK,
         )

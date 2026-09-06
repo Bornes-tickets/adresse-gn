@@ -276,3 +276,112 @@ export function getOwnerDashboard(
     },
   );
 }
+
+
+
+export type OwnerFavorite = {
+  id: string;
+  alias: string | null;
+  created_at: string | null;
+  public_number: string;
+  name: string | null;
+  category: string | null;
+};
+
+
+export async function listOwnerFavorites(
+  accessToken: string,
+  signal?: AbortSignal,
+): Promise<OwnerFavorite[]> {
+  const payload =
+    await ownerFetch<{
+      items: OwnerFavorite[];
+    }>(
+      `${API_BASE_URL}/api/v1/owner/favorites/`,
+      accessToken,
+      {
+        method: "GET",
+        signal,
+      },
+    );
+
+  return payload.items;
+}
+
+
+export function createOwnerFavorite(
+  accessToken: string,
+  input: {
+    number: string;
+    alias: string | null;
+  },
+) {
+  return ownerFetch<{
+    ok: true;
+    status: "created";
+    favorite_id: string;
+    created_at: string | null;
+    message: string;
+  }>(
+    `${API_BASE_URL}/api/v1/owner/favorites/`,
+    accessToken,
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
+
+      body: JSON.stringify(
+        input,
+      ),
+    },
+  );
+}
+
+
+export function updateOwnerFavorite(
+  accessToken: string,
+  favoriteId: string,
+  alias: string | null,
+) {
+  return ownerFetch<{
+    ok: true;
+    status: "updated";
+    message: string;
+  }>(
+    `${API_BASE_URL}/api/v1/owner/favorites/${encodeURIComponent(favoriteId)}/`,
+    accessToken,
+    {
+      method: "PATCH",
+
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
+
+      body: JSON.stringify({
+        alias,
+      }),
+    },
+  );
+}
+
+
+export function deleteOwnerFavorite(
+  accessToken: string,
+  favoriteId: string,
+) {
+  return ownerFetch<{
+    ok: true;
+    status: "deleted";
+    message: string;
+  }>(
+    `${API_BASE_URL}/api/v1/owner/favorites/${encodeURIComponent(favoriteId)}/`,
+    accessToken,
+    {
+      method: "DELETE",
+    },
+  );
+}

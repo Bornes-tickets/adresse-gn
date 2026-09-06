@@ -5,11 +5,25 @@ from .views import (
     OwnerBeaconListView,
     OwnerDashboardView,
     OwnerBeaconSuspendView,
+    OwnerFavoriteDetailView,
+    OwnerFavoriteListCreateView,
     OwnerMovingReportView,
 )
 
 
 urlpatterns = [
+    path(
+        "favorites/",
+        OwnerFavoriteListCreateView.as_view(),
+        name="owner-favorites",
+    ),
+
+    path(
+        "favorites/<uuid:favorite_id>/",
+        OwnerFavoriteDetailView.as_view(),
+        name="owner-favorite-detail",
+    ),
+
     path(
         "dashboard/",
         OwnerDashboardView.as_view(),

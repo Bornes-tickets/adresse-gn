@@ -56,3 +56,29 @@ class OwnerMovingReportSerializer(
         allow_null=True,
         max_length=1000,
     )
+
+
+class OwnerFavoriteCreateSerializer(
+    serializers.Serializer
+):
+    number = serializers.CharField(
+        max_length=32,
+    )
+
+    alias = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+        max_length=80,
+    )
+
+
+class OwnerFavoriteUpdateSerializer(
+    serializers.Serializer
+):
+    alias = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+        max_length=80,
+    )

@@ -1,3 +1,4 @@
+import re
 from datetime import timedelta
 from typing import Any
 
@@ -689,4 +690,280 @@ def get_owner_dashboard(
             }
             for item in activities
         ],
+    }
+
+
+
+class OwnerFavoriteInputError(Exception):
+    pass
+
+
+class OwnerFavoriteConflictError(Exception):
+    pass
+
+
+class OwnerFavoriteNotFoundError(Exception):
+    pass
+
+
+def _normalize_favorite_number(
+    raw_number: str,
+) -> str:
+    raw = re.sub(
+        r"\s+",
+        "",
+        raw_number.strip().upper(),
+    )
+
+    if re.fullmatch(
+        r"\d{6}",
+        raw,
+    ):
+        return (
+            f"GN-CKY-{raw}"
+        )
+
+    compact = re.sub(
+        r"[^A-Z0-9]",
+        "",
+        raw,
+    )
+
+    match = re.fullmatch(
+        r"GN([A-Z]{3})(\d{6})",
+        compact,
+    )
+
+    if match:
+        return (
+            f"GN-{match.group(1)}-"
+            f"{match.group(2)}"
+        )
+
+    return raw
+
+
+def list_owner_favorites(
+    user_id: str,
+) -> list[dict[str, Any]]:
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+                f.id,
+                f.alias,
+                f.created_at,
+                b.public_number,
+                CASE
+                    WHEN a.visibility = 'public'
+                    THEN a.name
+                    ELSE NULL
+                END,
+                a.category
+            FROM public.favorites f
+            LEFT JOIN public.beacons b
+                ON b.id = f.beacon_id
+            LEFT JOIN public.addresses a
+                ON a.beacon_id = f.beacon_id
+            WHERE f.user_id = %s
+            ORDER BY f.created_at DESC
+            """,
+            [
+                user_id,
+            ],
+        )
+
+        rows = cursor.fetchall()
+
+    return [
+        {
+            "id": str(row[0]),
+            "alias": row[1],
+            "created_at": (
+                row[2].isoformat()
+                if row[2]
+                else None
+            ),
+            "public_number": (
+                row[3]
+                or "—"
+            ),
+            "name": row[4],
+            "category": row[5],
+        }
+        for row in rows
+    ]
+
+
+@transaction.atomic
+def create_owner_favorite(
+    *,
+    user_id: str,
+    raw_number: str,
+    alias: str | None,
+) -> dict[str, Any]:
+    number = (
+        _normalize_favorite_number(
+            raw_number
+        )
+    )
+
+    if not re.fullmatch(
+        r"GN-[A-Z]{3}-\d{6}",
+        number,
+    ):
+        raise OwnerFavoriteInputError(
+            "Numéro Adresse GN invalide."
+        )
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT id
+            FROM public.beacons
+            WHERE public_number = %s
+            LIMIT 1
+            """,
+            [
+                number,
+            ],
+        )
+
+        beacon = cursor.fetchone()
+
+        if beacon is None:
+            raise OwnerFavoriteNotFoundError(
+                "Balise introuvable."
+            )
+
+        cursor.execute(
+            """
+            INSERT INTO public.favorites
+                (
+                    user_id,
+                    beacon_id,
+                    alias
+                )
+            VALUES
+                (
+                    %s,
+                    %s,
+                    %s
+                )
+            ON CONFLICT
+                (user_id, beacon_id)
+            DO NOTHING
+            RETURNING
+                id,
+                created_at
+            """,
+            [
+                user_id,
+                beacon[0],
+                _clean_optional(
+                    alias
+                ),
+            ],
+        )
+
+        created = cursor.fetchone()
+
+    if created is None:
+        raise OwnerFavoriteConflictError(
+            "Cette adresse est déjà dans vos favoris."
+        )
+
+    return {
+        "ok": True,
+        "status": "created",
+        "favorite_id": str(
+            created[0]
+        ),
+        "created_at": (
+            created[1].isoformat()
+            if created[1]
+            else None
+        ),
+        "message": (
+            "Favori enregistré."
+        ),
+    }
+
+
+@transaction.atomic
+def update_owner_favorite(
+    *,
+    user_id: str,
+    favorite_id: str,
+    alias: str | None,
+) -> dict[str, Any]:
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            UPDATE public.favorites
+            SET alias = %s
+            WHERE
+                id = %s
+                AND user_id = %s
+            RETURNING id
+            """,
+            [
+                _clean_optional(
+                    alias
+                ),
+                favorite_id,
+                user_id,
+            ],
+        )
+
+        updated = cursor.fetchone()
+
+    if updated is None:
+        raise OwnerFavoriteNotFoundError(
+            "Favori introuvable."
+        )
+
+    return {
+        "ok": True,
+        "status": "updated",
+        "message": (
+            "Alias mis à jour."
+        ),
+    }
+
+
+@transaction.atomic
+def delete_owner_favorite(
+    *,
+    user_id: str,
+    favorite_id: str,
+) -> dict[str, Any]:
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            DELETE FROM public.favorites
+            WHERE
+                id = %s
+                AND user_id = %s
+            RETURNING id
+            """,
+            [
+                favorite_id,
+                user_id,
+            ],
+        )
+
+        deleted = cursor.fetchone()
+
+    if deleted is None:
+        raise OwnerFavoriteNotFoundError(
+            "Favori introuvable."
+        )
+
+    return {
+        "ok": True,
+        "status": "deleted",
+        "message": (
+            "Favori retiré."
+        ),
     }
