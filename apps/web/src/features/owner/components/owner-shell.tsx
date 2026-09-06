@@ -153,7 +153,7 @@ export function OwnerShell({
         const returnTo =
           encodeURIComponent(
             pathname ||
-            "/mon-compte/beacons",
+            "/mon-compte",
           );
 
         router.replace(
@@ -192,7 +192,7 @@ export function OwnerShell({
               const returnTo =
                 encodeURIComponent(
                   pathname ||
-                  "/mon-compte/beacons",
+                  "/mon-compte",
                 );
 
               router.replace(
@@ -236,17 +236,17 @@ export function OwnerShell({
         className="
           flex min-h-[100dvh]
           items-center justify-center
-          bg-background
+          bg-slate-50
         "
       >
         <div
           className="
-            h-9 w-9
+            size-10
             animate-spin
             rounded-full
             border-2
-            border-muted
-            border-t-primary
+            border-blue-100
+            border-t-blue-600
           "
         />
       </div>
@@ -265,24 +265,32 @@ export function OwnerShell({
     <div
       className="
         flex min-h-[100dvh]
-        flex-col bg-background
+        flex-col
+        bg-gradient-to-br
+        from-slate-50
+        via-blue-50/40
+        to-violet-50/40
       "
     >
       <header
         className="
-          sticky top-0 z-20
-          border-b border-border
-          bg-card
+          sticky top-0 z-30
+          border-b
+          border-slate-200/80
+          bg-white/90
+          shadow-sm
+          backdrop-blur-xl
         "
       >
         <div
           className="
             mx-auto flex
-            max-w-5xl
+            w-full max-w-7xl
             items-center
             justify-between
-            gap-3
-            px-4 py-3
+            gap-4
+            px-4 py-4
+            lg:px-6
           "
         >
           <div
@@ -293,14 +301,19 @@ export function OwnerShell({
           >
             <span
               className="
-                flex size-9
+                flex size-11
                 items-center
                 justify-center
-                rounded-full
-                bg-primary
+                rounded-2xl
+                bg-gradient-to-br
+                from-blue-600
+                via-indigo-600
+                to-violet-600
                 text-sm
                 font-bold
-                text-primary-foreground
+                text-white
+                shadow-lg
+                shadow-blue-600/20
               "
             >
               {initials}
@@ -308,14 +321,15 @@ export function OwnerShell({
 
             <div
               className="
+                min-w-0
                 leading-tight
               "
             >
               <p
                 className="
                   text-sm
-                  font-medium
-                  text-foreground
+                  font-semibold
+                  text-slate-950
                 "
               >
                 Mon compte
@@ -323,10 +337,11 @@ export function OwnerShell({
 
               <p
                 className="
-                  max-w-[12rem]
+                  max-w-[15rem]
                   truncate
+                  pt-1
                   text-xs
-                  text-muted-foreground
+                  text-slate-500
                 "
               >
                 {email}
@@ -338,9 +353,22 @@ export function OwnerShell({
             variant="outline"
             size="sm"
             onClick={signOut}
+            className="
+              rounded-xl
+              border-slate-200
+              bg-white
+              px-4
+              shadow-sm
+              transition
+              hover:border-blue-200
+              hover:bg-blue-50
+              hover:text-blue-700
+            "
           >
             <LogOut
-              className="size-4"
+              className="
+                size-4
+              "
             />
 
             <span
@@ -357,66 +385,114 @@ export function OwnerShell({
       <div
         className="
           mx-auto flex
-          w-full max-w-5xl
-          flex-1 gap-6
+          w-full max-w-7xl
+          flex-1
+          gap-7
           px-4 py-6
+          lg:px-6 lg:py-8
         "
       >
-        <nav
+        <aside
           className="
-            hidden w-56
+            hidden w-60
             shrink-0
-            flex-col gap-1
-            md:flex
+            md:block
           "
         >
-          {SECTIONS.map(
-            ({
-              href,
-              label,
-              icon: Icon,
-              exact,
-            }) => {
-              const active =
-                isActive(
-                  pathname,
-                  href,
-                  exact,
-                );
+          <nav
+            className="
+              sticky top-28
+              space-y-1.5
+              rounded-2xl
+              border
+              border-white/80
+              bg-white/75
+              p-2
+              shadow-sm
+              backdrop-blur
+            "
+          >
+            {SECTIONS.map(
+              ({
+                href,
+                label,
+                icon: Icon,
+                exact,
+              }) => {
+                const active =
+                  isActive(
+                    pathname,
+                    href,
+                    exact,
+                  );
 
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  className={cn(
-                    `
-                      flex
-                      items-center
-                      gap-2
-                      rounded-md
-                      px-3 py-2
-                      text-sm
-                      text-muted-foreground
-                      hover:bg-muted
-                    `,
-                    active &&
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={cn(
                       `
-                        bg-muted
+                        group flex
+                        items-center
+                        gap-3
+                        rounded-xl
+                        px-3.5 py-3
+                        text-sm
                         font-medium
-                        text-foreground
+                        text-slate-500
+                        transition-all
+                        duration-200
+                        hover:bg-slate-50
+                        hover:text-slate-900
                       `,
-                  )}
-                >
-                  <Icon
-                    className="size-4"
-                  />
+                      active &&
+                        `
+                          bg-gradient-to-r
+                          from-blue-50
+                          to-indigo-50
+                          text-blue-700
+                          shadow-sm
+                          ring-1
+                          ring-blue-100
+                        `,
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        `
+                          flex size-8
+                          items-center
+                          justify-center
+                          rounded-lg
+                          text-slate-400
+                          transition
+                          group-hover:bg-white
+                          group-hover:text-slate-700
+                        `,
+                        active &&
+                          `
+                            bg-white
+                            text-blue-600
+                            shadow-sm
+                          `,
+                      )}
+                    >
+                      <Icon
+                        className="
+                          size-[17px]
+                        "
+                      />
+                    </span>
 
-                  {label}
-                </Link>
-              );
-            },
-          )}
-        </nav>
+                    <span>
+                      {label}
+                    </span>
+                  </Link>
+                );
+              },
+            )}
+          </nav>
+        </aside>
 
         <main
           className="
@@ -433,9 +509,12 @@ export function OwnerShell({
       <nav
         className="
           fixed inset-x-0
-          bottom-0 z-20
-          border-t border-border
-          bg-card
+          bottom-0 z-30
+          border-t
+          border-slate-200
+          bg-white/95
+          shadow-[0_-8px_30px_rgba(15,23,42,0.06)]
+          backdrop-blur-xl
           md:hidden
         "
         style={{
@@ -470,20 +549,37 @@ export function OwnerShell({
                     `
                       flex flex-col
                       items-center
-                      gap-1 py-2
+                      gap-1 py-2.5
                       text-[10px]
-                      text-muted-foreground
+                      font-medium
+                      text-slate-400
                     `,
                     active &&
                       `
-                        font-medium
-                        text-primary
+                        text-blue-600
                       `,
                   )}
                 >
-                  <Icon
-                    className="size-5"
-                  />
+                  <span
+                    className={cn(
+                      `
+                        flex size-8
+                        items-center
+                        justify-center
+                        rounded-xl
+                      `,
+                      active &&
+                        `
+                          bg-blue-50
+                        `,
+                    )}
+                  >
+                    <Icon
+                      className="
+                        size-[18px]
+                      "
+                    />
+                  </span>
 
                   {mobileLabel}
                 </Link>

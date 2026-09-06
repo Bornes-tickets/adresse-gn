@@ -15,10 +15,68 @@ from .serializers import (
 from .services import (
     OwnerAddressAccessError,
     create_owner_moving_report,
+    get_owner_dashboard,
     list_owner_beacons,
     suspend_owner_beacon,
     update_owner_beacon,
 )
+
+
+
+
+class OwnerDashboardView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+    ]
+
+    @extend_schema(
+        tags=["Owner portal"],
+        description=(
+            "Retourne le tableau de bord "
+            "du propriétaire connecté."
+        ),
+    )
+    def get(self, request):
+        user_id = getattr(
+            request.user,
+            "id",
+            None,
+        )
+
+        if not user_id:
+            return Response(
+                {
+                    "detail": (
+                        "Authentification requise."
+                    ),
+                },
+                status=(
+                    status.HTTP_401_UNAUTHORIZED
+                ),
+            )
+
+        try:
+            result = get_owner_dashboard(
+                user_id=user_id,
+            )
+
+        except Exception:
+            return Response(
+                {
+                    "detail": (
+                        "Impossible de charger "
+                        "le tableau de bord."
+                    ),
+                },
+                status=(
+                    status.HTTP_500_INTERNAL_SERVER_ERROR
+                ),
+            )
+
+        return Response(
+            result,
+            status=status.HTTP_200_OK,
+        )
 
 
 class OwnerBeaconListView(APIView):

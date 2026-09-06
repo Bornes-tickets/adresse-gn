@@ -246,3 +246,33 @@ export function createOwnerMovingReport(
     },
   );
 }
+
+
+export type OwnerActivity = {
+  label: string;
+  detail: string;
+  at: string;
+};
+
+
+export type OwnerDashboard = {
+  beaconCount: number;
+  searches30d: number;
+  routes30d: number;
+  activities: OwnerActivity[];
+};
+
+
+export function getOwnerDashboard(
+  accessToken: string,
+  signal?: AbortSignal,
+) {
+  return ownerFetch<OwnerDashboard>(
+    `${API_BASE_URL}/api/v1/owner/dashboard/`,
+    accessToken,
+    {
+      method: "GET",
+      signal,
+    },
+  );
+}

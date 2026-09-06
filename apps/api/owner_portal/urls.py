@@ -3,12 +3,19 @@ from django.urls import path
 from .views import (
     OwnerBeaconDetailView,
     OwnerBeaconListView,
+    OwnerDashboardView,
     OwnerBeaconSuspendView,
     OwnerMovingReportView,
 )
 
 
 urlpatterns = [
+    path(
+        "dashboard/",
+        OwnerDashboardView.as_view(),
+        name="owner-dashboard",
+    ),
+
     path(
         "beacons/",
         OwnerBeaconListView.as_view(),

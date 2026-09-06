@@ -438,3 +438,255 @@ def create_owner_moving_report(
             "notre équipe vous contactera."
         ),
     }
+
+def get_owner_dashboard(
+    user_id: str,
+) -> dict[str, Any]:
+    """
+    Reconstruit exactement le tableau de bord historique
+    du portail propriétaire.
+
+    Sécurité :
+    - l'identifiant utilisateur provient exclusivement du JWT ;
+    - seules les adresses dont owner_id = user_id sont prises en compte ;
+    - search_logs et route_logs sont limités aux balises possédées.
+    """
+
+    # --------------------------------------------------------
+    # Balises possédées
+    # --------------------------------------------------------
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+                a.beacon_id,
+                COALESCE(
+                    b.public_number,
+                    '—'
+                )
+            FROM public.addresses a
+            LEFT JOIN public.beacons b
+                ON b.id = a.beacon_id
+            WHERE a.owner_id = %s
+            ORDER BY a.created_at DESC
+            """,
+            [
+                user_id,
+            ],
+        )
+
+        owned_rows = (
+            cursor.fetchall()
+        )
+
+    beacon_count = len(
+        owned_rows
+    )
+
+    beacon_ids = [
+        str(row[0])
+        for row in owned_rows
+        if row[0] is not None
+    ]
+
+    number_by_beacon = {
+        str(row[0]): row[1]
+        for row in owned_rows
+        if row[0] is not None
+    }
+
+    if not beacon_ids:
+        return {
+            "beaconCount": 0,
+            "searches30d": 0,
+            "routes30d": 0,
+            "activities": [],
+        }
+
+    placeholders = ",".join(
+        ["%s"] * len(beacon_ids)
+    )
+
+    since = (
+        timezone.now()
+        - timedelta(days=30)
+    )
+
+    # --------------------------------------------------------
+    # Recherches des 30 derniers jours
+    # --------------------------------------------------------
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            f"""
+            SELECT COUNT(*)
+            FROM public.search_logs
+            WHERE
+                beacon_id_found IN (
+                    {placeholders}
+                )
+                AND created_at >= %s
+            """,
+            [
+                *beacon_ids,
+                since,
+            ],
+        )
+
+        searches_30d = int(
+            cursor.fetchone()[0]
+        )
+
+        cursor.execute(
+            f"""
+            SELECT
+                beacon_id_found,
+                created_at
+            FROM public.search_logs
+            WHERE
+                beacon_id_found IN (
+                    {placeholders}
+                )
+                AND created_at >= %s
+            ORDER BY created_at DESC
+            LIMIT 3
+            """,
+            [
+                *beacon_ids,
+                since,
+            ],
+        )
+
+        recent_searches = (
+            cursor.fetchall()
+        )
+
+    # --------------------------------------------------------
+    # Itinéraires des 30 derniers jours
+    # --------------------------------------------------------
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            f"""
+            SELECT COUNT(*)
+            FROM public.route_logs
+            WHERE
+                beacon_id IN (
+                    {placeholders}
+                )
+                AND launched_at >= %s
+            """,
+            [
+                *beacon_ids,
+                since,
+            ],
+        )
+
+        routes_30d = int(
+            cursor.fetchone()[0]
+        )
+
+        cursor.execute(
+            f"""
+            SELECT
+                beacon_id,
+                provider,
+                launched_at
+            FROM public.route_logs
+            WHERE
+                beacon_id IN (
+                    {placeholders}
+                )
+                AND launched_at >= %s
+            ORDER BY launched_at DESC
+            LIMIT 3
+            """,
+            [
+                *beacon_ids,
+                since,
+            ],
+        )
+
+        recent_routes = (
+            cursor.fetchall()
+        )
+
+    # --------------------------------------------------------
+    # Dernières activités
+    #
+    # Comportement historique :
+    # 1. prendre max 3 recherches ;
+    # 2. prendre max 3 itinéraires ;
+    # 3. fusionner ;
+    # 4. trier par date décroissante ;
+    # 5. conserver seulement les 3 plus récentes.
+    # --------------------------------------------------------
+
+    activities: list[
+        dict[str, Any]
+    ] = []
+
+    for (
+        beacon_id,
+        created_at,
+    ) in recent_searches:
+        activities.append(
+            {
+                "label": "Recherche",
+                "detail": (
+                    number_by_beacon.get(
+                        str(beacon_id),
+                        "—",
+                    )
+                ),
+                "at": created_at,
+            }
+        )
+
+    for (
+        beacon_id,
+        provider,
+        launched_at,
+    ) in recent_routes:
+        activities.append(
+            {
+                "label": (
+                    "Itinéraire "
+                    f"({provider or '—'})"
+                ),
+                "detail": (
+                    number_by_beacon.get(
+                        str(beacon_id),
+                        "—",
+                    )
+                ),
+                "at": launched_at,
+            }
+        )
+
+    activities.sort(
+        key=lambda item: item["at"],
+        reverse=True,
+    )
+
+    activities = (
+        activities[:3]
+    )
+
+    return {
+        "beaconCount": beacon_count,
+        "searches30d": searches_30d,
+        "routes30d": routes_30d,
+        "activities": [
+            {
+                "label": item["label"],
+                "detail": item["detail"],
+                "at": (
+                    item["at"]
+                    .isoformat()
+                ),
+            }
+            for item in activities
+        ],
+    }
