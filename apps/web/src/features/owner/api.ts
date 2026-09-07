@@ -595,3 +595,35 @@ export function updateOwnerProfile(
     },
   );
 }
+
+export type OwnerAccountDeactivationResult = {
+  ok: true;
+  status: "deactivated";
+  deactivated_at: string;
+  audit_id: string;
+  push_subscriptions_revoked: number;
+  sessions_revoked: boolean;
+  message: string;
+};
+
+
+export function deactivateOwnerAccount(
+  accessToken: string,
+) {
+  return ownerFetch<OwnerAccountDeactivationResult>(
+    `${API_BASE_URL}/api/v1/owner/account/deactivate/`,
+    accessToken,
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
+
+      body: JSON.stringify({
+        confirm: "DESACTIVER",
+      }),
+    },
+  );
+}

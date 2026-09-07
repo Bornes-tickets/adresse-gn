@@ -7,9 +7,11 @@ import {
 } from "react";
 
 import {
+  CircleOff,
   CircleUserRound,
   LockKeyhole,
   Save,
+  ShieldAlert,
   Sparkles,
 } from "lucide-react";
 
@@ -22,6 +24,15 @@ import {
 } from "@/components/ui/button";
 
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
+import {
   Input,
 } from "@/components/ui/input";
 
@@ -31,9 +42,11 @@ import {
 
 import {
   getAccessToken,
+  supabase,
 } from "@/lib/supabase/browser";
 
 import {
+  deactivateOwnerAccount,
   getOwnerProfile,
   OwnerApiError,
   updateOwnerProfile,
@@ -52,6 +65,11 @@ export function OwnerSettingsPage() {
   ] = useState("");
 
   const [
+    role,
+    setRole,
+  ] = useState("");
+
+  const [
     loading,
     setLoading,
   ] = useState(true);
@@ -59,6 +77,21 @@ export function OwnerSettingsPage() {
   const [
     saving,
     setSaving,
+  ] = useState(false);
+
+  const [
+    deactivationOpen,
+    setDeactivationOpen,
+  ] = useState(false);
+
+  const [
+    deactivationConfirmation,
+    setDeactivationConfirmation,
+  ] = useState("");
+
+  const [
+    deactivating,
+    setDeactivating,
   ] = useState(false);
 
 
@@ -90,8 +123,13 @@ export function OwnerSettingsPage() {
             setFullName(
               result.full_name ?? "",
             );
+
             setPhone(
               result.phone ?? "",
+            );
+
+            setRole(
+              result.role,
             );
           }
 
@@ -191,6 +229,75 @@ export function OwnerSettingsPage() {
       setSaving(false);
     }
   }
+
+
+  async function deactivateAccount() {
+    if (
+      deactivationConfirmation
+      !== "DESACTIVER"
+    ) {
+      return;
+    }
+
+    setDeactivating(true);
+
+    try {
+      const token =
+        await getAccessToken();
+
+      if (!token) {
+        window.location.href =
+          "/login?returnTo=%2Fmon-compte%2Fsettings";
+
+        return;
+      }
+
+      const result =
+        await deactivateOwnerAccount(
+          token,
+        );
+
+      const {
+        error: signOutError,
+      } =
+        await supabase.auth.signOut({
+          scope: "local",
+        });
+
+      if (signOutError) {
+        console.warn(
+          "Nettoyage local Supabase incomplet après désactivation.",
+          signOutError,
+        );
+      }
+
+      const destination =
+        result.sessions_revoked
+          ? "/?account=deactivated"
+          : "/?account=deactivated&sessions=unconfirmed";
+
+      window.location.replace(
+        destination,
+      );
+
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Impossible de désactiver le compte.",
+      );
+
+      setDeactivating(false);
+    }
+  }
+
+
+  const canSelfDeactivate =
+    role === "user";
+
+  const confirmationValid =
+    deactivationConfirmation
+    === "DESACTIVER";
 
 
   if (loading) {
@@ -362,9 +469,7 @@ export function OwnerSettingsPage() {
           "
         >
           <div
-            className="
-              space-y-2
-            "
+            className="space-y-2"
           >
             <Label
               htmlFor="owner-full-name"
@@ -378,7 +483,7 @@ export function OwnerSettingsPage() {
               onChange={
                 (event) =>
                   setFullName(
-                    event.target.value
+                    event.target.value,
                   )
               }
               maxLength={120}
@@ -388,9 +493,7 @@ export function OwnerSettingsPage() {
 
 
           <div
-            className="
-              space-y-2
-            "
+            className="space-y-2"
           >
             <Label
               htmlFor="owner-phone"
@@ -404,7 +507,7 @@ export function OwnerSettingsPage() {
               onChange={
                 (event) =>
                   setPhone(
-                    event.target.value
+                    event.target.value,
                   )
               }
               maxLength={30}
@@ -421,7 +524,7 @@ export function OwnerSettingsPage() {
             >
               Téléphone de contact du profil.
               Il ne modifie pas votre méthode
-              d'authentification.
+              d&apos;authentification.
             </p>
           </div>
         </div>
@@ -455,7 +558,6 @@ export function OwnerSettingsPage() {
                 : "Enregistrer"
             }
           </Button>
-
         </div>
       </section>
 
@@ -523,6 +625,351 @@ export function OwnerSettingsPage() {
           </div>
         </div>
       </section>
-</div>
+
+
+      <section
+        className="
+          overflow-hidden
+          rounded-3xl
+          border
+          border-red-200/80
+          bg-gradient-to-br
+          from-white
+          via-white
+          to-red-50/70
+          shadow-sm
+        "
+      >
+        <div
+          className="
+            flex flex-col
+            gap-5
+            p-5
+            sm:flex-row
+            sm:items-center
+            sm:justify-between
+            sm:p-6
+          "
+        >
+          <div
+            className="
+              flex
+              items-start
+              gap-3
+            "
+          >
+            <span
+              className="
+                flex size-11
+                shrink-0
+                items-center
+                justify-center
+                rounded-2xl
+                bg-red-100
+                text-red-600
+              "
+            >
+              <ShieldAlert
+                className="size-5"
+              />
+            </span>
+
+            <div>
+              <div
+                className="
+                  mb-1.5
+                  text-xs
+                  font-semibold
+                  uppercase
+                  tracking-[0.16em]
+                  text-red-600
+                "
+              >
+                Zone sensible
+              </div>
+
+              <h2
+                className="
+                  font-semibold
+                  text-slate-950
+                "
+              >
+                Désactivation du compte
+              </h2>
+
+              <p
+                className="
+                  mt-1
+                  max-w-2xl
+                  text-sm
+                  leading-6
+                  text-slate-600
+                "
+              >
+                La désactivation bloque
+                l&apos;accès privé à votre compte.
+                Vos adresses, commandes,
+                réclamations et historiques
+                restent conservés.
+              </p>
+
+              {!canSelfDeactivate && (
+                <p
+                  className="
+                    mt-3
+                    inline-flex
+                    rounded-full
+                    bg-amber-100
+                    px-3 py-1.5
+                    text-xs
+                    font-semibold
+                    text-amber-800
+                  "
+                >
+                  La désactivation libre-service
+                  n&apos;est pas disponible pour ce rôle.
+                </p>
+              )}
+            </div>
+          </div>
+
+          {canSelfDeactivate && (
+            <Button
+              type="button"
+              variant="outline"
+              className="
+                shrink-0
+                rounded-xl
+                border-red-200
+                bg-white
+                text-red-700
+                shadow-sm
+                hover:border-red-300
+                hover:bg-red-50
+                hover:text-red-800
+              "
+              onClick={
+                () => {
+                  setDeactivationConfirmation(
+                    "",
+                  );
+
+                  setDeactivationOpen(
+                    true,
+                  );
+                }
+              }
+            >
+              <CircleOff
+                className="size-4"
+              />
+
+              Désactiver mon compte
+            </Button>
+          )}
+        </div>
+      </section>
+
+
+      <Dialog
+        open={deactivationOpen}
+        onOpenChange={
+          (open) => {
+            if (deactivating) {
+              return;
+            }
+
+            setDeactivationOpen(
+              open,
+            );
+
+            if (!open) {
+              setDeactivationConfirmation(
+                "",
+              );
+            }
+          }
+        }
+      >
+        <DialogContent
+          className="
+            overflow-hidden
+            rounded-3xl
+            border-red-100
+            p-0
+            sm:max-w-lg
+          "
+        >
+          <div
+            className="
+              bg-gradient-to-br
+              from-red-50
+              to-orange-50
+              px-6 py-5
+            "
+          >
+            <div
+              className="
+                flex
+                items-start
+                gap-3
+              "
+            >
+              <span
+                className="
+                  flex size-11
+                  shrink-0
+                  items-center
+                  justify-center
+                  rounded-2xl
+                  bg-red-100
+                  text-red-600
+                "
+              >
+                <ShieldAlert
+                  className="size-5"
+                />
+              </span>
+
+              <DialogHeader
+                className="
+                  space-y-1
+                  text-left
+                "
+              >
+                <DialogTitle
+                  className="
+                    text-xl
+                    text-slate-950
+                  "
+                >
+                  Désactiver votre compte ?
+                </DialogTitle>
+
+                <DialogDescription
+                  className="
+                    leading-6
+                    text-slate-600
+                  "
+                >
+                  Vous serez déconnecté et
+                  l&apos;accès privé Adresse GN sera
+                  bloqué. Vos données métier ne
+                  seront pas supprimées.
+                </DialogDescription>
+              </DialogHeader>
+            </div>
+          </div>
+
+          <div
+            className="
+              space-y-5
+              px-6 pb-6
+            "
+          >
+            <div
+              className="
+                rounded-2xl
+                border
+                border-slate-200
+                bg-slate-50
+                p-4
+                text-sm
+                leading-6
+                text-slate-600
+              "
+            >
+              Pour confirmer, saisissez
+              exactement{" "}
+              <strong
+                className="
+                  font-semibold
+                  text-slate-950
+                "
+              >
+                DESACTIVER
+              </strong>.
+            </div>
+
+            <div
+              className="space-y-2"
+            >
+              <Label
+                htmlFor="deactivation-confirmation"
+              >
+                Confirmation
+              </Label>
+
+              <Input
+                id="deactivation-confirmation"
+                value={
+                  deactivationConfirmation
+                }
+                onChange={
+                  (event) => {
+                    setDeactivationConfirmation(
+                      event.target.value,
+                    );
+                  }
+                }
+                disabled={deactivating}
+                autoComplete="off"
+                placeholder="DESACTIVER"
+              />
+            </div>
+
+            <DialogFooter
+              className="
+                gap-2
+                sm:space-x-0
+              "
+            >
+              <Button
+                type="button"
+                variant="outline"
+                disabled={deactivating}
+                onClick={
+                  () => {
+                    setDeactivationOpen(
+                      false,
+                    );
+                  }
+                }
+              >
+                Annuler
+              </Button>
+
+              <Button
+                type="button"
+                disabled={
+                  !confirmationValid
+                  || deactivating
+                }
+                className="
+                  bg-red-600
+                  text-white
+                  hover:bg-red-700
+                "
+                onClick={
+                  () => {
+                    void deactivateAccount();
+                  }
+                }
+              >
+                <CircleOff
+                  className="size-4"
+                />
+
+                {
+                  deactivating
+                    ? "Désactivation…"
+                    : "Confirmer la désactivation"
+                }
+              </Button>
+            </DialogFooter>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
