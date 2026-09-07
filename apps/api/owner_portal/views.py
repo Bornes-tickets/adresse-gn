@@ -2,6 +2,9 @@ from drf_spectacular.utils import (
     extend_schema,
 )
 from rest_framework import status
+from rest_framework.authentication import (
+    get_authorization_header,
+)
 from rest_framework.permissions import (
     IsAuthenticated,
 )
@@ -9,6 +12,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .serializers import (
+    OwnerAccountDeactivateSerializer,
     OwnerBeaconUpdateSerializer,
     OwnerFavoriteCreateSerializer,
     OwnerFavoriteUpdateSerializer,
@@ -16,13 +20,18 @@ from .serializers import (
     OwnerProfileUpdateSerializer,
 )
 from .services import (
+    OwnerAccountAlreadyDeactivatedError,
+    OwnerAccountDeactivationForbiddenError,
+    OwnerAccountSubscriptionActiveError,
     OwnerAddressAccessError,
     OwnerFavoriteConflictError,
     OwnerFavoriteInputError,
     OwnerFavoriteNotFoundError,
     OwnerProfileNotFoundError,
+    OwnerSessionRevocationError,
     create_owner_favorite,
     create_owner_moving_report,
+    deactivate_owner_account,
     delete_owner_favorite,
     get_owner_dashboard,
     get_owner_profile,
@@ -31,6 +40,7 @@ from .services import (
     list_owner_favorites,
     list_owner_orders,
     list_owner_reports,
+    revoke_owner_supabase_sessions,
     suspend_owner_beacon,
     update_owner_beacon,
     update_owner_favorite,
@@ -862,5 +872,118 @@ class OwnerProfileView(APIView):
 
         return Response(
             result,
+            status=status.HTTP_200_OK,
+        )
+
+
+class OwnerAccountDeactivateView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+    ]
+
+    @extend_schema(
+        tags=["Owner portal"],
+        request=OwnerAccountDeactivateSerializer,
+        description=(
+            "Désactive le compte utilisateur connecté "
+            "sans supprimer ses données métier."
+        ),
+    )
+    def post(self, request):
+        serializer = OwnerAccountDeactivateSerializer(
+            data=request.data
+        )
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        user_id = getattr(
+            request.user,
+            "id",
+            None,
+        )
+
+        if not user_id:
+            return Response(
+                {
+                    "detail": "Authentification requise.",
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        authorization = get_authorization_header(
+            request
+        ).split()
+
+        if (
+            len(authorization) != 2
+            or authorization[0].lower() != b"bearer"
+        ):
+            return Response(
+                {
+                    "detail": "Jeton de session introuvable.",
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        try:
+            access_token = authorization[1].decode(
+                "utf-8"
+            )
+        except UnicodeError:
+            return Response(
+                {
+                    "detail": "Jeton de session invalide.",
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        try:
+            result = deactivate_owner_account(
+                user_id=user_id,
+            )
+        except OwnerProfileNotFoundError as exc:
+            return Response(
+                {"detail": str(exc)},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except OwnerAccountDeactivationForbiddenError as exc:
+            return Response(
+                {"detail": str(exc)},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        except OwnerAccountSubscriptionActiveError as exc:
+            return Response(
+                {"detail": str(exc)},
+                status=status.HTTP_409_CONFLICT,
+            )
+        except OwnerAccountAlreadyDeactivatedError as exc:
+            return Response(
+                {"detail": str(exc)},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        sessions_revoked = True
+
+        try:
+            revoke_owner_supabase_sessions(
+                access_token=access_token,
+            )
+        except OwnerSessionRevocationError:
+            sessions_revoked = False
+
+        return Response(
+            {
+                **result,
+                "sessions_revoked": sessions_revoked,
+                "message": (
+                    "Compte désactivé."
+                    if sessions_revoked
+                    else (
+                        "Compte désactivé. La révocation distante "
+                        "des sessions n'a pas pu être confirmée."
+                    )
+                ),
+            },
             status=status.HTTP_200_OK,
         )

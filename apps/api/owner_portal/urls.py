@@ -12,10 +12,17 @@ from .views import (
     OwnerReportListView,
     OwnerClaimListView,
     OwnerProfileView,
+    OwnerAccountDeactivateView,
 )
 
 
 urlpatterns = [
+    path(
+        "account/deactivate/",
+        OwnerAccountDeactivateView.as_view(),
+        name="owner-account-deactivate",
+    ),
+
     path(
         "profile/",
         OwnerProfileView.as_view(),

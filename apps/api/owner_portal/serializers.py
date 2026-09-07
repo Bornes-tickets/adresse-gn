@@ -109,3 +109,19 @@ class OwnerProfileUpdateSerializer(
             )
 
         return attrs
+
+
+class OwnerAccountDeactivateSerializer(
+    serializers.Serializer
+):
+    confirm = serializers.CharField(
+        max_length=20,
+    )
+
+    def validate_confirm(self, value):
+        if value != "DESACTIVER":
+            raise serializers.ValidationError(
+                "Saisissez DESACTIVER pour confirmer."
+            )
+
+        return value

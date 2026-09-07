@@ -1926,3 +1926,233 @@ def update_owner_profile(
             ),
         },
     }
+
+
+class OwnerAccountDeactivationForbiddenError(Exception):
+    pass
+
+
+class OwnerAccountSubscriptionActiveError(Exception):
+    pass
+
+
+class OwnerAccountAlreadyDeactivatedError(Exception):
+    pass
+
+
+class OwnerSessionRevocationError(Exception):
+    pass
+
+
+@transaction.atomic
+def deactivate_owner_account(
+    *,
+    user_id: str,
+) -> dict[str, Any]:
+    """
+    Désactive le compte Adresse GN sans supprimer les données métier.
+    Le self-service est strictement réservé au rôle user.
+    """
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+                id,
+                role,
+                account_status,
+                deactivated_at
+            FROM public.profiles
+            WHERE id = %s
+            FOR UPDATE
+            """,
+            [user_id],
+        )
+        profile = cursor.fetchone()
+
+    if profile is None:
+        raise OwnerProfileNotFoundError(
+            "Profil introuvable."
+        )
+
+    profile_id, role, account_status, _ = profile
+
+    if role != "user":
+        raise OwnerAccountDeactivationForbiddenError(
+            "La désactivation en libre-service est réservée "
+            "aux comptes utilisateur."
+        )
+
+    if account_status != "active":
+        raise OwnerAccountAlreadyDeactivatedError(
+            "Ce compte est déjà désactivé."
+        )
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT EXISTS (
+                SELECT 1
+                FROM public.subscriptions
+                WHERE
+                    customer_id = %s
+                    AND status = 'active'
+                    AND auto_renew IS TRUE
+            )
+            """,
+            [user_id],
+        )
+        active_auto_renew = bool(
+            cursor.fetchone()[0]
+        )
+
+    if active_auto_renew:
+        raise OwnerAccountSubscriptionActiveError(
+            "Un abonnement avec renouvellement automatique est encore actif. "
+            "Annulez-le avant de désactiver le compte."
+        )
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            UPDATE public.profiles
+            SET
+                account_status = 'deactivated',
+                deactivated_at = NOW()
+            WHERE
+                id = %s
+                AND account_status = 'active'
+            RETURNING deactivated_at
+            """,
+            [user_id],
+        )
+        updated = cursor.fetchone()
+
+    if updated is None:
+        raise OwnerAccountAlreadyDeactivatedError(
+            "Ce compte est déjà désactivé."
+        )
+
+    deactivated_at = updated[0]
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            DELETE FROM public.push_subscriptions
+            WHERE user_id = %s
+            """,
+            [user_id],
+        )
+        revoked_push_count = int(
+            cursor.rowcount
+        )
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            INSERT INTO public.audit_logs
+                (
+                    actor_id,
+                    action,
+                    entity,
+                    entity_id,
+                    before,
+                    after
+                )
+            VALUES
+                (
+                    %s,
+                    'account_deactivated',
+                    'profile',
+                    %s,
+                    jsonb_build_object(
+                        'account_status',
+                        'active',
+                        'deactivated_at',
+                        NULL
+                    ),
+                    jsonb_build_object(
+                        'account_status',
+                        'deactivated',
+                        'deactivated_at',
+                        %s
+                    )
+                )
+            RETURNING id
+            """,
+            [
+                user_id,
+                profile_id,
+                deactivated_at,
+            ],
+        )
+        audit_id = cursor.fetchone()[0]
+
+    return {
+        "ok": True,
+        "status": "deactivated",
+        "deactivated_at": deactivated_at.isoformat(),
+        "audit_id": str(audit_id),
+        "push_subscriptions_revoked": revoked_push_count,
+    }
+
+
+def revoke_owner_supabase_sessions(
+    *,
+    access_token: str,
+) -> None:
+    """
+    Révoque globalement les sessions Supabase du JWT utilisateur fourni.
+    Django + RLS restent la protection immédiate des JWT déjà émis.
+    """
+
+    from urllib.error import (
+        HTTPError,
+        URLError,
+    )
+    from urllib.request import (
+        Request,
+        urlopen,
+    )
+
+    from django.conf import settings
+
+    token = str(
+        access_token
+        or ""
+    ).strip()
+
+    if not token:
+        raise OwnerSessionRevocationError(
+            "Jeton Supabase absent."
+        )
+
+    request = Request(
+        (
+            f"{settings.SUPABASE_URL}"
+            "/auth/v1/logout?scope=global"
+        ),
+        data=b"",
+        headers={
+            "Accept": "application/json",
+            "apikey": settings.SUPABASE_PUBLISHABLE_KEY,
+            "Authorization": f"Bearer {token}",
+        },
+        method="POST",
+    )
+
+    try:
+        with urlopen(
+            request,
+            timeout=8,
+        ) as response:
+            response.read()
+
+    except (
+        HTTPError,
+        URLError,
+        TimeoutError,
+    ) as exc:
+        raise OwnerSessionRevocationError(
+            "Impossible de révoquer les sessions Supabase."
+        ) from exc
