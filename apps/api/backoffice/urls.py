@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .views import (
+    AccountListView,
     AccountReactivateView,
     BackofficeMeView,
     ClaimDecisionView,
@@ -34,5 +35,13 @@ urlpatterns += [
         "accounts/<uuid:user_id>/reactivate/",
         AccountReactivateView.as_view(),
         name="backoffice-account-reactivate",
+    ),
+]
+
+urlpatterns += [
+    path(
+        "accounts/",
+        AccountListView.as_view(),
+        name="backoffice-accounts",
     ),
 ]

@@ -132,3 +132,163 @@ def reactivate_account(
         "verification_method": method,
         "message": "Compte réactivé. L'utilisateur peut se reconnecter.",
     }
+
+VALID_ACCOUNT_STATUS_FILTERS = {
+    "active",
+    "deactivated",
+}
+
+
+def _mask_email(
+    value: str | None,
+) -> str | None:
+    if not value or "@" not in value:
+        return None
+
+    local, domain = value.split("@", 1)
+    local_masked = (
+        local[:1] + "***"
+        if len(local) <= 2
+        else local[:2] + "***"
+    )
+    return local_masked + "@" + domain
+
+
+def list_accounts(
+    *,
+    status_filter: str | None,
+    query: str | None,
+) -> dict[str, Any]:
+    normalized_status = (
+        status_filter or "deactivated"
+    ).strip()
+
+    if (
+        normalized_status != "all"
+        and normalized_status
+        not in VALID_ACCOUNT_STATUS_FILTERS
+    ):
+        raise ValueError(
+            "Statut de compte invalide."
+        )
+
+    q = (query or "").strip()[:120]
+
+    where_parts = [
+        "p.role = 'user'",
+    ]
+    params: list[Any] = []
+
+    if normalized_status != "all":
+        where_parts.append(
+            "p.account_status = %s"
+        )
+        params.append(normalized_status)
+
+    if q:
+        like = f"%{q}%"
+        where_parts.append(
+            """
+            (
+                p.id::text ILIKE %s
+                OR COALESCE(p.full_name, '') ILIKE %s
+                OR COALESCE(p.phone, '') ILIKE %s
+                OR COALESCE(u.email, '') ILIKE %s
+            )
+            """
+        )
+        params.extend(
+            [like, like, like, like]
+        )
+
+    where_sql = " AND ".join(
+        where_parts
+    )
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            f"""
+            SELECT
+                p.id,
+                p.full_name,
+                p.phone,
+                p.role,
+                p.account_status,
+                p.deactivated_at,
+                u.email
+            FROM public.profiles p
+            LEFT JOIN auth.users u
+                ON u.id = p.id
+            WHERE {where_sql}
+            ORDER BY
+                CASE
+                    WHEN p.account_status = 'deactivated'
+                    THEN 0
+                    ELSE 1
+                END,
+                p.deactivated_at DESC NULLS LAST,
+                p.id
+            LIMIT 100
+            """,
+            params,
+        )
+        rows = cursor.fetchall()
+
+    items = []
+
+    for row in rows:
+        (
+            profile_id,
+            full_name,
+            phone,
+            role,
+            account_status,
+            deactivated_at,
+            email,
+        ) = row
+
+        items.append(
+            {
+                "id": str(profile_id),
+                "full_name": full_name or None,
+                "phone": phone or None,
+                "role": role,
+                "account_status": account_status,
+                "deactivated_at": (
+                    deactivated_at.isoformat()
+                    if deactivated_at
+                    else None
+                ),
+                "email_masked": (
+                    _mask_email(email)
+                ),
+            }
+        )
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+                account_status,
+                COUNT(*)
+            FROM public.profiles
+            WHERE role = 'user'
+            GROUP BY account_status
+            """
+        )
+
+        counts = {
+            "active": 0,
+            "deactivated": 0,
+        }
+
+        for status_value, count in cursor.fetchall():
+            if status_value in counts:
+                counts[status_value] = int(count)
+
+    return {
+        "items": items,
+        "counts": counts,
+        "status_filter": normalized_status,
+        "query": q or None,
+    }

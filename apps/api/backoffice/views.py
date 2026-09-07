@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .accounts import (
+    list_accounts,
     reactivate_account,
 )
 from .claims import (
@@ -317,3 +318,69 @@ class AccountReactivateView(APIView):
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(result, status=status.HTTP_200_OK)
+
+class AccountListView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsClaimBackofficeUser,
+    ]
+
+    @extend_schema(
+        tags=["Back-office"],
+        description=(
+            "Liste les comptes utilisateur "
+            "pour le support Adresse GN."
+        ),
+    )
+    def get(
+        self,
+        request,
+    ):
+        status_filter = (
+            request.query_params.get(
+                "status",
+                "deactivated",
+            )
+        )
+        query = (
+            request.query_params.get(
+                "q",
+                "",
+            )
+        )
+
+        try:
+            result = list_accounts(
+                status_filter=status_filter,
+                query=query,
+            )
+        except ValueError as exc:
+            return Response(
+                {
+                    "ok": False,
+                    "status": "invalid_filter",
+                    "message": str(exc),
+                },
+                status=(
+                    status.HTTP_400_BAD_REQUEST
+                ),
+            )
+        except Exception:
+            return Response(
+                {
+                    "ok": False,
+                    "status": "error",
+                    "message": (
+                        "Impossible de charger "
+                        "les comptes utilisateur."
+                    ),
+                },
+                status=(
+                    status.HTTP_500_INTERNAL_SERVER_ERROR
+                ),
+            )
+
+        return Response(
+            result,
+            status=status.HTTP_200_OK,
+        )
