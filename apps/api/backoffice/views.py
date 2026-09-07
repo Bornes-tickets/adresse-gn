@@ -8,6 +8,9 @@ from rest_framework.permissions import (
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .accounts import (
+    reactivate_account,
+)
 from .claims import (
     VALID_CLAIM_STATUSES,
     decide_claim,
@@ -17,6 +20,7 @@ from .permissions import (
     IsClaimBackofficeUser,
 )
 from .serializers import (
+    AccountReactivateSerializer,
     ClaimDecisionSerializer,
 )
 
@@ -248,3 +252,68 @@ class ClaimDecisionView(APIView):
             result,
             status=status.HTTP_200_OK,
         )
+
+class AccountReactivateView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsClaimBackofficeUser,
+    ]
+
+    @extend_schema(
+        tags=["Back-office"],
+        request=AccountReactivateSerializer,
+        description=(
+            "Réactive un compte utilisateur désactivé "
+            "après vérification d'identité."
+        ),
+    )
+    def post(self, request, user_id):
+        serializer = AccountReactivateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        identity = getattr(request, "backoffice_identity", None)
+        actor_id = identity.get("user_id") if identity else None
+
+        if not actor_id:
+            return Response(
+                {
+                    "ok": False,
+                    "status": "unauthenticated",
+                    "message": "Authentification back-office requise.",
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        try:
+            result = reactivate_account(
+                user_id=str(user_id),
+                actor_id=actor_id,
+                verification_method=serializer.validated_data["verification_method"],
+                verification_note=serializer.validated_data["verification_note"],
+            )
+        except Exception:
+            return Response(
+                {
+                    "ok": False,
+                    "status": "error",
+                    "message": "La réactivation du compte n'a pas pu être enregistrée.",
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        if result["status"] == "not_found":
+            return Response(result, status=status.HTTP_404_NOT_FOUND)
+
+        if result["status"] == "forbidden_target":
+            return Response(result, status=status.HTTP_403_FORBIDDEN)
+
+        if result["status"] in {"not_deactivated", "conflict"}:
+            return Response(result, status=status.HTTP_409_CONFLICT)
+
+        if result["status"] in {
+            "invalid_verification_method",
+            "missing_verification_note",
+        }:
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(result, status=status.HTTP_200_OK)
