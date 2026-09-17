@@ -220,3 +220,90 @@ export function decideBackofficeClaim(
     },
   );
 }
+
+export type BackofficeAccountStatus =
+  | "active"
+  | "deactivated";
+
+export type BackofficeAccount = {
+  id: string;
+  full_name: string | null;
+  phone: string | null;
+  role: "user";
+  account_status: BackofficeAccountStatus;
+  deactivated_at: string | null;
+  email_masked: string | null;
+};
+
+export type BackofficeAccountsResponse = {
+  items: BackofficeAccount[];
+  counts: Record<BackofficeAccountStatus, number>;
+  status_filter:
+    | BackofficeAccountStatus
+    | "all";
+  query: string | null;
+};
+
+export type VerificationMethod =
+  | "email"
+  | "phone"
+  | "document"
+  | "in_person"
+  | "other";
+
+export function listBackofficeAccounts(
+  accessToken: string,
+  statusFilter:
+    | BackofficeAccountStatus
+    | "all",
+  query: string,
+  signal?: AbortSignal,
+) {
+  const params = new URLSearchParams();
+
+  params.set("status", statusFilter);
+
+  if (query.trim()) {
+    params.set("q", query.trim());
+  }
+
+  return authenticatedFetch<BackofficeAccountsResponse>(
+    `${API_BASE_URL}/api/v1/backoffice/accounts/?${params.toString()}`,
+    accessToken,
+    {
+      method: "GET",
+      signal,
+    },
+  );
+}
+
+export function reactivateBackofficeAccount(
+  accessToken: string,
+  userId: string,
+  input: {
+    confirm: "REACTIVER";
+    verification_method: VerificationMethod;
+    verification_note: string;
+  },
+) {
+  return authenticatedFetch<{
+    ok: true;
+    status: "reactivated";
+    user_id: string;
+    account_status: "active";
+    deactivated_at: null;
+    audit_id: string;
+    verification_method: VerificationMethod;
+    message: string;
+  }>(
+    `${API_BASE_URL}/api/v1/backoffice/accounts/${encodeURIComponent(userId)}/reactivate/`,
+    accessToken,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(input),
+    },
+  );
+}

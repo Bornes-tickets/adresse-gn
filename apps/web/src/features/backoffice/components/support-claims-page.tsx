@@ -28,6 +28,7 @@ import {
   MessageSquareWarning,
   RefreshCw,
   Search,
+  Users,
   X,
   XCircle,
 } from "lucide-react";
@@ -153,6 +154,19 @@ const GROUPS = [
         label:
           "Messages entrants",
         icon: MessageCircle,
+      },
+    ],
+  },
+
+  {
+    label: "Comptes",
+    items: [
+      {
+        href:
+          "/support/comptes",
+        label:
+          "Comptes utilisateurs",
+        icon: Users,
       },
     ],
   },
