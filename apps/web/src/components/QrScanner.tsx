@@ -14,6 +14,34 @@ interface QrScannerProps {
   title?: string;
 }
 
+interface BarcodeDetectorResultLike {
+  rawValue?: string;
+}
+
+interface BarcodeDetectorLike {
+  detect(
+    source: CanvasImageSource,
+  ): Promise<BarcodeDetectorResultLike[]>;
+}
+
+type BarcodeDetectorConstructor = new (
+  options: { formats: string[] },
+) => BarcodeDetectorLike;
+
+type BarcodeDetectorWindow = Window & {
+  BarcodeDetector?: BarcodeDetectorConstructor;
+};
+
+type TorchCapabilities =
+  MediaTrackCapabilities & {
+    torch?: boolean;
+  };
+
+type TorchConstraintSet =
+  MediaTrackConstraintSet & {
+    torch?: boolean;
+  };
+
 // Détecte le support du BarcodeDetector API (Chrome, Edge, Android)
 function hasBarcodeDetector(): boolean {
   return typeof window !== "undefined" && "BarcodeDetector" in window;
@@ -64,15 +92,35 @@ export function QrScanner({ open, onClose, onDetected, title = "Scanner un QR" }
       await video.play();
       setStatus("scanning");
 
-      const Detector = (window as any).BarcodeDetector;
-      const detector = new Detector({ formats: ["qr_code"] });
+      const Detector =
+        (window as BarcodeDetectorWindow)
+          .BarcodeDetector;
+
+      if (!Detector) {
+        setStatus("error");
+        setError(
+          "Détection QR non supportée — utilisez Chrome ou saisissez manuellement",
+        );
+        return;
+      }
+
+      const detector = new Detector({
+        formats: ["qr_code"],
+      });
 
       const tick = async () => {
         if (!videoRef.current || status === "idle") return;
         try {
           const codes = await detector.detect(videoRef.current);
-          if (codes?.length > 0) {
-            const value = codes[0].rawValue as string;
+          if (codes.length > 0) {
+            const value = codes[0].rawValue;
+
+            if (!value) {
+              rafRef.current =
+                requestAnimationFrame(tick);
+              return;
+            }
+
             vibrate([50, 30, 50]);
             stop();
             onDetected(value);
@@ -82,20 +130,50 @@ export function QrScanner({ open, onClose, onDetected, title = "Scanner un QR" }
         rafRef.current = requestAnimationFrame(tick);
       };
       tick();
-    } catch (e: any) {
-      const denied = e?.name === "NotAllowedError" || e?.name === "PermissionDeniedError";
-      setStatus(denied ? "denied" : "error");
-      setError(denied ? "Autorisation caméra refusée" : e?.message ?? "Impossible de démarrer la caméra");
+    } catch (error: unknown) {
+      const errorName =
+        error instanceof Error
+          ? error.name
+          : "";
+
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Impossible de démarrer la caméra";
+
+      const denied =
+        errorName === "NotAllowedError" ||
+        errorName === "PermissionDeniedError";
+
+      setStatus(
+        denied ? "denied" : "error",
+      );
+      setError(
+        denied
+          ? "Autorisation caméra refusée"
+          : errorMessage,
+      );
     }
   }, [onDetected, status, stop]);
 
   const toggleTorch = useCallback(async () => {
     const track = streamRef.current?.getVideoTracks()[0];
     if (!track) return;
-    const caps: any = track.getCapabilities?.();
+    const caps =
+      track.getCapabilities?.() as
+        | TorchCapabilities
+        | undefined;
+
     if (!caps?.torch) return;
+
     try {
-      await track.applyConstraints({ advanced: [{ torch: !torch } as any] });
+      await track.applyConstraints({
+        advanced: [
+          {
+            torch: !torch,
+          } as TorchConstraintSet,
+        ],
+      });
       setTorch(!torch);
     } catch {}
   }, [torch]);

@@ -89,6 +89,63 @@ function Eyebrow({ children }: { children: string }) {
   return <p className="text-center text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">{children}</p>;
 }
 type DesktopInstallPromptEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform?: string }> };
+
+interface SpeechRecognitionAlternativeLike {
+  transcript: string;
+}
+
+interface SpeechRecognitionResultLike {
+  [index: number]:
+    SpeechRecognitionAlternativeLike;
+}
+
+interface SpeechRecognitionResultsLike {
+  [index: number]:
+    SpeechRecognitionResultLike;
+}
+
+interface SpeechRecognitionResultEventLike {
+  results: SpeechRecognitionResultsLike;
+}
+
+interface SpeechRecognitionErrorEventLike {
+  error: string;
+}
+
+interface SpeechRecognitionLike {
+  lang: string;
+  interimResults: boolean;
+  maxAlternatives: number;
+  continuous: boolean;
+  onstart: (() => void) | null;
+  onresult:
+    | ((
+        event:
+          SpeechRecognitionResultEventLike,
+      ) => void)
+    | null;
+  onerror:
+    | ((
+        event:
+          SpeechRecognitionErrorEventLike,
+      ) => void)
+    | null;
+  onend: (() => void) | null;
+  start(): void;
+  stop(): void;
+  abort(): void;
+}
+
+type SpeechRecognitionConstructor =
+  new () => SpeechRecognitionLike;
+
+type SpeechRecognitionWindow = Window & {
+  SpeechRecognition?:
+    SpeechRecognitionConstructor;
+  webkitSpeechRecognition?:
+    SpeechRecognitionConstructor;
+};
+
 function hasSpeechRecognition(): boolean {
   if (typeof window === "undefined") return false;
   return "SpeechRecognition" in window || "webkitSpeechRecognition" in window;
@@ -103,7 +160,10 @@ export default function Home() {
   const [ecoute, setEcoute] = useState(false);
   const [desktopInstallPrompt, setDesktopInstallPrompt] = useState<DesktopInstallPromptEvent | null>(null);
   const [desktopInstallVisible, setDesktopInstallVisible] = useState(false);
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef =
+    useRef<SpeechRecognitionLike | null>(
+      null,
+    );
   const rechercher = async (valeur: string) => {
     const propre = normalizeBeaconNumber(valeur, getDefaultZone());
     if (!propre) return;
@@ -123,11 +183,26 @@ export default function Home() {
   };
   const demarrerVoix = () => {
     if (!hasSpeechRecognition()) { toast.error("Reconnaissance vocale non supportée"); return; }
-    const SR: any = (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition;
+    const speechWindow =
+      window as SpeechRecognitionWindow;
+
+    const SR =
+      speechWindow.SpeechRecognition ??
+      speechWindow.webkitSpeechRecognition;
+
+    if (!SR) {
+      toast.error(
+        "Reconnaissance vocale non supportée",
+      );
+      return;
+    }
+
     const reco = new SR();
     reco.lang = "fr-FR"; reco.interimResults = false; reco.maxAlternatives = 1; reco.continuous = false;
     reco.onstart = () => { setEcoute(true); try { navigator.vibrate?.(30); } catch {} };
-    reco.onresult = (e: any) => {
+    reco.onresult = (
+      e: SpeechRecognitionResultEventLike,
+    ) => {
       const brut = String(e.results[0][0].transcript || "").toUpperCase();
       const nettoye = brut.replace(/\s+/g, "").replace(/[^A-Z0-9]/g, "");
       const match = nettoye.match(/GN[A-Z]{3}\d{6}/) || nettoye.match(/\d{6}/);
@@ -137,7 +212,9 @@ export default function Home() {
         setNumero(nombre); void rechercher(nombre);
       } else toast.error(`Non compris : "${brut}"`);
     };
-    reco.onerror = (e: any) => {
+    reco.onerror = (
+      e: SpeechRecognitionErrorEventLike,
+    ) => {
       setEcoute(false);
       if (e.error === "not-allowed") toast.error("Autorisation micro refusée");
       else if (e.error !== "aborted") toast.error(`Erreur voix : ${e.error}`);

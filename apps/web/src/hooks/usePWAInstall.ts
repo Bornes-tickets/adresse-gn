@@ -15,13 +15,27 @@ const DISMISS_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 jours
 function isStandalone(): boolean {
   if (typeof window === "undefined") return false;
   const mq = window.matchMedia?.("(display-mode: standalone)").matches;
-  const iosStandalone = (window.navigator as any).standalone === true;
+  const iosStandalone =
+    (
+      window.navigator as Navigator & {
+        standalone?: boolean;
+      }
+    ).standalone === true;
   return Boolean(mq || iosStandalone);
 }
 
 function isIos(): boolean {
   if (typeof navigator === "undefined") return false;
-  return /iphone|ipad|ipod/i.test(navigator.userAgent) && !(window as any).MSStream;
+  return (
+    /iphone|ipad|ipod/i.test(
+      navigator.userAgent,
+    ) &&
+    !(
+      window as Window & {
+        MSStream?: unknown;
+      }
+    ).MSStream
+  );
 }
 
 function isDismissedRecently(): boolean {
