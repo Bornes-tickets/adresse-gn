@@ -45,5 +45,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Lint Next.js frontend
+        run: npm --workspace web run lint -- --max-warnings=0
+
       - name: Build Next.js frontend
         run: npm --workspace web run build
