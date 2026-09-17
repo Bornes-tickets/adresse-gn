@@ -515,11 +515,20 @@ export function SupportClaimsPage() {
     const controller =
       new AbortController();
 
-    void refreshClaims(
-      controller.signal,
-    );
+    let active = true;
+
+    queueMicrotask(() => {
+      if (!active) {
+        return;
+      }
+
+      void refreshClaims(
+        controller.signal,
+      );
+    });
 
     return () => {
+      active = false;
       controller.abort();
     };
   }, [

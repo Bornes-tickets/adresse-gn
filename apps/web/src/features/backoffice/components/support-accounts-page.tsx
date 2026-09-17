@@ -463,11 +463,20 @@ export function SupportAccountsPage() {
     const controller =
       new AbortController();
 
-    void refreshAccounts(
-      controller.signal,
-    );
+    let active = true;
+
+    queueMicrotask(() => {
+      if (!active) {
+        return;
+      }
+
+      void refreshAccounts(
+        controller.signal,
+      );
+    });
 
     return () => {
+      active = false;
       controller.abort();
     };
   }, [

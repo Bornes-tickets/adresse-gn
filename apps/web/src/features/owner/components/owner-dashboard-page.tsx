@@ -291,11 +291,20 @@ export function OwnerDashboardPage() {
     const controller =
       new AbortController();
 
-    void load(
-      controller.signal,
-    );
+    let active = true;
+
+    queueMicrotask(() => {
+      if (!active) {
+        return;
+      }
+
+      void load(
+        controller.signal,
+      );
+    });
 
     return () => {
+      active = false;
       controller.abort();
     };
   }, [load]);
