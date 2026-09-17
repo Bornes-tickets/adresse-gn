@@ -46,7 +46,12 @@ def reactivate_account(
     with connection.cursor() as cursor:
         cursor.execute(
             """
-            SELECT id, role, account_status, deactivated_at
+            SELECT
+                id,
+                role,
+                account_status,
+                deactivated_at,
+                session_valid_after
             FROM public.profiles
             WHERE id = %s
             FOR UPDATE
@@ -62,7 +67,13 @@ def reactivate_account(
             "message": "Compte utilisateur introuvable.",
         }
 
-    profile_id, role, account_status, deactivated_at = profile
+    (
+        profile_id,
+        role,
+        account_status,
+        deactivated_at,
+        session_valid_after,
+    ) = profile
 
     if role != "user":
         return {
@@ -80,16 +91,33 @@ def reactivate_account(
 
     before_payload = json.dumps({
         "account_status": account_status,
-        "deactivated_at": deactivated_at.isoformat() if deactivated_at else None,
+        "deactivated_at": (
+            deactivated_at.isoformat()
+            if deactivated_at
+            else None
+        ),
+        "session_valid_after": (
+            session_valid_after.isoformat()
+            if session_valid_after
+            else None
+        ),
     })
 
     with connection.cursor() as cursor:
         cursor.execute(
             """
             UPDATE public.profiles
-            SET account_status = 'active', deactivated_at = NULL
-            WHERE id = %s AND account_status = 'deactivated'
-            RETURNING account_status, deactivated_at
+            SET
+                account_status = 'active',
+                deactivated_at = NULL,
+                session_valid_after = NOW()
+            WHERE
+                id = %s
+                AND account_status = 'deactivated'
+            RETURNING
+                account_status,
+                deactivated_at,
+                session_valid_after
             """,
             [profile_id],
         )
@@ -102,9 +130,14 @@ def reactivate_account(
             "message": "L'état du compte a changé pendant la réactivation.",
         }
 
+    session_valid_after = updated[2]
+
     after_payload = json.dumps({
         "account_status": updated[0],
         "deactivated_at": None,
+        "session_valid_after": (
+            session_valid_after.isoformat()
+        ),
         "verification_method": method,
         "verification_note": note,
     })

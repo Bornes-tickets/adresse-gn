@@ -75,6 +75,7 @@ def _validate_common_claims(
 
 def _ensure_active_application_account(
     subject: str,
+    claims: dict[str, Any],
 ) -> None:
     """
     Vérifie l'état métier du compte Adresse GN après validation
@@ -83,15 +84,20 @@ def _ensure_active_application_account(
     Sécurité :
     - le sujet provient exclusivement du JWT Supabase validé ;
     - un utilisateur Auth sans profil applicatif est refusé ;
-    - un profil deactivated est refusé immédiatement, même si
-      son access token Supabase n'est pas encore expiré ;
+    - un profil deactivated est refusé immédiatement ;
+    - après une réactivation, seules les nouvelles sessions
+      Supabase créées après session_valid_after sont acceptées ;
+    - un ancien access token ou une ancienne session ne redevient
+      donc pas valide lorsque le compte repasse à active ;
     - aucune information de rôle métier n'est dérivée du JWT.
     """
 
     with connection.cursor() as cursor:
         cursor.execute(
             """
-            SELECT account_status
+            SELECT
+                account_status,
+                session_valid_after
             FROM public.profiles
             WHERE id = %s
             LIMIT 1
@@ -108,11 +114,56 @@ def _ensure_active_application_account(
             "Profil utilisateur Adresse GN introuvable."
         )
 
-    account_status = row[0]
+    (
+        account_status,
+        session_valid_after,
+    ) = row
 
     if account_status != "active":
         raise AuthenticationFailed(
             "Ce compte Adresse GN est désactivé."
+        )
+
+    if session_valid_after is None:
+        return
+
+    session_id = str(
+        claims.get("session_id")
+        or ""
+    ).strip()
+
+    if not session_id:
+        raise AuthenticationFailed(
+            "Cette session Adresse GN n'est plus valide. "
+            "Reconnectez-vous."
+        )
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT created_at
+            FROM auth.sessions
+            WHERE
+                user_id = %s
+                AND id::text = %s
+            LIMIT 1
+            """,
+            [
+                subject,
+                session_id,
+            ],
+        )
+
+        session_row = cursor.fetchone()
+
+    if (
+        session_row is None
+        or session_row[0]
+        <= session_valid_after
+    ):
+        raise AuthenticationFailed(
+            "Cette session Adresse GN n'est plus valide. "
+            "Reconnectez-vous."
         )
 
 
@@ -337,7 +388,8 @@ class SupabaseJWTAuthentication(
         )
 
         _ensure_active_application_account(
-            subject
+            subject,
+            claims,
         )
 
         principal = SupabasePrincipal(
