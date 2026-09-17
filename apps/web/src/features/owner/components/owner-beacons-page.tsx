@@ -616,15 +616,20 @@ export function OwnerBeaconsPage() {
         )}
       </div>
 
-      <EditBeaconDialog
-        beacon={editing}
-        onClose={() =>
-          setEditing(null)
-        }
-        onSaved={() =>
-          load()
-        }
-      />
+      {editing && (
+        <EditBeaconDialog
+          key={
+            editing.address_id
+          }
+          beacon={editing}
+          onClose={() =>
+            setEditing(null)
+          }
+          onSaved={() =>
+            load()
+          }
+        />
+      )}
 
       <QrDialog
         beacon={qr}
@@ -633,12 +638,17 @@ export function OwnerBeaconsPage() {
         }
       />
 
-      <MovingDialog
-        beacon={moving}
-        onClose={() =>
-          setMoving(null)
-        }
-      />
+      {moving && (
+        <MovingDialog
+          key={
+            moving.address_id
+          }
+          beacon={moving}
+          onClose={() =>
+            setMoving(null)
+          }
+        />
+      )}
 
       <SuspendDialog
         beacon={suspending}
@@ -659,20 +669,22 @@ function EditBeaconDialog({
   onClose,
   onSaved,
 }: {
-  beacon: OwnerBeacon | null;
+  beacon: OwnerBeacon;
   onClose: () => void;
   onSaved: () => void;
 }) {
   const [
     name,
     setName,
-  ] = useState("");
+  ] = useState(
+    beacon.name ?? "",
+  );
 
   const [
     category,
     setCategory,
   ] = useState(
-    "habitation",
+    beacon.category,
   );
 
   const [
@@ -680,45 +692,26 @@ function EditBeaconDialog({
     setVisibility,
   ] = useState<
     "public" | "private"
-  >("public");
+  >(
+    beacon.visibility ===
+      "private"
+      ? "private"
+      : "public",
+  );
 
   const [
     note,
     setNote,
-  ] = useState("");
+  ] = useState(
+    beacon
+      .access_point_note
+    ?? "",
+  );
 
   const [
     saving,
     setSaving,
   ] = useState(false);
-
-
-  useEffect(() => {
-    if (!beacon) {
-      return;
-    }
-
-    setName(
-      beacon.name ?? ""
-    );
-
-    setCategory(
-      beacon.category
-    );
-
-    setVisibility(
-      beacon.visibility ===
-        "private"
-        ? "private"
-        : "public",
-    );
-
-    setNote(
-      beacon
-        .access_point_note
-      ?? "",
-    );
-  }, [beacon]);
 
 
   async function save() {
@@ -1149,7 +1142,7 @@ function MovingDialog({
   beacon,
   onClose,
 }: {
-  beacon: OwnerBeacon | null;
+  beacon: OwnerBeacon;
   onClose: () => void;
 }) {
   const [
@@ -1161,13 +1154,6 @@ function MovingDialog({
     sending,
     setSending,
   ] = useState(false);
-
-
-  useEffect(() => {
-    if (beacon) {
-      setDetails("");
-    }
-  }, [beacon]);
 
 
   async function send() {
