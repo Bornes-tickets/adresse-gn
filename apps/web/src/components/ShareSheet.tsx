@@ -12,9 +12,8 @@ import {
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 
 import {
-  useEffect,
   useRef,
-  useState,
+  useSyncExternalStore,
 } from "react";
 
 import {
@@ -28,6 +27,16 @@ import {
 import {
   Button,
 } from "@/components/ui/button";
+
+
+const subscribeOrigin = () =>
+  () => {};
+
+const getOriginSnapshot = () =>
+  window.location.origin;
+
+const getOriginServerSnapshot = () =>
+  "";
 
 
 interface ShareSheetProps {
@@ -54,18 +63,12 @@ export function ShareSheet({
       null,
     );
 
-  const [
-    origin,
-    setOrigin,
-  ] =
-    useState("");
-
-
-  useEffect(() => {
-    setOrigin(
-      window.location.origin,
+  const origin =
+    useSyncExternalStore(
+      subscribeOrigin,
+      getOriginSnapshot,
+      getOriginServerSnapshot,
     );
-  }, []);
 
 
   const lien =

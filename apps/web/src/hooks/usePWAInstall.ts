@@ -65,8 +65,16 @@ export function usePWAInstall(): UsePWAInstallResult {
   const [dismissed, setDismissed] = useState<boolean>(false);
 
   useEffect(() => {
-    setInstalled(isStandalone());
-    setDismissed(isDismissedRecently());
+    let active = true;
+
+    queueMicrotask(() => {
+      if (!active) return;
+
+      setInstalled(isStandalone());
+      setDismissed(
+        isDismissedRecently(),
+      );
+    });
 
     const onBefore = (e: Event) => {
       e.preventDefault();
@@ -81,8 +89,16 @@ export function usePWAInstall(): UsePWAInstallResult {
     window.addEventListener("beforeinstallprompt", onBefore);
     window.addEventListener("appinstalled", onInstalled);
     return () => {
-      window.removeEventListener("beforeinstallprompt", onBefore);
-      window.removeEventListener("appinstalled", onInstalled);
+      active = false;
+
+      window.removeEventListener(
+        "beforeinstallprompt",
+        onBefore,
+      );
+      window.removeEventListener(
+        "appinstalled",
+        onInstalled,
+      );
     };
   }, []);
 

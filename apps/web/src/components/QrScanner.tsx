@@ -179,9 +179,18 @@ export function QrScanner({ open, onClose, onDetected, title = "Scanner un QR" }
   }, [torch]);
 
   useEffect(() => {
-    if (open && status === "idle") start();
-    if (!open) stop();
-    return () => stop();
+    if (!open) return;
+
+    const frame = requestAnimationFrame(
+      () => {
+        void start();
+      },
+    );
+
+    return () => {
+      cancelAnimationFrame(frame);
+      stop();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 

@@ -22,8 +22,15 @@ export function Reveal({
     const el = ref.current;
     if (!el) return;
     if (typeof IntersectionObserver === "undefined") {
-      setVisible(true);
-      return;
+      const frame =
+        requestAnimationFrame(
+          () => {
+            setVisible(true);
+          },
+        );
+
+      return () =>
+        cancelAnimationFrame(frame);
     }
     const observer = new IntersectionObserver(
       (entries) => {
