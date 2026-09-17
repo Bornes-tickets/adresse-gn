@@ -320,7 +320,7 @@ export function ShareSheet({
                 "
               >
                 <QrCode className="size-3" />
-                Scanner pour ouvrir l'adresse
+                Scanner pour ouvrir l’adresse
               </p>
             </div>
           </div>

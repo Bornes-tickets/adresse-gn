@@ -988,7 +988,7 @@ export default function Home() {
                     Avant, on expliquait. <span className="text-accent">Maintenant, on partage.</span>
                   </h3>
                   <p className="mx-auto mt-2 max-w-4xl text-sm leading-6 text-slate-600 xl:max-w-none xl:whitespace-nowrap">
-                    Un numéro Adresse GN remplace les longues indications et simplifie l'arrivée à destination.
+                    Un numéro Adresse GN remplace les longues indications et simplifie l’arrivée à destination.
                   </p>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2 xl:gap-5">
@@ -1110,7 +1110,7 @@ export default function Home() {
                   <span className={SECTION_BADGE_CLASS}><Sparkles className="size-3 text-accent" /> Pourquoi nous faire confiance</span>
                   <h2 className={cn(SECTION_TITLE_CLASS, "mx-auto mt-3 max-w-3xl")}>Conçu pour les réalités du terrain.</h2>
                   <p className={cn(SECTION_COPY_CLASS, "mx-auto mt-2 w-full max-w-[1180px] xl:whitespace-nowrap")}>
-                    Adresse GN relie un numéro unique, une position GPS et des outils que les utilisateurs connaissent déjà pour rendre l'adresse simple à créer, à partager et à rejoindre.
+                    Adresse GN relie un numéro unique, une position GPS et des outils que les utilisateurs connaissent déjà pour rendre l’adresse simple à créer, à partager et à rejoindre.
                   </p>
                 </div>
                 <div className="mt-4 grid gap-3 md:grid-cols-3 xl:gap-4">
@@ -1143,7 +1143,7 @@ export default function Home() {
                 <div aria-hidden className="absolute -bottom-24 right-[-30px] size-64 rounded-full bg-cyan-300/[0.04]" />
                 <div className="relative flex h-full flex-col justify-center">
                   <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-white/90">
-                    <Zap className="size-3.5" /> Passez à l'action
+                    <Zap className="size-3.5" /> Passez à l’action
                   </span>
                   <h2 className="text-display mt-3 max-w-xl text-[1.75rem] font-bold leading-[1.08] tracking-tight text-white sm:text-3xl md:text-[2.05rem] lg:max-w-none lg:text-[clamp(1.55rem,1.72vw,2.05rem)] xl:whitespace-nowrap">
                     Créez votre Adresse GN.{" "}
@@ -1176,7 +1176,7 @@ export default function Home() {
                   </div>
                   <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] font-medium text-white/65 sm:text-[10px]">
                     <span className="inline-flex items-center gap-1.5"><Check className="size-3 shrink-0" /> Sans application obligatoire</span>
-                    <span className="inline-flex items-center gap-1.5"><Check className="size-3 shrink-0" /> Plaque physique selon l'offre</span>
+                    <span className="inline-flex items-center gap-1.5"><Check className="size-3 shrink-0" /> Plaque physique selon l’offre</span>
                   </div>
                 </div>
               </div>
@@ -1244,7 +1244,7 @@ export default function Home() {
                         <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent"><Smartphone className="size-4" /></span>
                         <div className="min-w-0">
                           <p className="text-[10px] font-bold leading-4 text-slate-950 sm:text-[11px]">Adresse numérique</p>
-                          <p className="mt-0.5 hidden text-[9px] leading-4 text-slate-500 min-[390px]:block">Disponible dès l'activation.</p>
+                          <p className="mt-0.5 hidden text-[9px] leading-4 text-slate-500 min-[390px]:block">Disponible dès l’activation.</p>
                         </div>
                       </div>
                     </div>
@@ -1278,7 +1278,7 @@ export default function Home() {
               </div>
               <div className="min-w-0 flex-1">
                 <h3 className="text-base font-bold leading-5">Installer Adresse GN</h3>
-                <p className="mt-1 text-[12px] leading-4 text-white/90">Accès rapide depuis votre bureau, mode hors-ligne et expérience proche d'une application.</p>
+                <p className="mt-1 text-[12px] leading-4 text-white/90">Accès rapide depuis votre bureau, mode hors-ligne et expérience proche d’une application.</p>
                 <div className="mt-3 flex items-center gap-2">
                   <button type="button" onClick={() => void installerSurDesktop()}
                     className="inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-white px-4 text-xs font-semibold text-orange-600 shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg">

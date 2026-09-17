@@ -16,6 +16,8 @@ import {
   useState,
 } from "react";
 
+import NextLink from "next/link";
+
 import { toast } from "sonner";
 
 import { BeaconMap } from "@/components/BeaconMap";
@@ -579,9 +581,9 @@ export function AddressDetailPage({
             variant="outline"
             className="mt-5"
           >
-            <a href="/">
+            <NextLink href="/">
               Nouvelle recherche
-            </a>
+            </NextLink>
           </Button>
         </div>
       </div>
@@ -627,9 +629,9 @@ export function AddressDetailPage({
             variant="outline"
             className="mt-5"
           >
-            <a href="/">
+            <NextLink href="/">
               Nouvelle recherche
-            </a>
+            </NextLink>
           </Button>
         </div>
       </div>
@@ -906,7 +908,7 @@ export function AddressDetailPage({
               <Building2 className="size-4" />
 
               Voir
-              l'établissement
+              l’établissement
             </Button>
           )}
 

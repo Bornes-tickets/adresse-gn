@@ -39,7 +39,7 @@ export function InstallBanner({ variant = "bottom" }: { variant?: "bottom" | "in
             <div className="flex-1 min-w-0">
               <div className="font-bold text-sm">Installer Adresse GN</div>
               <div className="text-xs text-white/90 mt-0.5 leading-snug">
-                Accès rapide depuis votre écran d'accueil, mode hors-ligne, notifications.
+                Accès rapide depuis votre écran d’accueil, mode hors-ligne, notifications.
               </div>
               <div className="flex gap-2 mt-3">
                 <Button
@@ -99,7 +99,7 @@ export function InstallBanner({ variant = "bottom" }: { variant?: "bottom" | "in
                   2
                 </div>
                 <div>
-                  <div className="font-semibold">Choisissez « Sur l'écran d'accueil »</div>
+                  <div className="font-semibold">Choisissez « Sur l’écran d’accueil »</div>
                   <div className="flex items-center gap-1.5 text-xs text-slate-600 mt-1">
                     <PlusSquare className="h-4 w-4" />
                     dans le menu qui apparaît
@@ -112,12 +112,12 @@ export function InstallBanner({ variant = "bottom" }: { variant?: "bottom" | "in
                 </div>
                 <div>
                   <div className="font-semibold">Appuyez sur « Ajouter »</div>
-                  <div className="text-xs text-slate-600 mt-1">L'icône Adresse GN apparaîtra sur votre écran d'accueil.</div>
+                  <div className="text-xs text-slate-600 mt-1">L’icône Adresse GN apparaîtra sur votre écran d’accueil.</div>
                 </div>
               </div>
             </div>
             <p className="text-xs text-slate-500 italic">
-              Note : cette fonctionnalité n'est disponible que dans Safari (pas Chrome iOS).
+              Note : cette fonctionnalité n’est disponible que dans Safari (pas Chrome iOS).
             </p>
           </div>
         </DialogContent>

@@ -413,7 +413,7 @@ export function OwnerOrdersPage() {
               text-slate-500
             "
           >
-            Vous n'avez encore passé
+            Vous n’avez encore passé
             aucune commande Adresse GN.
           </p>
         </section>
@@ -692,9 +692,9 @@ export function OwnerOrdersPage() {
                         "
                       >
                         Le détail des lignes
-                        n'était pas enregistré
+                        n’était pas enregistré
                         pour cette ancienne commande.
-                        Le montant total d'origine
+                        Le montant total d’origine
                         est conservé ci-dessous.
                       </p>
                     </section>

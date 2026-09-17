@@ -219,14 +219,14 @@ export function ClaimDialog({
 
         ) : claimStatus === "pending" ? (
           <p className="text-sm text-muted-foreground">
-            Votre demande est en cours d'examen (En attente).
+            Votre demande est en cours d’examen (En attente).
           </p>
 
         ) : (
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="claim-nom">
-                Nom du propriétaire ou de l'occupant
+                Nom du propriétaire ou de l’occupant
               </Label>
 
               <Input

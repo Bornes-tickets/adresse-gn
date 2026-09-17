@@ -358,7 +358,7 @@ export function OwnerReportsPage() {
           >
             Suivez les problèmes signalés,
             vos déménagements et vos
-            réclamations d'adresse.
+            réclamations d’adresse.
           </p>
         </div>
       </section>
@@ -755,7 +755,7 @@ export function OwnerReportsPage() {
                     text-slate-950
                   "
                 >
-                  Mes réclamations d'adresse
+                  Mes réclamations d’adresse
                 </h2>
 
                 <p
@@ -765,7 +765,7 @@ export function OwnerReportsPage() {
                   "
                 >
                   Demandes de reconnaissance
-                  de propriété d'une Adresse GN.
+                  de propriété d’une Adresse GN.
                 </p>
               </div>
             </div>
@@ -785,7 +785,7 @@ export function OwnerReportsPage() {
                   text-slate-500
                 "
               >
-                Aucune réclamation d'adresse.
+                Aucune réclamation d’adresse.
               </div>
 
             ) : (
