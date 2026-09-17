@@ -44,3 +44,7 @@ __pycache__/
 .mypy_cache/
 apps/api/.env
 apps/api/staticfiles/
+
+# Playwright
+playwright-report/
+test-results/
