@@ -1,6 +1,10 @@
 "use client";
 
 import {
+  useRouter,
+} from "next/navigation";
+
+import {
   useCallback,
   useEffect,
   useState,
@@ -160,6 +164,9 @@ function formatDate(
 
 
 export function OwnerReportsPage() {
+  const router =
+    useRouter();
+
   const [
     reports,
     setReports,
@@ -192,8 +199,9 @@ export function OwnerReportsPage() {
             await getAccessToken();
 
           if (!token) {
-            window.location.href =
-              "/login?returnTo=%2Fmon-compte%2Fsignalements";
+            router.replace(
+              "/login?returnTo=%2Fmon-compte%2Fsignalements",
+            );
 
             return;
           }
@@ -232,8 +240,9 @@ export function OwnerReportsPage() {
               OwnerApiError &&
             error.statusCode === 401
           ) {
-            window.location.href =
-              "/login?returnTo=%2Fmon-compte%2Fsignalements";
+            router.replace(
+              "/login?returnTo=%2Fmon-compte%2Fsignalements",
+            );
 
             return;
           }
@@ -253,7 +262,7 @@ export function OwnerReportsPage() {
           }
         }
       },
-      [],
+      [router],
     );
 
 

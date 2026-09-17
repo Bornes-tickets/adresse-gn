@@ -1,6 +1,10 @@
 "use client";
 
 import {
+  useRouter,
+} from "next/navigation";
+
+import {
   useCallback,
   useEffect,
   useRef,
@@ -204,6 +208,9 @@ function SearchLineChart({
 
 
 export function OwnerBeaconsPage() {
+  const router =
+    useRouter();
+
   const [
     items,
     setItems,
@@ -259,8 +266,9 @@ export function OwnerBeaconsPage() {
             await getAccessToken();
 
           if (!token) {
-            window.location.href =
-              "/login?returnTo=%2Fmon-compte%2Fbeacons";
+            router.replace(
+              "/login?returnTo=%2Fmon-compte%2Fbeacons",
+            );
 
             return;
           }
@@ -293,8 +301,9 @@ export function OwnerBeaconsPage() {
             error.statusCode ===
               401
           ) {
-            window.location.href =
-              "/login?returnTo=%2Fmon-compte%2Fbeacons";
+            router.replace(
+              "/login?returnTo=%2Fmon-compte%2Fbeacons",
+            );
 
             return;
           }
@@ -318,7 +327,7 @@ export function OwnerBeaconsPage() {
           }
         }
       },
-      [],
+      [router],
     );
 
 

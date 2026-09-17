@@ -1,6 +1,10 @@
 "use client";
 
 import {
+  useRouter,
+} from "next/navigation";
+
+import {
   FormEvent,
   useCallback,
   useEffect,
@@ -153,6 +157,9 @@ function normalizeNumber(
 
 
 export function OwnerFavoritesPage() {
+  const router =
+    useRouter();
+
   const [
     items,
     setItems,
@@ -210,8 +217,9 @@ export function OwnerFavoritesPage() {
             await getAccessToken();
 
           if (!token) {
-            window.location.href =
-              "/login?returnTo=%2Fmon-compte%2Ffavorites";
+            router.replace(
+              "/login?returnTo=%2Fmon-compte%2Ffavorites",
+            );
 
             return;
           }
@@ -238,8 +246,9 @@ export function OwnerFavoritesPage() {
               OwnerApiError &&
             error.statusCode === 401
           ) {
-            window.location.href =
-              "/login?returnTo=%2Fmon-compte%2Ffavorites";
+            router.replace(
+              "/login?returnTo=%2Fmon-compte%2Ffavorites",
+            );
 
             return;
           }
@@ -256,7 +265,7 @@ export function OwnerFavoritesPage() {
           }
         }
       },
-      [],
+      [router],
     );
 
 
@@ -299,8 +308,9 @@ export function OwnerFavoritesPage() {
         await getAccessToken();
 
       if (!token) {
-        window.location.href =
-          "/login?returnTo=%2Fmon-compte%2Ffavorites";
+        router.replace(
+          "/login?returnTo=%2Fmon-compte%2Ffavorites",
+        );
 
         return;
       }

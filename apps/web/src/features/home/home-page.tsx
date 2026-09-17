@@ -85,9 +85,6 @@ const POINTS_CONFIANCE = [
   { icone: Handshake, titre: "Accompagnement local", texte: "Des agents peuvent accompagner la création et l'installation de votre Adresse GN selon l'offre choisie.", badge: "Support terrain" },
   { icone: Smartphone, titre: "Compatible avec vos outils", texte: "Google Maps, Waze, QR Code, web et mobile : votre adresse reste simple à partager et facile à utiliser.", badge: "Utilisation immédiate" },
 ];
-function Eyebrow({ children }: { children: string }) {
-  return <p className="text-center text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">{children}</p>;
-}
 type DesktopInstallPromptEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform?: string }> };
 
 interface SpeechRecognitionAlternativeLike {

@@ -1,6 +1,10 @@
 "use client";
 
 import {
+  useRouter,
+} from "next/navigation";
+
+import {
   useCallback,
   useEffect,
   useState,
@@ -202,6 +206,9 @@ function ActivityIcon({
 
 
 export function OwnerDashboardPage() {
+  const router =
+    useRouter();
+
   const [
     data,
     setData,
@@ -227,8 +234,9 @@ export function OwnerDashboardPage() {
             await getAccessToken();
 
           if (!token) {
-            window.location.href =
-              "/login?returnTo=%2Fmon-compte";
+            router.replace(
+              "/login?returnTo=%2Fmon-compte",
+            );
 
             return;
           }
@@ -260,8 +268,9 @@ export function OwnerDashboardPage() {
             error.statusCode ===
               401
           ) {
-            window.location.href =
-              "/login?returnTo=%2Fmon-compte";
+            router.replace(
+              "/login?returnTo=%2Fmon-compte",
+            );
 
             return;
           }
@@ -283,7 +292,7 @@ export function OwnerDashboardPage() {
           }
         }
       },
-      [],
+      [router],
     );
 
 

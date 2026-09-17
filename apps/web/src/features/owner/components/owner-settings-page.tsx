@@ -1,6 +1,10 @@
 "use client";
 
 import {
+  useRouter,
+} from "next/navigation";
+
+import {
   useCallback,
   useEffect,
   useState,
@@ -54,6 +58,9 @@ import {
 
 
 export function OwnerSettingsPage() {
+  const router =
+    useRouter();
+
   const [
     fullName,
     setFullName,
@@ -107,8 +114,9 @@ export function OwnerSettingsPage() {
             await getAccessToken();
 
           if (!token) {
-            window.location.href =
-              "/login?returnTo=%2Fmon-compte%2Fsettings";
+            router.replace(
+              "/login?returnTo=%2Fmon-compte%2Fsettings",
+            );
 
             return;
           }
@@ -142,8 +150,9 @@ export function OwnerSettingsPage() {
             error instanceof OwnerApiError
             && error.statusCode === 401
           ) {
-            window.location.href =
-              "/login?returnTo=%2Fmon-compte%2Fsettings";
+            router.replace(
+              "/login?returnTo=%2Fmon-compte%2Fsettings",
+            );
 
             return;
           }
@@ -160,7 +169,7 @@ export function OwnerSettingsPage() {
           }
         }
       },
-      [],
+      [router],
     );
 
 
@@ -195,8 +204,9 @@ export function OwnerSettingsPage() {
         await getAccessToken();
 
       if (!token) {
-        window.location.href =
-          "/login?returnTo=%2Fmon-compte%2Fsettings";
+        router.replace(
+          "/login?returnTo=%2Fmon-compte%2Fsettings",
+        );
 
         return;
       }
@@ -255,8 +265,9 @@ export function OwnerSettingsPage() {
         await getAccessToken();
 
       if (!token) {
-        window.location.href =
-          "/login?returnTo=%2Fmon-compte%2Fsettings";
+        router.replace(
+          "/login?returnTo=%2Fmon-compte%2Fsettings",
+        );
 
         return;
       }

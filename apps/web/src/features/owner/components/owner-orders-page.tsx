@@ -1,6 +1,10 @@
 "use client";
 
 import {
+  useRouter,
+} from "next/navigation";
+
+import {
   useCallback,
   useEffect,
   useState,
@@ -156,6 +160,9 @@ function planLabel(
 
 
 export function OwnerOrdersPage() {
+  const router =
+    useRouter();
+
   const [
     orders,
     setOrders,
@@ -181,8 +188,9 @@ export function OwnerOrdersPage() {
             await getAccessToken();
 
           if (!token) {
-            window.location.href =
-              "/login?returnTo=%2Fmon-compte%2Fcommandes";
+            router.replace(
+              "/login?returnTo=%2Fmon-compte%2Fcommandes",
+            );
 
             return;
           }
@@ -209,8 +217,9 @@ export function OwnerOrdersPage() {
               OwnerApiError &&
             error.statusCode === 401
           ) {
-            window.location.href =
-              "/login?returnTo=%2Fmon-compte%2Fcommandes";
+            router.replace(
+              "/login?returnTo=%2Fmon-compte%2Fcommandes",
+            );
 
             return;
           }
@@ -230,7 +239,7 @@ export function OwnerOrdersPage() {
           }
         }
       },
-      [],
+      [router],
     );
 
 
