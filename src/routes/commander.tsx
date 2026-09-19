@@ -45,7 +45,7 @@ type Plan = {
 };
 
 type Draft = {
-  clientType: "particulier" | "professionnel" | "institution";
+  clientType: "particulier" | "professionnel" | "institutionnel";
   placeType: "residential" | "business" | "company" | "other";
   placeName: string;
 
@@ -96,7 +96,7 @@ const INITIAL_DRAFT: Draft = {
   email: "",
 
   planCode: "",
-  paymentMethod: "orange_money",
+  paymentMethod: "orange",
 };
 
 function CommanderPage() {
@@ -619,7 +619,7 @@ function NeedStep({
           {[
             ["particulier", "Particulier"],
             ["professionnel", "Professionnel"],
-            ["institution", "Institution"],
+            ["institutionnel", "Institution"],
           ].map(([value, label]) => (
             <ChoiceButton
               key={value}

@@ -33,9 +33,9 @@ export async function chargerDashboardSales(): Promise<SalesDashboardData> {
 
   // Paiements du jour et du mois (payés uniquement)
   const [paiementsJour, paiementsMois, paiementsMoisPrec, paiementsAttente] = await Promise.all([
-    supabaseAdmin.from("payments").select("amount_gnf").eq("status", "paid").gte("paid_at", debutJour),
-    supabaseAdmin.from("payments").select("amount_gnf").eq("status", "paid").gte("paid_at", debutMois),
-    supabaseAdmin.from("payments").select("amount_gnf").eq("status", "paid").gte("paid_at", debutMoisPrec).lt("paid_at", finMoisPrec),
+    supabaseAdmin.from("payments").select("amount_gnf").eq("status", "success").gte("paid_at", debutJour),
+    supabaseAdmin.from("payments").select("amount_gnf").eq("status", "success").gte("paid_at", debutMois),
+    supabaseAdmin.from("payments").select("amount_gnf").eq("status", "success").gte("paid_at", debutMoisPrec).lt("paid_at", finMoisPrec),
     supabaseAdmin.from("payments").select("id", { count: "exact", head: true }).eq("status", "pending"),
   ]);
 
@@ -61,7 +61,7 @@ export async function chargerDashboardSales(): Promise<SalesDashboardData> {
   const { data: paiementsPeriode } = await supabaseAdmin
     .from("payments")
     .select("amount_gnf, paid_at")
-    .eq("status", "paid")
+    .eq("status", "success")
     .gte("paid_at", il30j.toISOString())
     .limit(20000);
   const parJour = new Map<string, number>();

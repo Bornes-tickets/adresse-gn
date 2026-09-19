@@ -36,11 +36,18 @@ const STATUS_LABELS: Record<string, { label: string; icon: any; color: string }>
 
 // Labels lisibles pour les modes de paiement
 const PAYMENT_LABELS: Record<string, string> = {
+  orange: "Orange Money",
+  mtn: "MTN Mobile Money",
+  card: "Carte bancaire",
+  manual: "Paiement manuel",
+  cash: "Espèces à la livraison",
+  transfer: "Virement bancaire",
+
+  // Compatibilité avec les anciennes commandes.
   orange_money: "Orange Money",
   mtn_money: "MTN Mobile Money",
   carte_bancaire: "Carte bancaire",
   paypal: "PayPal",
-  cash: "Espèces à la livraison",
   virement: "Virement bancaire",
 };
 

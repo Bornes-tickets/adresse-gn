@@ -311,7 +311,7 @@ export async function chargerDashboard(): Promise<DashboardData> {
     supabaseAdmin
       .from("payments")
       .select("amount_gnf")
-      .eq("status", "paid")
+      .eq("status", "success")
       .gte("paid_at", debutMois)
       .limit(5000),
   ]);
