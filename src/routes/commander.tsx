@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import {
   ArrowLeft,
   ArrowRight,
@@ -15,6 +16,7 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { createCheckoutOrderFn } from "@/lib/checkout.functions";
 
 export const Route = createFileRoute("/commander")({
   component: CommanderPage,
@@ -101,6 +103,7 @@ const INITIAL_DRAFT: Draft = {
 
 function CommanderPage() {
   const navigate = useNavigate();
+  const submitCheckoutOrder = useServerFn(createCheckoutOrderFn);
 
   const [step, setStep] = useState<Step>("need");
   const [draft, setDraft] = useState<Draft>(INITIAL_DRAFT);
@@ -410,8 +413,8 @@ function CommanderPage() {
       return;
     }
 
-    // Mémorise le canal choisi pour que la RPC puisse distinguer
-    // WhatsApp / e-mail / SMS tout en gardant la même signature V1.
+    // Mémorise le canal OTP choisi dans Supabase.
+    // Django relit ensuite auth.users et ces metadata côté serveur.
     const { error: metadataError } = await supabase.auth.updateUser({
       data: {
         adresse_gn_verification_channel: otpChannel,
@@ -425,48 +428,56 @@ function CommanderPage() {
       return;
     }
 
-    const { data, error: rpcError } = await supabase.rpc("submit_address_order_v1", {
-      p_plan_code: draft.planCode,
-      p_client_type: draft.clientType,
-      p_full_name: draft.fullName.trim(),
-      p_email: draft.email.trim() || null,
-      p_payment_method: draft.paymentMethod || null,
+    try {
+      const result = await submitCheckoutOrder({
+        data: {
+          planCode: draft.planCode,
+          clientType: draft.clientType,
+          fullName: draft.fullName.trim(),
+          email: draft.email.trim() || null,
+          paymentMethod: draft.paymentMethod || null,
 
-      p_place_type: draft.placeType,
-      p_place_name: draft.placeName.trim() || null,
+          placeType: draft.placeType,
+          placeName: draft.placeName.trim() || null,
 
-      p_lat: draft.lat,
-      p_lng: draft.lng,
-      p_accuracy_m: draft.accuracy,
+          lat: draft.lat,
+          lng: draft.lng,
+          accuracyM: draft.accuracy,
 
-      p_commune_id: draft.communeId,
-      p_district_id: draft.districtId,
-      p_sector_id: draft.sectorId,
+          communeId: draft.communeId,
+          districtId: draft.districtId,
+          sectorId: draft.sectorId,
 
-      p_address_line: draft.addressLine.trim() || null,
-      p_access_point_note: draft.accessPointNote.trim() || null,
+          addressLine: draft.addressLine.trim() || null,
+          accessPointNote: draft.accessPointNote.trim() || null,
 
-      p_devis_demande: false,
-      p_submission_channel: detectSubmissionChannel(),
-    });
+          devisDemande: false,
+          submissionChannel: detectSubmissionChannel(),
+        },
+      });
 
-    setLoading(false);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
 
-    if (rpcError) {
-      setError(rpcError.message || "La demande n'a pas pu être enregistrée.");
-      return;
+      const created: CreatedOrder = {
+        order_id: result.order_id,
+        order_ref: result.order_ref,
+      };
+
+      setCreatedOrder(created);
+      localStorage.removeItem(STORAGE_KEY);
+      setStep("confirmation");
+    } catch (submitError) {
+      setError(
+        submitError instanceof Error
+          ? submitError.message
+          : "La demande n'a pas pu être enregistrée.",
+      );
+    } finally {
+      setLoading(false);
     }
-
-    const result = Array.isArray(data) ? data[0] : data;
-
-    if (!result?.order_id || !result?.order_ref) {
-      setError("La demande a été traitée, mais sa référence n'a pas été retournée.");
-      return;
-    }
-
-    setCreatedOrder(result as CreatedOrder);
-    localStorage.removeItem(STORAGE_KEY);
-    setStep("confirmation");
   }
 
   return (
