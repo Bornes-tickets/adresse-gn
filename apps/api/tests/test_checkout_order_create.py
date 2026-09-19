@@ -17,7 +17,10 @@ from checkout.serializers import (
     CheckoutOrderCreateSerializer,
 )
 from checkout.services import (
+    CheckoutPlanContractError,
+    CheckoutPlanNotFoundError,
     CheckoutVerificationError,
+    _resolve_plan_contract,
     _resolve_verified_identity,
     create_checkout_order,
 )
@@ -84,6 +87,92 @@ class CheckoutContractTests(SimpleTestCase):
                 "unknown"
             ),
             "web",
+        )
+
+
+class CheckoutPlanContractTests(SimpleTestCase):
+    def test_numerique_is_canonical_digital_address(self):
+        result = _resolve_plan_contract(
+            plan_code="numerique",
+            client_type="particulier",
+            audience="individual",
+            requires_quote=False,
+            fulfillment_kind=None,
+        )
+
+        self.assertEqual(
+            result["fulfillment_kind"],
+            "digital_address",
+        )
+        self.assertFalse(
+            result["requires_quote"]
+        )
+
+    def test_pro_is_forced_to_professional_quote_before_migration(self):
+        result = _resolve_plan_contract(
+            plan_code="pro",
+            client_type="professionnel",
+            audience=None,
+            requires_quote=False,
+            fulfillment_kind=None,
+        )
+
+        self.assertEqual(
+            result["audience"],
+            "professional",
+        )
+        self.assertEqual(
+            result["fulfillment_kind"],
+            "professional_quote",
+        )
+        self.assertTrue(
+            result["requires_quote"]
+        )
+
+    def test_pro_is_rejected_for_institution(self):
+        with self.assertRaises(
+            CheckoutPlanContractError
+        ) as context:
+            _resolve_plan_contract(
+                plan_code="pro",
+                client_type="institutionnel",
+                audience=None,
+                requires_quote=False,
+                fulfillment_kind=None,
+            )
+
+        self.assertEqual(
+            context.exception.code,
+            "PLAN_NOT_AVAILABLE_FOR_CLIENT_TYPE",
+        )
+
+    def test_legacy_particulier_is_rejected_before_migration(self):
+        with self.assertRaises(
+            CheckoutPlanNotFoundError
+        ):
+            _resolve_plan_contract(
+                plan_code="particulier",
+                client_type="particulier",
+                audience=None,
+                requires_quote=False,
+                fulfillment_kind=None,
+            )
+
+    def test_unknown_active_plan_requires_explicit_fulfillment(self):
+        with self.assertRaises(
+            CheckoutPlanContractError
+        ) as context:
+            _resolve_plan_contract(
+                plan_code="future_plan",
+                client_type="particulier",
+                audience="individual",
+                requires_quote=False,
+                fulfillment_kind=None,
+            )
+
+        self.assertEqual(
+            context.exception.code,
+            "PLAN_FULFILLMENT_UNDEFINED",
         )
 
 
@@ -252,10 +341,15 @@ class CheckoutServiceTests(SimpleTestCase):
             ),
             (
                 PLAN_ID,
-                "basic",
-                100000,
+                "numerique",
+                40000,
                 0,
-                "Basique",
+                "Numérique",
+                "individual",
+                False,
+                False,
+                False,
+                None,
             ),
             (
                 ORDER_ID,
@@ -273,7 +367,7 @@ class CheckoutServiceTests(SimpleTestCase):
         result = create_checkout_order(
             user_id=USER_ID,
             payload={
-                "plan_code": "basic",
+                "plan_code": "numerique",
                 "client_type": "particulier",
                 "full_name": "Utilisateur Test",
                 "email": "contact@example.com",
@@ -322,6 +416,160 @@ class CheckoutServiceTests(SimpleTestCase):
         self.assertNotIn(
             "INSERT INTO public.order_events",
             executed_sql,
+        )
+        self.assertIn(
+            "'fulfillment_kind'",
+            executed_sql,
+        )
+        self.assertIn(
+            "'unit_price_gnf'",
+            executed_sql,
+        )
+
+        order_call = next(
+            call
+            for call in cursor.execute.call_args_list
+            if "INSERT INTO public.orders"
+            in str(call.args[0])
+        )
+        order_params = order_call.args[1]
+
+        self.assertEqual(
+            order_params[3],
+            40000,
+        )
+        self.assertEqual(
+            order_params[9],
+            "digital_address",
+        )
+        self.assertFalse(
+            order_params[15]
+        )
+        self.assertEqual(
+            order_params[18],
+            40000,
+        )
+        self.assertEqual(
+            order_params[19],
+            "orange",
+        )
+
+    @patch(
+        "checkout.services.transaction.atomic"
+    )
+    @patch(
+        "checkout.services.connection"
+    )
+    def test_service_forces_pro_quote_contract(
+        self,
+        connection_mock,
+        atomic_mock,
+    ):
+        verified_at = datetime(
+            2026,
+            9,
+            19,
+            9,
+            0,
+            tzinfo=timezone.utc,
+        )
+
+        cursor = MagicMock()
+        cursor.fetchone.side_effect = [
+            (
+                "+224611223344",
+                "user@example.com",
+                verified_at,
+                None,
+                {
+                    (
+                        "adresse_gn_"
+                        "verification_channel"
+                    ): "sms",
+                },
+            ),
+            (
+                PLAN_ID,
+                "pro",
+                450000,
+                0,
+                "Professionnel",
+                None,
+                False,
+                False,
+                False,
+                None,
+            ),
+            (
+                ORDER_ID,
+                "ORD-20260919-00002",
+            ),
+        ]
+
+        connection_mock.cursor.return_value = (
+            cursor_context(cursor)
+        )
+        atomic_mock.return_value = (
+            cursor_context(MagicMock())
+        )
+
+        result = create_checkout_order(
+            user_id=USER_ID,
+            payload={
+                "plan_code": "pro",
+                "client_type": "professionnel",
+                "full_name": "Entreprise Test",
+                "email": "contact@example.com",
+                "payment_method": "orange",
+                "place_type": "company",
+                "place_name": "Siège",
+                "lat": 9.6412,
+                "lng": -13.5784,
+                "accuracy_m": 5,
+                "address_line": "Conakry",
+                "devis_demande": False,
+                "submission_channel": "web",
+            },
+        )
+
+        self.assertEqual(
+            result["order_ref"],
+            "ORD-20260919-00002",
+        )
+
+        order_call = next(
+            call
+            for call in cursor.execute.call_args_list
+            if "INSERT INTO public.orders"
+            in str(call.args[0])
+        )
+        order_params = order_call.args[1]
+
+        self.assertEqual(
+            order_params[3],
+            0,
+        )
+        self.assertEqual(
+            order_params[4],
+            0,
+        )
+        self.assertEqual(
+            order_params[8],
+            0,
+        )
+        self.assertEqual(
+            order_params[9],
+            "professional_quote",
+        )
+        self.assertTrue(
+            order_params[15]
+        )
+        self.assertEqual(
+            order_params[18],
+            0,
+        )
+        self.assertIsNone(
+            order_params[19]
         )
 
 

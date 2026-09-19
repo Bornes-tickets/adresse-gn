@@ -14,6 +14,7 @@ from .services import (
     CheckoutAuthUserNotFoundError,
     CheckoutInputError,
     CheckoutOrderError,
+    CheckoutPlanContractError,
     CheckoutPlanNotFoundError,
     CheckoutVerificationError,
     create_checkout_order,
@@ -90,6 +91,15 @@ class CheckoutOrderCreateView(APIView):
                     "code": exc.code,
                 },
                 status=status.HTTP_404_NOT_FOUND,
+            )
+
+        except CheckoutPlanContractError as exc:
+            return Response(
+                {
+                    "detail": str(exc),
+                    "code": exc.code,
+                },
+                status=status.HTTP_409_CONFLICT,
             )
 
         except CheckoutInputError as exc:

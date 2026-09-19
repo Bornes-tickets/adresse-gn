@@ -182,11 +182,16 @@ function CommanderPage() {
       return;
     }
 
-    setPlans((data ?? []) as unknown as Plan[]);
+    setPlans(
+      ((data ?? []) as unknown as Plan[]).map(
+        canonicalizeCommanderPlan,
+      ),
+    );
   }
 
   const visiblePlans = useMemo(() => {
     return plans.filter((plan) => {
+      if (!plan.active) return false;
       if (!plan.audience) return true;
 
       if (draft.clientType === "particulier") {
@@ -201,8 +206,26 @@ function CommanderPage() {
     });
   }, [plans, draft.clientType]);
 
+  const selectedPlan = useMemo(
+    () =>
+      plans.find(
+        (plan) =>
+          plan.code === draft.planCode
+          && plan.active,
+      ) ?? null,
+    [plans, draft.planCode],
+  );
+
   function updateDraft<K extends keyof Draft>(key: K, value: Draft[K]) {
     setDraft((current) => ({ ...current, [key]: value }));
+  }
+
+  function changeClientType(value: Draft["clientType"]) {
+    setDraft((current) => ({
+      ...current,
+      clientType: value,
+      planCode: "",
+    }));
   }
 
   function goNext() {
@@ -239,8 +262,12 @@ function CommanderPage() {
     }
 
     if (step === "offer") {
-      if (!draft.planCode) {
-        setError("Choisissez une offre.");
+      const planIsVisible = visiblePlans.some(
+        (plan) => plan.code === draft.planCode,
+      );
+
+      if (!draft.planCode || !selectedPlan || !planIsVisible) {
+        setError("Choisissez une offre disponible pour votre profil.");
         return;
       }
 
@@ -435,7 +462,9 @@ function CommanderPage() {
           clientType: draft.clientType,
           fullName: draft.fullName.trim(),
           email: draft.email.trim() || null,
-          paymentMethod: draft.paymentMethod || null,
+          paymentMethod: selectedPlan?.requires_quote
+            ? null
+            : draft.paymentMethod || null,
 
           placeType: draft.placeType,
           placeName: draft.placeName.trim() || null,
@@ -451,7 +480,9 @@ function CommanderPage() {
           addressLine: draft.addressLine.trim() || null,
           accessPointNote: draft.accessPointNote.trim() || null,
 
-          devisDemande: false,
+          devisDemande: Boolean(
+            selectedPlan?.requires_quote,
+          ),
           submissionChannel: detectSubmissionChannel(),
         },
       });
@@ -514,7 +545,7 @@ function CommanderPage() {
           {step === "need" && (
             <NeedStep
               draft={draft}
-              onClientType={(value) => updateDraft("clientType", value)}
+              onClientType={changeClientType}
               onPlaceType={(value) => updateDraft("placeType", value)}
             />
           )}
@@ -566,6 +597,9 @@ function CommanderPage() {
           {step === "confirmation" && (
             <ConfirmationStep
               createdOrder={createdOrder}
+              isQuote={Boolean(
+                selectedPlan?.requires_quote,
+              )}
               onHome={() => navigate({ to: "/" })}
             />
           )}
@@ -1136,9 +1170,11 @@ function OtpChannelCard({
 
 function ConfirmationStep({
   createdOrder,
+  isQuote,
   onHome,
 }: {
   createdOrder: CreatedOrder | null;
+  isQuote: boolean;
   onHome: () => void;
 }) {
   return (
@@ -1148,11 +1184,13 @@ function ConfirmationStep({
       </div>
 
       <p className="mt-5 text-sm font-semibold text-[#16B7A5]">
-        Demande enregistrée
+        {isQuote ? "Demande de devis enregistrée" : "Demande enregistrée"}
       </p>
 
       <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
-        Votre demande Adresse GN a bien été reçue.
+        {isQuote
+          ? "Votre demande de devis Adresse GN a bien été reçue."
+          : "Votre demande Adresse GN a bien été reçue."}
       </h1>
 
       {createdOrder?.order_ref && (
@@ -1167,8 +1205,9 @@ function ConfirmationStep({
       )}
 
       <p className="mt-5 text-sm leading-6 text-slate-600">
-        Vous pourrez suivre la validation, l'attribution de votre numéro Adresse GN
-        et l'installation éventuelle de votre plaque.
+        {isQuote
+          ? "Notre équipe étudiera votre besoin et vous contactera avant toute facturation."
+          : "Vous pourrez suivre la validation, l'attribution de votre numéro Adresse GN et l'installation éventuelle de votre plaque."}
       </p>
 
       <button
@@ -1331,6 +1370,56 @@ function localized(value: Record<string, string> | null, fallback: string) {
   if (!value) return fallback;
   return value.fr || value.en || fallback;
 }
+
+function canonicalizeCommanderPlan(plan: Plan): Plan {
+  if (plan.code === "numerique") {
+    return {
+      ...plan,
+      audience: "individual",
+      requires_quote: false,
+      plate_available: false,
+      plate_included: false,
+      installation_required: false,
+      active: true,
+    };
+  }
+
+  if (plan.code === "residentiel_standard") {
+    return {
+      ...plan,
+      audience: "residential",
+      requires_quote: false,
+      plate_available: true,
+      plate_included: true,
+      installation_required: true,
+      active: true,
+    };
+  }
+
+  if (plan.code === "pro") {
+    return {
+      ...plan,
+      audience: "professional",
+      requires_quote: true,
+      plate_available: false,
+      plate_included: false,
+      installation_required: false,
+      active: true,
+    };
+  }
+
+  if (plan.code === "particulier") {
+    return {
+      ...plan,
+      audience: "legacy",
+      popular: false,
+      active: false,
+    };
+  }
+
+  return plan;
+}
+
 
 function formatGnf(value: number | null | undefined) {
   if (value === null || value === undefined) return "Sur devis";

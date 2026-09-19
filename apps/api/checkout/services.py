@@ -37,6 +37,143 @@ class CheckoutPlanNotFoundError(CheckoutOrderError):
     code = "PLAN_NOT_FOUND_OR_INACTIVE"
 
 
+class CheckoutPlanContractError(CheckoutOrderError):
+    code = "PLAN_CONTRACT_ERROR"
+
+    def __init__(self, code: str):
+        super().__init__(code)
+        self.code = code
+
+
+_CANONICAL_PLAN_OVERRIDES = {
+    "numerique": {
+        "active": True,
+        "audience": "individual",
+        "requires_quote": False,
+        "fulfillment_kind": "digital_address",
+    },
+    "residentiel_standard": {
+        "active": True,
+        "audience": "residential",
+        "requires_quote": False,
+        "fulfillment_kind": "physical_installation",
+    },
+    "pro": {
+        "active": True,
+        "audience": "professional",
+        "requires_quote": True,
+        "fulfillment_kind": "professional_quote",
+    },
+    "particulier": {
+        "active": False,
+        "audience": "legacy",
+        "requires_quote": False,
+        "fulfillment_kind": "legacy",
+    },
+}
+
+
+def _audience_allows_client(
+    *,
+    audience: str | None,
+    client_type: str,
+) -> bool:
+    normalized = str(
+        audience or ""
+    ).strip().lower()
+
+    if client_type == "particulier":
+        return normalized in {
+            "individual",
+            "residential",
+        }
+
+    if client_type == "professionnel":
+        return normalized in {
+            "business",
+            "professional",
+            "api",
+        }
+
+    return normalized in {
+        "institution",
+        "institutional",
+        "business",
+    }
+
+
+def _resolve_plan_contract(
+    *,
+    plan_code: str,
+    client_type: str,
+    audience: str | None,
+    requires_quote: bool,
+    fulfillment_kind: str | None,
+) -> dict[str, Any]:
+    override = _CANONICAL_PLAN_OVERRIDES.get(
+        plan_code
+    )
+
+    if override is not None:
+        if not override["active"]:
+            raise CheckoutPlanNotFoundError(
+                "PLAN_NOT_FOUND_OR_INACTIVE"
+            )
+
+        effective_audience = str(
+            override["audience"]
+        )
+        effective_requires_quote = bool(
+            override["requires_quote"]
+        )
+        effective_fulfillment = str(
+            override["fulfillment_kind"]
+        )
+
+    else:
+        effective_audience = str(
+            audience or ""
+        ).strip().lower()
+
+        effective_requires_quote = bool(
+            requires_quote
+        )
+
+        effective_fulfillment = str(
+            fulfillment_kind or ""
+        ).strip().lower()
+
+        if not effective_fulfillment:
+            raise CheckoutPlanContractError(
+                "PLAN_FULFILLMENT_UNDEFINED"
+            )
+
+        if effective_fulfillment == "legacy":
+            raise CheckoutPlanNotFoundError(
+                "PLAN_NOT_FOUND_OR_INACTIVE"
+            )
+
+        if effective_fulfillment in {
+            "professional_quote",
+            "institutional_quote",
+        }:
+            effective_requires_quote = True
+
+    if not _audience_allows_client(
+        audience=effective_audience,
+        client_type=client_type,
+    ):
+        raise CheckoutPlanContractError(
+            "PLAN_NOT_AVAILABLE_FOR_CLIENT_TYPE"
+        )
+
+    return {
+        "audience": effective_audience,
+        "requires_quote": effective_requires_quote,
+        "fulfillment_kind": effective_fulfillment,
+    }
+
+
 def _metadata_dict(value: Any) -> dict[str, Any]:
     if isinstance(value, dict):
         return value
@@ -241,22 +378,27 @@ def _create_checkout_order(
         cursor.execute(
             """
             SELECT
-                id,
-                code,
-                price_gnf,
+                p.id,
+                p.code,
+                p.price_gnf,
                 COALESCE(
-                    recurring_price_gnf,
+                    p.recurring_price_gnf,
                     0
                 ),
                 COALESCE(
-                    NULLIF(name ->> 'fr', ''),
-                    NULLIF(name ->> 'en', ''),
-                    code
-                )
-            FROM public.cms_plans
+                    NULLIF(p.name ->> 'fr', ''),
+                    NULLIF(p.name ->> 'en', ''),
+                    p.code
+                ),
+                p.audience,
+                p.requires_quote,
+                p.plate_included,
+                p.installation_required,
+                to_jsonb(p) ->> 'fulfillment_kind'
+            FROM public.cms_plans p
             WHERE
-                code = %s
-                AND active = true
+                p.code = %s
+                AND p.active = true
             LIMIT 1
             """,
             [payload.get("plan_code")],
@@ -275,7 +417,50 @@ def _create_checkout_order(
             price_gnf,
             recurring_price_gnf,
             plan_label,
+            plan_audience,
+            plan_requires_quote,
+            _plan_plate_included,
+            _plan_installation_required,
+            plan_fulfillment_kind,
         ) = plan
+
+        plan_contract = _resolve_plan_contract(
+            plan_code=str(plan_code),
+            client_type=client_type,
+            audience=plan_audience,
+            requires_quote=bool(
+                plan_requires_quote
+            ),
+            fulfillment_kind=plan_fulfillment_kind,
+        )
+
+        is_quote = bool(
+            plan_contract["requires_quote"]
+        )
+
+        fulfillment_kind = str(
+            plan_contract["fulfillment_kind"]
+        )
+
+        order_amount_gnf = (
+            0
+            if is_quote
+            else int(price_gnf)
+        )
+
+        order_recurring_gnf = (
+            0
+            if is_quote
+            else int(recurring_price_gnf)
+        )
+
+        order_payment_method = (
+            None
+            if is_quote
+            else payment_method
+        )
+
+        order_devis_demande = is_quote
 
         cursor.execute(
             """
@@ -348,9 +533,15 @@ def _create_checkout_order(
                     jsonb_build_object(
                         'qty',
                         1,
+                        'ref',
+                        %s,
                         'code',
                         %s,
                         'label',
+                        %s,
+                        'unit_price_gnf',
+                        %s,
+                        'fulfillment_kind',
                         %s
                     )
                 ),
@@ -379,25 +570,23 @@ def _create_checkout_order(
                 user_id,
                 plan_id,
                 plan_code,
-                price_gnf,
-                recurring_price_gnf,
+                order_amount_gnf,
+                order_recurring_gnf,
+                plan_code,
                 plan_code,
                 plan_label,
+                order_amount_gnf,
+                fulfillment_kind,
                 client_type,
                 full_name,
                 identity["phone"],
                 identity["email"],
                 payload.get("address_line"),
-                bool(
-                    payload.get(
-                        "devis_demande",
-                        False,
-                    )
-                ),
+                order_devis_demande,
                 plan_code,
                 plan_label,
-                price_gnf,
-                payment_method,
+                order_amount_gnf,
+                order_payment_method,
                 identity["phone_verified_at"],
                 identity["channel"],
                 identity["identity_verified_at"],
