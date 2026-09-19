@@ -17,6 +17,11 @@ urlpatterns = [
     ),
 
     path(
+        "api/v1/checkout/",
+        include("checkout.urls"),
+    ),
+
+    path(
         "api/v1/backoffice/",
         include("backoffice.urls"),
     ),
