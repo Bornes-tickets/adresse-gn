@@ -564,7 +564,8 @@ def _create_checkout_order(
             )
             RETURNING
                 id,
-                order_ref
+                order_ref,
+                guest_token
             """,
             [
                 user_id,
@@ -603,6 +604,7 @@ def _create_checkout_order(
 
         order_id = order_row[0]
         order_ref = order_row[1]
+        guest_token = order_row[2]
 
         place_type = str(
             payload.get("place_type") or ""
@@ -680,6 +682,7 @@ def _create_checkout_order(
     return {
         "order_id": str(order_id),
         "order_ref": str(order_ref),
+        "guest_token": str(guest_token),
     }
 
 

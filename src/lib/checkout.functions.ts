@@ -33,6 +33,7 @@ export type CheckoutOrderResult =
       ok: true;
       order_id: string;
       order_ref: string;
+      guest_token: string;
     }
   | {
       ok: false;
@@ -277,6 +278,10 @@ export const createCheckoutOrderFn = createServerFn({
       || Array.isArray(payload)
       || typeof (payload as { order_id?: unknown }).order_id !== "string"
       || typeof (payload as { order_ref?: unknown }).order_ref !== "string"
+      || typeof (payload as { guest_token?: unknown }).guest_token !== "string"
+      || !/^[A-Za-z0-9_-]{16}$/.test(
+        (payload as { guest_token: string }).guest_token,
+      )
     ) {
       return {
         ok: false,
@@ -290,5 +295,6 @@ export const createCheckoutOrderFn = createServerFn({
       ok: true,
       order_id: (payload as { order_id: string }).order_id,
       order_ref: (payload as { order_ref: string }).order_ref,
+      guest_token: (payload as { guest_token: string }).guest_token,
     };
   });

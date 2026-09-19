@@ -35,6 +35,7 @@ PLAN_ID = UUID(
 ORDER_ID = UUID(
     "22222222-2222-4222-8222-222222222222"
 )
+GUEST_TOKEN = "AbCdEf012345_-xy"
 
 
 def cursor_context(cursor):
@@ -354,6 +355,7 @@ class CheckoutServiceTests(SimpleTestCase):
             (
                 ORDER_ID,
                 "ORD-20260919-00001",
+                GUEST_TOKEN,
             ),
         ]
 
@@ -393,6 +395,10 @@ class CheckoutServiceTests(SimpleTestCase):
         self.assertEqual(
             result["order_ref"],
             "ORD-20260919-00001",
+        )
+        self.assertEqual(
+            result["guest_token"],
+            GUEST_TOKEN,
         )
 
         executed_sql = "\n".join(
@@ -503,6 +509,7 @@ class CheckoutServiceTests(SimpleTestCase):
             (
                 ORDER_ID,
                 "ORD-20260919-00002",
+                GUEST_TOKEN,
             ),
         ]
 
@@ -595,6 +602,7 @@ class CheckoutOrderCreateViewTests(SimpleTestCase):
             "order_ref": (
                 "ORD-20260919-00001"
             ),
+            "guest_token": GUEST_TOKEN,
         }
 
         response = self.client.post(
@@ -619,6 +627,10 @@ class CheckoutOrderCreateViewTests(SimpleTestCase):
         self.assertEqual(
             response.data["order_ref"],
             "ORD-20260919-00001",
+        )
+        self.assertEqual(
+            response.data["guest_token"],
+            GUEST_TOKEN,
         )
 
         create_mock.assert_called_once()

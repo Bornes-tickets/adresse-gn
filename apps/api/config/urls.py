@@ -22,6 +22,11 @@ urlpatterns = [
     ),
 
     path(
+        "api/v1/tracking/",
+        include("tracking.urls"),
+    ),
+
+    path(
         "api/v1/backoffice/",
         include("backoffice.urls"),
     ),

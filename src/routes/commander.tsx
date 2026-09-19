@@ -72,6 +72,7 @@ type Draft = {
 type CreatedOrder = {
   order_id: string;
   order_ref: string;
+  guest_token: string;
 };
 
 const STORAGE_KEY = "adresse-gn-commander-v1";
@@ -495,6 +496,7 @@ function CommanderPage() {
       const created: CreatedOrder = {
         order_id: result.order_id,
         order_ref: result.order_ref,
+        guest_token: result.guest_token,
       };
 
       setCreatedOrder(created);
@@ -600,6 +602,13 @@ function CommanderPage() {
               isQuote={Boolean(
                 selectedPlan?.requires_quote,
               )}
+              onTrack={() => {
+                if (!createdOrder?.guest_token) return;
+                navigate({
+                  to: "/suivi/$token",
+                  params: { token: createdOrder.guest_token },
+                });
+              }}
               onHome={() => navigate({ to: "/" })}
             />
           )}
@@ -1171,10 +1180,12 @@ function OtpChannelCard({
 function ConfirmationStep({
   createdOrder,
   isQuote,
+  onTrack,
   onHome,
 }: {
   createdOrder: CreatedOrder | null;
   isQuote: boolean;
+  onTrack: () => void;
   onHome: () => void;
 }) {
   return (
@@ -1210,10 +1221,20 @@ function ConfirmationStep({
           : "Vous pourrez suivre la validation, l'attribution de votre numéro Adresse GN et l'installation éventuelle de votre plaque."}
       </p>
 
+      {createdOrder?.guest_token && (
+        <button
+          type="button"
+          onClick={onTrack}
+          className="mt-7 h-12 w-full rounded-2xl bg-[#2E4A7B] px-5 font-semibold text-white"
+        >
+          Suivre ma demande
+        </button>
+      )}
+
       <button
         type="button"
         onClick={onHome}
-        className="mt-7 h-12 w-full rounded-2xl bg-[#2E4A7B] px-5 font-semibold text-white"
+        className="mt-3 h-12 w-full rounded-2xl border border-slate-300 bg-white px-5 font-semibold text-slate-700"
       >
         Retour à l'accueil
       </button>

@@ -126,3 +126,6 @@ class CheckoutOrderCreateSerializer(serializers.Serializer):
 class CheckoutOrderCreatedSerializer(serializers.Serializer):
     order_id = serializers.UUIDField()
     order_ref = serializers.CharField()
+    guest_token = serializers.RegexField(
+        regex=r"^[A-Za-z0-9_-]{16}$",
+    )

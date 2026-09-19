@@ -8,4 +8,8 @@ urlpatterns = [
         "api/v1/checkout/",
         include("checkout.urls"),
     ),
+    path(
+        "api/v1/tracking/",
+        include("tracking.urls"),
+    ),
 ]

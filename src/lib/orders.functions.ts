@@ -83,15 +83,75 @@ export const createOrder = createServerFn({ method: "POST" })
     return createServerOrder(data);
   });
 
+export type PublicTrackingOrder = {
+  id: string;
+  order_ref: string;
+  status:
+    | "pending"
+    | "confirmed"
+    | "in_progress"
+    | "installed"
+    | "active"
+    | "cancelled"
+    | "refunded";
+  client_type: string | null;
+  full_name: string | null;
+  phone: string | null;
+  address_line: string | null;
+  quartier: string | null;
+  formule_code: string | null;
+  formule_label: string | null;
+  prix_ttc: number;
+  payment_method: string | null;
+  devis_demande: boolean;
+  fulfillment_kind: string;
+  installation_status: string | null;
+  created_at: string;
+};
+
+function djangoApiBase(): string {
+  const configured = process.env["DJANGO_API_URL"]?.trim();
+  if (configured) return configured.replace(/\/+$/, "");
+  if (process.env["NODE_ENV"] !== "production") {
+    return "http://127.0.0.1:8000";
+  }
+  throw new Error(
+    "DJANGO_API_URL manquante sur le serveur frontend.",
+  );
+}
+
 // ============================================================
-// LIRE UNE COMMANDE PAR SON TOKEN (public tracking)
+// LIRE UNE COMMANDE PAR SON TOKEN (public tracking via Django)
 // ============================================================
 export const getOrderByToken = createServerFn({ method: "POST" })
-  .inputValidator((input: { token: string }) => {
-    if (!input?.token) throw new Error("Token requis");
-    return { token: input.token.slice(0, 64) };
+  .validator((input: { token: string }) => {
+    const token = String(input?.token ?? "").trim();
+    if (!/^[A-Za-z0-9_-]{16}$/.test(token)) {
+      throw new Error("Token de suivi invalide.");
+    }
+    return { token };
   })
-  .handler(async ({ data }) => {
-    const { fetchOrderByToken } = await import("@/lib/orders.server");
-    return fetchOrderByToken(data.token);
+  .handler(async ({ data }): Promise<PublicTrackingOrder | null> => {
+    const baseUrl = djangoApiBase();
+    let response: Response;
+    try {
+      response = await fetch(
+        `${baseUrl}/api/v1/tracking/orders/${encodeURIComponent(data.token)}/`,
+        {
+          method: "GET",
+          headers: { Accept: "application/json" },
+        },
+      );
+    } catch {
+      throw new Error(
+        "Le service de suivi est momentanément indisponible.",
+      );
+    }
+    if (response.status === 404) return null;
+    if (!response.ok) {
+      throw new Error(
+        `Le service de suivi a répondu avec le statut ${response.status}.`,
+      );
+    }
+    return (await response.json()) as PublicTrackingOrder;
   });

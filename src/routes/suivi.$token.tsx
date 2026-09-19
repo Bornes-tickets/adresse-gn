@@ -26,12 +26,13 @@ export const Route = createFileRoute("/suivi/$token")({
 
 const STATUS_ORDER = ["pending", "confirmed", "in_progress", "installed", "active"] as const;
 const STATUS_LABELS: Record<string, { label: string; icon: any; color: string }> = {
-  pending: { label: "En attente de validation", icon: Clock, color: "text-amber-600 bg-amber-50" },
-  confirmed: { label: "Confirmée · agent assigné", icon: Check, color: "text-sky-600 bg-sky-50" },
-  in_progress: { label: "Agent en route", icon: Truck, color: "text-violet-600 bg-violet-50" },
-  installed: { label: "Plaque posée", icon: Package, color: "text-emerald-600 bg-emerald-50" },
+  pending: { label: "Demande reçue", icon: Clock, color: "text-amber-600 bg-amber-50" },
+  confirmed: { label: "Paiement confirmé · traitement en cours", icon: Check, color: "text-sky-600 bg-sky-50" },
+  in_progress: { label: "Installation planifiée", icon: Truck, color: "text-violet-600 bg-violet-50" },
+  installed: { label: "Installation terminée", icon: Package, color: "text-emerald-600 bg-emerald-50" },
   active: { label: "Adresse active ✓", icon: MapPin, color: "text-emerald-700 bg-emerald-100" },
   cancelled: { label: "Annulée", icon: AlertCircle, color: "text-rose-600 bg-rose-50" },
+  refunded: { label: "Remboursée", icon: AlertCircle, color: "text-rose-600 bg-rose-50" },
 };
 
 // Labels lisibles pour les modes de paiement
@@ -153,13 +154,23 @@ function SuiviPage() {
 
   const currentStatus = STATUS_LABELS[order.status] ?? STATUS_LABELS.pending;
   const CurrentIcon = currentStatus.icon;
-  const currentIndex = STATUS_ORDER.indexOf(order.status as any);
+
+  const progressStatuses =
+    order.fulfillment_kind === "physical_installation"
+      ? [...STATUS_ORDER]
+      : (["pending", "confirmed", "active"] as const);
+
+  const currentIndex = progressStatuses.indexOf(order.status as any);
 
   // Affichages lisibles
   const formuleAffichee =
     order.formule_label || FORMULE_LABELS[order.formule_code] || order.formule_code;
   const paiementAffiche =
-    PAYMENT_LABELS[order.payment_method] || order.payment_method;
+    order.devis_demande
+      ? "Sur devis"
+      : PAYMENT_LABELS[order.payment_method ?? ""]
+        || order.payment_method
+        || "À définir";
   const typeAffiche =
     CLIENT_TYPE_LABELS[order.client_type] || order.client_type;
 
@@ -181,16 +192,19 @@ function SuiviPage() {
           </div>
 
           {/* Progression */}
-          {order.status !== "cancelled" && (
+          {!order.devis_demande
+            && order.status !== "cancelled"
+            && order.status !== "refunded"
+            && currentIndex >= 0 && (
             <div className="mt-6">
               <div className="relative flex items-center justify-between">
                 <div aria-hidden className="absolute left-4 right-4 top-3 h-0.5 bg-slate-200" />
                 <div
                   aria-hidden
                   className="absolute left-4 top-3 h-0.5 bg-accent transition-all"
-                  style={{ width: `calc(${(currentIndex / (STATUS_ORDER.length - 1)) * 100}% - 32px)` }}
+                  style={{ width: `calc(${(currentIndex / (progressStatuses.length - 1)) * 100}% - 32px)` }}
                 />
-                {STATUS_ORDER.map((s, i) => {
+                {progressStatuses.map((s, i) => {
                   const done = i <= currentIndex;
                   return (
                     <div key={s} className="relative z-10 flex flex-col items-center gap-1.5">
