@@ -154,12 +154,19 @@ export const createCheckoutOrderFn = createServerFn({
       throw new Error("Type de client invalide.");
     }
 
-    if (
-      (input?.lat == null) !==
-      (input?.lng == null)
-    ) {
+    if (input?.lat == null || input?.lng == null) {
       throw new Error(
-        "Latitude et longitude doivent être fournies ensemble.",
+        "Position GPS manquante.",
+      );
+    }
+
+    const communeId = String(
+      input?.communeId ?? "",
+    ).trim();
+
+    if (!communeId) {
+      throw new Error(
+        "Commune manquante.",
       );
     }
 
@@ -177,7 +184,7 @@ export const createCheckoutOrderFn = createServerFn({
       lng: input.lng ?? null,
       accuracyM: input.accuracyM ?? null,
 
-      communeId: input.communeId ?? null,
+      communeId,
       districtId: input.districtId ?? null,
       sectorId: input.sectorId ?? null,
 

@@ -21,6 +21,12 @@ class CheckoutInputError(CheckoutOrderError):
     code = "INVALID_INPUT"
 
 
+class CheckoutGeoError(CheckoutInputError):
+    def __init__(self, code: str, message: str):
+        super().__init__(message)
+        self.code = code
+
+
 class CheckoutAuthUserNotFoundError(CheckoutOrderError):
     code = "AUTH_USER_NOT_FOUND"
 
@@ -306,25 +312,36 @@ def _create_checkout_order(
     lat = payload.get("lat")
     lng = payload.get("lng")
 
-    if (lat is None) != (lng is None):
-        raise CheckoutInputError(
-            "LAT_LNG_MUST_BE_PROVIDED_TOGETHER"
+    if lat is None or lng is None:
+        raise CheckoutGeoError(
+            "LOCATION_REQUIRED",
+            "La position GPS est obligatoire.",
         )
 
-    if (
-        lat is not None
-        and not (-90 <= float(lat) <= 90)
-    ):
+    if not (-90 <= float(lat) <= 90):
         raise CheckoutInputError(
             "INVALID_LATITUDE"
         )
 
-    if (
-        lng is not None
-        and not (-180 <= float(lng) <= 180)
-    ):
+    if not (-180 <= float(lng) <= 180):
         raise CheckoutInputError(
             "INVALID_LONGITUDE"
+        )
+
+    commune_id = payload.get("commune_id")
+    district_id = payload.get("district_id")
+    sector_id = payload.get("sector_id")
+
+    if commune_id is None:
+        raise CheckoutGeoError(
+            "COMMUNE_REQUIRED",
+            "La commune est obligatoire.",
+        )
+
+    if sector_id is not None and district_id is None:
+        raise CheckoutGeoError(
+            "SECTOR_REQUIRES_DISTRICT",
+            "Le secteur doit être rattaché à un district/quartier.",
         )
 
     with connection.cursor() as cursor:
@@ -374,6 +391,78 @@ def _create_checkout_order(
             user_metadata=auth_row[4],
             requested_email=payload.get("email"),
         )
+
+        cursor.execute(
+            """
+            SELECT
+                c.id,
+                c.region_id,
+                r.code
+            FROM public.communes c
+            JOIN public.regions r
+              ON r.id=c.region_id
+            WHERE
+                c.id=%s
+                AND c.is_active=true
+                AND r.is_active=true
+            LIMIT 1
+            """,
+            [commune_id],
+        )
+
+        commune_row = cursor.fetchone()
+
+        if commune_row is None:
+            raise CheckoutGeoError(
+                "COMMUNE_NOT_FOUND_OR_INACTIVE",
+                "Commune introuvable ou inactive.",
+            )
+
+        if district_id is not None:
+            cursor.execute(
+                """
+                SELECT d.id
+                FROM public.districts d
+                WHERE
+                    d.id=%s
+                    AND d.commune_id=%s
+                    AND d.is_active=true
+                LIMIT 1
+                """,
+                [district_id, commune_id],
+            )
+
+            if cursor.fetchone() is None:
+                raise CheckoutGeoError(
+                    "DISTRICT_NOT_IN_COMMUNE",
+                    (
+                        "Le district/quartier ne correspond pas "
+                        "à la commune sélectionnée."
+                    ),
+                )
+
+        if sector_id is not None:
+            cursor.execute(
+                """
+                SELECT s.id
+                FROM public.sectors s
+                WHERE
+                    s.id=%s
+                    AND s.district_id=%s
+                    AND s.is_active=true
+                LIMIT 1
+                """,
+                [sector_id, district_id],
+            )
+
+            if cursor.fetchone() is None:
+                raise CheckoutGeoError(
+                    "SECTOR_NOT_IN_DISTRICT",
+                    (
+                        "Le secteur ne correspond pas au "
+                        "district/quartier sélectionné."
+                    ),
+                )
 
         cursor.execute(
             """
@@ -671,9 +760,9 @@ def _create_checkout_order(
                 lng,
                 lat,
                 payload.get("accuracy_m"),
-                payload.get("commune_id"),
-                payload.get("district_id"),
-                payload.get("sector_id"),
+                commune_id,
+                district_id,
+                sector_id,
                 payload.get("address_line"),
                 payload.get("access_point_note"),
             ],

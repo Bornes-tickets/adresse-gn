@@ -43,19 +43,19 @@ class CheckoutOrderCreateSerializer(serializers.Serializer):
         trim_whitespace=False,
     )
     lat = serializers.FloatField(
-        required=False,
-        allow_null=True,
+        required=True,
+        allow_null=False,
         min_value=-90,
         max_value=90,
     )
     lng = serializers.FloatField(
-        required=False,
-        allow_null=True,
+        required=True,
+        allow_null=False,
         min_value=-180,
         max_value=180,
     )
     accuracy_m = serializers.FloatField(required=False, allow_null=True)
-    commune_id = serializers.UUIDField(required=False, allow_null=True)
+    commune_id = serializers.UUIDField(required=True, allow_null=False)
     district_id = serializers.UUIDField(required=False, allow_null=True)
     sector_id = serializers.UUIDField(required=False, allow_null=True)
     address_line = serializers.CharField(
@@ -107,15 +107,15 @@ class CheckoutOrderCreateSerializer(serializers.Serializer):
         return value
 
     def validate(self, attrs):
-        lat = attrs.get("lat")
-        lng = attrs.get("lng")
+        district_id = attrs.get("district_id")
+        sector_id = attrs.get("sector_id")
 
-        if (lat is None) != (lng is None):
+        if sector_id is not None and district_id is None:
             raise serializers.ValidationError(
                 {
-                    "location": (
-                        "Latitude et longitude doivent "
-                        "être fournies ensemble."
+                    "sector_id": (
+                        "Un secteur doit être rattaché "
+                        "à un district/quartier."
                     ),
                 }
             )

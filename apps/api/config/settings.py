@@ -91,6 +91,30 @@ SUPABASE_JWT_AUDIENCE = env(
 
 
 # ============================================================
+# FACTURATION
+# ============================================================
+#
+# Ces valeurs doivent représenter l'entité juridique qui émet
+# réellement les factures Adresse GN. Aucun fallback fictif :
+# la génération PDF doit rester bloquée tant qu'elles ne sont
+# pas explicitement configurées dans apps/api/.env / production.
+INVOICE_LEGAL_NAME = env(
+    "INVOICE_LEGAL_NAME",
+    default="",
+).strip()
+
+INVOICE_LEGAL_ADDRESS = env(
+    "INVOICE_LEGAL_ADDRESS",
+    default="",
+).strip()
+
+INVOICE_LEGAL_ID = env(
+    "INVOICE_LEGAL_ID",
+    default="",
+).strip()
+
+
+# ============================================================
 # APPLICATIONS
 # ============================================================
 

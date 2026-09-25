@@ -36,6 +36,12 @@ ORDER_ID = UUID(
     "22222222-2222-4222-8222-222222222222"
 )
 GUEST_TOKEN = "AbCdEf012345_-xy"
+COMMUNE_ID = UUID(
+    "33333333-3333-4333-8333-333333333333"
+)
+REGION_ID = UUID(
+    "44444444-4444-4444-8444-444444444444"
+)
 
 
 def cursor_context(cursor):
@@ -187,6 +193,7 @@ class CheckoutSerializerTests(SimpleTestCase):
                 "payment_method": "orange_money",
                 "lat": 9.6412,
                 "lng": -13.5784,
+                "commune_id": str(COMMUNE_ID),
             }
         )
 
@@ -207,13 +214,13 @@ class CheckoutSerializerTests(SimpleTestCase):
             "orange",
         )
 
-    def test_lat_without_lng_is_rejected(self):
+    def test_missing_location_is_rejected(self):
         serializer = CheckoutOrderCreateSerializer(
             data={
                 "plan_code": "basic",
                 "client_type": "particulier",
                 "full_name": "Test",
-                "lat": 9.6412,
+                "commune_id": str(COMMUNE_ID),
             }
         )
 
@@ -221,7 +228,30 @@ class CheckoutSerializerTests(SimpleTestCase):
             serializer.is_valid()
         )
         self.assertIn(
-            "location",
+            "lat",
+            serializer.errors,
+        )
+        self.assertIn(
+            "lng",
+            serializer.errors,
+        )
+
+    def test_missing_commune_is_rejected(self):
+        serializer = CheckoutOrderCreateSerializer(
+            data={
+                "plan_code": "basic",
+                "client_type": "particulier",
+                "full_name": "Test",
+                "lat": 9.6412,
+                "lng": -13.5784,
+            }
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+        self.assertIn(
+            "commune_id",
             serializer.errors,
         )
 
@@ -341,6 +371,11 @@ class CheckoutServiceTests(SimpleTestCase):
                 },
             ),
             (
+                COMMUNE_ID,
+                REGION_ID,
+                "CKY",
+            ),
+            (
                 PLAN_ID,
                 "numerique",
                 40000,
@@ -379,6 +414,7 @@ class CheckoutServiceTests(SimpleTestCase):
                 "lat": 9.6412,
                 "lng": -13.5784,
                 "accuracy_m": 5,
+                "commune_id": COMMUNE_ID,
                 "address_line": "Conakry",
                 "access_point_note": (
                     "Portail principal"
@@ -417,6 +453,14 @@ class CheckoutServiceTests(SimpleTestCase):
         )
         self.assertIn(
             "request.jwt.claim.sub",
+            executed_sql,
+        )
+        self.assertIn(
+            "FROM public.communes c",
+            executed_sql,
+        )
+        self.assertIn(
+            "JOIN public.regions r",
             executed_sql,
         )
         self.assertNotIn(
@@ -495,6 +539,11 @@ class CheckoutServiceTests(SimpleTestCase):
                 },
             ),
             (
+                COMMUNE_ID,
+                REGION_ID,
+                "CKY",
+            ),
+            (
                 PLAN_ID,
                 "pro",
                 450000,
@@ -533,6 +582,7 @@ class CheckoutServiceTests(SimpleTestCase):
                 "lat": 9.6412,
                 "lng": -13.5784,
                 "accuracy_m": 5,
+                "commune_id": COMMUNE_ID,
                 "address_line": "Conakry",
                 "devis_demande": False,
                 "submission_channel": "web",
@@ -615,6 +665,11 @@ class CheckoutOrderCreateViewTests(SimpleTestCase):
                 ),
                 "payment_method": (
                     "orange_money"
+                ),
+                "lat": 9.6412,
+                "lng": -13.5784,
+                "commune_id": str(
+                    COMMUNE_ID
                 ),
             },
             format="json",

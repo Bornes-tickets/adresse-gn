@@ -57,6 +57,7 @@ type Draft = {
   addressLine: string;
   accessPointNote: string;
 
+  regionId: string | null;
   communeId: string | null;
   districtId: string | null;
   sectorId: string | null;
@@ -75,6 +76,18 @@ type CreatedOrder = {
   guest_token: string;
 };
 
+type RegionOption = {
+  id: string;
+  code: string;
+  name: string;
+};
+
+type CommuneOption = {
+  id: string;
+  region_id: string;
+  name: string;
+};
+
 const STORAGE_KEY = "adresse-gn-commander-v1";
 
 const STEPS: Step[] = ["need", "location", "contact", "offer", "otp", "confirmation"];
@@ -90,6 +103,7 @@ const INITIAL_DRAFT: Draft = {
   addressLine: "",
   accessPointNote: "",
 
+  regionId: null,
   communeId: null,
   districtId: null,
   sectorId: null,
@@ -111,6 +125,11 @@ function CommanderPage() {
 
   const [plans, setPlans] = useState<Plan[]>([]);
   const [plansLoading, setPlansLoading] = useState(true);
+
+  const [regions, setRegions] = useState<RegionOption[]>([]);
+  const [communes, setCommunes] = useState<CommuneOption[]>([]);
+  const [geoReferenceLoading, setGeoReferenceLoading] = useState(true);
+  const [geoReferenceError, setGeoReferenceError] = useState("");
 
   const [otpChannel, setOtpChannel] = useState<OtpChannel>("whatsapp");
   const [otpCode, setOtpCode] = useState("");
@@ -144,7 +163,33 @@ function CommanderPage() {
 
   useEffect(() => {
     void loadPlans();
+    void loadGeoReference();
   }, []);
+
+  useEffect(() => {
+    if (draft.regionId || !draft.communeId || communes.length === 0) {
+      return;
+    }
+
+    const commune = communes.find(
+      (item) => item.id === draft.communeId,
+    );
+
+    if (!commune) {
+      setDraft((current) => ({
+        ...current,
+        communeId: null,
+        districtId: null,
+        sectorId: null,
+      }));
+      return;
+    }
+
+    setDraft((current) => ({
+      ...current,
+      regionId: commune.region_id,
+    }));
+  }, [communes, draft.communeId, draft.regionId]);
 
   async function loadPlans() {
     setPlansLoading(true);
@@ -188,6 +233,58 @@ function CommanderPage() {
         canonicalizeCommanderPlan,
       ),
     );
+  }
+
+  async function loadGeoReference() {
+    setGeoReferenceLoading(true);
+    setGeoReferenceError("");
+
+    const [regionsResult, communesResult] = await Promise.all([
+      supabase
+        .from("regions")
+        .select("id, code, name")
+        .eq("is_active", true)
+        .order("name", { ascending: true }),
+      supabase
+        .from("communes")
+        .select("id, region_id, name")
+        .eq("is_active", true)
+        .not("region_id", "is", null)
+        .order("name", { ascending: true }),
+    ]);
+
+    setGeoReferenceLoading(false);
+
+    if (regionsResult.error || communesResult.error) {
+      setGeoReferenceError(
+        "Impossible de charger le référentiel des régions et communes.",
+      );
+      return;
+    }
+
+    const cleanRegions = (
+      (regionsResult.data ?? []) as unknown as RegionOption[]
+    ).filter(
+      (region) =>
+        Boolean(region.id)
+        && /^[A-Z]{3}$/.test(String(region.code ?? "").toUpperCase()),
+    );
+
+    const activeRegionIds = new Set(
+      cleanRegions.map((region) => region.id),
+    );
+
+    const cleanCommunes = (
+      (communesResult.data ?? []) as unknown as CommuneOption[]
+    ).filter(
+      (commune) =>
+        Boolean(commune.id)
+        && Boolean(commune.region_id)
+        && activeRegionIds.has(commune.region_id),
+    );
+
+    setRegions(cleanRegions);
+    setCommunes(cleanCommunes);
   }
 
   const visiblePlans = useMemo(() => {
@@ -240,6 +337,22 @@ function CommanderPage() {
     if (step === "location") {
       if (draft.lat === null || draft.lng === null) {
         setError("Confirmez d'abord la position GPS du lieu.");
+        return;
+      }
+
+      if (geoReferenceLoading || geoReferenceError) {
+        setError("Le référentiel géographique n'est pas disponible.");
+        return;
+      }
+
+      const communeIsValid = communes.some(
+        (commune) =>
+          commune.id === draft.communeId
+          && commune.region_id === draft.regionId,
+      );
+
+      if (!draft.regionId || !draft.communeId || !communeIsValid) {
+        setError("Sélectionnez la région et la commune du lieu.");
         return;
       }
 
@@ -326,6 +439,25 @@ function CommanderPage() {
         maximumAge: 10000,
       }
     );
+  }
+
+  function changeRegion(regionId: string) {
+    setDraft((current) => ({
+      ...current,
+      regionId: regionId || null,
+      communeId: null,
+      districtId: null,
+      sectorId: null,
+    }));
+  }
+
+  function changeCommune(communeId: string) {
+    setDraft((current) => ({
+      ...current,
+      communeId: communeId || null,
+      districtId: null,
+      sectorId: null,
+    }));
   }
 
   function changeOtpChannel(channel: OtpChannel) {
@@ -556,7 +688,13 @@ function CommanderPage() {
             <LocationStep
               draft={draft}
               geoLoading={geoLoading}
+              regions={regions}
+              communes={communes}
+              geoReferenceLoading={geoReferenceLoading}
+              geoReferenceError={geoReferenceError}
               onLocate={requestCurrentPosition}
+              onRegion={changeRegion}
+              onCommune={changeCommune}
               onAddressLine={(value) => updateDraft("addressLine", value)}
               onPlaceName={(value) => updateDraft("placeName", value)}
               onAccessNote={(value) => updateDraft("accessPointNote", value)}
@@ -726,19 +864,37 @@ function NeedStep({
 function LocationStep({
   draft,
   geoLoading,
+  regions,
+  communes,
+  geoReferenceLoading,
+  geoReferenceError,
   onLocate,
+  onRegion,
+  onCommune,
   onAddressLine,
   onPlaceName,
   onAccessNote,
 }: {
   draft: Draft;
   geoLoading: boolean;
+  regions: RegionOption[];
+  communes: CommuneOption[];
+  geoReferenceLoading: boolean;
+  geoReferenceError: string;
   onLocate: () => void;
+  onRegion: (value: string) => void;
+  onCommune: (value: string) => void;
   onAddressLine: (value: string) => void;
   onPlaceName: (value: string) => void;
   onAccessNote: (value: string) => void;
 }) {
   const hasLocation = draft.lat !== null && draft.lng !== null;
+
+  const availableCommunes = draft.regionId
+    ? communes.filter(
+        (commune) => commune.region_id === draft.regionId,
+      )
+    : [];
 
   return (
     <>
@@ -784,6 +940,58 @@ function LocationStep({
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        <label className="block">
+          <span className="mb-2 block text-sm font-semibold text-slate-800">
+            Région *
+          </span>
+          <select
+            value={draft.regionId ?? ""}
+            onChange={(event) => onRegion(event.target.value)}
+            disabled={geoReferenceLoading}
+            className="h-12 w-full rounded-2xl border border-slate-300 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-[#16B7A5] focus:ring-4 focus:ring-[#16B7A5]/10 disabled:bg-slate-100 disabled:text-slate-500"
+          >
+            <option value="">
+              {geoReferenceLoading ? "Chargement…" : "Sélectionnez une région"}
+            </option>
+            {regions.map((region) => (
+              <option key={region.id} value={region.id}>
+                {region.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="block">
+          <span className="mb-2 block text-sm font-semibold text-slate-800">
+            Commune *
+          </span>
+          <select
+            value={draft.communeId ?? ""}
+            onChange={(event) => onCommune(event.target.value)}
+            disabled={geoReferenceLoading || !draft.regionId}
+            className="h-12 w-full rounded-2xl border border-slate-300 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-[#16B7A5] focus:ring-4 focus:ring-[#16B7A5]/10 disabled:bg-slate-100 disabled:text-slate-500"
+          >
+            <option value="">
+              {!draft.regionId
+                ? "Choisissez d'abord une région"
+                : "Sélectionnez une commune"}
+            </option>
+            {availableCommunes.map((commune) => (
+              <option key={commune.id} value={commune.id}>
+                {commune.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      {geoReferenceError && (
+        <div className="mt-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {geoReferenceError}
         </div>
       )}
 

@@ -17,6 +17,11 @@ urlpatterns = [
     ),
 
     path(
+        "api/v1/public/",
+        include("public_catalog.urls"),
+    ),
+
+    path(
         "api/v1/checkout/",
         include("checkout.urls"),
     ),
@@ -40,6 +45,11 @@ urlpatterns = [
         "api/v1/auth/me/",
         AuthMeView.as_view(),
         name="auth-me",
+    ),
+
+    path(
+        "api/v1/payments/",
+        include("payments.urls"),
     ),
 
     path(
