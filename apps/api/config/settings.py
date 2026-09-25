@@ -15,7 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ============================================================
 
 env = environ.Env(
-    DEBUG=(bool, True),
+    DEBUG=(bool, False),
 )
 
 # Charge apps/api/.env
@@ -30,7 +30,7 @@ SECRET_KEY = env("DJANGO_SECRET_KEY")
 
 DEBUG = env.bool(
     "DEBUG",
-    default=True,
+    default=False,
 )
 
 ALLOWED_HOSTS = env.list(
@@ -39,6 +39,56 @@ ALLOWED_HOSTS = env.list(
         "localhost",
         "127.0.0.1",
     ],
+)
+
+CSRF_TRUSTED_ORIGINS = env.list(
+    "CSRF_TRUSTED_ORIGINS",
+    default=[],
+)
+
+
+# ============================================================
+# SECURITY HARDENING
+# ============================================================
+
+SECURE_SSL_REDIRECT = env.bool(
+    "SECURE_SSL_REDIRECT",
+    default=not DEBUG,
+)
+
+# HSTS reste volontairement désactivé par défaut.
+# Il sera activé progressivement une fois les domaines HTTPS
+# définitifs et les sous-domaines validés en production.
+SECURE_HSTS_SECONDS = env.int(
+    "SECURE_HSTS_SECONDS",
+    default=0,
+)
+
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env.bool(
+    "SECURE_HSTS_INCLUDE_SUBDOMAINS",
+    default=False,
+)
+
+SECURE_HSTS_PRELOAD = env.bool(
+    "SECURE_HSTS_PRELOAD",
+    default=False,
+)
+
+SESSION_COOKIE_SECURE = env.bool(
+    "SESSION_COOKIE_SECURE",
+    default=not DEBUG,
+)
+
+CSRF_COOKIE_SECURE = env.bool(
+    "CSRF_COOKIE_SECURE",
+    default=not DEBUG,
+)
+
+X_FRAME_OPTIONS = "DENY"
+
+ENABLE_API_DOCS = env.bool(
+    "ENABLE_API_DOCS",
+    default=DEBUG,
 )
 
 
@@ -143,6 +193,8 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
 
     "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 
@@ -255,10 +307,13 @@ DEFAULT_AUTO_FIELD = (
 # Next.js local → Django local
 # ============================================================
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
+CORS_ALLOWED_ORIGINS = env.list(
+    "CORS_ALLOWED_ORIGINS",
+    default=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
+)
 
 
 # ============================================================
@@ -304,4 +359,45 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
 
     "SERVE_INCLUDE_SCHEMA": False,
+}
+
+
+# ============================================================
+# LOGGING
+# ============================================================
+
+LOG_LEVEL = env(
+    "LOG_LEVEL",
+    default="INFO",
+).upper()
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "standard": {
+            "format": (
+                "{asctime} {levelname} "
+                "{name} {message}"
+            ),
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "standard",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": LOG_LEVEL,
+    },
+    "loggers": {
+        "django.request": {
+            "handlers": ["console"],
+            "level": LOG_LEVEL,
+            "propagate": False,
+        },
+    },
 }

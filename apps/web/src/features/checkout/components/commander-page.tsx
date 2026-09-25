@@ -134,28 +134,32 @@ export default function CommanderPage({
   const [created, setCreated] = useState<CheckoutCreatedOrder | null>(null);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const saved = JSON.parse(
-          raw,
-        ) as Partial<CheckoutDraft>;
+    const timer = window.setTimeout(() => {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const saved = JSON.parse(
+            raw,
+          ) as Partial<CheckoutDraft>;
 
-        setDraft({
-          ...INITIAL_DRAFT,
-          ...saved,
-          paymentMethod: "manual",
-          ...(initialPlan
-            ? {
-                planCode: initialPlan,
-                clientType: clientTypeForPlan(initialPlan),
-              }
-            : {}),
-        });
+          setDraft({
+            ...INITIAL_DRAFT,
+            ...saved,
+            paymentMethod: "manual",
+            ...(initialPlan
+              ? {
+                  planCode: initialPlan,
+                  clientType: clientTypeForPlan(initialPlan),
+                }
+              : {}),
+          });
+        }
+      } catch {
+        localStorage.removeItem(STORAGE_KEY);
       }
-    } catch {
-      localStorage.removeItem(STORAGE_KEY);
-    }
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [initialPlan]);
 
   useEffect(() => {
@@ -190,7 +194,6 @@ export default function CommanderPage({
 
   useEffect(() => {
     if (!draft.regionId) {
-      setPrefectures([]);
       return;
     }
 
@@ -213,7 +216,6 @@ export default function CommanderPage({
 
   useEffect(() => {
     if (!draft.prefectureId) {
-      setCommunes([]);
       return;
     }
 
@@ -236,7 +238,6 @@ export default function CommanderPage({
 
   useEffect(() => {
     if (!draft.communeId) {
-      setDistricts([]);
       return;
     }
 
@@ -259,7 +260,6 @@ export default function CommanderPage({
 
   useEffect(() => {
     if (!draft.districtId) {
-      setSectors([]);
       return;
     }
 
@@ -649,51 +649,61 @@ export default function CommanderPage({
                   label="Région"
                   value={draft.regionId}
                   items={regions}
-                  onChange={(regionId) =>
+                  onChange={(regionId) => {
+                    setPrefectures([]);
+                    setCommunes([]);
+                    setDistricts([]);
+                    setSectors([]);
                     patch({
                       regionId,
                       prefectureId: "",
                       communeId: "",
                       districtId: "",
                       sectorId: "",
-                    })
-                  }
+                    });
+                  }}
                 />
                 <ReferenceSelect
                   label="Préfecture"
                   value={draft.prefectureId}
                   items={prefectures}
                   disabled={!draft.regionId}
-                  onChange={(prefectureId) =>
+                  onChange={(prefectureId) => {
+                    setCommunes([]);
+                    setDistricts([]);
+                    setSectors([]);
                     patch({
                       prefectureId,
                       communeId: "",
                       districtId: "",
                       sectorId: "",
-                    })
-                  }
+                    });
+                  }}
                 />
                 <ReferenceSelect
                   label="Commune"
                   value={draft.communeId}
                   items={communes}
                   disabled={!draft.prefectureId}
-                  onChange={(communeId) =>
+                  onChange={(communeId) => {
+                    setDistricts([]);
+                    setSectors([]);
                     patch({
                       communeId,
                       districtId: "",
                       sectorId: "",
-                    })
-                  }
+                    });
+                  }}
                 />
                 <ReferenceSelect
                   label="Quartier / district"
                   value={draft.districtId}
                   items={districts}
                   disabled={!draft.communeId}
-                  onChange={(districtId) =>
-                    patch({ districtId, sectorId: "" })
-                  }
+                  onChange={(districtId) => {
+                    setSectors([]);
+                    patch({ districtId, sectorId: "" });
+                  }}
                 />
                 <ReferenceSelect
                   label="Secteur"
