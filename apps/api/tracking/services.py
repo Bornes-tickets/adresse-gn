@@ -135,22 +135,22 @@ def fetch_public_order_by_token(token: str) -> dict[str, Any] | None:
     )
 
     return {
-        "id": str(order_id),
         "order_ref": str(order_ref),
         "status": public_status,
-        "client_type": str(client_type) if client_type is not None else None,
-        "full_name": str(full_name) if full_name is not None else None,
-        "phone": _mask_phone(phone),
-        "address_line": str(address_line) if address_line is not None else None,
-        "quartier": str(quartier) if quartier is not None else None,
-        "formule_code": str(formule_code) if formule_code is not None else None,
-        "formule_label": str(formule_label) if formule_label is not None else None,
-        "prix_ttc": int(prix_ttc or 0),
-        "payment_method": str(payment_method) if payment_method is not None else None,
-        "devis_demande": bool(devis_demande),
-        "fulfillment_kind": str(fulfillment_kind),
+        "formule_code": (
+            str(formule_code)
+            if formule_code is not None
+            else None
+        ),
+        "formule_label": (
+            str(formule_label)
+            if formule_label is not None
+            else None
+        ),
         "installation_status": (
-            str(installation_status) if installation_status is not None else None
+            str(installation_status)
+            if installation_status is not None
+            else None
         ),
         "created_at": created_at,
     }

@@ -129,9 +129,17 @@ class TrackingServiceTests(SimpleTestCase):
         result = fetch_public_order_by_token(TOKEN)
         self.assertIsNotNone(result)
         self.assertEqual(result["status"], "in_progress")
-        self.assertEqual(result["phone"], "+22461•••344")
-        self.assertNotIn("email", result)
-        self.assertNotIn("guest_token", result)
+        self.assertEqual(
+            set(result.keys()),
+            {
+                "order_ref",
+                "status",
+                "formule_code",
+                "formule_label",
+                "installation_status",
+                "created_at",
+            },
+        )
 
     @patch("tracking.services.connection")
     def test_invalid_token_does_not_query_db(self, connection_mock):

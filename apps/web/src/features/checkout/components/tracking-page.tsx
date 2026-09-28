@@ -79,9 +79,6 @@ export default function TrackingPage({
                   label="Formule"
                   value={data.formule_label ?? data.formule_code ?? "—"}
                 />
-                <Info label="Nom" value={data.full_name ?? "—"} />
-                <Info label="Téléphone" value={data.phone ?? "—"} />
-                <Info label="Adresse" value={data.address_line ?? "—"} />
                 <Info
                   label="Installation"
                   value={data.installation_status ?? "—"}

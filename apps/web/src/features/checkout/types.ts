@@ -63,20 +63,10 @@ export type CheckoutCreatedOrder = {
 };
 
 export type PublicTrackingOrder = {
-  id: string;
   order_ref: string;
   status: string;
-  client_type: string | null;
-  full_name: string | null;
-  phone: string | null;
-  address_line: string | null;
-  quartier: string | null;
   formule_code: string | null;
   formule_label: string | null;
-  prix_ttc: number;
-  payment_method: string | null;
-  devis_demande: boolean;
-  fulfillment_kind: string;
   installation_status: string | null;
   created_at: string;
 };
