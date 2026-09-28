@@ -434,9 +434,10 @@ def _storage_request(
         "Authorization":
             f"Bearer {server_key}",
         "apikey": server_key,
-        "Content-Type":
-            content_type,
     }
+
+    if data is not None:
+        headers["Content-Type"] = content_type
 
     if extra_headers:
         headers.update(
