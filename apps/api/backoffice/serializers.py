@@ -45,3 +45,23 @@ class AccountReactivateSerializer(
                 "Saisissez REACTIVER pour confirmer."
             )
         return value
+
+
+
+class InstallationUninstallSerializer(
+    serializers.Serializer
+):
+    agent_id = serializers.UUIDField()
+
+    reason = serializers.CharField(
+        max_length=1000,
+        allow_blank=False,
+        trim_whitespace=True,
+    )
+
+    photo_url = serializers.URLField(
+        required=False,
+        allow_null=True,
+        allow_blank=True,
+        max_length=2048,
+    )

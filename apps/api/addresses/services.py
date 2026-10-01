@@ -6,14 +6,15 @@ from typing import Any
 from django.db import connection, transaction
 from django.utils import timezone
 
+from addresses.numbering import (
+    BEACON_REGEX,
+    normalize_address_number,
+)
+
 
 # ============================================================
 # CONSTANTES METIER ADRESSE GN
 # ============================================================
-
-BEACON_REGEX = re.compile(r"^GN-[A-Z]{3}-\d{6}$")
-
-DEFAULT_ZONE = "CKY"
 
 MAX_PER_MINUTE = 60
 
@@ -25,36 +26,6 @@ MISS_BLOCK_MINUTES = 5
 # ============================================================
 # NORMALISATION
 # ============================================================
-
-def normalize_address_number(
-    value: str,
-    zone: str = DEFAULT_ZONE,
-) -> str:
-    raw = value.strip().upper()
-
-    compact = re.sub(r"\s+", "", raw)
-
-    # Exemple :
-    # 582741 -> GN-CKY-582741
-    if re.fullmatch(r"\d{6}", compact):
-        return f"GN-{zone}-{compact}"
-
-    # Accepte également différentes saisies compactes :
-    # GNCKY582741
-    # GN-CKY-582741
-    # GN CKY 582741
-    compact = re.sub(r"[^A-Z0-9]", "", compact)
-
-    match = re.fullmatch(
-        r"GN([A-Z]{3})(\d{6})",
-        compact,
-    )
-
-    if match:
-        return f"GN-{match.group(1)}-{match.group(2)}"
-
-    return raw
-
 
 # ============================================================
 # CLIENT IP
@@ -489,7 +460,7 @@ def search_address(
 
             "message": (
                 "Format de numéro invalide "
-                "(attendu GN-XXX-999999)."
+                "(attendu CCCCC-NNNNNNNNC)."
             ),
         }
 
@@ -615,7 +586,7 @@ def get_address_detail(raw_number: str) -> dict:
     le rate limiting ni journaliser une nouvelle recherche.
 
     Utilisé notamment par la fiche publique :
-    /a/GN-CKY-582741
+    /a/CKY04-582741369
     """
 
     number = normalize_address_number(raw_number)

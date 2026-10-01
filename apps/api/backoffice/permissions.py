@@ -70,3 +70,75 @@ class IsClaimBackofficeUser(BasePermission):
         }
 
         return True
+
+
+INSTALLATION_OPERATION_ROLES = {
+    "admin",
+    "super_admin",
+}
+
+
+class IsInstallationBackofficeUser(
+    BasePermission
+):
+    """
+    Autorise les opérations physiques sensibles
+    sur les installations Adresse GN.
+
+    Le rôle métier est toujours relu dans profiles.
+    """
+
+    message = (
+        "Accès refusé : opération réservée "
+        "aux administrateurs Adresse GN."
+    )
+
+    def has_permission(
+        self,
+        request,
+        view,
+    ) -> bool:
+        user_id = getattr(
+            request.user,
+            "id",
+            None,
+        )
+
+        if not user_id:
+            return False
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT
+                    id,
+                    role,
+                    full_name
+                FROM public.profiles
+                WHERE id = %s
+                LIMIT 1
+                """,
+                [
+                    user_id,
+                ],
+            )
+
+            row = cursor.fetchone()
+
+        if row is None:
+            return False
+
+        role = row[1]
+
+        if role not in (
+            INSTALLATION_OPERATION_ROLES
+        ):
+            return False
+
+        request.backoffice_identity = {
+            "user_id": str(row[0]),
+            "role": role,
+            "full_name": row[2],
+        }
+
+        return True

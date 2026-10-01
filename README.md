@@ -94,7 +94,7 @@ Fais dans cet ordre, en t'arrêtant si une étape échoue :
 
    - Sous-titre explicatif court.
 
-   - Champ de recherche mono-large "GN-CKY-______" en JetBrains Mono.
+   - Champ de recherche mono-large au format "CCCCC-NNNNNNNNC" en JetBrains Mono.
 
    - Bouton "Rechercher" (couleur accent, grand).
 
@@ -102,7 +102,7 @@ Fais dans cet ordre, en t'arrêtant si une étape échoue :
 
      tooltip "Bientôt disponible").
 
-   - 3 exemples cliquables sous le champ (GN-CKY-582741, GN-CKY-152963, GN-CKY-759482).
+   - 3 exemples cliquables à Conakry : public MATAM (CKY04-582741369), public DIXINN (CKY10-582741376), privé GBÉSSIA (CKY02-582741382).
 
    - Section explicative en 3 étapes (Numéro → Localisation → Itinéraire).
 

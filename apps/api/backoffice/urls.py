@@ -6,6 +6,7 @@ from .views import (
     BackofficeMeView,
     ClaimDecisionView,
     ClaimListView,
+    InstallationUninstallView,
 )
 
 
@@ -43,5 +44,19 @@ urlpatterns += [
         "accounts/",
         AccountListView.as_view(),
         name="backoffice-accounts",
+    ),
+]
+
+
+
+urlpatterns += [
+    path(
+        "installations/"
+        "<uuid:installation_id>/"
+        "uninstall/",
+        InstallationUninstallView.as_view(),
+        name=(
+            "backoffice-installation-uninstall"
+        ),
     ),
 ]

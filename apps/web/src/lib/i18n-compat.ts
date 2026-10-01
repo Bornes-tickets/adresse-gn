@@ -6,7 +6,7 @@ const messages: Record<string, string> = {
     "Numéro de balise",
 
   "home.errors.incomplete":
-    "Ce numéro semble incomplet — saisissez les 6 chiffres de la balise (ex. 582741) ou le numéro entier GN-CKY-582741.",
+    "Numéro Adresse GN invalide — saisissez un numéro complet au format CCCCC-NNNNNNNNC (ex. CKY04-582741369).",
 
   "home.errors.rateLimited":
     "Beaucoup de recherches d'un coup — patientez quelques secondes puis réessayez.",

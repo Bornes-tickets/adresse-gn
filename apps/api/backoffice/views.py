@@ -17,12 +17,17 @@ from .claims import (
     decide_claim,
     list_claims,
 )
+from .installations import (
+    register_installation_uninstall,
+)
 from .permissions import (
     IsClaimBackofficeUser,
+    IsInstallationBackofficeUser,
 )
 from .serializers import (
     AccountReactivateSerializer,
     ClaimDecisionSerializer,
+    InstallationUninstallSerializer,
 )
 
 
@@ -377,6 +382,147 @@ class AccountListView(APIView):
                 },
                 status=(
                     status.HTTP_500_INTERNAL_SERVER_ERROR
+                ),
+            )
+
+        return Response(
+            result,
+            status=status.HTTP_200_OK,
+        )
+
+
+
+class InstallationUninstallView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsInstallationBackofficeUser,
+    ]
+
+    @extend_schema(
+        tags=["Back-office"],
+        request=InstallationUninstallSerializer,
+        description=(
+            "Enregistre le retrait physique d'une "
+            "ancienne installation Adresse GN."
+        ),
+    )
+    def post(
+        self,
+        request,
+        installation_id,
+    ):
+        serializer = (
+            InstallationUninstallSerializer(
+                data=request.data
+            )
+        )
+
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        identity = getattr(
+            request,
+            "backoffice_identity",
+            None,
+        )
+
+        actor_id = (
+            identity.get("user_id")
+            if identity
+            else None
+        )
+
+        if not actor_id:
+            return Response(
+                {
+                    "ok": False,
+                    "status": "unauthenticated",
+                    "message": (
+                        "Authentification requise."
+                    ),
+                },
+                status=(
+                    status.HTTP_401_UNAUTHORIZED
+                ),
+            )
+
+        try:
+            result = (
+                register_installation_uninstall(
+                    installation_id=str(
+                        installation_id
+                    ),
+                    actor_id=actor_id,
+                    agent_id=str(
+                        serializer
+                        .validated_data[
+                            "agent_id"
+                        ]
+                    ),
+                    reason=(
+                        serializer
+                        .validated_data[
+                            "reason"
+                        ]
+                    ),
+                    photo_url=(
+                        serializer
+                        .validated_data
+                        .get(
+                            "photo_url"
+                        )
+                    ),
+                )
+            )
+
+        except Exception:
+            return Response(
+                {
+                    "ok": False,
+                    "status": "error",
+                    "message": (
+                        "Le retrait de l'installation "
+                        "n'a pas pu être enregistré."
+                    ),
+                },
+                status=(
+                    status
+                    .HTTP_500_INTERNAL_SERVER_ERROR
+                ),
+            )
+
+        if result["status"] in {
+            "not_found",
+            "agent_not_found",
+        }:
+            return Response(
+                result,
+                status=(
+                    status.HTTP_404_NOT_FOUND
+                ),
+            )
+
+        if result["status"] in {
+            "already_uninstalled",
+            "invalid_numbering_version",
+            "invalid_beacon_state",
+            "agent_inactive",
+        }:
+            return Response(
+                result,
+                status=(
+                    status.HTTP_409_CONFLICT
+                ),
+            )
+
+        if result["status"] == (
+            "invalid_reason"
+        ):
+            return Response(
+                result,
+                status=(
+                    status.HTTP_400_BAD_REQUEST
                 ),
             )
 

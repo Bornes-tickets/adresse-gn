@@ -226,7 +226,7 @@ export function QrScanner({ open, onClose, onDetected, title = "Scanner un QR" }
             <Input
               value={manualCode}
               onChange={(e) => setManualCode(e.target.value.toUpperCase())}
-              placeholder="GN-CKY-______"
+              placeholder="CKY04-582741369"
               className="h-14 bg-white/10 border-white/20 text-white text-lg font-mono placeholder:text-white/40"
               autoFocus
             />

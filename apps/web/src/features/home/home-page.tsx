@@ -35,16 +35,19 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
-  getDefaultZone,
   isValidBeaconNumber,
   normalizeBeaconNumber,
 } from "@/lib/geo";
 import { searchBeacon } from "@/lib/search.functions";
 import { InstallBanner } from "@/components/InstallBanner";
 import { QrScanner } from "@/components/QrScanner";
+import {
+  extractAddressNumberFromQr,
+  extractAddressNumberFromSpeech,
+} from "@/features/home/address-input";
 import { cn } from "@/lib/utils";
-const EXEMPLES = ["GN-CKY-582741", "GN-CKY-152963", "GN-CKY-759482"];
-const EXEMPLE_DEMO = "GN-CKY-582741";
+const EXEMPLES = ["CKY04-582741369", "CKY10-582741376", "CKY02-582741382"];
+const EXEMPLE_DEMO = "CKY04-582741369";
 const SITE_CONTAINER =
   "mx-auto w-full max-w-[1760px] px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16";
 const SECTION_BADGE_CLASS =
@@ -162,7 +165,7 @@ export default function Home() {
       null,
     );
   const rechercher = async (valeur: string) => {
-    const propre = normalizeBeaconNumber(valeur, getDefaultZone());
+    const propre = normalizeBeaconNumber(valeur);
     if (!propre) return;
     if (!isValidBeaconNumber(propre)) { setErreur(t("home.errors.incomplete")); return; }
     setErreur(null); setEnCours(true);
@@ -174,9 +177,20 @@ export default function Home() {
   };
   const gererScanQr = (contenu: string) => {
     setScannerOpen(false);
-    const match = contenu.match(/GN-[A-Z]{3}-\d{6}/i);
-    if (match) { const valeur = match[0].toUpperCase(); setNumero(valeur); void rechercher(valeur); }
-    else toast.error("QR non reconnu — format attendu : GN-CKY-XXXXXX");
+
+    const valeur = extractAddressNumberFromQr(
+      contenu,
+    );
+
+    if (!valeur) {
+      toast.error(
+        "QR non reconnu — numéro Adresse GN invalide.",
+      );
+      return;
+    }
+
+    setNumero(valeur);
+    void rechercher(valeur);
   };
   const demarrerVoix = () => {
     if (!hasSpeechRecognition()) { toast.error("Reconnaissance vocale non supportée"); return; }
@@ -200,14 +214,23 @@ export default function Home() {
     reco.onresult = (
       e: SpeechRecognitionResultEventLike,
     ) => {
-      const brut = String(e.results[0][0].transcript || "").toUpperCase();
-      const nettoye = brut.replace(/\s+/g, "").replace(/[^A-Z0-9]/g, "");
-      const match = nettoye.match(/GN[A-Z]{3}\d{6}/) || nettoye.match(/\d{6}/);
-      if (match) {
-        const raw = match[0];
-        const nombre = raw.length === 6 ? `GN-CKY-${raw}` : `${raw.slice(0, 2)}-${raw.slice(2, 5)}-${raw.slice(5)}`;
-        setNumero(nombre); void rechercher(nombre);
-      } else toast.error(`Non compris : "${brut}"`);
+      const brut = String(
+        e.results[0][0].transcript || "",
+      ).toUpperCase();
+
+      const nombre =
+        extractAddressNumberFromSpeech(
+          brut,
+        );
+
+      if (nombre) {
+        setNumero(nombre);
+        void rechercher(nombre);
+      } else {
+        toast.error(
+          `Non compris : "${brut}"`,
+        );
+      }
     };
     reco.onerror = (
       e: SpeechRecognitionErrorEventLike,
@@ -278,7 +301,7 @@ export default function Home() {
                   <input
                     value={numero}
                     onChange={(e) => { setNumero(e.target.value); setErreur(null); }}
-                    placeholder="GN-CKY-______"
+                    placeholder="CKY04-582741369"
                     aria-label={t("home.hero.inputLabel")}
                     aria-invalid={!!erreur}
                     className="h-[46px] min-w-0 flex-1 bg-transparent font-mono text-[15px] font-bold tracking-[0.09em] text-slate-900 outline-none placeholder:font-medium placeholder:text-slate-400"
@@ -322,7 +345,7 @@ export default function Home() {
                 className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/[0.08] px-2.5 py-1 text-[9px] font-semibold text-white/82 backdrop-blur-sm transition-all active:scale-95"
               >
                 Essayer
-                <span className="font-mono font-bold">GN-CKY-582741</span>
+                <span className="font-mono font-bold">CKY04-582741369</span>
                 <ArrowRight className="size-2.5" />
               </Link>
             </div>
@@ -345,7 +368,7 @@ export default function Home() {
           <div className="mx-auto mt-6 max-w-[1280px] rounded-[22px] bg-white p-2 shadow-sm ring-1 ring-slate-200/80 md:mt-8 xl:mt-9">
             <form className="flex flex-col gap-2 md:flex-row" onSubmit={(e) => { e.preventDefault(); void rechercher(numero); }}>
               <div className="flex min-w-0 flex-1 items-center gap-1 rounded-2xl border border-transparent bg-slate-50/80 pl-4 pr-1.5 transition-all focus-within:border-accent focus-within:bg-white focus-within:ring-2 focus-within:ring-accent/20">
-                <input value={numero} onChange={(e) => { setNumero(e.target.value); setErreur(null); }} placeholder="GN-CKY-______" aria-label={t("home.hero.inputLabel")} aria-invalid={!!erreur}
+                <input value={numero} onChange={(e) => { setNumero(e.target.value); setErreur(null); }} placeholder="CKY04-582741369" aria-label={t("home.hero.inputLabel")} aria-invalid={!!erreur}
                   className="h-12 w-full min-w-0 bg-transparent font-mono text-lg font-semibold tracking-[0.08em] text-slate-900 outline-hidden placeholder:font-normal placeholder:text-slate-400 sm:text-xl" />
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -467,7 +490,7 @@ export default function Home() {
                   </span>
 
                   <p className="mt-2 font-mono text-[15px] font-extrabold tracking-[0.09em] text-slate-950">
-                    GN-CKY-582741
+                    CKY04-582741369
                   </p>
 
                   <p className="mt-0.5 text-[10.5px] font-medium text-slate-500">
@@ -646,7 +669,7 @@ export default function Home() {
                     </div>
 
                     <p className="mt-1 font-mono text-[16px] font-extrabold tracking-[0.09em] text-slate-950">
-                      GN-CKY-582741
+                      CKY04-582741369
                     </p>
 
                     <p className="mt-1 text-[10.5px] font-semibold text-slate-600">
@@ -980,7 +1003,7 @@ export default function Home() {
                         )}
                         <div className="pointer-events-none absolute left-3 top-3 z-20 rounded-2xl border border-white/70 bg-white/92 px-3 py-2 shadow-lg backdrop-blur">
                           <p className="text-[7px] font-semibold uppercase tracking-[0.16em] text-slate-400">Numéro recherché</p>
-                          <p className="mt-0.5 font-mono text-[11px] font-extrabold tracking-[0.12em] text-slate-950">GN-CKY-582741</p>
+                          <p className="mt-0.5 font-mono text-[11px] font-extrabold tracking-[0.12em] text-slate-950">CKY04-582741369</p>
                         </div>
                         <div className="pointer-events-none absolute left-[6%] top-[17%] z-20 rounded-xl border border-slate-200 bg-white/96 px-2.5 py-1.5 shadow-lg backdrop-blur">
                           <p className="text-[10px] font-bold leading-none text-amber-600">24 min</p>
@@ -999,7 +1022,7 @@ export default function Home() {
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
                             <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.14em] text-accent">Numéro central</div>
-                            <p className="mt-2 font-mono text-[12px] font-extrabold tracking-[0.1em] text-slate-950 sm:text-[13px]">GN-CKY-582741</p>
+                            <p className="mt-2 font-mono text-[12px] font-extrabold tracking-[0.1em] text-slate-950 sm:text-[13px]">CKY04-582741369</p>
                             <p className="mt-1 text-xs font-bold text-slate-950">Hôtel Kaloum</p>
                             <p className="mt-0.5 text-[9px] text-slate-500">Kaloum · Conakry</p>
                           </div>
@@ -1092,7 +1115,7 @@ export default function Home() {
                     </div>
                     <div className="relative mt-4">
                       <div className="inline-flex rounded-2xl bg-slate-950 px-4 py-2 shadow-md shadow-slate-950/10">
-                        <p className="font-mono text-xl font-extrabold tracking-[0.08em] text-white md:text-2xl">GN-CKY-582741</p>
+                        <p className="font-mono text-xl font-extrabold tracking-[0.08em] text-white md:text-2xl">CKY04-582741369</p>
                       </div>
                       <p className="mt-2 text-[13px] font-medium text-slate-600">Une référence claire, partageable et immédiatement exploitable pour retrouver le lieu.</p>
                       <div className="mt-4 space-y-2">
@@ -1285,7 +1308,7 @@ export default function Home() {
                       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:gap-5">
                         <div className="min-w-0">
                           <p className="text-[8px] font-semibold uppercase tracking-[0.17em] text-slate-400">Numéro unique</p>
-                          <p className="mt-1.5 whitespace-nowrap font-mono text-[clamp(0.78rem,4vw,1.45rem)] font-extrabold tracking-[0.025em] text-slate-950 sm:tracking-[0.035em]">GN-CKY-582741</p>
+                          <p className="mt-1.5 whitespace-nowrap font-mono text-[clamp(0.78rem,4vw,1.45rem)] font-extrabold tracking-[0.025em] text-slate-950 sm:tracking-[0.035em]">CKY04-582741369</p>
                           <div className="mt-3.5 flex items-center gap-2">
                             <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent"><MapPin className="size-3.5" /></span>
                             <div>

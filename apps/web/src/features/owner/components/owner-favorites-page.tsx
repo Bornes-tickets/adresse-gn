@@ -40,6 +40,11 @@ import {
 } from "@/components/ui/input";
 
 import {
+  isValidBeaconNumber,
+  normalizeBeaconNumber,
+} from "@/lib/geo";
+
+import {
   getAccessToken,
 } from "@/lib/supabase/browser";
 
@@ -100,59 +105,17 @@ function categoryLabel(
 
 function normalizeNumber(
   input: string,
-) {
-  const raw =
-    input
-      .trim()
-      .toUpperCase()
-      .replace(/\s+/g, "");
-
-  let zone = "CKY";
-
-  if (
-    typeof window !==
-    "undefined"
-  ) {
-    const stored =
-      window.localStorage
-        .getItem(
-          "adresse_gn_zone",
-        );
-
-    if (
-      stored &&
-      /^[A-Z]{3}$/.test(
-        stored
-      )
-    ) {
-      zone = stored;
-    }
-  }
-
-  if (/^\d{6}$/.test(raw)) {
-    return (
-      `GN-${zone}-${raw}`
-    );
-  }
-
-  const compact =
-    raw.replace(
-      /[^A-Z0-9]/g,
-      "",
+): string | null {
+  const normalized =
+    normalizeBeaconNumber(
+      input,
     );
 
-  const match =
-    compact.match(
-      /^GN([A-Z]{3})(\d{6})$/,
-    );
-
-  if (match) {
-    return (
-      `GN-${match[1]}-${match[2]}`
-    );
-  }
-
-  return raw;
+  return isValidBeaconNumber(
+    normalized,
+  )
+    ? normalized
+    : null;
 }
 
 
@@ -301,6 +264,18 @@ export function OwnerFavoritesPage() {
       return;
     }
 
+    const normalizedNumber =
+      normalizeNumber(
+        number,
+      );
+
+    if (!normalizedNumber) {
+      toast.error(
+        "Numéro Adresse GN invalide.",
+      );
+      return;
+    }
+
     setAdding(true);
 
     try {
@@ -319,9 +294,7 @@ export function OwnerFavoritesPage() {
         token,
         {
           number:
-            normalizeNumber(
-              number
-            ),
+            normalizedNumber,
           alias:
             alias.trim()
             || null,
@@ -614,7 +587,7 @@ export function OwnerFavoritesPage() {
                   .toUpperCase()
               )
             }
-            placeholder="GN-CKY-123456"
+            placeholder="CKY04-582741369"
             className="
               font-mono
               sm:max-w-[14rem]

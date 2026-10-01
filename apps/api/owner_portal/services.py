@@ -3,6 +3,11 @@ import re
 from datetime import timedelta
 from typing import Any
 
+from addresses.numbering import (
+    BEACON_REGEX,
+    normalize_address_number,
+)
+
 from django.db import (
     connection,
     transaction,
@@ -710,38 +715,9 @@ class OwnerFavoriteNotFoundError(Exception):
 def _normalize_favorite_number(
     raw_number: str,
 ) -> str:
-    raw = re.sub(
-        r"\s+",
-        "",
-        raw_number.strip().upper(),
+    return normalize_address_number(
+        raw_number
     )
-
-    if re.fullmatch(
-        r"\d{6}",
-        raw,
-    ):
-        return (
-            f"GN-CKY-{raw}"
-        )
-
-    compact = re.sub(
-        r"[^A-Z0-9]",
-        "",
-        raw,
-    )
-
-    match = re.fullmatch(
-        r"GN([A-Z]{3})(\d{6})",
-        compact,
-    )
-
-    if match:
-        return (
-            f"GN-{match.group(1)}-"
-            f"{match.group(2)}"
-        )
-
-    return raw
 
 
 def list_owner_favorites(
@@ -809,9 +785,8 @@ def create_owner_favorite(
         )
     )
 
-    if not re.fullmatch(
-        r"GN-[A-Z]{3}-\d{6}",
-        number,
+    if not BEACON_REGEX.fullmatch(
+        number
     ):
         raise OwnerFavoriteInputError(
             "Numéro Adresse GN invalide."

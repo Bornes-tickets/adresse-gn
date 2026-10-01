@@ -165,7 +165,7 @@ export function AddressSearchForm() {
                 setNetworkError(null);
               }
             }}
-            placeholder="Ex. GN-CKY-582741 ou 582741"
+            placeholder="Ex. CKY04-582741369"
             aria-label="Numéro Adresse GN"
             autoComplete="off"
             spellCheck={false}
@@ -199,9 +199,8 @@ export function AddressSearchForm() {
 
 
       <p className="mt-3 text-sm text-white/70">
-        Entrez votre numéro Adresse GN
-        complet ou simplement ses
-        6 chiffres.
+        Entrez votre numéro Adresse GN complet au format
+        CCCCC-NNNNNNNNC.
       </p>
 
 

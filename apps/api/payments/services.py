@@ -1,4 +1,5 @@
 from __future__ import annotations
+import re
 
 import os
 from typing import Any
@@ -942,7 +943,7 @@ def _lock_single_order_site(
     )
 
 
-def _resolve_site_region(
+def _resolve_site_commune(
     *,
     commune_id,
 ) -> dict[str, Any]:
@@ -957,11 +958,8 @@ def _resolve_site_region(
             SELECT
                 c.id,
                 c.is_active,
-                r.id,
-                r.code
+                c.code
             FROM public.communes c
-            JOIN public.regions r
-              ON r.id = c.region_id
             WHERE c.id = %s
             LIMIT 1
             """,
@@ -972,7 +970,7 @@ def _resolve_site_region(
 
     if row is None:
         raise SalesPaymentFulfillmentError(
-            "Commune ou région introuvable."
+            "Commune introuvable."
         )
 
     if not bool(row[1]):
@@ -980,80 +978,134 @@ def _resolve_site_region(
             "La commune sélectionnée est inactive."
         )
 
-    region_code = str(
-        row[3]
+    commune_code = str(
+        row[2]
         or ""
-    ).strip().upper()[:3]
+    ).strip().upper()
 
-    if not region_code:
+    if not re.fullmatch(
+        r"[A-Z]{3}[0-9]{2}",
+        commune_code,
+    ):
         raise SalesPaymentFulfillmentError(
-            "Code région absent."
+            "Code officiel de commune absent ou invalide."
         )
 
     return {
         "commune_id": row[0],
-        "region_id": row[2],
-        "region_code": region_code,
+        "commune_code": commune_code,
     }
 
 
-def _next_virtual_beacon_number(
-    *,
-    region_code: str,
+_VERHOEFF_D = (
+    (0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+    (1, 2, 3, 4, 0, 6, 7, 8, 9, 5),
+    (2, 3, 4, 0, 1, 7, 8, 9, 5, 6),
+    (3, 4, 0, 1, 2, 8, 9, 5, 6, 7),
+    (4, 0, 1, 2, 3, 9, 5, 6, 7, 8),
+    (5, 9, 8, 7, 6, 0, 4, 3, 2, 1),
+    (6, 5, 9, 8, 7, 1, 0, 4, 3, 2),
+    (7, 6, 5, 9, 8, 2, 1, 0, 4, 3),
+    (8, 7, 6, 5, 9, 3, 2, 1, 0, 4),
+    (9, 8, 7, 6, 5, 4, 3, 2, 1, 0),
+)
+
+_VERHOEFF_P = (
+    (0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+    (1, 5, 7, 6, 2, 8, 3, 0, 9, 4),
+    (5, 8, 0, 3, 7, 9, 6, 1, 4, 2),
+    (8, 9, 1, 6, 0, 4, 3, 5, 2, 7),
+    (9, 4, 5, 3, 1, 2, 6, 8, 7, 0),
+    (4, 2, 8, 6, 5, 7, 3, 9, 0, 1),
+    (2, 7, 9, 3, 8, 0, 6, 4, 1, 5),
+    (7, 0, 4, 6, 9, 1, 3, 2, 5, 8),
+)
+
+_VERHOEFF_INV = (
+    0, 4, 3, 2, 1, 5, 6, 7, 8, 9
+)
+
+
+def _verhoeff_check_digit(
+    national_id: str,
 ) -> str:
-    prefix = (
-        f"GN-{region_code}-"
+    if not re.fullmatch(
+        r"[0-9]{8}",
+        national_id,
+    ):
+        raise SalesPaymentFulfillmentError(
+            "Identifiant national Adresse GN invalide."
+        )
+
+    checksum = 0
+
+    for index, digit in enumerate(
+        reversed(national_id)
+    ):
+        checksum = _VERHOEFF_D[
+            checksum
+        ][
+            _VERHOEFF_P[
+                (index + 1) % 8
+            ][
+                int(digit)
+            ]
+        ]
+
+    return str(
+        _VERHOEFF_INV[checksum]
     )
+
+
+def _next_v1_beacon_number(
+    *,
+    commune_code: str,
+) -> dict[str, str]:
+    if not re.fullmatch(
+        r"[A-Z]{3}[0-9]{2}",
+        commune_code,
+    ):
+        raise SalesPaymentFulfillmentError(
+            "Code officiel de commune invalide."
+        )
 
     with connection.cursor() as cursor:
         cursor.execute(
             """
-            SELECT pg_advisory_xact_lock(
-                hashtext(%s)
+            SELECT nextval(
+                'public.address_national_id_seq'
             )
-            """,
-            [
-                f"adresse-gn:{prefix}",
-            ],
-        )
-
-        cursor.execute(
             """
-            SELECT MAX(
-                RIGHT(public_number, 6)::integer
-            )
-            FROM public.beacons
-            WHERE
-                public_number LIKE %s
-                AND public_number ~ %s
-            """,
-            [
-                f"{prefix}%",
-                (
-                    "^"
-                    + prefix
-                    + "[0-9]{6}$"
-                ),
-            ],
         )
 
-        max_suffix = cursor.fetchone()[0]
+        raw_value = cursor.fetchone()[0]
 
-    next_suffix = (
-        int(max_suffix) + 1
-        if max_suffix is not None
-        else 100011
-    )
+    national_value = int(raw_value)
 
-    if next_suffix > 999999:
+    if national_value < 10_000_000 or national_value > 99_999_999:
         raise SalesPaymentFulfillmentError(
-            "Plage de numérotation régionale épuisée."
+            "Plage nationale Adresse GN épuisée."
         )
 
-    return (
-        f"{prefix}"
-        f"{next_suffix:06d}"
+    national_id = f"{national_value:08d}"
+
+    check_digit = _verhoeff_check_digit(
+        national_id
     )
+
+    public_number = (
+        f"{commune_code}-"
+        f"{national_id}"
+        f"{check_digit}"
+    )
+
+    return {
+        "public_number": public_number,
+        "national_id": national_id,
+        "check_digit": check_digit,
+        "commune_code_at_issue": commune_code,
+        "numbering_version": "v1",
+    }
 
 
 def _fulfill_digital_address(
@@ -1062,7 +1114,7 @@ def _fulfill_digital_address(
     order_ref: str,
     customer_id,
     site: dict[str, Any],
-    region_code: str,
+    commune_code: str,
 ) -> dict[str, Any]:
     if site["requested_location"] is None:
         raise SalesPaymentFulfillmentError(
@@ -1074,9 +1126,13 @@ def _fulfill_digital_address(
             "Le site possède déjà une balise."
         )
 
-    public_number = _next_virtual_beacon_number(
-        region_code=region_code
+    numbering = _next_v1_beacon_number(
+        commune_code=commune_code
     )
+
+    public_number = numbering[
+        "public_number"
+    ]
 
     place_type = str(
         site.get("place_type")
@@ -1098,18 +1154,31 @@ def _fulfill_digital_address(
                 status,
                 category,
                 lot_id,
-                activated_at
+                activated_at,
+                national_id,
+                check_digit,
+                commune_code_at_issue,
+                numbering_version
             )
             VALUES (
                 %s,
                 'active',
                 'digital_only',
                 NULL,
-                NOW()
+                NOW(),
+                %s,
+                %s,
+                %s,
+                'v1'
             )
             RETURNING id
             """,
-            [public_number],
+            [
+                public_number,
+                numbering["national_id"],
+                numbering["check_digit"],
+                numbering["commune_code_at_issue"],
+            ],
         )
 
         beacon_id = cursor.fetchone()[0]
@@ -1418,7 +1487,7 @@ def confirm_manual_payment_core(
             "La position GPS est obligatoire avant confirmation."
         )
 
-    region = _resolve_site_region(
+    commune = _resolve_site_commune(
         commune_id=site["commune_id"]
     )
 
@@ -1433,7 +1502,9 @@ def confirm_manual_payment_core(
             order_ref=str(row["order_ref"]),
             customer_id=row["customer_id"],
             site=site,
-            region_code=str(region["region_code"]),
+            commune_code=str(
+                commune["commune_code"]
+            ),
         )
 
     else:
