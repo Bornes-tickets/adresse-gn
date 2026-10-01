@@ -84,6 +84,14 @@ CSRF_COOKIE_SECURE = env.bool(
     default=not DEBUG,
 )
 
+# Render termine TLS au niveau de son reverse proxy.
+# X-Forwarded-Proto permet à Django de reconnaître la requête
+# d'origine comme HTTPS.
+SECURE_PROXY_SSL_HEADER = (
+    "HTTP_X_FORWARDED_PROTO",
+    "https",
+)
+
 X_FRAME_OPTIONS = "DENY"
 
 ENABLE_API_DOCS = env.bool(

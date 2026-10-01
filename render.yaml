@@ -1,0 +1,101 @@
+services:
+  - type: web
+    name: adresse-gn-api
+    runtime: python
+
+    # Monorepo: Django vit uniquement dans apps/api.
+    rootDir: apps/api
+
+    buildCommand: pip install -r requirements.txt
+
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+
+    healthCheckPath: /api/health/
+
+    envVars:
+      # ----------------------------------------------------------------
+      # Django
+      # ----------------------------------------------------------------
+
+      - key: DEBUG
+        value: "False"
+
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+
+      # À renseigner avec le hostname exact du service Render,
+      # puis avec le domaine API définitif lorsqu'il sera attaché.
+      - key: ALLOWED_HOSTS
+        sync: false
+
+      # Origine frontend HTTPS exacte, ex:
+      # https://www.adressegn.com
+      - key: CSRF_TRUSTED_ORIGINS
+        sync: false
+
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+
+      - key: SECURE_SSL_REDIRECT
+        value: "True"
+
+      - key: SESSION_COOKIE_SECURE
+        value: "True"
+
+      - key: CSRF_COOKIE_SECURE
+        value: "True"
+
+      # HSTS reste volontairement désactivé pour le premier déploiement.
+      - key: SECURE_HSTS_SECONDS
+        value: "0"
+
+      - key: SECURE_HSTS_INCLUDE_SUBDOMAINS
+        value: "False"
+
+      - key: SECURE_HSTS_PRELOAD
+        value: "False"
+
+      - key: ENABLE_API_DOCS
+        value: "False"
+
+
+      # ----------------------------------------------------------------
+      # PostgreSQL / Supabase Geoloc
+      #
+      # Aucune base Render n'est créée.
+      # Ces valeurs sont saisies dans Render et restent hors de Git.
+      # ----------------------------------------------------------------
+
+      - key: DB_NAME
+        sync: false
+
+      - key: DB_USER
+        sync: false
+
+      - key: DB_PASSWORD
+        sync: false
+
+      - key: DB_HOST
+        sync: false
+
+      - key: DB_PORT
+        value: "5432"
+
+
+      # ----------------------------------------------------------------
+      # Supabase Auth / Storage
+      # ----------------------------------------------------------------
+
+      - key: SUPABASE_URL
+        sync: false
+
+      - key: SUPABASE_PUBLISHABLE_KEY
+        sync: false
+
+      # Nouvelle clé serveur Supabase recommandée si disponible.
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+
+      # Compatibilité legacy éventuelle.
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
