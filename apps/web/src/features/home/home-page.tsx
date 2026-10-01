@@ -46,7 +46,7 @@ import {
   extractAddressNumberFromSpeech,
 } from "@/features/home/address-input";
 import { cn } from "@/lib/utils";
-const EXEMPLES = ["CKY04-582741369", "CKY10-582741376", "CKY02-582741382"];
+const EXEMPLES = ["CKY04-582741369", "CKY10-582741376"];
 const EXEMPLE_DEMO = "CKY04-582741369";
 const SITE_CONTAINER =
   "mx-auto w-full max-w-[1760px] px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16";
