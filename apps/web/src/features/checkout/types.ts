@@ -54,6 +54,15 @@ export type CheckoutDraft = {
   email: string;
   planCode: string;
   paymentMethod: string;
+  raisonSociale: string;
+  fonctionContact: string;
+  rccm: string;
+  nif: string;
+  siteWeb: string;
+  nbAdresses: number;
+  devisDemande: boolean;
+  instructionsParticulieres: string;
+  professionalTier: "pro_basic" | "pro_plus" | "multi_sites";
 };
 
 export type CheckoutCreatedOrder = {

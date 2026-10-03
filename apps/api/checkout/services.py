@@ -695,6 +695,33 @@ def _create_checkout_order(
         order_ref = order_row[1]
         guest_token = order_row[2]
 
+        cursor.execute(
+            """
+            UPDATE public.orders
+            SET
+                raison_sociale = %s,
+                fonction_contact = %s,
+                rccm = %s,
+                nif = %s,
+                site_web = %s,
+                nb_adresses = %s,
+                instructions_particulieres = %s,
+                professional_offer_tier = %s
+            WHERE id = %s
+            """,
+            [
+                payload.get("raison_sociale"),
+                payload.get("fonction_contact"),
+                payload.get("rccm"),
+                payload.get("nif"),
+                payload.get("site_web"),
+                int(payload.get("nb_adresses") or 1),
+                payload.get("instructions_particulieres"),
+                payload.get("professional_offer_tier"),
+                order_id,
+            ],
+        )
+
         place_type = str(
             payload.get("place_type") or ""
         ).strip()

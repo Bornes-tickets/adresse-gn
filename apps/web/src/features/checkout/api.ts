@@ -104,6 +104,12 @@ export async function createCheckoutOrder(
         payment_method: requiresQuote
           ? null
           : draft.paymentMethod || null,
+        raison_sociale: draft.raisonSociale.trim() || null,
+        fonction_contact: draft.fonctionContact.trim() || null,
+        rccm: draft.rccm.trim() || null,
+        nif: draft.nif.trim() || null,
+        site_web: draft.siteWeb.trim() || null,
+        nb_adresses: Math.max(1, Math.trunc(draft.nbAdresses || 1)),
         place_type: draft.placeType,
         place_name: draft.placeName.trim() || null,
         lat: draft.lat,
@@ -114,7 +120,13 @@ export async function createCheckoutOrder(
         sector_id: draft.sectorId || null,
         address_line: draft.addressLine.trim() || null,
         access_point_note: draft.accessPointNote.trim() || null,
-        devis_demande: requiresQuote,
+        devis_demande: requiresQuote || draft.devisDemande,
+        instructions_particulieres:
+          draft.instructionsParticulieres.trim() || null,
+        professional_offer_tier:
+          draft.clientType === "professionnel"
+            ? draft.professionalTier
+            : null,
         submission_channel: "web",
       }),
     },

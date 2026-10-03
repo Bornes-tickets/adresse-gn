@@ -72,6 +72,39 @@ class CheckoutOrderCreateSerializer(serializers.Serializer):
         max_length=1000,
         trim_whitespace=False,
     )
+    raison_sociale = serializers.CharField(
+        required=False, allow_null=True, allow_blank=True, max_length=200
+    )
+    fonction_contact = serializers.CharField(
+        required=False, allow_null=True, allow_blank=True, max_length=120
+    )
+    rccm = serializers.CharField(
+        required=False, allow_null=True, allow_blank=True, max_length=80
+    )
+    nif = serializers.CharField(
+        required=False, allow_null=True, allow_blank=True, max_length=80
+    )
+    site_web = serializers.CharField(
+        required=False, allow_null=True, allow_blank=True, max_length=255
+    )
+    nb_adresses = serializers.IntegerField(
+        required=False, min_value=1, max_value=1000, default=1
+    )
+
+    instructions_particulieres = serializers.CharField(
+        required=False,
+        allow_null=True,
+        allow_blank=True,
+        max_length=1000,
+    )
+
+    professional_offer_tier = serializers.CharField(
+        required=False,
+        allow_null=True,
+        allow_blank=True,
+        max_length=32,
+    )
+
     devis_demande = serializers.BooleanField(
         required=False,
         default=False,
