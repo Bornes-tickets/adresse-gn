@@ -10,7 +10,10 @@ import {
   Loader2,
   Mail,
   MessageCircle,
+  ShieldCheck,
   Smartphone,
+  Truck,
+  Zap
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -266,6 +269,20 @@ function planRecapServices(
     },
   ];
 }
+
+const SERVICE_CARD_ICONS = [
+  ShieldCheck,
+  Zap,
+  Truck,
+  MessageCircle,
+] as const;
+
+const SERVICE_CARD_ICON_STYLES = [
+  "bg-emerald-100 text-emerald-600",
+  "bg-orange-100 text-orange-500",
+  "bg-sky-100 text-sky-600",
+  "bg-violet-100 text-violet-600",
+] as const;
 
 const PROFESSIONAL_TIERS = [
   {
@@ -1061,7 +1078,11 @@ export default function CommanderPage({
                             }`}
                           >
                             <span className="text-[10px] font-extrabold text-slate-950">
-                              {planLabel(plan)}
+                              {plan.code === "numerique"
+                                  ? "Numérique seule"
+                                  : plan.code === "residentiel_standard"
+                                    ? "Résidentiel Standard"
+                                    : planLabel(plan)}
                             </span>
                             <strong className="shrink-0 text-[10px] text-slate-950">
                               {plan.requires_quote
@@ -1072,6 +1093,36 @@ export default function CommanderPage({
                         ))}
                       </div>
                     )}
+
+                    {draft.clientType === "particulier" &&
+                      !visiblePlans.some(
+                        (plan) => plan.code === "residentiel_premium",
+                      ) && (
+                        <button
+                          type="button"
+                          disabled
+                          aria-disabled="true"
+                          title="Cette formule est affichée à titre tarifaire. Son plan de commande backend n'est pas encore activé."
+                          className="flex w-full cursor-not-allowed items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-left opacity-90"
+                        >
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="text-[11px] font-extrabold text-slate-950">
+                                Résidentiel Premium
+                              </span>
+                              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[7px] font-extrabold uppercase text-slate-500">
+                                Bientôt disponible
+                              </span>
+                            </div>
+                            <p className="mt-1 text-[9px] text-slate-500">
+                              Balise renforcée + point d&apos;accès détaillé
+                            </p>
+                          </div>
+                          <strong className="shrink-0 text-right text-[11px] text-slate-950">
+                            300 000 GNF
+                          </strong>
+                        </button>
+                      )}
 
                     {draft.clientType !== "particulier" && (
                       <div className="mt-3 w-[112px]">
@@ -1493,21 +1544,32 @@ export default function CommanderPage({
                 {(draft.clientType === "professionnel"
                   ? selectedProfessionalTier.recapServices
                   : planRecapServices(selectedPlan, draft.clientType)
-                ).map(({ icon, title, detail }) => (
-                  <div key={title} className="flex items-start gap-2.5">
-                    <span className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-[10px] font-bold text-teal-600">
-                      {icon}
-                    </span>
-                    <div>
-                      <strong className="text-[8.5px] text-slate-900">
-                        {title}
-                      </strong>
-                      <p className="mt-0.5 leading-3 text-slate-500">
-                        {detail}
-                      </p>
+                ).map(({ title, detail }, index) => {
+                  const ServiceIcon =
+                    SERVICE_CARD_ICONS[index % SERVICE_CARD_ICONS.length];
+                  const iconStyle =
+                    SERVICE_CARD_ICON_STYLES[
+                      index % SERVICE_CARD_ICON_STYLES.length
+                    ];
+
+                  return (
+                    <div key={title} className="flex items-start gap-2.5">
+                      <span
+                        className={`flex size-7 shrink-0 items-center justify-center rounded-lg ${iconStyle}`}
+                      >
+                        <ServiceIcon className="size-3.5" />
+                      </span>
+                      <div>
+                        <strong className="text-[8.5px] text-slate-900">
+                          {title}
+                        </strong>
+                        <p className="mt-0.5 leading-3 text-slate-500">
+                          {detail}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
