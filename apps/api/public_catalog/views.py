@@ -27,7 +27,12 @@ class PublicPlansView(APIView):
             "installation_required, popular, active, position "
             "FROM public.cms_plans "
             "WHERE active IS TRUE "
-            "AND code IN ('numerique','residentiel_standard','pro') "
+            "AND code IN ("
+            "'numerique',"
+            "'residentiel_standard',"
+            "'residentiel_premium',"
+            "'pro'"
+            ") "
             "ORDER BY position, code"
         )
 

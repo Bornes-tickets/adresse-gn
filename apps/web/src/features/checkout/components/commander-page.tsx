@@ -95,6 +95,10 @@ function normalizePhone(raw: string): string | null {
 }
 
 function planLabel(plan: PublicPlan): string {
+  if (plan.code === "residentiel_premium") {
+    return "Résidentiel Premium";
+  }
+
   return plan.name?.fr ?? plan.name?.FR ?? plan.name?.en ?? plan.code;
 }
 
@@ -136,6 +140,15 @@ function planRecapFeatures(
           "Localisation GPS vérifiée",
           "Lien de partage et itinéraire",
         ];
+  }
+
+  if (plan.code === "residentiel_premium") {
+    return [
+      "Balise renforcée longue durée",
+      "Pose prioritaire sous 72 h",
+      "Note d’accès détaillée (portail, étage)",
+      "Assistance au remplacement 12 mois",
+    ];
   }
 
   const raw = plan.features as unknown;
