@@ -64,6 +64,12 @@ _CANONICAL_PLAN_OVERRIDES = {
         "requires_quote": False,
         "fulfillment_kind": "physical_installation",
     },
+    "residentiel_premium": {
+        "active": True,
+        "audience": "residential",
+        "requires_quote": False,
+        "fulfillment_kind": "physical_installation",
+    },
     "pro": {
         "active": True,
         "audience": "professional",
