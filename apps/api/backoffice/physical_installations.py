@@ -36,7 +36,7 @@ def _validate_coordinates(*, gps_lat: float, gps_lng: float) -> tuple[float, flo
     return lat, lng
 
 
-def _load_completed_result(*, pending_installation_id: str) -> dict[str, Any]:
+def _load_installed_result(*, pending_installation_id: str) -> dict[str, Any]:
     with connection.cursor() as cursor:
         cursor.execute(
             """
@@ -57,7 +57,7 @@ def _load_completed_result(*, pending_installation_id: str) -> dict[str, Any]:
              AND i.uninstalled_at IS NULL
             WHERE
                 pi.id = %s
-                AND pi.status = 'done'
+                AND pi.status = 'installed'
             ORDER BY i.installed_at DESC
             LIMIT 1
             """,
@@ -72,7 +72,7 @@ def _load_completed_result(*, pending_installation_id: str) -> dict[str, Any]:
 
     return {
         "ok": True,
-        "status": "done",
+        "status": "installed",
         "idempotent": True,
         "pending_installation_id": str(row[0]),
         "beacon_id": str(row[1]),
@@ -83,7 +83,7 @@ def _load_completed_result(*, pending_installation_id: str) -> dict[str, Any]:
 
 
 @transaction.atomic
-def complete_physical_installation(
+def record_physical_installation(
     *,
     pending_installation_id: str,
     actor_id: str,
@@ -114,6 +114,7 @@ def complete_physical_installation(
                 pi.beacon_id,
                 pi.status,
                 pi.assigned_agent_id,
+                pi.scheduled_at,
                 o.status AS order_status,
                 o.customer_id AS order_customer_id,
                 o.beacon_id AS order_beacon_id,
@@ -143,6 +144,7 @@ def complete_physical_installation(
         pending_beacon_id,
         pending_status,
         assigned_agent_id,
+        scheduled_at,
         order_status,
         order_customer_id,
         order_beacon_id,
@@ -150,14 +152,14 @@ def complete_physical_installation(
         fulfillment_kind,
     ) = row
 
-    if str(pending_status) == "done":
-        return _load_completed_result(
+    if str(pending_status) == "installed":
+        return _load_installed_result(
             pending_installation_id=str(pending_id)
         )
 
-    if str(pending_status) not in {"pending", "assigned", "planned"}:
+    if str(pending_status) != "planned":
         raise PhysicalInstallationStateError(
-            "Cette installation ne peut pas etre finalisee dans son etat actuel."
+            "L installation doit etre planifiee avant l intervention terrain."
         )
 
     if str(order_status) != "paid":
@@ -179,9 +181,19 @@ def complete_physical_installation(
             "Une balise existe deja sans installation terminee."
         )
 
-    if assigned_agent_id is not None and str(assigned_agent_id) != str(agent_id):
+    if assigned_agent_id is None:
+        raise PhysicalInstallationStateError(
+            "Aucun agent n est affecte a cette installation."
+        )
+
+    if str(assigned_agent_id) != str(agent_id):
         raise PhysicalInstallationStateError(
             "Cette installation est affectee a un autre agent."
+        )
+
+    if scheduled_at is None:
+        raise PhysicalInstallationStateError(
+            "L installation doit avoir une date planifiee."
         )
 
     with connection.cursor() as cursor:
@@ -363,7 +375,7 @@ def complete_physical_installation(
                 )::geography,
                 %s,
                 'private',
-                'verified',
+                'pending',
                 %s,
                 'active',
                 %s,
@@ -410,8 +422,8 @@ def complete_physical_installation(
                 %s,
                 %s,
                 NOW(),
-                NOW(),
-                %s,
+                NULL,
+                NULL,
                 %s
             )
             RETURNING id
@@ -423,7 +435,6 @@ def complete_physical_installation(
                 lng,
                 clean_accuracy,
                 clean_photo,
-                actor_id,
                 order_site_id,
             ],
         )
@@ -469,13 +480,13 @@ def complete_physical_installation(
             SET
                 beacon_id = %s,
                 assigned_agent_id = %s,
-                status = 'done',
-                scheduled_at = COALESCE(scheduled_at, NOW()),
-                completed_at = NOW(),
+                status = 'installed',
                 updated_at = NOW()
             WHERE
                 id = %s
-                AND status IN ('pending', 'assigned', 'planned')
+                AND status = 'planned'
+                AND scheduled_at IS NOT NULL
+                AND completed_at IS NULL
                 AND beacon_id IS NULL
             """,
             [beacon_id, agent_id, pending_id],
@@ -496,7 +507,7 @@ def complete_physical_installation(
             )
             VALUES (
                 %s,
-                'installation.complete.v1',
+                'installation.field_complete.v1',
                 'installations',
                 %s,
                 jsonb_build_object(
@@ -525,7 +536,7 @@ def complete_physical_installation(
 
     return {
         "ok": True,
-        "status": "done",
+        "status": "installed",
         "idempotent": False,
         "pending_installation_id": str(pending_id),
         "order_id": str(order_id),

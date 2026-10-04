@@ -48,6 +48,18 @@ class AccountReactivateSerializer(
 
 
 
+class PhysicalInstallationAssignSerializer(
+    serializers.Serializer
+):
+    agent_id = serializers.UUIDField()
+
+
+class PhysicalInstallationScheduleSerializer(
+    serializers.Serializer
+):
+    scheduled_at = serializers.DateTimeField()
+
+
 class PhysicalInstallationCompleteSerializer(
     serializers.Serializer
 ):

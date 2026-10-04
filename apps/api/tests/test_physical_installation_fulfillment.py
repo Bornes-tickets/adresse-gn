@@ -70,6 +70,9 @@ class PhysicalInstallationSourceContractTests(TestCase):
             "residentiel_premium",
             "residential",
             "residential_plus",
+            "status = 'installed'",
+            "'pending'",
+            "installation.field_complete.v1",
             "FOR UPDATE",
         ]
 

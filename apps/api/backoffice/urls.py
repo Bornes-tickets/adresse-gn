@@ -7,7 +7,11 @@ from .views import (
     ClaimDecisionView,
     ClaimListView,
     InstallationUninstallView,
-    PhysicalInstallationCompleteView,
+    PhysicalInstallationAssignView,
+    PhysicalInstallationFieldCompleteView,
+    PhysicalAddressPublishView,
+    PhysicalInstallationScheduleView,
+    PhysicalInstallationValidateView,
 )
 
 
@@ -54,10 +58,38 @@ urlpatterns += [
     path(
         "pending-installations/"
         "<uuid:pending_installation_id>/"
-        "complete/",
-        PhysicalInstallationCompleteView.as_view(),
+        "assign/",
+        PhysicalInstallationAssignView.as_view(),
+        name="backoffice-physical-installation-assign",
+    ),
+    path(
+        "pending-installations/"
+        "<uuid:pending_installation_id>/"
+        "schedule/",
+        PhysicalInstallationScheduleView.as_view(),
+        name="backoffice-physical-installation-schedule",
+    ),
+    path(
+        "pending-installations/"
+        "<uuid:pending_installation_id>/"
+        "publish/",
+        PhysicalAddressPublishView.as_view(),
+        name="backoffice-physical-address-publish",
+    ),
+    path(
+        "pending-installations/"
+        "<uuid:pending_installation_id>/"
+        "validate/",
+        PhysicalInstallationValidateView.as_view(),
+        name="backoffice-physical-installation-validate",
+    ),
+    path(
+        "pending-installations/"
+        "<uuid:pending_installation_id>/"
+        "field-complete/",
+        PhysicalInstallationFieldCompleteView.as_view(),
         name=(
-            "backoffice-physical-installation-complete"
+            "backoffice-physical-installation-field-complete"
         ),
     ),
     path(

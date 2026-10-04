@@ -23,7 +23,15 @@ from .installations import (
 from .physical_installations import (
     PhysicalInstallationNotFoundError,
     PhysicalInstallationStateError,
-    complete_physical_installation,
+    record_physical_installation,
+)
+from .physical_installation_workflow import (
+    PhysicalWorkflowNotFoundError,
+    PhysicalWorkflowStateError,
+    assign_physical_installation,
+    publish_physical_address,
+    schedule_physical_installation,
+    validate_physical_installation,
 )
 from .permissions import (
     IsClaimBackofficeUser,
@@ -33,7 +41,9 @@ from .serializers import (
     AccountReactivateSerializer,
     ClaimDecisionSerializer,
     InstallationUninstallSerializer,
+    PhysicalInstallationAssignSerializer,
     PhysicalInstallationCompleteSerializer,
+    PhysicalInstallationScheduleSerializer,
 )
 
 
@@ -398,7 +408,204 @@ class AccountListView(APIView):
 
 
 
-class PhysicalInstallationCompleteView(APIView):
+class PhysicalInstallationAssignView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsInstallationBackofficeUser,
+    ]
+
+    @extend_schema(
+        tags=["Back-office"],
+        request=PhysicalInstallationAssignSerializer,
+        description=(
+            "Affecte un agent actif a une installation physique en attente."
+        ),
+    )
+    def post(self, request, pending_installation_id):
+        serializer = PhysicalInstallationAssignSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        identity = getattr(request, "backoffice_identity", None)
+        actor_id = identity.get("user_id") if identity else None
+
+        if not actor_id:
+            return Response(
+                {
+                    "ok": False,
+                    "status": "unauthenticated",
+                    "message": "Authentification requise.",
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        try:
+            result = assign_physical_installation(
+                pending_installation_id=str(pending_installation_id),
+                actor_id=str(actor_id),
+                agent_id=str(serializer.validated_data["agent_id"]),
+            )
+        except PhysicalWorkflowNotFoundError as exc:
+            return Response(
+                {"ok": False, "status": "not_found", "message": str(exc)},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except PhysicalWorkflowStateError as exc:
+            return Response(
+                {"ok": False, "status": "conflict", "message": str(exc)},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        return Response(result, status=status.HTTP_200_OK)
+
+
+class PhysicalInstallationScheduleView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsInstallationBackofficeUser,
+    ]
+
+    @extend_schema(
+        tags=["Back-office"],
+        request=PhysicalInstallationScheduleSerializer,
+        description=(
+            "Planifie ou replanifie une installation physique affectee."
+        ),
+    )
+    def post(self, request, pending_installation_id):
+        serializer = PhysicalInstallationScheduleSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        identity = getattr(request, "backoffice_identity", None)
+        actor_id = identity.get("user_id") if identity else None
+
+        if not actor_id:
+            return Response(
+                {
+                    "ok": False,
+                    "status": "unauthenticated",
+                    "message": "Authentification requise.",
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        try:
+            result = schedule_physical_installation(
+                pending_installation_id=str(pending_installation_id),
+                actor_id=str(actor_id),
+                scheduled_at=serializer.validated_data["scheduled_at"],
+            )
+        except PhysicalWorkflowNotFoundError as exc:
+            return Response(
+                {"ok": False, "status": "not_found", "message": str(exc)},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except PhysicalWorkflowStateError as exc:
+            return Response(
+                {"ok": False, "status": "conflict", "message": str(exc)},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        return Response(result, status=status.HTTP_200_OK)
+
+
+class PhysicalAddressPublishView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsInstallationBackofficeUser,
+    ]
+
+    @extend_schema(
+        tags=["Back-office"],
+        request=None,
+        description=(
+            "Publie explicitement une adresse physique deja validee. "
+            "La publication exige un workflow done, une adresse active et "
+            "verified ainsi qu une balise active."
+        ),
+    )
+    def post(self, request, pending_installation_id):
+        identity = getattr(request, "backoffice_identity", None)
+        actor_id = identity.get("user_id") if identity else None
+
+        if not actor_id:
+            return Response(
+                {
+                    "ok": False,
+                    "status": "unauthenticated",
+                    "message": "Authentification requise.",
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        try:
+            result = publish_physical_address(
+                pending_installation_id=str(pending_installation_id),
+                actor_id=str(actor_id),
+            )
+        except PhysicalWorkflowNotFoundError as exc:
+            return Response(
+                {"ok": False, "status": "not_found", "message": str(exc)},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except PhysicalWorkflowStateError as exc:
+            return Response(
+                {"ok": False, "status": "conflict", "message": str(exc)},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        return Response(result, status=status.HTTP_200_OK)
+
+
+class PhysicalInstallationValidateView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsInstallationBackofficeUser,
+    ]
+
+    @extend_schema(
+        tags=["Back-office"],
+        request=None,
+        description=(
+            "Valide une intervention terrain deja enregistree. "
+            "La validation marque l installation comme validee, "
+            "passe l adresse a verified et clot le workflow en done. "
+            "Elle ne publie jamais automatiquement l adresse."
+        ),
+    )
+    def post(self, request, pending_installation_id):
+        identity = getattr(request, "backoffice_identity", None)
+        actor_id = identity.get("user_id") if identity else None
+
+        if not actor_id:
+            return Response(
+                {
+                    "ok": False,
+                    "status": "unauthenticated",
+                    "message": "Authentification requise.",
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        try:
+            result = validate_physical_installation(
+                pending_installation_id=str(pending_installation_id),
+                actor_id=str(actor_id),
+            )
+        except PhysicalWorkflowNotFoundError as exc:
+            return Response(
+                {"ok": False, "status": "not_found", "message": str(exc)},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except PhysicalWorkflowStateError as exc:
+            return Response(
+                {"ok": False, "status": "conflict", "message": str(exc)},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        return Response(result, status=status.HTTP_200_OK)
+
+
+class PhysicalInstallationFieldCompleteView(APIView):
     permission_classes = [
         IsAuthenticated,
         IsInstallationBackofficeUser,
@@ -408,8 +615,8 @@ class PhysicalInstallationCompleteView(APIView):
         tags=["Back-office"],
         request=PhysicalInstallationCompleteSerializer,
         description=(
-            "Finalise une installation physique V1 et cree "
-            "la balise, l'adresse canonique et l'installation terrain."
+            "Enregistre l intervention terrain V1, cree la balise, "
+            "l adresse privee en attente de validation et l installation."
         ),
     )
     def post(self, request, pending_installation_id):
@@ -436,7 +643,7 @@ class PhysicalInstallationCompleteView(APIView):
             )
 
         try:
-            result = complete_physical_installation(
+            result = record_physical_installation(
                 pending_installation_id=str(pending_installation_id),
                 actor_id=str(actor_id),
                 agent_id=str(serializer.validated_data["agent_id"]),
@@ -469,7 +676,7 @@ class PhysicalInstallationCompleteView(APIView):
                     "ok": False,
                     "status": "error",
                     "message": (
-                        "L'installation physique n'a pas pu etre finalisee."
+                        "L intervention terrain n a pas pu etre enregistree."
                     ),
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
