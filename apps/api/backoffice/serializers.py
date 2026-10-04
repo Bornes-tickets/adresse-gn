@@ -48,6 +48,35 @@ class AccountReactivateSerializer(
 
 
 
+class PhysicalInstallationCompleteSerializer(
+    serializers.Serializer
+):
+    agent_id = serializers.UUIDField()
+
+    gps_lat = serializers.FloatField(
+        min_value=-90,
+        max_value=90,
+    )
+
+    gps_lng = serializers.FloatField(
+        min_value=-180,
+        max_value=180,
+    )
+
+    accuracy_m = serializers.FloatField(
+        required=False,
+        allow_null=True,
+        min_value=0,
+    )
+
+    photo_url = serializers.URLField(
+        required=False,
+        allow_null=True,
+        allow_blank=True,
+        max_length=2048,
+    )
+
+
 class InstallationUninstallSerializer(
     serializers.Serializer
 ):

@@ -20,6 +20,11 @@ from .claims import (
 from .installations import (
     register_installation_uninstall,
 )
+from .physical_installations import (
+    PhysicalInstallationNotFoundError,
+    PhysicalInstallationStateError,
+    complete_physical_installation,
+)
 from .permissions import (
     IsClaimBackofficeUser,
     IsInstallationBackofficeUser,
@@ -28,6 +33,7 @@ from .serializers import (
     AccountReactivateSerializer,
     ClaimDecisionSerializer,
     InstallationUninstallSerializer,
+    PhysicalInstallationCompleteSerializer,
 )
 
 
@@ -390,6 +396,89 @@ class AccountListView(APIView):
             status=status.HTTP_200_OK,
         )
 
+
+
+class PhysicalInstallationCompleteView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsInstallationBackofficeUser,
+    ]
+
+    @extend_schema(
+        tags=["Back-office"],
+        request=PhysicalInstallationCompleteSerializer,
+        description=(
+            "Finalise une installation physique V1 et cree "
+            "la balise, l'adresse canonique et l'installation terrain."
+        ),
+    )
+    def post(self, request, pending_installation_id):
+        serializer = PhysicalInstallationCompleteSerializer(
+            data=request.data
+        )
+        serializer.is_valid(raise_exception=True)
+
+        identity = getattr(
+            request,
+            "backoffice_identity",
+            None,
+        )
+        actor_id = identity.get("user_id") if identity else None
+
+        if not actor_id:
+            return Response(
+                {
+                    "ok": False,
+                    "status": "unauthenticated",
+                    "message": "Authentification requise.",
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        try:
+            result = complete_physical_installation(
+                pending_installation_id=str(pending_installation_id),
+                actor_id=str(actor_id),
+                agent_id=str(serializer.validated_data["agent_id"]),
+                gps_lat=serializer.validated_data["gps_lat"],
+                gps_lng=serializer.validated_data["gps_lng"],
+                accuracy_m=serializer.validated_data.get("accuracy_m"),
+                photo_url=serializer.validated_data.get("photo_url"),
+            )
+        except PhysicalInstallationNotFoundError as exc:
+            return Response(
+                {
+                    "ok": False,
+                    "status": "not_found",
+                    "message": str(exc),
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except PhysicalInstallationStateError as exc:
+            return Response(
+                {
+                    "ok": False,
+                    "status": "conflict",
+                    "message": str(exc),
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+        except Exception:
+            return Response(
+                {
+                    "ok": False,
+                    "status": "error",
+                    "message": (
+                        "L'installation physique n'a pas pu etre finalisee."
+                    ),
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        return Response(
+            result,
+            status=status.HTTP_200_OK,
+        )
 
 
 class InstallationUninstallView(APIView):

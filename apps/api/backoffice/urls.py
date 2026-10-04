@@ -7,6 +7,7 @@ from .views import (
     ClaimDecisionView,
     ClaimListView,
     InstallationUninstallView,
+    PhysicalInstallationCompleteView,
 )
 
 
@@ -50,6 +51,15 @@ urlpatterns += [
 
 
 urlpatterns += [
+    path(
+        "pending-installations/"
+        "<uuid:pending_installation_id>/"
+        "complete/",
+        PhysicalInstallationCompleteView.as_view(),
+        name=(
+            "backoffice-physical-installation-complete"
+        ),
+    ),
     path(
         "installations/"
         "<uuid:installation_id>/"
