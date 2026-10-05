@@ -596,6 +596,7 @@ export default function CommanderPage({
       visiblePlans.find((plan) => plan.popular) ??
       visiblePlans[0];
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDraft((current) => ({
       ...current,
       planCode: preferred.code,
@@ -1477,7 +1478,7 @@ export default function CommanderPage({
                   </Button>
 
                   <p className="text-center text-[9px] text-slate-400">
-                    Aucun paiement n'est débité à cette étape.
+                    Aucun paiement n&apos;est débité à cette étape.
                   </p>
                 </div>
               )}
