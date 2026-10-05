@@ -869,9 +869,17 @@ def _load_confirmation_result(
         with connection.cursor() as cursor:
             cursor.execute(
                 """
-                SELECT id
-                FROM public.pending_installations
-                WHERE order_id = %s
+                SELECT
+                    pi.id,
+                    pi.beacon_id,
+                    b.public_number,
+                    a.id AS address_id
+                FROM public.pending_installations pi
+                JOIN public.beacons b
+                  ON b.id = pi.beacon_id
+                JOIN public.addresses a
+                  ON a.beacon_id = b.id
+                WHERE pi.order_id = %s
                 LIMIT 1
                 """,
                 [order_id],
@@ -881,12 +889,15 @@ def _load_confirmation_result(
 
         if row is None:
             raise SalesPaymentConfirmStateError(
-                "Paiement déjà confirmé mais installation à planifier introuvable."
+                "Paiement déjà confirmé mais pré-allocation physique introuvable."
             )
 
         return {
             "fulfillment_kind": "physical_installation",
             "pending_installation_id": str(row[0]),
+            "beacon_id": str(row[1]),
+            "public_number": str(row[2]),
+            "address_id": str(row[3]),
         }
 
     raise SalesPaymentFulfillmentError(
@@ -1130,20 +1141,15 @@ def _fulfill_digital_address(
         commune_code=commune_code
     )
 
-    public_number = numbering[
-        "public_number"
-    ]
+    public_number = numbering["public_number"]
 
     place_type = str(
-        site.get("place_type")
-        or "other"
+        site.get("place_type") or "other"
     ).strip().lower()
 
-    address_category = (
-        _ADDRESS_CATEGORY_BY_PLACE_TYPE.get(
-            place_type,
-            "other",
-        )
+    address_category = _ADDRESS_CATEGORY_BY_PLACE_TYPE.get(
+        place_type,
+        "other",
     )
 
     with connection.cursor() as cursor:
@@ -1180,7 +1186,6 @@ def _fulfill_digital_address(
                 numbering["commune_code_at_issue"],
             ],
         )
-
         beacon_id = cursor.fetchone()[0]
 
         cursor.execute(
@@ -1197,7 +1202,8 @@ def _fulfill_digital_address(
                 access_point_note,
                 status,
                 commune_id,
-                district_id
+                district_id,
+                sector_id
             )
             SELECT
                 %s,
@@ -1211,7 +1217,8 @@ def _fulfill_digital_address(
                 s.access_point_note,
                 'active',
                 s.commune_id,
-                s.district_id
+                s.district_id,
+                s.sector_id
             FROM public.order_sites s
             WHERE s.id = %s
             RETURNING id
@@ -1239,10 +1246,7 @@ def _fulfill_digital_address(
             SET beacon_id = %s
             WHERE id = %s
             """,
-            [
-                beacon_id,
-                order_id,
-            ],
+            [beacon_id, order_id],
         )
 
         cursor.execute(
@@ -1251,10 +1255,7 @@ def _fulfill_digital_address(
             SET beacon_id = %s
             WHERE id = %s
             """,
-            [
-                beacon_id,
-                site["id"],
-            ],
+            [beacon_id, site["id"]],
         )
 
     return {
@@ -1265,29 +1266,271 @@ def _fulfill_digital_address(
     }
 
 
+def _load_physical_preallocation(
+    *,
+    order_id,
+) -> dict[str, Any] | None:
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+                pi.id,
+                pi.beacon_id,
+                o.beacon_id AS order_beacon_id,
+                os.id AS order_site_id,
+                os.beacon_id AS site_beacon_id,
+                b.public_number,
+                a.id AS address_id
+            FROM public.pending_installations pi
+            JOIN public.orders o
+              ON o.id = pi.order_id
+            JOIN public.order_sites os
+              ON os.order_id = o.id
+            LEFT JOIN public.beacons b
+              ON b.id = pi.beacon_id
+            LEFT JOIN public.addresses a
+              ON a.beacon_id = pi.beacon_id
+            WHERE pi.order_id = %s
+            ORDER BY os.sequence_no
+            LIMIT 2
+            """,
+            [order_id],
+        )
+        rows = cursor.fetchall()
+
+    if not rows:
+        return None
+
+    if len(rows) != 1:
+        raise SalesPaymentFulfillmentError(
+            "Pré-allocation physique ambiguë : nombre de sites invalide."
+        )
+
+    (
+        pending_id,
+        pending_beacon_id,
+        order_beacon_id,
+        order_site_id,
+        site_beacon_id,
+        public_number,
+        address_id,
+    ) = rows[0]
+
+    links = {
+        pending_beacon_id,
+        order_beacon_id,
+        site_beacon_id,
+    }
+
+    if links == {None}:
+        return {
+            "pending_installation_id": pending_id,
+            "order_site_id": order_site_id,
+            "beacon_id": None,
+            "public_number": None,
+            "address_id": None,
+        }
+
+    if (
+        None in links
+        or len(links) != 1
+        or public_number is None
+        or address_id is None
+    ):
+        raise SalesPaymentFulfillmentError(
+            "Pré-allocation physique existante incohérente."
+        )
+
+    return {
+        "pending_installation_id": pending_id,
+        "order_site_id": order_site_id,
+        "beacon_id": pending_beacon_id,
+        "public_number": public_number,
+        "address_id": address_id,
+    }
+
+
 def _fulfill_physical_installation(
     *,
     order_id,
     order_ref: str,
     customer_id,
     customer_phone: str | None,
+    site: dict[str, Any],
+    commune_code: str,
+    plan_code: str,
 ) -> dict[str, Any]:
+    if site["requested_location"] is None:
+        raise SalesPaymentFulfillmentError(
+            "La position GPS est obligatoire avant pré-allocation."
+        )
+
+    existing = _load_physical_preallocation(
+        order_id=order_id
+    )
+
+    if existing is not None and existing["beacon_id"] is not None:
+        return {
+            "fulfillment_kind": "physical_installation",
+            "pending_installation_id": str(
+                existing["pending_installation_id"]
+            ),
+            "beacon_id": str(existing["beacon_id"]),
+            "public_number": str(existing["public_number"]),
+            "address_id": str(existing["address_id"]),
+        }
+
+    if site["beacon_id"] is not None:
+        raise SalesPaymentFulfillmentError(
+            "Le site possède déjà une balise sans pré-allocation canonique."
+        )
+
+    beacon_category_by_plan = {
+        "residentiel_standard": "residential",
+        "residentiel_premium": "residential_plus",
+    }
+
+    beacon_category = beacon_category_by_plan.get(
+        str(plan_code or "").strip()
+    )
+
+    if beacon_category is None:
+        raise SalesPaymentFulfillmentError(
+            "Plan physique non pris en charge pour la catégorie de balise."
+        )
+
+    place_type = str(
+        site.get("place_type") or "other"
+    ).strip().lower()
+
+    address_category = _ADDRESS_CATEGORY_BY_PLACE_TYPE.get(
+        place_type,
+        "other",
+    )
+
+    numbering = _next_v1_beacon_number(
+        commune_code=commune_code
+    )
+    public_number = numbering["public_number"]
+
     with connection.cursor() as cursor:
         cursor.execute(
             """
-            SELECT id
-            FROM public.pending_installations
-            WHERE order_id = %s
-            LIMIT 1
+            INSERT INTO public.beacons (
+                public_number,
+                status,
+                category,
+                lot_id,
+                activated_at,
+                national_id,
+                check_digit,
+                commune_code_at_issue,
+                numbering_version
+            )
+            VALUES (
+                %s,
+                'active',
+                %s,
+                NULL,
+                NOW(),
+                %s,
+                %s,
+                %s,
+                'v1'
+            )
+            RETURNING id
             """,
-            [order_id],
+            [
+                public_number,
+                beacon_category,
+                numbering["national_id"],
+                numbering["check_digit"],
+                numbering["commune_code_at_issue"],
+            ],
+        )
+        beacon_id = cursor.fetchone()[0]
+
+        cursor.execute(
+            """
+            INSERT INTO public.addresses (
+                beacon_id,
+                owner_id,
+                category,
+                name,
+                location,
+                accuracy_m,
+                visibility,
+                verification_level,
+                access_point_note,
+                status,
+                commune_id,
+                district_id,
+                sector_id
+            )
+            SELECT
+                %s,
+                %s,
+                %s,
+                s.place_name,
+                s.requested_location,
+                s.location_accuracy_m,
+                'private',
+                'pending',
+                s.access_point_note,
+                'active',
+                s.commune_id,
+                s.district_id,
+                s.sector_id
+            FROM public.order_sites s
+            WHERE s.id = %s
+            RETURNING id
+            """,
+            [
+                beacon_id,
+                customer_id,
+                address_category,
+                site["id"],
+            ],
         )
 
-        existing = cursor.fetchone()
+        address_row = cursor.fetchone()
 
-        if existing is not None:
-            pending_id = existing[0]
-        else:
+        if address_row is None:
+            raise SalesPaymentFulfillmentError(
+                "Création de l'adresse physique pré-allouée impossible."
+            )
+
+        address_id = address_row[0]
+
+        cursor.execute(
+            """
+            UPDATE public.orders
+            SET beacon_id = %s
+            WHERE id = %s
+              AND beacon_id IS NULL
+            """,
+            [beacon_id, order_id],
+        )
+        if cursor.rowcount != 1:
+            raise SalesPaymentFulfillmentError(
+                "La commande a été pré-allouée concurremment."
+            )
+
+        cursor.execute(
+            """
+            UPDATE public.order_sites
+            SET beacon_id = %s
+            WHERE id = %s
+              AND beacon_id IS NULL
+            """,
+            [beacon_id, site["id"]],
+        )
+        if cursor.rowcount != 1:
+            raise SalesPaymentFulfillmentError(
+                "Le site a été pré-alloué concurremment."
+            )
+
+        if existing is None:
             cursor.execute(
                 """
                 INSERT INTO public.pending_installations (
@@ -1299,7 +1542,7 @@ def _fulfill_physical_installation(
                     status
                 )
                 VALUES (
-                    NULL,
+                    %s,
                     %s,
                     %s,
                     %s,
@@ -1309,6 +1552,7 @@ def _fulfill_physical_installation(
                 RETURNING id
                 """,
                 [
+                    beacon_id,
                     order_id,
                     customer_id,
                     customer_phone,
@@ -1318,12 +1562,32 @@ def _fulfill_physical_installation(
                     ),
                 ],
             )
-
             pending_id = cursor.fetchone()[0]
+        else:
+            pending_id = existing["pending_installation_id"]
+            cursor.execute(
+                """
+                UPDATE public.pending_installations
+                SET
+                    beacon_id = %s,
+                    updated_at = NOW()
+                WHERE id = %s
+                  AND beacon_id IS NULL
+                  AND status = 'pending'
+                """,
+                [beacon_id, pending_id],
+            )
+            if cursor.rowcount != 1:
+                raise SalesPaymentFulfillmentError(
+                    "La demande d'installation a été pré-allouée concurremment."
+                )
 
     return {
         "fulfillment_kind": "physical_installation",
         "pending_installation_id": str(pending_id),
+        "beacon_id": str(beacon_id),
+        "public_number": public_number,
+        "address_id": str(address_id),
     }
 
 
@@ -1516,6 +1780,11 @@ def confirm_manual_payment_core(
                 row["profile_phone"]
                 or row["order_phone"]
             ),
+            site=site,
+            commune_code=str(
+                commune["commune_code"]
+            ),
+            plan_code=str(row["plan_code"]),
         )
 
     with connection.cursor() as cursor:

@@ -4,13 +4,6 @@ from typing import Any
 
 from django.db import connection, transaction
 
-from payments.services import (
-    SalesPaymentFulfillmentError,
-    _ADDRESS_CATEGORY_BY_PLACE_TYPE,
-    _next_v1_beacon_number,
-)
-
-
 class PhysicalInstallationError(RuntimeError):
     code = "PHYSICAL_INSTALLATION_ERROR"
 
@@ -148,7 +141,7 @@ def record_physical_installation(
         order_status,
         order_customer_id,
         order_beacon_id,
-        plan_code,
+        _plan_code,
         fulfillment_kind,
     ) = row
 
@@ -176,9 +169,14 @@ def record_physical_installation(
     if customer_id is None:
         raise PhysicalInstallationStateError("Commande sans proprietaire.")
 
-    if pending_beacon_id is not None or order_beacon_id is not None:
+    if pending_beacon_id is None or order_beacon_id is None:
         raise PhysicalInstallationStateError(
-            "Une balise existe deja sans installation terminee."
+            "La pré-allocation Adresse GN est absente."
+        )
+
+    if str(pending_beacon_id) != str(order_beacon_id):
+        raise PhysicalInstallationStateError(
+            "Les liens de balise pré-allouée sont incohérents."
         )
 
     if assigned_agent_id is None:
@@ -219,13 +217,6 @@ def record_physical_installation(
             """
             SELECT
                 id,
-                sequence_no,
-                place_type,
-                place_name,
-                commune_id,
-                district_id,
-                sector_id,
-                access_point_note,
                 beacon_id
             FROM public.order_sites
             WHERE order_id = %s
@@ -241,164 +232,112 @@ def record_physical_installation(
             "La commande doit contenir exactement un site."
         )
 
+    order_site_id, site_beacon_id = site_rows[0]
+
+    if site_beacon_id is None:
+        raise PhysicalInstallationStateError(
+            "Le site ne possède pas sa balise pré-allouée."
+        )
+
+    if str(site_beacon_id) != str(pending_beacon_id):
+        raise PhysicalInstallationStateError(
+            "La balise du site diffère de la pré-allocation."
+        )
+
+    beacon_id = pending_beacon_id
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+                a.id,
+                a.owner_id,
+                a.visibility,
+                a.verification_level,
+                a.status,
+                b.public_number,
+                b.status AS beacon_status
+            FROM public.addresses a
+            JOIN public.beacons b
+              ON b.id = a.beacon_id
+            WHERE a.beacon_id = %s
+            FOR UPDATE OF a, b
+            """,
+            [beacon_id],
+        )
+        address_rows = cursor.fetchall()
+
+    if len(address_rows) != 1:
+        raise PhysicalInstallationStateError(
+            "Une adresse pré-allouée unique est requise."
+        )
+
     (
-        order_site_id,
-        _sequence_no,
-        place_type,
-        place_name,
-        commune_id,
-        district_id,
-        sector_id,
-        access_point_note,
-        site_beacon_id,
-    ) = site_rows[0]
+        address_id,
+        address_owner_id,
+        visibility,
+        verification_level,
+        address_status,
+        public_number,
+        beacon_status,
+    ) = address_rows[0]
 
-    if site_beacon_id is not None:
+    if address_owner_id is None or str(address_owner_id) != str(customer_id):
         raise PhysicalInstallationStateError(
-            "Le site possede deja une balise."
+            "Le propriétaire de l'adresse pré-allouée est incohérent."
         )
 
-    if commune_id is None:
-        raise PhysicalInstallationStateError("La commune est obligatoire.")
-
-    with connection.cursor() as cursor:
-        cursor.execute(
-            """
-            SELECT code, is_active
-            FROM public.communes
-            WHERE id = %s
-            LIMIT 1
-            """,
-            [commune_id],
-        )
-        commune = cursor.fetchone()
-
-    if commune is None:
-        raise PhysicalInstallationNotFoundError("Commune introuvable.")
-
-    if commune[1] is not True:
-        raise PhysicalInstallationStateError("Commune inactive.")
-
-    try:
-        numbering = _next_v1_beacon_number(
-            commune_code=str(commune[0]).strip().upper()
-        )
-    except SalesPaymentFulfillmentError as exc:
-        raise PhysicalInstallationStateError(str(exc)) from exc
-
-    public_number = numbering["public_number"]
-    normalized_place_type = str(place_type or "other").strip().lower()
-    address_category = _ADDRESS_CATEGORY_BY_PLACE_TYPE.get(
-        normalized_place_type,
-        "other",
-    )
-
-    beacon_category_by_plan = {
-        "residentiel_standard": "residential",
-        "residentiel_premium": "residential_plus",
-    }
-
-    beacon_category = beacon_category_by_plan.get(
-        str(plan_code or "").strip()
-    )
-
-    if beacon_category is None:
+    if str(beacon_status) != "active":
         raise PhysicalInstallationStateError(
-            "Plan physique non pris en charge pour la categorie de balise."
+            "La balise pré-allouée doit être active."
+        )
+
+    if str(address_status) != "active":
+        raise PhysicalInstallationStateError(
+            "L'adresse pré-allouée doit être active."
+        )
+
+    if str(visibility) != "private":
+        raise PhysicalInstallationStateError(
+            "L'adresse ne doit pas être publique avant validation."
+        )
+
+    if str(verification_level) not in {"pending", "unverified"}:
+        raise PhysicalInstallationStateError(
+            "L'adresse pré-allouée a déjà un niveau de vérification incompatible."
         )
 
     with connection.cursor() as cursor:
         cursor.execute(
             """
-            INSERT INTO public.beacons (
-                public_number,
-                status,
-                category,
-                lot_id,
-                activated_at,
-                national_id,
-                check_digit,
-                commune_code_at_issue,
-                numbering_version
-            )
-            VALUES (
-                %s,
-                'active',
-                %s,
-                NULL,
-                NOW(),
-                %s,
-                %s,
-                %s,
-                'v1'
-            )
-            RETURNING id
-            """,
-            [
-                public_number,
-                beacon_category,
-                numbering["national_id"],
-                numbering["check_digit"],
-                numbering["commune_code_at_issue"],
-            ],
-        )
-        beacon_id = cursor.fetchone()[0]
-
-        cursor.execute(
-            """
-            INSERT INTO public.addresses (
-                beacon_id,
-                owner_id,
-                category,
-                name,
-                location,
-                accuracy_m,
-                visibility,
-                verification_level,
-                access_point_note,
-                status,
-                commune_id,
-                district_id,
-                sector_id
-            )
-            VALUES (
-                %s,
-                %s,
-                %s,
-                %s,
-                ST_SetSRID(
+            UPDATE public.addresses
+            SET
+                location = ST_SetSRID(
                     ST_MakePoint(
                         %s::double precision,
                         %s::double precision
                     ),
                     4326
                 )::geography,
-                %s,
-                'private',
-                'pending',
-                %s,
-                'active',
-                %s,
-                %s,
-                %s
-            )
-            RETURNING id
+                accuracy_m = %s
+            WHERE id = %s
+              AND beacon_id = %s
+              AND visibility = 'private'
+              AND status = 'active'
+              AND verification_level IN ('pending', 'unverified')
             """,
             [
-                beacon_id,
-                customer_id,
-                address_category,
-                place_name,
                 lng,
                 lat,
                 clean_accuracy,
-                access_point_note,
-                commune_id,
-                district_id,
-                sector_id,
+                address_id,
+                beacon_id,
             ],
         )
-        address_id = cursor.fetchone()[0]
+        if cursor.rowcount != 1:
+            raise PhysicalInstallationStateError(
+                "L'adresse pré-allouée a été modifiée concurremment."
+            )
 
         cursor.execute(
             """
@@ -444,13 +383,12 @@ def record_physical_installation(
             """
             UPDATE public.order_sites
             SET
-                beacon_id = %s,
                 status = 'done',
                 updated_at = NOW()
             WHERE id = %s
-              AND beacon_id IS NULL
+              AND beacon_id = %s
             """,
-            [beacon_id, order_site_id],
+            [order_site_id, beacon_id],
         )
         if cursor.rowcount != 1:
             raise PhysicalInstallationStateError(
@@ -461,13 +399,12 @@ def record_physical_installation(
             """
             UPDATE public.orders
             SET
-                beacon_id = %s,
                 installed_at = NOW(),
                 updated_at = NOW()
             WHERE id = %s
-              AND beacon_id IS NULL
+              AND beacon_id = %s
             """,
-            [beacon_id, order_id],
+            [order_id, beacon_id],
         )
         if cursor.rowcount != 1:
             raise PhysicalInstallationStateError(
@@ -478,18 +415,17 @@ def record_physical_installation(
             """
             UPDATE public.pending_installations
             SET
-                beacon_id = %s,
                 assigned_agent_id = %s,
                 status = 'installed',
                 updated_at = NOW()
             WHERE
                 id = %s
+                AND beacon_id = %s
                 AND status = 'planned'
                 AND scheduled_at IS NOT NULL
                 AND completed_at IS NULL
-                AND beacon_id IS NULL
             """,
-            [beacon_id, agent_id, pending_id],
+            [agent_id, pending_id, beacon_id],
         )
         if cursor.rowcount != 1:
             raise PhysicalInstallationStateError(
@@ -543,7 +479,7 @@ def record_physical_installation(
         "order_site_id": str(order_site_id),
         "installation_id": str(installation_id),
         "beacon_id": str(beacon_id),
-        "public_number": public_number,
+        "public_number": str(public_number),
         "address_id": str(address_id),
         "owner_id": str(customer_id),
         "audit_id": str(audit_id),

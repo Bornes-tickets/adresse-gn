@@ -1,4 +1,7 @@
+from pathlib import Path
 from unittest import TestCase
+
+import backoffice.physical_installations as module
 
 from backoffice.physical_installations import (
     PhysicalInstallationStateError,
@@ -51,30 +54,79 @@ class PhysicalInstallationCoordinateTests(TestCase):
 
 
 class PhysicalInstallationSourceContractTests(TestCase):
-    def test_service_contains_canonical_writes(self):
-        from pathlib import Path
-        import backoffice.physical_installations as module
+    def test_service_reuses_preallocated_canonical_identity(self):
+        """
+        R13 contract.
 
+        Field-complete must reuse the physical identity that was
+        preallocated during payment fulfillment.
+
+        It must therefore NOT:
+        - allocate another V1 number,
+        - create another beacon,
+        - create another canonical address.
+        """
+        source = Path(module.__file__).read_text(encoding="utf-8")
+
+        forbidden = [
+            "_next_v1_beacon_number",
+            "INSERT INTO public.beacons",
+            "INSERT INTO public.addresses",
+        ]
+
+        unexpected = [
+            token
+            for token in forbidden
+            if token in source
+        ]
+
+        self.assertEqual(
+            unexpected,
+            [],
+            (
+                "R13 violation: field-complete must reuse the "
+                "preallocated beacon/address and must not allocate "
+                "or create a second canonical identity. "
+                f"Unexpected tokens: {unexpected}"
+            ),
+        )
+
+    def test_service_contains_field_complete_writes(self):
+        """
+        R13 field-complete responsibilities that remain valid.
+
+        The terrain workflow must:
+        - create the physical installation record,
+        - update the order/site linkage workflow,
+        - update the pending installation,
+        - transition the pending installation to installed,
+        - preserve locking/audit guarantees.
+        """
         source = Path(module.__file__).read_text(encoding="utf-8")
 
         required = [
-            "INSERT INTO public.beacons",
-            "INSERT INTO public.addresses",
             "INSERT INTO public.installations",
             "UPDATE public.order_sites",
             "UPDATE public.orders",
             "UPDATE public.pending_installations",
-            "sector_id",
             "owner_id",
-            "residentiel_standard",
-            "residentiel_premium",
-            "residential",
-            "residential_plus",
             "status = 'installed'",
             "'pending'",
             "installation.field_complete.v1",
             "FOR UPDATE",
         ]
 
-        missing = [token for token in required if token not in source]
-        self.assertEqual(missing, [])
+        missing = [
+            token
+            for token in required
+            if token not in source
+        ]
+
+        self.assertEqual(
+            missing,
+            [],
+            (
+                "R13 violation: required field-complete workflow "
+                f"tokens are missing: {missing}"
+            ),
+        )
