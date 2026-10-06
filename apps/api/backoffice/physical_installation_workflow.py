@@ -211,6 +211,156 @@ def assign_physical_installation(
     }
 
 
+
+@transaction.atomic
+def reassign_physical_installation(
+    *,
+    pending_installation_id: str,
+    actor_id: str,
+    agent_id: str,
+) -> dict[str, Any]:
+    row = _load_pending_for_update(
+        pending_installation_id=pending_installation_id
+    )
+
+    if row is None:
+        raise PhysicalWorkflowNotFoundError(
+            "Installation a reaffecter introuvable."
+        )
+
+    (
+        pending_id,
+        order_id,
+        current_status,
+        assigned_agent_id,
+        scheduled_at,
+        completed_at,
+        order_status,
+        fulfillment_kind,
+    ) = row
+
+    _ensure_physical_paid_order(
+        order_status=str(order_status),
+        fulfillment_kind=str(fulfillment_kind),
+    )
+
+    _require_active_agent(
+        agent_id=agent_id
+    )
+
+    if str(current_status) not in {
+        "assigned",
+        "planned",
+    }:
+        raise PhysicalWorkflowStateError(
+            "Seule une installation affectee ou planifiee "
+            "peut etre reaffectee."
+        )
+
+    if completed_at is not None:
+        raise PhysicalWorkflowStateError(
+            "Une installation terminee ne peut plus etre reaffectee."
+        )
+
+    if assigned_agent_id is None:
+        raise PhysicalWorkflowStateError(
+            "Aucun agent initial n est affecte. "
+            "Utilisez l affectation initiale."
+        )
+
+    if (
+        str(current_status) == "assigned"
+        and scheduled_at is not None
+    ):
+        raise PhysicalWorkflowStateError(
+            "Etat incoherent: une installation affectee "
+            "ne doit pas deja etre planifiee."
+        )
+
+    if (
+        str(current_status) == "planned"
+        and scheduled_at is None
+    ):
+        raise PhysicalWorkflowStateError(
+            "Etat incoherent: une installation planifiee "
+            "doit avoir une date."
+        )
+
+    if str(assigned_agent_id) == str(agent_id):
+        return {
+            "ok": True,
+            "status": str(current_status),
+            "idempotent": True,
+            "pending_installation_id": str(pending_id),
+            "order_id": str(order_id),
+            "previous_agent_id": str(assigned_agent_id),
+            "agent_id": str(agent_id),
+            "scheduled_at": (
+                scheduled_at.isoformat()
+                if scheduled_at is not None
+                else None
+            ),
+        }
+
+    previous_agent_id = str(assigned_agent_id)
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            UPDATE public.pending_installations
+            SET
+                assigned_agent_id = %s,
+                updated_at = NOW()
+            WHERE id = %s
+              AND status IN ('assigned', 'planned')
+              AND assigned_agent_id = %s
+              AND completed_at IS NULL
+            """,
+            [
+                agent_id,
+                pending_id,
+                previous_agent_id,
+            ],
+        )
+
+        if cursor.rowcount != 1:
+            raise PhysicalWorkflowStateError(
+                "La reaffectation a ete modifiee concurremment."
+            )
+
+    _insert_audit(
+        actor_id=actor_id,
+        action="installation.reassign.v1",
+        entity_id=str(pending_id),
+        after={
+            "order_id": str(order_id),
+            "previous_agent_id": previous_agent_id,
+            "agent_id": str(agent_id),
+            "status": str(current_status),
+            "scheduled_at": (
+                scheduled_at.isoformat()
+                if scheduled_at is not None
+                else None
+            ),
+        },
+    )
+
+    return {
+        "ok": True,
+        "status": str(current_status),
+        "idempotent": False,
+        "pending_installation_id": str(pending_id),
+        "order_id": str(order_id),
+        "previous_agent_id": previous_agent_id,
+        "agent_id": str(agent_id),
+        "scheduled_at": (
+            scheduled_at.isoformat()
+            if scheduled_at is not None
+            else None
+        ),
+    }
+
+
 @transaction.atomic
 def schedule_physical_installation(
     *,

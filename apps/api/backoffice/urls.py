@@ -10,6 +10,7 @@ from .views import (
     PhysicalInstallationAssignView,
     PhysicalInstallationFieldCompleteView,
     PhysicalAddressPublishView,
+    PhysicalInstallationReassignView,
     PhysicalInstallationScheduleView,
     PhysicalInstallationValidateView,
 )
@@ -61,6 +62,13 @@ urlpatterns += [
         "assign/",
         PhysicalInstallationAssignView.as_view(),
         name="backoffice-physical-installation-assign",
+    ),
+    path(
+        "pending-installations/"
+        "<uuid:pending_installation_id>/"
+        "reassign/",
+        PhysicalInstallationReassignView.as_view(),
+        name="backoffice-physical-installation-reassign",
     ),
     path(
         "pending-installations/"

@@ -30,6 +30,7 @@ from .physical_installation_workflow import (
     PhysicalWorkflowStateError,
     assign_physical_installation,
     publish_physical_address,
+    reassign_physical_installation,
     schedule_physical_installation,
     validate_physical_installation,
 )
@@ -456,6 +457,91 @@ class PhysicalInstallationAssignView(APIView):
             )
 
         return Response(result, status=status.HTTP_200_OK)
+
+
+
+class PhysicalInstallationReassignView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsInstallationBackofficeUser,
+    ]
+
+    @extend_schema(
+        tags=["Back-office"],
+        request=PhysicalInstallationAssignSerializer,
+        description=(
+            "Reaffecte une installation physique deja affectee "
+            "ou planifiee a un autre agent actif. "
+            "Le statut et la date planifiee sont preserves."
+        ),
+    )
+    def post(self, request, pending_installation_id):
+        serializer = PhysicalInstallationAssignSerializer(
+            data=request.data
+        )
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        identity = getattr(
+            request,
+            "backoffice_identity",
+            None,
+        )
+
+        actor_id = (
+            identity.get("user_id")
+            if identity
+            else None
+        )
+
+        if not actor_id:
+            return Response(
+                {
+                    "ok": False,
+                    "status": "unauthenticated",
+                    "message": "Authentification requise.",
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        try:
+            result = reassign_physical_installation(
+                pending_installation_id=str(
+                    pending_installation_id
+                ),
+                actor_id=str(actor_id),
+                agent_id=str(
+                    serializer.validated_data[
+                        "agent_id"
+                    ]
+                ),
+            )
+
+        except PhysicalWorkflowNotFoundError as exc:
+            return Response(
+                {
+                    "ok": False,
+                    "status": "not_found",
+                    "message": str(exc),
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        except PhysicalWorkflowStateError as exc:
+            return Response(
+                {
+                    "ok": False,
+                    "status": "conflict",
+                    "message": str(exc),
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        return Response(
+            result,
+            status=status.HTTP_200_OK,
+        )
 
 
 class PhysicalInstallationScheduleView(APIView):

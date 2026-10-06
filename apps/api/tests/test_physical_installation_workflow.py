@@ -60,3 +60,56 @@ class PhysicalInstallationWorkflowSourceTests(SimpleTestCase):
 
         self.assertIn("'installed'::text", migration)
         self.assertIn("pending_installations_status_check", migration)
+
+    def test_reassignment_service_contract(self):
+        root = Path(__file__).resolve().parents[1]
+
+        source = (
+            root
+            / "backoffice"
+            / "physical_installation_workflow.py"
+        ).read_text(
+            encoding="utf-8"
+        )
+
+        required = [
+            "reassign_physical_installation",
+            "installation.reassign.v1",
+            "previous_agent_id",
+            "status IN ('assigned', 'planned')",
+            "assigned_agent_id = %s",
+            "La reaffectation a ete modifiee concurremment.",
+            '"idempotent": True',
+        ]
+
+        for token in required:
+            self.assertIn(
+                token,
+                source,
+            )
+
+        urls_source = (
+            root
+            / "backoffice"
+            / "urls.py"
+        ).read_text(
+            encoding="utf-8"
+        )
+
+        views_source = (
+            root
+            / "backoffice"
+            / "views.py"
+        ).read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn(
+            '"reassign/"',
+            urls_source,
+        )
+
+        self.assertIn(
+            "PhysicalInstallationReassignView",
+            views_source,
+        )
