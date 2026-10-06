@@ -24,6 +24,7 @@ from .services import (
     OwnerAccountDeactivationForbiddenError,
     OwnerAccountSubscriptionActiveError,
     OwnerAddressAccessError,
+    OwnerAddressStateError,
     OwnerFavoriteConflictError,
     OwnerFavoriteInputError,
     OwnerFavoriteNotFoundError,
@@ -238,6 +239,16 @@ class OwnerBeaconDetailView(APIView):
                 ),
             )
 
+        except OwnerAddressStateError as exc:
+            return Response(
+                {
+                    "detail": str(exc),
+                },
+                status=(
+                    status.HTTP_409_CONFLICT
+                ),
+            )
+
         except Exception:
             return Response(
                 {
@@ -296,6 +307,16 @@ class OwnerBeaconSuspendView(APIView):
                 },
                 status=(
                     status.HTTP_403_FORBIDDEN
+                ),
+            )
+
+        except OwnerAddressStateError as exc:
+            return Response(
+                {
+                    "detail": str(exc),
+                },
+                status=(
+                    status.HTTP_409_CONFLICT
                 ),
             )
 

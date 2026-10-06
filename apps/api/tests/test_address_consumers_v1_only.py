@@ -309,3 +309,404 @@ class AddressConsumersV1OnlyTests(
                 V1,
             ],
         )
+
+
+class OwnerLifecycleFakeCursor:
+
+    def __init__(
+        self,
+        fetchone_results,
+        rowcounts,
+    ):
+        self.fetchone_results = list(
+            fetchone_results
+        )
+
+        self.rowcounts = list(
+            rowcounts
+        )
+
+        self.executed = []
+
+        self.rowcount = -1
+
+    def execute(
+        self,
+        sql,
+        params=None,
+    ):
+        self.executed.append(
+            (
+                " ".join(
+                    str(sql).split()
+                ),
+                params,
+            )
+        )
+
+        if self.rowcounts:
+            self.rowcount = (
+                self.rowcounts.pop(0)
+            )
+        else:
+            self.rowcount = 1
+
+    def fetchone(self):
+        if not self.fetchone_results:
+            return None
+
+        return self.fetchone_results.pop(0)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(
+        self,
+        exc_type,
+        exc,
+        tb,
+    ):
+        return False
+
+
+OWNER_LIFECYCLE_USER_ID = (
+    "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+)
+
+OWNER_LIFECYCLE_ADDRESS_ID = (
+    "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"
+)
+
+OWNER_LIFECYCLE_BEACON_ID = (
+    "cccccccc-cccc-cccc-cccc-cccccccccccc"
+)
+
+
+def _owner_address_row(
+    *,
+    visibility="private",
+    status="active",
+):
+    return (
+        OWNER_LIFECYCLE_ADDRESS_ID,
+        OWNER_LIFECYCLE_BEACON_ID,
+        OWNER_LIFECYCLE_USER_ID,
+        "Adresse test",
+        "habitation",
+        visibility,
+        status,
+    )
+
+
+class OwnerVisibilityLifecycleTests(
+    TestCase
+):
+
+    def _update_core(self):
+        return getattr(
+            owner_services.update_owner_beacon,
+            "__wrapped__",
+            owner_services.update_owner_beacon,
+        )
+
+    def _suspend_core(self):
+        return getattr(
+            owner_services.suspend_owner_beacon,
+            "__wrapped__",
+            owner_services.suspend_owner_beacon,
+        )
+
+    def test_owner_cannot_publish_private_address_through_generic_update(
+        self,
+    ):
+        fake = OwnerLifecycleFakeCursor(
+            [
+                _owner_address_row(
+                    visibility="private",
+                ),
+            ],
+            [
+                1,
+            ],
+        )
+
+        with patch.object(
+            owner_services.connection,
+            "cursor",
+            return_value=fake,
+        ):
+            with self.assertRaises(
+                owner_services.OwnerAddressStateError
+            ):
+                self._update_core()(
+                    user_id=OWNER_LIFECYCLE_USER_ID,
+                    address_id=OWNER_LIFECYCLE_ADDRESS_ID,
+                    name="Adresse test",
+                    category="habitation",
+                    visibility="public",
+                    access_point_note=None,
+                )
+
+        sql = "\n".join(
+            item[0]
+            for item in fake.executed
+        )
+
+        self.assertNotIn(
+            "UPDATE public.addresses",
+            sql,
+        )
+
+        self.assertNotIn(
+            "address.publish.v1",
+            sql,
+        )
+
+    def test_owner_can_unpublish_public_address_and_audit(
+        self,
+    ):
+        fake = OwnerLifecycleFakeCursor(
+            [
+                _owner_address_row(
+                    visibility="public",
+                ),
+            ],
+            [
+                1,
+                1,
+                1,
+            ],
+        )
+
+        with patch.object(
+            owner_services.connection,
+            "cursor",
+            return_value=fake,
+        ):
+            result = self._update_core()(
+                user_id=OWNER_LIFECYCLE_USER_ID,
+                address_id=OWNER_LIFECYCLE_ADDRESS_ID,
+                name="Adresse test",
+                category="habitation",
+                visibility="private",
+                access_point_note=None,
+            )
+
+        self.assertTrue(
+            result["ok"]
+        )
+
+        self.assertEqual(
+            result["visibility"],
+            "private",
+        )
+
+        sql = "\n".join(
+            item[0]
+            for item in fake.executed
+        )
+
+        self.assertIn(
+            "UPDATE public.addresses",
+            sql,
+        )
+
+        self.assertIn(
+            "'address.unpublish.v1'",
+            sql,
+        )
+
+        self.assertNotIn(
+            "'address.publish.v1'",
+            sql,
+        )
+
+    def test_owner_same_visibility_update_does_not_create_publication_audit(
+        self,
+    ):
+        fake = OwnerLifecycleFakeCursor(
+            [
+                _owner_address_row(
+                    visibility="private",
+                ),
+            ],
+            [
+                1,
+                1,
+            ],
+        )
+
+        with patch.object(
+            owner_services.connection,
+            "cursor",
+            return_value=fake,
+        ):
+            result = self._update_core()(
+                user_id=OWNER_LIFECYCLE_USER_ID,
+                address_id=OWNER_LIFECYCLE_ADDRESS_ID,
+                name="Adresse renommée",
+                category="habitation",
+                visibility="private",
+                access_point_note="Portail bleu",
+            )
+
+        self.assertTrue(
+            result["ok"]
+        )
+
+        sql = "\n".join(
+            item[0]
+            for item in fake.executed
+        )
+
+        self.assertNotIn(
+            "address.unpublish.v1",
+            sql,
+        )
+
+        self.assertNotIn(
+            "address.publish.v1",
+            sql,
+        )
+
+    def test_owner_suspend_public_address_and_audit(
+        self,
+    ):
+        fake = OwnerLifecycleFakeCursor(
+            [
+                _owner_address_row(
+                    visibility="public",
+                    status="active",
+                ),
+            ],
+            [
+                1,
+                1,
+                1,
+            ],
+        )
+
+        with patch.object(
+            owner_services.connection,
+            "cursor",
+            return_value=fake,
+        ):
+            result = self._suspend_core()(
+                user_id=OWNER_LIFECYCLE_USER_ID,
+                address_id=OWNER_LIFECYCLE_ADDRESS_ID,
+            )
+
+        self.assertTrue(
+            result["ok"]
+        )
+
+        self.assertFalse(
+            result["idempotent"]
+        )
+
+        sql = "\n".join(
+            item[0]
+            for item in fake.executed
+        )
+
+        self.assertIn(
+            "SET status = 'suspended'",
+            sql,
+        )
+
+        self.assertIn(
+            "'address.suspend.v1'",
+            sql,
+        )
+
+    def test_owner_suspend_replay_is_idempotent(
+        self,
+    ):
+        fake = OwnerLifecycleFakeCursor(
+            [
+                _owner_address_row(
+                    visibility="public",
+                    status="suspended",
+                ),
+            ],
+            [
+                1,
+            ],
+        )
+
+        with patch.object(
+            owner_services.connection,
+            "cursor",
+            return_value=fake,
+        ):
+            result = self._suspend_core()(
+                user_id=OWNER_LIFECYCLE_USER_ID,
+                address_id=OWNER_LIFECYCLE_ADDRESS_ID,
+            )
+
+        self.assertTrue(
+            result["ok"]
+        )
+
+        self.assertTrue(
+            result["idempotent"]
+        )
+
+        self.assertEqual(
+            len(fake.executed),
+            1,
+        )
+
+        sql = "\n".join(
+            item[0]
+            for item in fake.executed
+        )
+
+        self.assertNotIn(
+            "UPDATE public.addresses",
+            sql,
+        )
+
+        self.assertNotIn(
+            "address.suspend.v1",
+            sql,
+        )
+
+    def test_owner_suspend_concurrent_update_is_rejected_without_audit(
+        self,
+    ):
+        fake = OwnerLifecycleFakeCursor(
+            [
+                _owner_address_row(
+                    visibility="public",
+                    status="active",
+                ),
+            ],
+            [
+                1,
+                0,
+            ],
+        )
+
+        with patch.object(
+            owner_services.connection,
+            "cursor",
+            return_value=fake,
+        ):
+            with self.assertRaises(
+                owner_services.OwnerAddressStateError
+            ):
+                self._suspend_core()(
+                    user_id=OWNER_LIFECYCLE_USER_ID,
+                    address_id=OWNER_LIFECYCLE_ADDRESS_ID,
+                )
+
+        sql = "\n".join(
+            item[0]
+            for item in fake.executed
+        )
+
+        self.assertNotIn(
+            "address.suspend.v1",
+            sql,
+        )

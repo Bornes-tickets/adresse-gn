@@ -19,6 +19,10 @@ class OwnerAddressAccessError(Exception):
     pass
 
 
+class OwnerAddressStateError(Exception):
+    pass
+
+
 def _clean_optional(
     value: str | None,
 ) -> str | None:
@@ -300,10 +304,63 @@ def update_owner_beacon(
     visibility: str,
     access_point_note: str | None,
 ) -> dict[str, Any]:
-    _lock_owned_address(
+    address = _lock_owned_address(
         user_id=user_id,
         address_id=address_id,
     )
+
+    current_visibility = str(
+        address[5]
+    )
+
+    current_status = str(
+        address[6]
+    )
+
+    requested_visibility = str(
+        visibility
+    )
+
+    if current_status != "active":
+        raise OwnerAddressStateError(
+            "Seule une adresse active peut être modifiée."
+        )
+
+    if current_visibility not in {
+        "private",
+        "public",
+    }:
+        raise OwnerAddressStateError(
+            "Visibilité actuelle incohérente."
+        )
+
+    if requested_visibility not in {
+        "private",
+        "public",
+    }:
+        raise OwnerAddressStateError(
+            "Visibilité demandée invalide."
+        )
+
+    # --------------------------------------------------------
+    # Frontière de publication
+    #
+    # Un propriétaire peut retirer volontairement une adresse
+    # déjà publique, mais ne peut jamais promouvoir lui-même
+    # une adresse privée vers public.
+    #
+    # La publication canonique reste exclusivement gérée par
+    # publish_physical_address(), après validation back-office.
+    # --------------------------------------------------------
+
+    if (
+        current_visibility == "private"
+        and requested_visibility == "public"
+    ):
+        raise OwnerAddressStateError(
+            "La publication d'une Adresse GN doit être "
+            "validée par le back-office."
+        )
 
     with connection.cursor() as cursor:
         cursor.execute(
@@ -317,22 +374,76 @@ def update_owner_beacon(
             WHERE
                 id = %s
                 AND owner_id = %s
+                AND status = 'active'
+                AND visibility = %s
             """,
             [
                 _clean_optional(name),
                 category,
-                visibility,
+                requested_visibility,
                 _clean_optional(
                     access_point_note
                 ),
                 address_id,
                 user_id,
+                current_visibility,
             ],
         )
+
+        if cursor.rowcount != 1:
+            raise OwnerAddressStateError(
+                "L'adresse a été modifiée concurremment."
+            )
+
+        # ----------------------------------------------------
+        # Retrait volontaire de publication.
+        # ----------------------------------------------------
+
+        if (
+            current_visibility == "public"
+            and requested_visibility == "private"
+        ):
+            cursor.execute(
+                """
+                INSERT INTO public.audit_logs (
+                    actor_id,
+                    action,
+                    entity,
+                    entity_id,
+                    before,
+                    after
+                )
+                VALUES (
+                    %s,
+                    'address.unpublish.v1',
+                    'addresses',
+                    %s,
+                    %s::jsonb,
+                    %s::jsonb
+                )
+                """,
+                [
+                    user_id,
+                    address_id,
+                    json.dumps(
+                        {
+                            "visibility": "public",
+                            "status": "active",
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "visibility": "private",
+                            "status": "active",
+                        }
+                    ),
+                ],
+            )
 
     return {
         "ok": True,
         "status": "updated",
+        "visibility": requested_visibility,
         "message": (
             "Balise mise à jour."
         ),
@@ -345,10 +456,35 @@ def suspend_owner_beacon(
     user_id: str,
     address_id: str,
 ) -> dict[str, Any]:
-    _lock_owned_address(
+    address = _lock_owned_address(
         user_id=user_id,
         address_id=address_id,
     )
+
+    beacon_id = address[1]
+
+    current_visibility = str(
+        address[5]
+    )
+
+    current_status = str(
+        address[6]
+    )
+
+    if current_status == "suspended":
+        return {
+            "ok": True,
+            "status": "suspended",
+            "idempotent": True,
+            "message": (
+                "Balise déjà suspendue."
+            ),
+        }
+
+    if current_status != "active":
+        raise OwnerAddressStateError(
+            "Seule une adresse active peut être suspendue."
+        )
 
     with connection.cursor() as cursor:
         cursor.execute(
@@ -358,6 +494,7 @@ def suspend_owner_beacon(
             WHERE
                 id = %s
                 AND owner_id = %s
+                AND status = 'active'
             """,
             [
                 address_id,
@@ -365,9 +502,62 @@ def suspend_owner_beacon(
             ],
         )
 
+        if cursor.rowcount != 1:
+            raise OwnerAddressStateError(
+                "La suspension a été modifiée concurremment."
+            )
+
+        cursor.execute(
+            """
+            INSERT INTO public.audit_logs (
+                actor_id,
+                action,
+                entity,
+                entity_id,
+                before,
+                after
+            )
+            VALUES (
+                %s,
+                'address.suspend.v1',
+                'addresses',
+                %s,
+                %s::jsonb,
+                %s::jsonb
+            )
+            """,
+            [
+                user_id,
+                address_id,
+                json.dumps(
+                    {
+                        "beacon_id": (
+                            str(beacon_id)
+                            if beacon_id
+                            else None
+                        ),
+                        "visibility": current_visibility,
+                        "status": "active",
+                    }
+                ),
+                json.dumps(
+                    {
+                        "beacon_id": (
+                            str(beacon_id)
+                            if beacon_id
+                            else None
+                        ),
+                        "visibility": current_visibility,
+                        "status": "suspended",
+                    }
+                ),
+            ],
+        )
+
     return {
         "ok": True,
         "status": "suspended",
+        "idempotent": False,
         "message": (
             "Balise suspendue."
         ),
