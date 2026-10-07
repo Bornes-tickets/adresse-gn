@@ -2,6 +2,7 @@ services:
   - type: web
     name: adresse-gn-api
     runtime: python
+    plan: free
 
     # Monorepo: Django vit uniquement dans apps/api.
     rootDir: apps/api
