@@ -36,7 +36,7 @@ function safeReturnPath(
     !value.startsWith("/") ||
     value.startsWith("//")
   ) {
-    return "/";
+    return "/mon-compte";
   }
 
   return value;
