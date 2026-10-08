@@ -957,7 +957,7 @@ export default function CommanderPage({
                         value={otpCode}
                         onChange={(event) =>
                           setOtpCode(
-                            event.target.value.replace(/\D/g, "").slice(0, 6),
+                            event.target.value.replace(/\D/g, "").slice(0, 10),
                           )
                         }
                         placeholder="000000"
