@@ -23,6 +23,11 @@ import {
 } from "@/lib/supabase/browser";
 
 
+type LoginMode =
+  | "password"
+  | "otp";
+
+
 type LoginPageProps = {
   returnTo?: string;
 };
@@ -50,6 +55,14 @@ export function LoginPage({
     useRouter();
 
   const [
+    loginMode,
+    setLoginMode,
+  ] =
+    useState<LoginMode>(
+      "password",
+    );
+
+  const [
     email,
     setEmail,
   ] =
@@ -62,10 +75,231 @@ export function LoginPage({
     useState("");
 
   const [
+    otpSent,
+    setOtpSent,
+  ] =
+    useState(false);
+
+  const [
+    otpCode,
+    setOtpCode,
+  ] =
+    useState("");
+
+  const [
     submitting,
     setSubmitting,
   ] =
     useState(false);
+
+
+  function changeMode(
+    mode: LoginMode,
+  ) {
+    if (submitting) {
+      return;
+    }
+
+    setLoginMode(mode);
+    setOtpSent(false);
+    setOtpCode("");
+  }
+
+
+  async function completeAuthenticatedSession(
+    accessToken: string,
+    userId: string,
+  ) {
+    /*
+     * Étape essentielle de la migration :
+     * toute session Supabase doit être validée
+     * par Django avant d'être considérée comme
+     * une connexion Adresse GN complète.
+     */
+    const djangoSession =
+      await verifyDjangoSession(
+        accessToken,
+      );
+
+
+    if (
+      djangoSession.user.id !==
+      userId
+    ) {
+      await supabase.auth
+        .signOut();
+
+      throw new Error(
+        "L'identité retournée par Django ne correspond pas à la session Supabase.",
+      );
+    }
+
+
+    toast.success(
+      "Connexion réussie",
+    );
+
+
+    const destination =
+      safeReturnPath(
+        returnTo,
+      );
+
+
+    router.replace(
+      destination,
+    );
+
+    router.refresh();
+  }
+
+
+  async function submitPassword() {
+    const normalizedEmail =
+      email.trim().toLowerCase();
+
+    const {
+      data,
+      error,
+    } =
+      await supabase.auth
+        .signInWithPassword({
+          email:
+            normalizedEmail,
+          password,
+        });
+
+
+    if (
+      error ||
+      !data.session ||
+      !data.user
+    ) {
+      throw new Error(
+        error?.message ??
+          "Identifiants incorrects.",
+      );
+    }
+
+
+    await completeAuthenticatedSession(
+      data.session.access_token,
+      data.user.id,
+    );
+  }
+
+
+  async function requestOtp() {
+    const normalizedEmail =
+      email.trim().toLowerCase();
+
+
+    if (
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+        normalizedEmail,
+      )
+    ) {
+      throw new Error(
+        "Renseignez une adresse e-mail valide.",
+      );
+    }
+
+
+    const {
+      error,
+    } =
+      await supabase.auth
+        .signInWithOtp({
+          email:
+            normalizedEmail,
+
+          options: {
+            /*
+             * Contrat propriétaire :
+             * /login ne crée jamais silencieusement
+             * un nouveau compte.
+             *
+             * La création initiale reste gérée par
+             * le checkout /commander.
+             */
+            shouldCreateUser:
+              false,
+          },
+        });
+
+
+    if (error) {
+      throw new Error(
+        error.message,
+      );
+    }
+
+
+    setOtpCode("");
+    setOtpSent(true);
+
+
+    toast.success(
+      "Code envoyé",
+      {
+        description:
+          "Consultez votre messagerie pour récupérer votre code de connexion.",
+      },
+    );
+  }
+
+
+  async function verifyOtpLogin() {
+    const normalizedEmail =
+      email.trim().toLowerCase();
+
+    const cleanCode =
+      otpCode.trim();
+
+
+    if (
+      cleanCode.length < 6
+    ) {
+      throw new Error(
+        "Saisissez le code reçu par e-mail.",
+      );
+    }
+
+
+    const {
+      data,
+      error,
+    } =
+      await supabase.auth
+        .verifyOtp({
+          email:
+            normalizedEmail,
+
+          token:
+            cleanCode,
+
+          type:
+            "email",
+        });
+
+
+    if (
+      error ||
+      !data.session ||
+      !data.user
+    ) {
+      throw new Error(
+        error?.message ??
+          "Code invalide ou expiré.",
+      );
+    }
+
+
+    await completeAuthenticatedSession(
+      data.session.access_token,
+      data.user.id,
+    );
+  }
 
 
   async function submit(
@@ -73,84 +307,38 @@ export function LoginPage({
   ) {
     event.preventDefault();
 
+
     if (submitting) {
       return;
     }
+
 
     setSubmitting(true);
 
 
     try {
-      const {
-        data,
-        error,
-      } =
-        await supabase.auth
-          .signInWithPassword({
-            email:
-              email.trim(),
-            password,
-          });
-
-
       if (
-        error ||
-        !data.session ||
-        !data.user
+        loginMode ===
+        "password"
       ) {
-        throw new Error(
-          error?.message ??
-            "Identifiants incorrects.",
-        );
+        await submitPassword();
+        return;
       }
 
 
-      /*
-       * Étape essentielle de la migration :
-       * on ne considère pas la connexion comme
-       * terminée tant que Django n'a pas validé
-       * le JWT Supabase.
-       */
-      const djangoSession =
-        await verifyDjangoSession(
-          data.session.access_token,
-        );
-
-
-      if (
-        djangoSession.user.id !==
-        data.user.id
-      ) {
-        await supabase.auth
-          .signOut();
-
-        throw new Error(
-          "L'identité retournée par Django ne correspond pas à la session Supabase.",
-        );
+      if (otpSent) {
+        await verifyOtpLogin();
+        return;
       }
 
 
-      toast.success(
-        "Connexion réussie",
-      );
-
-
-      const destination =
-        safeReturnPath(
-          returnTo,
-        );
-
-
-      router.replace(
-        destination,
-      );
-
-      router.refresh();
+      await requestOtp();
     } catch (error) {
       const message =
         error instanceof Error
           ? error.message
           : "Une erreur est survenue.";
+
 
       toast.error(
         "Connexion impossible",
@@ -168,15 +356,15 @@ export function LoginPage({
   return (
     <AuthLayout
       title="Bon retour"
-      subtitle="Connectez-vous pour gérer vos adresses, vos balises et vos favoris."
+      subtitle="Connectez-vous par mot de passe ou avec un code reçu par e-mail."
       footer={
         <>
-          Pas encore de compte ?{" "}
+          Pas encore d&apos;Adresse GN ?{" "}
           <Link
-            href="/signup"
+            href="/commander"
             className="font-medium text-accent hover:underline"
           >
-            Créer un compte
+            Créer mon Adresse GN
           </Link>
         </>
       }
@@ -185,6 +373,53 @@ export function LoginPage({
         onSubmit={submit}
         className="space-y-5"
       >
+        <div
+          className="grid grid-cols-2 gap-2"
+        >
+          <Button
+            type="button"
+            variant={
+              loginMode ===
+              "password"
+                ? "default"
+                : "outline"
+            }
+            onClick={() =>
+              changeMode(
+                "password",
+              )
+            }
+            disabled={
+              submitting
+            }
+            className="h-11"
+          >
+            Mot de passe
+          </Button>
+
+          <Button
+            type="button"
+            variant={
+              loginMode ===
+              "otp"
+                ? "default"
+                : "outline"
+            }
+            onClick={() =>
+              changeMode(
+                "otp",
+              )
+            }
+            disabled={
+              submitting
+            }
+            className="h-11"
+          >
+            Code e-mail
+          </Button>
+        </div>
+
+
         <div className="space-y-2">
           <Label
             htmlFor="email"
@@ -197,6 +432,11 @@ export function LoginPage({
             type="email"
             autoComplete="email"
             required
+            disabled={
+              loginMode ===
+                "otp" &&
+              otpSent
+            }
             value={email}
             onChange={(
               event,
@@ -210,29 +450,84 @@ export function LoginPage({
         </div>
 
 
-        <div className="space-y-2">
-          <Label
-            htmlFor="password"
-          >
-            Mot de passe
-          </Label>
+        {loginMode ===
+          "password" && (
+          <div className="space-y-2">
+            <Label
+              htmlFor="password"
+            >
+              Mot de passe
+            </Label>
 
-          <Input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            value={password}
-            onChange={(
-              event,
-            ) =>
-              setPassword(
-                event.target.value,
-              )
-            }
-            className="h-11 border-slate-300 focus-visible:ring-2 focus-visible:ring-accent/30"
-          />
-        </div>
+            <Input
+              id="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={(
+                event,
+              ) =>
+                setPassword(
+                  event.target.value,
+                )
+              }
+              className="h-11 border-slate-300 focus-visible:ring-2 focus-visible:ring-accent/30"
+            />
+          </div>
+        )}
+
+
+        {loginMode ===
+          "otp" &&
+          otpSent && (
+          <div className="space-y-2">
+            <Label
+              htmlFor="otp-code"
+            >
+              Code reçu
+            </Label>
+
+            <Input
+              id="otp-code"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              required
+              value={otpCode}
+              onChange={(
+                event,
+              ) =>
+                setOtpCode(
+                  event.target.value
+                    .replace(
+                      /\D/g,
+                      "",
+                    )
+                    .slice(
+                      0,
+                      10,
+                    ),
+                )
+              }
+              placeholder="00000000"
+              className="h-11 border-slate-300 font-mono tracking-[0.2em] focus-visible:ring-2 focus-visible:ring-accent/30"
+            />
+
+            <button
+              type="button"
+              disabled={
+                submitting
+              }
+              onClick={() => {
+                setOtpCode("");
+                setOtpSent(false);
+              }}
+              className="text-sm font-medium text-accent hover:underline disabled:opacity-50"
+            >
+              Recevoir un nouveau code
+            </button>
+          </div>
+        )}
 
 
         <Button
@@ -244,7 +539,12 @@ export function LoginPage({
         >
           {submitting
             ? "Connexion…"
-            : "Se connecter"}
+            : loginMode ===
+                "password"
+              ? "Se connecter"
+              : otpSent
+                ? "Vérifier le code"
+                : "Recevoir le code"}
         </Button>
       </form>
     </AuthLayout>

@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     "Connexion — Adresse GN",
 
   description:
-    "Connectez-vous à votre compte Adresse GN avec votre email et votre mot de passe.",
+    "Connectez-vous à votre compte Adresse GN avec votre mot de passe ou un code reçu par e-mail.",
 
   robots: {
     index: false,
