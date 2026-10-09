@@ -14,12 +14,22 @@ from django.db import (
 )
 from django.utils import timezone
 
+from entitlements import (
+    capabilities_from_order_items,
+    effective_address_capabilities,
+    has_capability,
+)
+
 
 class OwnerAddressAccessError(Exception):
     pass
 
 
 class OwnerAddressStateError(Exception):
+    pass
+
+
+class OwnerCapabilityDeniedError(Exception):
     pass
 
 
@@ -292,6 +302,151 @@ def _lock_owned_address(
         )
 
     return row
+
+
+def get_owner_address_capabilities(
+    *,
+    user_id: str,
+    address_id: str,
+) -> dict[str, Any]:
+    """
+    Resolve effective capabilities for one owned address.
+
+    Authority order:
+      1. address ownership,
+      2. latest paid order snapshot bound to the beacon,
+      3. conservative legacy baseline when no snapshot exists,
+      4. address lifecycle state.
+    """
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+                a.id,
+                a.status,
+                a.beacon_id,
+                o.id,
+                o.items
+            FROM public.addresses a
+            LEFT JOIN LATERAL (
+                SELECT
+                    ord.id,
+                    ord.items
+                FROM public.orders ord
+                WHERE
+                    ord.customer_id = a.owner_id
+                    AND ord.beacon_id = a.beacon_id
+                    AND ord.status = 'paid'
+                ORDER BY
+                    ord.created_at DESC
+                LIMIT 1
+            ) o
+                ON TRUE
+            WHERE
+                a.id = %s
+                AND a.owner_id = %s
+            LIMIT 1
+            """,
+            [
+                address_id,
+                user_id,
+            ],
+        )
+
+        row = cursor.fetchone()
+
+    if row is None:
+        raise OwnerAddressAccessError(
+            "Cette adresse ne vous appartient pas."
+        )
+
+    (
+        resolved_address_id,
+        address_status,
+        beacon_id,
+        paid_order_id,
+        paid_order_items,
+    ) = row
+
+    effective = (
+        effective_address_capabilities(
+            address_status=str(
+                address_status
+            ),
+            has_paid_order=(
+                paid_order_id is not None
+            ),
+            order_items=paid_order_items,
+        )
+    )
+
+    snapshot_capabilities = (
+        capabilities_from_order_items(
+            paid_order_items
+        )
+        if paid_order_id is not None
+        else []
+    )
+
+    if paid_order_id is None:
+        source = "legacy_baseline"
+    elif snapshot_capabilities:
+        source = "order_snapshot"
+    else:
+        source = (
+            "legacy_order_without_snapshot"
+        )
+
+    return {
+        "address_id": str(
+            resolved_address_id
+        ),
+        "beacon_id": (
+            str(beacon_id)
+            if beacon_id is not None
+            else None
+        ),
+        "address_status": str(
+            address_status
+        ),
+        "source": source,
+        "paid_order_id": (
+            str(paid_order_id)
+            if paid_order_id is not None
+            else None
+        ),
+        "effective_capabilities": (
+            effective
+        ),
+    }
+
+
+def require_owner_address_capability(
+    *,
+    user_id: str,
+    address_id: str,
+    capability: str,
+) -> dict[str, Any]:
+    resolved = (
+        get_owner_address_capabilities(
+            user_id=user_id,
+            address_id=address_id,
+        )
+    )
+
+    if not has_capability(
+        resolved[
+            "effective_capabilities"
+        ],
+        capability,
+    ):
+        raise OwnerCapabilityDeniedError(
+            "Cette fonctionnalité n'est pas disponible "
+            "pour cette adresse."
+        )
+
+    return resolved
 
 
 @transaction.atomic

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from datetime import datetime, timezone
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
@@ -386,6 +387,7 @@ class CheckoutServiceTests(SimpleTestCase):
                 False,
                 False,
                 None,
+                [],
             ),
             (
                 ORDER_ID,
@@ -492,15 +494,27 @@ class CheckoutServiceTests(SimpleTestCase):
             order_params[9],
             "digital_address",
         )
-        self.assertFalse(
-            order_params[15]
-        )
         self.assertEqual(
-            order_params[18],
-            40000,
+            json.loads(
+                order_params[10]
+            ),
+            [
+                "address_number",
+                "qr_code",
+                "gps_location",
+                "external_navigation",
+                "address_sharing",
+            ],
+        )
+        self.assertFalse(
+            order_params[16]
         )
         self.assertEqual(
             order_params[19],
+            40000,
+        )
+        self.assertEqual(
+            order_params[20],
             "orange",
         )
 
@@ -554,6 +568,7 @@ class CheckoutServiceTests(SimpleTestCase):
                 False,
                 False,
                 None,
+                [],
             ),
             (
                 ORDER_ID,
@@ -618,15 +633,21 @@ class CheckoutServiceTests(SimpleTestCase):
             order_params[9],
             "professional_quote",
         )
+        self.assertEqual(
+            json.loads(
+                order_params[10]
+            ),
+            [],
+        )
         self.assertTrue(
-            order_params[15]
+            order_params[16]
         )
         self.assertEqual(
-            order_params[18],
+            order_params[19],
             0,
         )
         self.assertIsNone(
-            order_params[19]
+            order_params[20]
         )
 
 

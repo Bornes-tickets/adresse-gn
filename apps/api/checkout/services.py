@@ -6,6 +6,10 @@ from typing import Any
 
 from django.db import connection, transaction
 
+from entitlements import (
+    resolve_plan_capabilities,
+)
+
 from .contracts import (
     normalize_client_type,
     normalize_payment_method,
@@ -489,7 +493,11 @@ def _create_checkout_order(
                 p.requires_quote,
                 p.plate_included,
                 p.installation_required,
-                to_jsonb(p) ->> 'fulfillment_kind'
+                to_jsonb(p) ->> 'fulfillment_kind',
+                COALESCE(
+                    to_jsonb(p) -> 'capabilities',
+                    '[]'::jsonb
+                )
             FROM public.cms_plans p
             WHERE
                 p.code = %s
@@ -517,6 +525,7 @@ def _create_checkout_order(
             _plan_plate_included,
             _plan_installation_required,
             plan_fulfillment_kind,
+            plan_capabilities_configured,
         ) = plan
 
         plan_contract = _resolve_plan_contract(
@@ -535,6 +544,16 @@ def _create_checkout_order(
 
         fulfillment_kind = str(
             plan_contract["fulfillment_kind"]
+        )
+
+        plan_capabilities = (
+            resolve_plan_capabilities(
+                plan_code=str(plan_code),
+                configured=(
+                    plan_capabilities_configured
+                ),
+                requires_quote=is_quote,
+            )
         )
 
         order_amount_gnf = (
@@ -637,7 +656,9 @@ def _create_checkout_order(
                         'unit_price_gnf',
                         %s,
                         'fulfillment_kind',
-                        %s
+                        %s,
+                        'capabilities',
+                        %s::jsonb
                     )
                 ),
                 %s,
@@ -673,6 +694,11 @@ def _create_checkout_order(
                 plan_label,
                 order_amount_gnf,
                 fulfillment_kind,
+                json.dumps(
+                    plan_capabilities,
+                    separators=(",", ":"),
+                    ensure_ascii=True,
+                ),
                 client_type,
                 full_name,
                 identity["phone"],
