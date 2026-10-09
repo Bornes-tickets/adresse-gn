@@ -187,7 +187,9 @@ def get_payment_order(
             or 0
         ),
         "status": order["status"],
-        "items": order["items"] or [],
+        "items": _normalize_order_items(
+            order["items"]
+        ),
         "payment_method": order["payment_method"],
         "devis_demande": bool(
             order["devis_demande"]
