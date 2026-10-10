@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     "Mon compte — Adresse GN",
 
   description:
-    "Suivez vos balises Adresse GN : recherches, itinéraires lancés et dernières activités sur vos adresses.",
+    "Suivez vos adresses Adresse GN : recherches, itinéraires lancés et dernières activités.",
 
   robots: {
     index: false,

@@ -151,7 +151,7 @@ export async function listOwnerBeacons(
     await ownerFetch<{
       items: OwnerBeacon[];
     }>(
-      `${API_BASE_URL}/api/v1/owner/beacons/`,
+      `${API_BASE_URL}/api/v1/owner/addresses/`,
       accessToken,
       {
         method: "GET",
@@ -182,7 +182,7 @@ export function updateOwnerBeacon(
     status: "updated";
     message: string;
   }>(
-    `${API_BASE_URL}/api/v1/owner/beacons/${encodeURIComponent(addressId)}/`,
+    `${API_BASE_URL}/api/v1/owner/addresses/${encodeURIComponent(addressId)}/`,
     accessToken,
     {
       method: "PATCH",
@@ -209,7 +209,7 @@ export function suspendOwnerBeacon(
     status: "suspended";
     message: string;
   }>(
-    `${API_BASE_URL}/api/v1/owner/beacons/${encodeURIComponent(addressId)}/suspend/`,
+    `${API_BASE_URL}/api/v1/owner/addresses/${encodeURIComponent(addressId)}/suspend/`,
     accessToken,
     {
       method: "POST",
@@ -230,7 +230,7 @@ export function createOwnerMovingReport(
     report_status: string;
     message: string;
   }>(
-    `${API_BASE_URL}/api/v1/owner/beacons/${encodeURIComponent(addressId)}/moving-report/`,
+    `${API_BASE_URL}/api/v1/owner/addresses/${encodeURIComponent(addressId)}/moving-report/`,
     accessToken,
     {
       method: "POST",

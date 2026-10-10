@@ -61,9 +61,9 @@ const SECTIONS: readonly OwnerSection[] = [
     exact: true,
   },
   {
-    href: "/mon-compte/beacons",
-    label: "Mes balises",
-    mobileLabel: "Balises",
+    href: "/mon-compte/adresses",
+    label: "Mes adresses",
+    mobileLabel: "Adresses",
     icon: QrCode,
   },
   {

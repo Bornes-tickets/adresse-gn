@@ -267,7 +267,7 @@ export function OwnerBeaconsPage() {
 
           if (!token) {
             router.replace(
-              "/login?returnTo=%2Fmon-compte%2Fbeacons",
+              "/login?returnTo=%2Fmon-compte%2Fadresses",
             );
 
             return;
@@ -302,7 +302,7 @@ export function OwnerBeaconsPage() {
               401
           ) {
             router.replace(
-              "/login?returnTo=%2Fmon-compte%2Fbeacons",
+              "/login?returnTo=%2Fmon-compte%2Fadresses",
             );
 
             return;
@@ -313,7 +313,7 @@ export function OwnerBeaconsPage() {
               ? error.message
               : (
                   "Impossible de "
-                  + "charger vos balises."
+                  + "charger vos adresses."
                 ),
           );
 
@@ -368,7 +368,7 @@ export function OwnerBeaconsPage() {
             text-foreground
           "
         >
-          Mes balises
+          Mes adresses
         </h1>
 
         <p
@@ -402,7 +402,7 @@ export function OwnerBeaconsPage() {
                 text-muted-foreground
               "
             >
-              Vous ne possédez encore aucune balise. Depuis la fiche publique d&apos;une adresse, utilisez « Ceci est mon adresse ? » pour en réclamer la propriété.
+              Vous ne possédez encore aucune adresse. Depuis la fiche publique d&apos;une adresse, utilisez « Ceci est mon adresse ? » pour en réclamer la propriété.
             </CardContent>
           </Card>
         )}
@@ -761,7 +761,7 @@ function EditBeaconDialog({
       );
 
       toast.success(
-        "Balise mise à jour.",
+        "Adresse mise à jour.",
       );
 
       onClose();
@@ -1341,7 +1341,7 @@ function SuspendDialog({
       );
 
       toast.success(
-        "Balise suspendue.",
+        "Adresse suspendue.",
       );
 
       onClose();

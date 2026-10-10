@@ -191,10 +191,10 @@ export function ClaimDialog({
             Cette adresse vous appartient déjà.{" "}
 
             <Link
-              href="/mon-compte/beacons"
+              href="/mon-compte/adresses"
               className="text-primary underline"
             >
-              Gérer mes balises
+              Gérer mes adresses
             </Link>
           </p>
 

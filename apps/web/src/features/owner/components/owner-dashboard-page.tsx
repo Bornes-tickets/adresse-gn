@@ -322,7 +322,7 @@ export function OwnerDashboardPage() {
   const kpis: Kpi[] = [
     {
       label:
-        "Balises possédées",
+        "Adresses possédées",
       helper:
         "Adresses associées à votre compte",
       value:
