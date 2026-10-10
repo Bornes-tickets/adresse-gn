@@ -65,6 +65,32 @@ urlpatterns = [
         name="owner-dashboard",
     ),
 
+    # Canonical Owner API: address is the domain resource.
+    # Legacy /beacons routes remain below as compatibility aliases.
+    path(
+        "addresses/",
+        OwnerBeaconListView.as_view(),
+        name="owner-addresses",
+    ),
+
+    path(
+        "addresses/<uuid:address_id>/",
+        OwnerBeaconDetailView.as_view(),
+        name="owner-address-detail",
+    ),
+
+    path(
+        "addresses/<uuid:address_id>/suspend/",
+        OwnerBeaconSuspendView.as_view(),
+        name="owner-address-suspend",
+    ),
+
+    path(
+        "addresses/<uuid:address_id>/moving-report/",
+        OwnerMovingReportView.as_view(),
+        name="owner-address-moving-report",
+    ),
+
     path(
         "beacons/",
         OwnerBeaconListView.as_view(),
