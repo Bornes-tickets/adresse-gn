@@ -386,6 +386,7 @@ def _owner_address_row(
     *,
     visibility="private",
     status="active",
+    access_point_note=None,
 ):
     return (
         OWNER_LIFECYCLE_ADDRESS_ID,
@@ -395,6 +396,7 @@ def _owner_address_row(
         "habitation",
         visibility,
         status,
+        access_point_note,
     )
 
 
@@ -528,6 +530,9 @@ class OwnerVisibilityLifecycleTests(
             [
                 _owner_address_row(
                     visibility="private",
+                    access_point_note=(
+                        "Portail bleu"
+                    ),
                 ),
             ],
             [

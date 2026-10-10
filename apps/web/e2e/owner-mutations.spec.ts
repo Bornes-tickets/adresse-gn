@@ -35,6 +35,7 @@ type Beacon = {
   status: string;
   access_point_note: string | null;
   establishment_id: string | null;
+  effective_capabilities: string[];
   searches_30d: Array<{
     day: string;
     count: number;
@@ -330,6 +331,15 @@ async function mockDjango(
         establishment_id:
           null,
 
+        effective_capabilities: [
+          "address_number",
+          "qr_code",
+          "gps_location",
+          "external_navigation",
+          "address_sharing",
+          "detailed_access_note",
+        ],
+
         searches_30d: [
           {
             day:
@@ -449,7 +459,7 @@ async function mockDjango(
         method ===
           "GET" &&
         url.pathname ===
-          "/api/v1/owner/beacons/"
+          "/api/v1/owner/addresses/"
       ) {
         await route.fulfill({
           status: 200,
@@ -471,7 +481,7 @@ async function mockDjango(
         method ===
           "PATCH" &&
         url.pathname ===
-          "/api/v1/owner/beacons/address-e2e-1/"
+          "/api/v1/owner/addresses/address-e2e-1/"
       ) {
         const body =
           request.postDataJSON() as {
@@ -514,7 +524,7 @@ async function mockDjango(
               "updated",
 
             message:
-              "Balise mise à jour.",
+              "Adresse mise à jour.",
           }),
         });
 
@@ -766,7 +776,7 @@ async function loginOwner(
 
 
 test(
-  "modifie une balise propriétaire via Django simulé",
+  "modifie une adresse propriétaire via Django simulé",
   async ({ page }) => {
     await mockSupabase(
       page,
@@ -783,7 +793,7 @@ test(
     );
 
     await page.goto(
-      "/mon-compte/beacons",
+      "/mon-compte/adresses",
     );
 
 
@@ -792,7 +802,7 @@ test(
         "heading",
         {
           name:
-            "Mes balises",
+            "Mes adresses",
           exact:
             true,
         },
@@ -879,7 +889,7 @@ test(
 
     await expect(
       page.getByText(
-        "Balise mise à jour.",
+        "Adresse mise à jour.",
         {
           exact:
             true,
@@ -996,9 +1006,9 @@ test(
 
 
     await page.getByPlaceholder(
-      "GN-CKY-123456",
+      "CKY04-582741369",
     ).fill(
-      "654321",
+      "CKY04-654321987",
     );
 
     await page.getByPlaceholder(
@@ -1031,7 +1041,7 @@ test(
 
     await expect(
       page.getByText(
-        "GN-CKY-654321",
+        "CKY04-654321987",
         {
           exact:
             true,
@@ -1045,7 +1055,7 @@ test(
         "article",
       ).filter({
         hasText:
-          "GN-CKY-654321",
+          "CKY04-654321987",
       });
 
 
@@ -1105,7 +1115,7 @@ test(
         "article",
       ).filter({
         hasText:
-          "GN-CKY-654321",
+          "CKY04-654321987",
       });
 
 
@@ -1134,7 +1144,7 @@ test(
 
     await expect(
       page.getByText(
-        "GN-CKY-654321",
+        "CKY04-654321987",
         {
           exact:
             true,
@@ -1150,7 +1160,7 @@ test(
     ).toEqual([
       {
         number:
-          "GN-CKY-654321",
+          "CKY04-654321987",
 
         alias:
           "Travail",

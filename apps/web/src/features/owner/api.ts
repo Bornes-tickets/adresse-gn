@@ -21,6 +21,7 @@ export type OwnerBeacon = {
   status: string;
   access_point_note: string | null;
   establishment_id: string | null;
+  effective_capabilities: string[];
   searches_30d: OwnerSearchPoint[];
 };
 

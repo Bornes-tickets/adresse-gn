@@ -35,6 +35,7 @@ type Beacon = {
   status: string;
   access_point_note: string | null;
   establishment_id: string | null;
+  effective_capabilities: string[];
   searches_30d: Array<{
     day: string;
     count: number;
@@ -326,6 +327,15 @@ async function mockDjango(
         establishment_id:
           null,
 
+        effective_capabilities: [
+          "address_number",
+          "qr_code",
+          "gps_location",
+          "external_navigation",
+          "address_sharing",
+          "detailed_access_note",
+        ],
+
         searches_30d: [
           {
             day:
@@ -440,7 +450,7 @@ async function mockDjango(
         method ===
           "GET" &&
         url.pathname ===
-          "/api/v1/owner/beacons/"
+          "/api/v1/owner/addresses/"
       ) {
         await route.fulfill({
           status: 200,
@@ -462,7 +472,7 @@ async function mockDjango(
         method ===
           "POST" &&
         url.pathname ===
-          "/api/v1/owner/beacons/address-r5a-1/suspend/"
+          "/api/v1/owner/addresses/address-r5a-1/suspend/"
       ) {
         state.suspendCalls.push(
           "address-r5a-1",
@@ -491,7 +501,7 @@ async function mockDjango(
               "suspended",
 
             message:
-              "Balise suspendue.",
+              "Adresse suspendue.",
           }),
         });
 
@@ -503,7 +513,7 @@ async function mockDjango(
         method ===
           "POST" &&
         url.pathname ===
-          "/api/v1/owner/beacons/address-r5a-1/moving-report/"
+          "/api/v1/owner/addresses/address-r5a-1/moving-report/"
       ) {
         const body =
           request.postDataJSON() as {
@@ -726,7 +736,7 @@ async function loginOwner(
 
 
 test(
-  "suspend une balise propriétaire via Django simulé",
+  "suspend une adresse propriétaire via Django simulé",
   async ({ page }) => {
     await mockSupabase(
       page,
@@ -742,7 +752,7 @@ test(
     );
 
     await page.goto(
-      "/mon-compte/beacons",
+      "/mon-compte/adresses",
     );
 
     const card =
@@ -788,7 +798,7 @@ test(
 
     await expect(
       page.getByText(
-        "Balise suspendue.",
+        "Adresse suspendue.",
         {
           exact:
             true,
@@ -838,7 +848,7 @@ test(
     );
 
     await page.goto(
-      "/mon-compte/beacons",
+      "/mon-compte/adresses",
     );
 
     const card =

@@ -72,7 +72,7 @@ test.describe(
 
 const protectedOwnerRoutes = [
   "/mon-compte",
-  "/mon-compte/beacons",
+  "/mon-compte/adresses",
   "/mon-compte/favorites",
   "/mon-compte/commandes",
   "/mon-compte/signalements",

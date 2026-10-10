@@ -15,6 +15,7 @@ from django.db import (
 from django.utils import timezone
 
 from entitlements import (
+    DETAILED_ACCESS_NOTE,
     capabilities_from_order_items,
     effective_address_capabilities,
     has_capability,
@@ -131,12 +132,28 @@ def list_owner_beacons(
                 a.verification_level,
                 a.status,
                 a.access_point_note,
-                e.id
+                e.id,
+                o.id,
+                o.items
             FROM public.addresses a
             LEFT JOIN public.beacons b
                 ON b.id = a.beacon_id
             LEFT JOIN public.establishments e
                 ON e.address_id = a.id
+            LEFT JOIN LATERAL (
+                SELECT
+                    ord.id,
+                    ord.items
+                FROM public.orders ord
+                WHERE
+                    ord.customer_id = a.owner_id
+                    AND ord.beacon_id = a.beacon_id
+                    AND ord.status = 'paid'
+                ORDER BY
+                    ord.created_at DESC
+                LIMIT 1
+            ) o
+                ON TRUE
             WHERE a.owner_id = %s
             ORDER BY a.created_at DESC
             """,
@@ -215,6 +232,8 @@ def list_owner_beacons(
             status,
             access_point_note,
             establishment_id,
+            paid_order_id,
+            paid_order_items,
         ) = row
 
         beacon_key = (
@@ -227,6 +246,18 @@ def list_owner_beacons(
             series_by_beacon.get(
                 beacon_key,
                 _empty_series(),
+            )
+        )
+
+        capabilities = (
+            effective_address_capabilities(
+                address_status=str(
+                    status
+                ),
+                has_paid_order=(
+                    paid_order_id is not None
+                ),
+                order_items=paid_order_items,
             )
         )
 
@@ -259,6 +290,9 @@ def list_owner_beacons(
                     if establishment_id
                     else None
                 ),
+                "effective_capabilities": (
+                    capabilities
+                ),
                 "searches_30d": searches,
             }
         )
@@ -281,7 +315,8 @@ def _lock_owned_address(
                 name,
                 category,
                 visibility,
-                status
+                status,
+                access_point_note
             FROM public.addresses
             WHERE
                 id = %s
@@ -458,6 +493,7 @@ def update_owner_beacon(
     category: str,
     visibility: str,
     access_point_note: str | None,
+    access_point_note_provided: bool = True,
 ) -> dict[str, Any]:
     address = _lock_owned_address(
         user_id=user_id,
@@ -471,6 +507,23 @@ def update_owner_beacon(
     current_status = str(
         address[6]
     )
+
+    current_access_point_note = (
+        _clean_optional(
+            address[7]
+        )
+    )
+
+    requested_access_point_note = (
+        current_access_point_note
+    )
+
+    if access_point_note_provided:
+        requested_access_point_note = (
+            _clean_optional(
+                access_point_note
+            )
+        )
 
     requested_visibility = str(
         visibility
@@ -517,6 +570,17 @@ def update_owner_beacon(
             "validée par le back-office."
         )
 
+    if (
+        access_point_note_provided
+        and requested_access_point_note
+        != current_access_point_note
+    ):
+        require_owner_address_capability(
+            user_id=user_id,
+            address_id=address_id,
+            capability=DETAILED_ACCESS_NOTE,
+        )
+
     with connection.cursor() as cursor:
         cursor.execute(
             """
@@ -536,9 +600,7 @@ def update_owner_beacon(
                 _clean_optional(name),
                 category,
                 requested_visibility,
-                _clean_optional(
-                    access_point_note
-                ),
+                requested_access_point_note,
                 address_id,
                 user_id,
                 current_visibility,

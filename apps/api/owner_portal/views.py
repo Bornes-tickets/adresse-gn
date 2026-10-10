@@ -25,6 +25,7 @@ from .services import (
     OwnerAccountSubscriptionActiveError,
     OwnerAddressAccessError,
     OwnerAddressStateError,
+    OwnerCapabilityDeniedError,
     OwnerFavoriteConflictError,
     OwnerFavoriteInputError,
     OwnerFavoriteNotFoundError,
@@ -227,9 +228,23 @@ class OwnerBeaconDetailView(APIView):
                         "access_point_note"
                     )
                 ),
+                access_point_note_provided=(
+                    "access_point_note"
+                    in serializer.validated_data
+                ),
             )
 
         except OwnerAddressAccessError as exc:
+            return Response(
+                {
+                    "detail": str(exc),
+                },
+                status=(
+                    status.HTTP_403_FORBIDDEN
+                ),
+            )
+
+        except OwnerCapabilityDeniedError as exc:
             return Response(
                 {
                     "detail": str(exc),
@@ -253,7 +268,7 @@ class OwnerBeaconDetailView(APIView):
             return Response(
                 {
                     "detail": (
-                        "La balise n'a pas "
+                        "L'adresse n'a pas "
                         "pu être mise à jour."
                     ),
                 },

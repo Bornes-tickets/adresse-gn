@@ -350,7 +350,7 @@ async function mockDjango(
         request.method() ===
           "GET" &&
         url.pathname ===
-          "/api/v1/owner/beacons/"
+          "/api/v1/owner/addresses/"
       ) {
         await route.fulfill({
           status: 200,
@@ -591,13 +591,13 @@ test(
     const routes = [
       {
         link:
-          "Mes balises",
+          "Mes adresses",
 
         url:
-          "/mon-compte/beacons",
+          "/mon-compte/adresses",
 
         heading:
-          "Mes balises",
+          "Mes adresses",
       },
 
       {
@@ -698,7 +698,7 @@ test(
     const expectedApiCalls = [
       "GET /api/v1/auth/me/",
       "GET /api/v1/owner/dashboard/",
-      "GET /api/v1/owner/beacons/",
+      "GET /api/v1/owner/addresses/",
       "GET /api/v1/owner/favorites/",
       "GET /api/v1/owner/orders/",
       "GET /api/v1/owner/reports/",
@@ -792,5 +792,51 @@ test(
     expect(
       supabase.logoutCalls,
     ).toBe(1);
+  },
+);
+
+test(
+  "redirige l'ancienne route propriétaire vers Mes adresses",
+  async ({ page }) => {
+    await mockSupabase(
+      page,
+    );
+
+    await mockDjango(
+      page,
+    );
+
+    await loginOwner(
+      page,
+    );
+
+    await page.goto(
+      "/mon-compte/beacons",
+    );
+
+    await expect(
+      page,
+    ).toHaveURL(
+      `${appOrigin}/mon-compte/adresses`,
+      {
+        timeout:
+          15_000,
+      },
+    );
+
+    await expect(
+      page.getByRole(
+        "heading",
+        {
+          name:
+            "Mes adresses",
+          exact:
+            true,
+        },
+      ),
+    ).toBeVisible({
+      timeout:
+        15_000,
+    });
   },
 );

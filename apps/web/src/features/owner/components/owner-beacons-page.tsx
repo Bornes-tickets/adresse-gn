@@ -150,6 +150,21 @@ function categoryLabel(
 }
 
 
+function hasOwnerCapability(
+  beacon: OwnerBeacon,
+  capability: string,
+) {
+  return (
+    beacon
+      .effective_capabilities
+      ?.includes(
+        capability
+      )
+    ?? false
+  );
+}
+
+
 function SearchLineChart({
   beacon,
 }: {
@@ -552,17 +567,22 @@ export function OwnerBeaconsPage() {
                       Modifier
                     </Button>
 
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        setQr(
-                          beacon
-                        )
-                      }
-                    >
-                      QR
-                    </Button>
+                    {hasOwnerCapability(
+                      beacon,
+                      "qr_code",
+                    ) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setQr(
+                            beacon
+                          )
+                        }
+                      >
+                        QR
+                      </Button>
+                    )}
 
                     <Button
                       variant="outline"
@@ -721,6 +741,12 @@ function EditBeaconDialog({
     saving,
     setSaving,
   ] = useState(false);
+
+  const canEditAccessNote =
+    hasOwnerCapability(
+      beacon,
+      "detailed_access_note",
+    );
 
 
   async function save() {
@@ -966,6 +992,9 @@ function EditBeaconDialog({
               value={note}
               rows={3}
               maxLength={400}
+              disabled={
+                !canEditAccessNote
+              }
               onChange={(
                 event,
               ) =>
@@ -976,6 +1005,17 @@ function EditBeaconDialog({
                 )
               }
             />
+
+            {!canEditAccessNote && (
+              <p
+                className="
+                  text-xs
+                  text-muted-foreground
+                "
+              >
+                La modification de l&apos;indication d&apos;accès nécessite une offre compatible.
+              </p>
+            )}
           </div>
         </div>
 
