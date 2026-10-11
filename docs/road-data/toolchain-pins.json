@@ -1,0 +1,43 @@
+{
+  "dataset": {
+    "bytes": 118413819,
+    "dataset_id": "80fb2602-768d-448e-81c8-93bcb2664dc7",
+    "sha256": "779ce7ce14d61059b46e9baed7c3aac18604d98704f096270820546dbef82f53",
+    "source_date": "2026-10-09"
+  },
+  "execution_policy": {
+    "database_mutation_authorized": false,
+    "immutable_digest_required": true,
+    "latest_forbidden": true,
+    "latest_nightly_forbidden": true,
+    "pbf_derivative_authorized": false,
+    "pbf_source_read_only": true,
+    "pgrouting_installation_authorized": false,
+    "remote_push_authorized": false,
+    "road_graph_creation_authorized": false,
+    "road_import_authorized": false,
+    "versioned_tags_are_discovery_only": true
+  },
+  "phase": "ROAD-DATA-A14",
+  "repository": {
+    "baseline_commit": "87b6ec4b7c5cfd3c2e0e3e6968145132b6a1f477",
+    "source_branch": "feature/maps-road-data"
+  },
+  "schema_version": 1,
+  "toolchain": {
+    "osm2pgsql": {
+      "image_id": "sha256:81c5c8272ff0a60793f922cba26d63b2aa5dc03b91df828c2ed50cbe924b56e4",
+      "immutable_ref": "iboates/osm2pgsql@sha256:6548a1e2492e08fa0d5ce987d382ad57c4b21c8a94ff00017c6109770a061b79",
+      "platform": "linux/amd64",
+      "verified_version": "2.3.1",
+      "version_tag": "docker.io/iboates/osm2pgsql:2.3.1"
+    },
+    "osmium": {
+      "image_id": "sha256:6ef87141afa59b5cccc748bf8ca694f3ca65443599a009356614a1367ab25da9",
+      "immutable_ref": "iboates/osmium@sha256:a67987f7d822d951ae1979de656ab7bd8051605f79d2751ea4800cc6057124be",
+      "platform": "linux/amd64",
+      "verified_version": "1.19.0",
+      "version_tag": "docker.io/iboates/osmium:1.19.0"
+    }
+  }
+}
