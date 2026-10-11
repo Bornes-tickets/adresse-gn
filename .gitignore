@@ -48,3 +48,17 @@ apps/api/staticfiles/
 # Playwright
 playwright-report/
 test-results/
+
+# Adresse GN road/geodata raw artifacts (never commit)
+*.osm
+*.osm.pbf
+*.pbf
+*.gpkg
+*.mbtiles
+*.pmtiles
+*.shp
+*.dbf
+*.shx
+*.prj
+*.cpg
+*.geojson
