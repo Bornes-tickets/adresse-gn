@@ -40,7 +40,7 @@ printf '%s\n' "POSTGRES_VERSION=${PG_VERSION}"
 printf '%s\n' "PG_CONFIG_VERSION=${PG_CONFIG_VERSION}"
 
 printf '%s\n' "${PG_VERSION}" |
-    grep -Eq "PostgreSQL[[:space:]]+${EXPECTED_PG_MAJOR}([.]|[[:space:]])" ||
+    grep -Eq "PostgreSQL[)]?[[:space:]]+${EXPECTED_PG_MAJOR}([.]|[[:space:]])" ||
     fail "PostgreSQL major mismatch."
 
 POSTGIS_PACKAGE_VERSION="$(
