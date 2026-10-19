@@ -959,6 +959,13 @@ def compose_gps_route(
         ]:
             continue
 
+        if (
+            pair[0]
+            ==
+            pair[1]
+        ):
+            continue
+
         start_option = (
             start_by_state[
                 pair[0]

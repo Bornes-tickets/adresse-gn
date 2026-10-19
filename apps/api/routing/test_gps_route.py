@@ -934,24 +934,18 @@ class GPSRouteCompositionTests(
         start = make_snap(
             edge_id=8,
             fraction=0.2,
-            forward=True,
-            reverse=False,
-            forward_cost=10.0,
         )
 
         end = make_snap(
             edge_id=8,
             fraction=0.7,
-            forward=True,
-            reverse=False,
-            forward_cost=10.0,
         )
 
         result = compose_gps_route(
-            start_longitude=0,
-            start_latitude=0,
-            end_longitude=1,
-            end_latitude=1,
+            start_longitude=-13.0,
+            start_latitude=9.0,
+            end_longitude=-13.1,
+            end_latitude=9.1,
             profile="car",
             candidate_limit=64,
             state_od_executor=(
@@ -961,7 +955,22 @@ class GPSRouteCompositionTests(
                             16,
                             16,
                             total_cost=0.0,
-                        )
+                        ),
+                        matrix_row(
+                            16,
+                            17,
+                            reachable=False,
+                        ),
+                        matrix_row(
+                            17,
+                            16,
+                            total_cost=5.6,
+                        ),
+                        matrix_row(
+                            17,
+                            17,
+                            total_cost=0.0,
+                        ),
                     ]
                 )
             ),
@@ -985,12 +994,290 @@ class GPSRouteCompositionTests(
         )
 
         self.assertEqual(
-            len(
-                result[
-                    "best_candidates"
-                ]
+            result[
+                "matrix_executor_calls"
+            ],
+            1,
+        )
+
+
+    def test_same_edge_forward_zero_identity_is_ignored_for_direct(
+        self,
+    ):
+        start = make_snap(
+            edge_id=8,
+            fraction=0.2,
+            forward=True,
+            reverse=False,
+            forward_cost=10.0,
+        )
+
+        end = make_snap(
+            edge_id=8,
+            fraction=0.7,
+            forward=True,
+            reverse=False,
+            forward_cost=10.0,
+        )
+
+        result = compose_gps_route(
+            start_longitude=-13.0,
+            start_latitude=9.0,
+            end_longitude=-13.1,
+            end_latitude=9.1,
+            profile="car",
+            candidate_limit=64,
+            state_od_executor=(
+                RecordingExecutor(
+                    [
+                        matrix_row(
+                            16,
+                            16,
+                            total_cost=0.0,
+                        )
+                    ]
+                )
             ),
-            2,
+            snapper=SequenceSnapper(
+                start,
+                end,
+            ),
+        )
+
+        self.assertEqual(
+            result[
+                "status"
+            ],
+            "ok",
+        )
+
+        candidate = result[
+            "selected_candidate"
+        ]
+
+        self.assertEqual(
+            candidate[
+                "kind"
+            ],
+            "same_edge_direct",
+        )
+
+        self.assertEqual(
+            candidate[
+                "direction"
+            ],
+            "forward",
+        )
+
+        self.assertEqual(
+            candidate[
+                "total_cost"
+            ],
+            5.0,
+        )
+
+
+    def test_same_edge_reverse_zero_identity_is_ignored_for_direct(
+        self,
+    ):
+        start = make_snap(
+            edge_id=8,
+            fraction=0.8,
+            forward=False,
+            reverse=True,
+            reverse_cost=10.0,
+        )
+
+        end = make_snap(
+            edge_id=8,
+            fraction=0.3,
+            forward=False,
+            reverse=True,
+            reverse_cost=10.0,
+        )
+
+        result = compose_gps_route(
+            start_longitude=-13.0,
+            start_latitude=9.0,
+            end_longitude=-13.1,
+            end_latitude=9.1,
+            profile="car",
+            candidate_limit=64,
+            state_od_executor=(
+                RecordingExecutor(
+                    [
+                        matrix_row(
+                            17,
+                            17,
+                            total_cost=0.0,
+                        )
+                    ]
+                )
+            ),
+            snapper=SequenceSnapper(
+                start,
+                end,
+            ),
+        )
+
+        self.assertEqual(
+            result[
+                "status"
+            ],
+            "ok",
+        )
+
+        candidate = result[
+            "selected_candidate"
+        ]
+
+        self.assertEqual(
+            candidate[
+                "kind"
+            ],
+            "same_edge_direct",
+        )
+
+        self.assertEqual(
+            candidate[
+                "direction"
+            ],
+            "reverse",
+        )
+
+        self.assertEqual(
+            candidate[
+                "total_cost"
+            ],
+            5.0,
+        )
+
+
+    def test_same_edge_nonmonotonic_one_direction_zero_identity_fails_closed(
+        self,
+    ):
+        start = make_snap(
+            edge_id=8,
+            fraction=0.8,
+            forward=True,
+            reverse=False,
+            forward_cost=10.0,
+        )
+
+        end = make_snap(
+            edge_id=8,
+            fraction=0.3,
+            forward=True,
+            reverse=False,
+            forward_cost=10.0,
+        )
+
+        result = compose_gps_route(
+            start_longitude=-13.0,
+            start_latitude=9.0,
+            end_longitude=-13.1,
+            end_latitude=9.1,
+            profile="car",
+            candidate_limit=64,
+            state_od_executor=(
+                RecordingExecutor(
+                    [
+                        matrix_row(
+                            16,
+                            16,
+                            total_cost=0.0,
+                        )
+                    ]
+                )
+            ),
+            snapper=SequenceSnapper(
+                start,
+                end,
+            ),
+        )
+
+        self.assertEqual(
+            result[
+                "status"
+            ],
+            "no_route",
+        )
+
+        self.assertIsNone(
+            result[
+                "selected_candidate"
+            ]
+        )
+
+        self.assertEqual(
+            result[
+                "matrix_executor_calls"
+            ],
+            1,
+        )
+
+
+    def test_same_edge_nonmonotonic_positive_same_state_row_fails_closed(
+        self,
+    ):
+        start = make_snap(
+            edge_id=8,
+            fraction=0.8,
+            forward=True,
+            reverse=False,
+            forward_cost=10.0,
+        )
+
+        end = make_snap(
+            edge_id=8,
+            fraction=0.3,
+            forward=True,
+            reverse=False,
+            forward_cost=10.0,
+        )
+
+        result = compose_gps_route(
+            start_longitude=-13.0,
+            start_latitude=9.0,
+            end_longitude=-13.1,
+            end_latitude=9.1,
+            profile="car",
+            candidate_limit=64,
+            state_od_executor=(
+                RecordingExecutor(
+                    [
+                        matrix_row(
+                            16,
+                            16,
+                            total_cost=20.0,
+                        )
+                    ]
+                )
+            ),
+            snapper=SequenceSnapper(
+                start,
+                end,
+            ),
+        )
+
+        self.assertEqual(
+            result[
+                "status"
+            ],
+            "no_route",
+        )
+
+        self.assertIsNone(
+            result[
+                "selected_candidate"
+            ]
+        )
+
+        self.assertEqual(
+            result[
+                "matrix_executor_calls"
+            ],
+            1,
         )
 
 
