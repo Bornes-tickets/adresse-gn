@@ -5,6 +5,10 @@ from typing import Any
 
 from django.db import connection, transaction
 
+from entitlements import (
+    installation_requirements_from_order_items,
+)
+
 
 class PhysicalWorkflowError(RuntimeError):
     code = "PHYSICAL_WORKFLOW_ERROR"
@@ -16,6 +20,40 @@ class PhysicalWorkflowNotFoundError(PhysicalWorkflowError):
 
 class PhysicalWorkflowStateError(PhysicalWorkflowError):
     code = "PHYSICAL_WORKFLOW_STATE_INVALID"
+
+
+
+def _require_physical_purchase_snapshot(
+    *,
+    items,
+) -> dict:
+    requirements = (
+        installation_requirements_from_order_items(
+            items
+        )
+    )
+
+    if requirements is None:
+        raise PhysicalWorkflowStateError(
+            "Le snapshot achet? ne contient pas un contrat "
+            "d'installation physique V1 valide."
+        )
+
+    if (
+        str(
+            requirements.get(
+                "fulfillment_kind"
+            )
+            or ""
+        )
+        != "physical_installation"
+    ):
+        raise PhysicalWorkflowStateError(
+            "Le snapshot achet? ne correspond pas "
+            "? une installation physique."
+        )
+
+    return requirements
 
 
 def _load_pending_for_update(*, pending_installation_id: str):
@@ -30,18 +68,32 @@ def _load_pending_for_update(*, pending_installation_id: str):
                 pi.scheduled_at,
                 pi.completed_at,
                 o.status AS order_status,
-                cp.fulfillment_kind
+                o.items
             FROM public.pending_installations pi
             JOIN public.orders o
               ON o.id = pi.order_id
-            JOIN public.cms_plans cp
-              ON cp.id = o.plan_id
             WHERE pi.id = %s
             FOR UPDATE OF pi, o
             """,
             [pending_installation_id],
         )
-        return cursor.fetchone()
+        row = cursor.fetchone()
+
+    if row is None:
+        return None
+
+    requirements = (
+        _require_physical_purchase_snapshot(
+            items=row[-1],
+        )
+    )
+
+    return (
+        *row[:-1],
+        requirements[
+            "fulfillment_kind"
+        ],
+    )
 
 
 def _require_active_agent(*, agent_id: str) -> None:
@@ -485,12 +537,10 @@ def _load_validation_targets(
                 pi.beacon_id,
                 pi.completed_at,
                 o.status AS order_status,
-                cp.fulfillment_kind
+                o.items
             FROM public.pending_installations pi
             JOIN public.orders o
               ON o.id = pi.order_id
-            JOIN public.cms_plans cp
-              ON cp.id = o.plan_id
             WHERE pi.id = %s
             FOR UPDATE OF pi, o
             """,
@@ -510,8 +560,20 @@ def _load_validation_targets(
         beacon_id,
         completed_at,
         order_status,
-        fulfillment_kind,
+        order_items,
     ) = pending_row
+
+    requirements = (
+        _require_physical_purchase_snapshot(
+            items=order_items,
+        )
+    )
+
+    fulfillment_kind = (
+        requirements[
+            "fulfillment_kind"
+        ]
+    )
 
     _ensure_physical_paid_order(
         order_status=str(order_status),
@@ -789,12 +851,10 @@ def _load_publication_target(
                 pi.beacon_id,
                 pi.completed_at,
                 o.status AS order_status,
-                cp.fulfillment_kind
+                o.items
             FROM public.pending_installations pi
             JOIN public.orders o
               ON o.id = pi.order_id
-            JOIN public.cms_plans cp
-              ON cp.id = o.plan_id
             WHERE pi.id = %s
             FOR UPDATE OF pi, o
             """,
@@ -814,8 +874,20 @@ def _load_publication_target(
         beacon_id,
         completed_at,
         order_status,
-        fulfillment_kind,
+        order_items,
     ) = pending_row
+
+    requirements = (
+        _require_physical_purchase_snapshot(
+            items=order_items,
+        )
+    )
+
+    fulfillment_kind = (
+        requirements[
+            "fulfillment_kind"
+        ]
+    )
 
     _ensure_physical_paid_order(
         order_status=str(order_status),

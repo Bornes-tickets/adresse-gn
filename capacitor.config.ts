@@ -1,11 +1,13 @@
-// capacitor.config.ts — racine du projet
+// capacitor.config.ts â€” racine du projet
 import type { CapacitorConfig } from "@capacitor/cli";
 const config: CapacitorConfig = {
   appId: "com.adressegn.app",
   appName: "Adresse GN",
   webDir: "dist",
   server: {
-    url: "https://adresse-gn.netlify.app",
+    url:
+      process.env.CAPACITOR_SERVER_URL ||
+      "https://adresse-gn.netlify.app",
     cleartext: false,
     androidScheme: "https",
   },
@@ -33,12 +35,12 @@ const config: CapacitorConfig = {
       useDialog: false,
     },
     StatusBar: {
-      // Icônes SOMBRES (heure, batterie, wifi) car le header est BLANC
+      // IcÃ´nes SOMBRES (heure, batterie, wifi) car le header est BLANC
       style: "DARK",
-      // Fond de la StatusBar aligné avec le header blanc
+      // Fond de la StatusBar alignÃ© avec le header blanc
       backgroundColor: "#ffffff",
       // IMPORTANT : le WebView passe SOUS la StatusBar.
-      // Le header étend son fond blanc jusqu'en haut via
+      // Le header Ã©tend son fond blanc jusqu'en haut via
       // padding-top: env(safe-area-inset-top) dans Layout.tsx.
       overlaysWebView: true,
     },

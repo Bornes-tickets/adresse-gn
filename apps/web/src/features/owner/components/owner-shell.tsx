@@ -35,6 +35,10 @@ import {
 } from "@/components/ui/button";
 
 import {
+  verifyDjangoSession,
+} from "@/features/auth/api";
+
+import {
   supabase,
 } from "@/lib/supabase/browser";
 
@@ -158,6 +162,36 @@ export function OwnerShell({
 
         router.replace(
           `/login?returnTo=${returnTo}`,
+        );
+
+        return;
+      }
+
+      const djangoSession =
+        await verifyDjangoSession(
+          data.session.access_token,
+        );
+
+      if(
+        djangoSession.user.role
+        !== "user"
+      ){
+        const destination:
+          Record<string, string> = {
+            agent: "/agent",
+            support: "/support",
+            sales: "/sales",
+            ops: "/ops",
+            supervisor: "/supervisor",
+            admin: "/admin",
+            super_admin: "/admin",
+          };
+
+        router.replace(
+          destination[
+            djangoSession.user.role
+            ?? ""
+          ] ?? "/",
         );
 
         return;

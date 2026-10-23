@@ -1,6 +1,27 @@
+from .global_action_views import (
+    BackofficeActionCatalogView,
+    BackofficeActionExecuteView,
+)
+
+from .global_resource_views import (
+    BackofficeResourceListView,
+)
+from .global_views import (
+    BackofficeNavigationView,
+    BackofficeRoleDashboardView,
+)
+from .address_views import (
+    AddressDetailView,
+    AddressListView,
+)
+from .beacon_views import (
+    BeaconDetailView,
+    BeaconListView,
+)
 from django.urls import path
 
 from .views import (
+    AdminDashboardView,
     AccountListView,
     AccountReactivateView,
     BackofficeMeView,
@@ -17,6 +38,57 @@ from .views import (
 
 
 urlpatterns = [
+    path(
+        "actions/<str:resource>/<str:action>/",
+        BackofficeActionExecuteView.as_view(),
+        name="backoffice-action-execute",
+    ),
+    path(
+        "actions/<str:resource>/",
+        BackofficeActionCatalogView.as_view(),
+        name="backoffice-action-catalog",
+    ),
+
+    path(
+        "resources/<str:resource>/",
+        BackofficeResourceListView.as_view(),
+        name="backoffice-resource-list",
+    ),
+    path(
+        "navigation/",
+        BackofficeNavigationView.as_view(),
+        name="backoffice-navigation",
+    ),
+    path(
+        "role-dashboard/",
+        BackofficeRoleDashboardView.as_view(),
+        name="backoffice-role-dashboard",
+    ),
+    path(
+        "addresses/",
+        AddressListView.as_view(),
+        name="backoffice-addresses",
+    ),
+    path(
+        "addresses/<uuid:address_id>/",
+        AddressDetailView.as_view(),
+        name="backoffice-address-detail",
+    ),
+    path(
+        "beacons/",
+        BeaconListView.as_view(),
+        name="backoffice-beacons",
+    ),
+    path(
+        "beacons/<uuid:beacon_id>/",
+        BeaconDetailView.as_view(),
+        name="backoffice-beacon-detail",
+    ),
+    path(
+        "dashboard/",
+        AdminDashboardView.as_view(),
+        name="backoffice-dashboard",
+    ),
     path(
         "me/",
         BackofficeMeView.as_view(),

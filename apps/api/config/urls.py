@@ -54,6 +54,11 @@ urlpatterns = [
     ),
 
     path(
+        "api/v1/agent/",
+        include("agent_portal.urls"),
+    ),
+
+    path(
         "api/v1/owner/",
         include("owner_portal.urls"),
     ),

@@ -1,3 +1,4 @@
+from django.db import connection
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -17,6 +18,49 @@ class AuthMeView(APIView):
         ),
     )
     def get(self, request):
+        """
+        Retourne l'identité Supabase validée avec le rôle métier
+        faisant autorité dans public.profiles.
+
+        Le claim JWT `role` reste volontairement le rôle technique
+        Supabase (`authenticated`) et ne doit jamais être utilisé
+        pour router les espaces métier Adresse GN.
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT
+                    role,
+                    full_name
+                FROM public.profiles
+                WHERE id = %s
+                LIMIT 1
+                """,
+                [
+                    request.user.id,
+                ],
+            )
+
+            row = cursor.fetchone()
+
+        if row is None:
+            return Response(
+                {
+                    "authenticated": False,
+                    "detail": (
+                        "Profil utilisateur Adresse GN "
+                        "introuvable."
+                    ),
+                },
+                status=401,
+            )
+
+        (
+            business_role,
+            full_name,
+        ) = row
+
         return Response(
             {
                 "authenticated": True,
@@ -25,7 +69,9 @@ class AuthMeView(APIView):
                     "email": (
                         request.user.email
                     ),
-                    "role": (
+                    "role": business_role,
+                    "full_name": full_name,
+                    "auth_role": (
                         request.user.role
                     ),
                 },

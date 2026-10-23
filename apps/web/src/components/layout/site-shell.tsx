@@ -25,9 +25,29 @@ export function SiteShell({
     usePathname();
 
   const hasOwnLayout =
+    pathname === "/admin" ||
+    pathname.startsWith(
+      "/admin/",
+    ) ||
+    pathname === "/supervisor" ||
+    pathname.startsWith(
+      "/supervisor/",
+    ) ||
+    pathname === "/ops" ||
+    pathname.startsWith(
+      "/ops/",
+    ) ||
+    pathname === "/sales" ||
+    pathname.startsWith(
+      "/sales/",
+    ) ||
     pathname === "/support" ||
     pathname.startsWith(
       "/support/",
+    ) ||
+    pathname === "/agent" ||
+    pathname.startsWith(
+      "/agent/",
     ) ||
     pathname === "/mon-compte" ||
     pathname.startsWith(

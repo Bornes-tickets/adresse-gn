@@ -189,6 +189,11 @@ def _verify_asymmetric_token(
             issuer=(
                 settings.SUPABASE_JWT_ISSUER
             ),
+            # Tolérance bornée pour absorber un faible décalage
+            # d'horloge entre Supabase Auth et le serveur Django.
+            # Les contrôles signature / iss / aud / exp / iat
+            # restent actifs.
+            leeway=10,
             options={
                 "require": [
                     "exp",

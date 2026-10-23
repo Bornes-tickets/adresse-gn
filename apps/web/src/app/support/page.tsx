@@ -1,10 +1,21 @@
+import type {
+  Metadata,
+} from "next";
+
 import {
-  redirect,
-} from "next/navigation";
+  RoleDashboardPage,
+} from "@/features/backoffice/components/role-dashboard-page";
 
 
-export default function SupportPage() {
-  redirect(
-    "/support/reclamations",
+export const metadata: Metadata = {
+  title: "Support — Adresse GN",
+};
+
+
+export default function Page() {
+  return (
+    <RoleDashboardPage
+      space="support"
+    />
   );
 }

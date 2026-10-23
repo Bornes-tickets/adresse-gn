@@ -7,6 +7,7 @@ from typing import Any
 from django.db import connection, transaction
 
 from entitlements import (
+    INSTALLATION_REQUIREMENTS_VERSION,
     resolve_plan_capabilities,
 )
 
@@ -658,7 +659,13 @@ def _create_checkout_order(
                         'fulfillment_kind',
                         %s,
                         'capabilities',
-                        %s::jsonb
+                        %s::jsonb,
+                        'installation_requirements_version',
+                        CASE
+                            WHEN %s = 'physical_installation'
+                            THEN %s
+                            ELSE NULL
+                        END
                     )
                 ),
                 %s,
@@ -699,6 +706,8 @@ def _create_checkout_order(
                     separators=(",", ":"),
                     ensure_ascii=True,
                 ),
+                fulfillment_kind,
+                INSTALLATION_REQUIREMENTS_VERSION,
                 client_type,
                 full_name,
                 identity["phone"],

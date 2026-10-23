@@ -232,6 +232,29 @@ class PublishFakeCursor:
         return False
 
 
+def _publish_v1_physical_items():
+    return [
+        {
+            "qty": 1,
+            "code": "residentiel_standard",
+            "ref": "residentiel_standard",
+            "label": "R?sidentiel Standard",
+            "unit_price_gnf": 150000,
+            "fulfillment_kind": "physical_installation",
+            "capabilities": [
+                "address_number",
+                "qr_code",
+                "gps_location",
+                "external_navigation",
+                "address_sharing",
+                "physical_plate",
+                "installation_tracking",
+            ],
+            "installation_requirements_version": 1,
+        }
+    ]
+
+
 def _publish_pending_row(
     *,
     status="done",
@@ -244,7 +267,7 @@ def _publish_pending_row(
         PUBLISH_BEACON_ID,
         completed_at,
         "paid",
-        "physical_installation",
+        _publish_v1_physical_items(),
     )
 
 

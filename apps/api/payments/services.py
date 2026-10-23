@@ -7,6 +7,11 @@ from uuid import uuid4
 
 from django.db import connection, transaction
 
+from entitlements import (
+    fulfillment_kind_from_order_items,
+    installation_requirements_from_order_items,
+)
+
 
 class PaymentError(Exception):
     code = "PAYMENT_ERROR"
@@ -829,6 +834,93 @@ def _validate_fulfillment_items(
     return normalized
 
 
+def _payment_order_contract_from_items(
+    *,
+    items: Any,
+) -> dict[str, Any]:
+    """
+    Resolve payment-critical purchase metadata only from
+    the immutable orders.items snapshot.
+    """
+
+    fulfillment_kind = (
+        fulfillment_kind_from_order_items(
+            items
+        )
+    )
+
+    if (
+        fulfillment_kind
+        not in _CANONICAL_FULFILLMENTS
+    ):
+        raise SalesPaymentFulfillmentError(
+            "Fulfillment absent, non canonique ou historique "
+            "dans le snapshot achet?."
+        )
+
+    normalized = _validate_fulfillment_items(
+        items=items,
+        fulfillment_kind=fulfillment_kind,
+    )
+
+    item = normalized[0]
+
+    plan_code = str(
+        item.get("code")
+        or item.get("ref")
+        or ""
+    ).strip()
+
+    if (
+        fulfillment_kind
+        == "physical_installation"
+        and not plan_code
+    ):
+        raise SalesPaymentFulfillmentError(
+            "Le snapshot physique ne contient aucun code de plan achet?."
+        )
+
+    return {
+        "fulfillment_kind": fulfillment_kind,
+        "plan_code": plan_code,
+        "item": item,
+    }
+
+
+def _require_physical_installation_v1(
+    *,
+    items: Any,
+) -> dict[str, Any]:
+    """
+    Pending physical payments must carry the immutable V1
+    installation contract before any site lock or preallocation.
+    """
+
+    try:
+        requirements = (
+            installation_requirements_from_order_items(
+                items
+            )
+        )
+    except (
+        TypeError,
+        ValueError,
+        RuntimeError,
+    ) as exc:
+        raise SalesPaymentFulfillmentError(
+            "Le contrat d'installation physique V1 du snapshot "
+            "est invalide."
+        ) from exc
+
+    if requirements is None:
+        raise SalesPaymentFulfillmentError(
+            "Le contrat d'installation physique V1 est absent "
+            "du snapshot achet?."
+        )
+
+    return requirements
+
+
 def _load_confirmation_result(
     *,
     order_id: str,
@@ -1640,16 +1732,10 @@ def confirm_manual_payment_core(
                 o.devis_demande,
                 o.beacon_id,
                 o.phone AS order_phone,
-                cp.code AS plan_code,
-                cp.requires_quote,
-                to_jsonb(cp) ->> 'fulfillment_kind'
-                    AS fulfillment_kind,
                 pr.phone AS profile_phone
             FROM public.payments p
             JOIN public.orders o
               ON o.id = p.order_id
-            LEFT JOIN public.cms_plans cp
-              ON cp.id = o.plan_id
             LEFT JOIN public.profiles pr
               ON pr.id = o.customer_id
             WHERE p.id = %s
@@ -1670,10 +1756,23 @@ def confirm_manual_payment_core(
             "Seuls les paiements manuels sont confirmables dans 15G2B8."
         )
 
-    fulfillment_kind = str(
-        row["fulfillment_kind"]
-        or ""
-    ).strip()
+    payment_contract = (
+        _payment_order_contract_from_items(
+            items=row["items"],
+        )
+    )
+
+    fulfillment_kind = (
+        payment_contract[
+            "fulfillment_kind"
+        ]
+    )
+
+    plan_code = (
+        payment_contract[
+            "plan_code"
+        ]
+    )
 
     if row["payment_status"] == "success":
         if row["order_status"] != "paid":
@@ -1715,11 +1814,6 @@ def confirm_manual_payment_core(
             "Une commande sur devis ne peut pas être confirmée ici."
         )
 
-    if fulfillment_kind not in _CANONICAL_FULFILLMENTS:
-        raise SalesPaymentFulfillmentError(
-            "Fulfillment non canonique ou historique : confirmation interdite."
-        )
-
     payment_amount = int(
         row["payment_amount_gnf"]
         or 0
@@ -1739,10 +1833,13 @@ def confirm_manual_payment_core(
             "Le montant du paiement ne correspond pas à la commande."
         )
 
-    _validate_fulfillment_items(
-        items=row["items"],
-        fulfillment_kind=fulfillment_kind,
-    )
+    if (
+        fulfillment_kind
+        == "physical_installation"
+    ):
+        _require_physical_installation_v1(
+            items=row["items"],
+        )
 
     site = _lock_single_order_site(
         order_id=str(row["order_id"])
@@ -1786,7 +1883,7 @@ def confirm_manual_payment_core(
             commune_code=str(
                 commune["commune_code"]
             ),
-            plan_code=str(row["plan_code"]),
+            plan_code=plan_code,
         )
 
     with connection.cursor() as cursor:

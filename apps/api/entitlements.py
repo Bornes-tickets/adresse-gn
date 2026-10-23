@@ -78,6 +78,10 @@ PLAN_DEFAULT_CAPABILITIES = {
 
 LEGACY_ADDRESS_CAPABILITIES = _DIGITAL_BASELINE
 
+INSTALLATION_REQUIREMENTS_VERSION = 1
+INSTALLATION_GPS_MEASURE_COUNT = 3
+INSTALLATION_GPS_MAX_ACCURACY_M = 3.0
+
 
 def _json_value(value: Any) -> Any:
     if not isinstance(value, str):
@@ -188,6 +192,146 @@ def capabilities_from_order_items(
             result.append(code)
 
     return result
+
+
+def _single_order_item(
+    items: Any,
+) -> dict[str, Any] | None:
+    candidate = _json_value(
+        items
+    )
+
+    if (
+        not isinstance(candidate, list)
+        or len(candidate) != 1
+        or not isinstance(candidate[0], dict)
+    ):
+        return None
+
+    return candidate[0]
+
+
+def fulfillment_kind_from_order_items(
+    items: Any,
+) -> str:
+    item = _single_order_item(
+        items
+    )
+
+    if item is None:
+        return ""
+
+    return str(
+        item.get(
+            "fulfillment_kind"
+        )
+        or ""
+    ).strip().lower()
+
+
+def installation_requirements_from_order_items(
+    items: Any,
+) -> dict[str, Any] | None:
+    """
+    Resolve the immutable Agent installation contract
+    from the purchased order snapshot.
+
+    No cms_plans value is consulted here.
+    Unknown/missing versions fail closed.
+    """
+    item = _single_order_item(
+        items
+    )
+
+    if item is None:
+        return None
+
+    fulfillment_kind = str(
+        item.get(
+            "fulfillment_kind"
+        )
+        or ""
+    ).strip().lower()
+
+    if (
+        fulfillment_kind
+        != "physical_installation"
+    ):
+        return None
+
+    raw_version = item.get(
+        "installation_requirements_version"
+    )
+
+    try:
+        version = int(
+            raw_version
+        )
+    except (
+        TypeError,
+        ValueError,
+    ):
+        return None
+
+    if (
+        version
+        != INSTALLATION_REQUIREMENTS_VERSION
+    ):
+        return None
+
+    capabilities = normalize_capabilities(
+        item.get(
+            "capabilities"
+        )
+    )
+
+    capability_set = set(
+        capabilities
+    )
+
+    # V1 physical orders must explicitly snapshot
+    # the common physical entitlements.
+    if not {
+        PHYSICAL_PLATE,
+        INSTALLATION_TRACKING,
+    }.issubset(
+        capability_set
+    ):
+        return None
+
+    return {
+        "version": (
+            INSTALLATION_REQUIREMENTS_VERSION
+        ),
+        "fulfillment_kind": (
+            "physical_installation"
+        ),
+        "capabilities": capabilities,
+
+        # Contract only. GPS acquisition remains
+        # unimplemented in the new Agent workflow.
+        "gps_measure_count": (
+            INSTALLATION_GPS_MEASURE_COUNT
+        ),
+        "gps_max_accuracy_m": (
+            INSTALLATION_GPS_MAX_ACCURACY_M
+        ),
+
+        "photo_required": True,
+        "consent_required": True,
+        "category_required": True,
+        "visibility_required": True,
+
+        "commercial_place_name_required": True,
+
+        "owner_name_required": False,
+        "owner_phone_required": False,
+
+        "access_point_note_required": (
+            DETAILED_ACCESS_NOTE
+            in capability_set
+        ),
+    }
 
 
 def legacy_address_capabilities() -> list[str]:

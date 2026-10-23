@@ -4,6 +4,10 @@ from typing import Any
 
 from django.db import connection, transaction
 
+from entitlements import (
+    installation_requirements_from_order_items,
+)
+
 class PhysicalInstallationError(RuntimeError):
     code = "PHYSICAL_INSTALLATION_ERROR"
 
@@ -14,6 +18,39 @@ class PhysicalInstallationStateError(PhysicalInstallationError):
 
 class PhysicalInstallationNotFoundError(PhysicalInstallationError):
     code = "PHYSICAL_INSTALLATION_NOT_FOUND"
+
+
+def _require_physical_purchase_snapshot(
+    *,
+    items,
+) -> dict[str, Any]:
+    requirements = (
+        installation_requirements_from_order_items(
+            items
+        )
+    )
+
+    if requirements is None:
+        raise PhysicalInstallationStateError(
+            "Le snapshot achet? ne contient pas un contrat "
+            "d'installation physique V1 valide."
+        )
+
+    if (
+        str(
+            requirements.get(
+                "fulfillment_kind"
+            )
+            or ""
+        )
+        != "physical_installation"
+    ):
+        raise PhysicalInstallationStateError(
+            "Le snapshot achet? ne correspond pas "
+            "? une installation physique."
+        )
+
+    return requirements
 
 
 def _validate_coordinates(*, gps_lat: float, gps_lng: float) -> tuple[float, float]:
@@ -111,13 +148,10 @@ def record_physical_installation(
                 o.status AS order_status,
                 o.customer_id AS order_customer_id,
                 o.beacon_id AS order_beacon_id,
-                cp.code AS plan_code,
-                cp.fulfillment_kind
+                o.items
             FROM public.pending_installations pi
             JOIN public.orders o
               ON o.id = pi.order_id
-            JOIN public.cms_plans cp
-              ON cp.id = o.plan_id
             WHERE pi.id = %s
             FOR UPDATE OF pi, o
             """,
@@ -141,8 +175,7 @@ def record_physical_installation(
         order_status,
         order_customer_id,
         order_beacon_id,
-        _plan_code,
-        fulfillment_kind,
+        order_items,
     ) = row
 
     if str(pending_status) == "installed":
@@ -160,10 +193,9 @@ def record_physical_installation(
             "La commande doit etre payee avant installation."
         )
 
-    if str(fulfillment_kind) != "physical_installation":
-        raise PhysicalInstallationStateError(
-            "La commande n'est pas une installation physique."
-        )
+    _require_physical_purchase_snapshot(
+        items=order_items,
+    )
 
     customer_id = order_customer_id or pending_customer_id
     if customer_id is None:

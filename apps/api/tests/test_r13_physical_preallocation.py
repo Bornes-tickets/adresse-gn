@@ -41,7 +41,7 @@ class R13PhysicalPreallocationSourceTests(TestCase):
 
         self.assertIn("site=site", call_source)
         self.assertIn("commune_code=", call_source)
-        self.assertIn('plan_code=str(row["plan_code"])', call_source)
+        self.assertIn("plan_code=plan_code", call_source)
 
     def test_replayed_physical_confirmation_returns_preallocated_identifiers(self):
         source = inspect.getsource(_load_confirmation_result)

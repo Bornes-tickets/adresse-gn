@@ -1,4 +1,4 @@
-﻿"""
+"""
 R13 real PostgreSQL/PostGIS E2E.
 
 This test intentionally does NOT use Django TestCase or the Django

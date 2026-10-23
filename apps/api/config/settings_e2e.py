@@ -1,4 +1,4 @@
-﻿"""
+"""
 Dedicated settings for Adresse GN PostgreSQL/PostGIS E2E tests.
 
 SAFETY CONTRACT

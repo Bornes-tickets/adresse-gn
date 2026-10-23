@@ -507,14 +507,14 @@ class CheckoutServiceTests(SimpleTestCase):
             ],
         )
         self.assertFalse(
-            order_params[16]
+            order_params[18]
         )
         self.assertEqual(
-            order_params[19],
+            order_params[21],
             40000,
         )
         self.assertEqual(
-            order_params[20],
+            order_params[22],
             "orange",
         )
 
@@ -640,14 +640,14 @@ class CheckoutServiceTests(SimpleTestCase):
             [],
         )
         self.assertTrue(
-            order_params[16]
+            order_params[18]
         )
         self.assertEqual(
-            order_params[19],
+            order_params[21],
             0,
         )
         self.assertIsNone(
-            order_params[20]
+            order_params[22]
         )
 
 

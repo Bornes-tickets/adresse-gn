@@ -8,6 +8,10 @@ from rest_framework.permissions import (
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .dashboard import (
+    load_dashboard,
+)
+
 from .accounts import (
     list_accounts,
     reactivate_account,
@@ -35,6 +39,8 @@ from .physical_installation_workflow import (
     validate_physical_installation,
 )
 from .permissions import (
+    IsDashboardBackofficeUser,
+    IsBackofficeUser,
     IsClaimBackofficeUser,
     IsInstallationBackofficeUser,
 )
@@ -51,7 +57,7 @@ from .serializers import (
 class BackofficeMeView(APIView):
     permission_classes = [
         IsAuthenticated,
-        IsClaimBackofficeUser,
+        IsBackofficeUser,
     ]
 
     @extend_schema(
@@ -76,6 +82,27 @@ class BackofficeMeView(APIView):
             status=status.HTTP_200_OK,
         )
 
+
+
+
+class AdminDashboardView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsDashboardBackofficeUser,
+    ]
+
+    @extend_schema(
+        tags=["Back-office"],
+        description=(
+            "Retourne le tableau de bord opérationnel "
+            "partagé par les superviseurs et administrateurs."
+        ),
+    )
+    def get(self, request):
+        return Response(
+            load_dashboard(),
+            status=status.HTTP_200_OK,
+        )
 
 class ClaimListView(APIView):
     permission_classes = [

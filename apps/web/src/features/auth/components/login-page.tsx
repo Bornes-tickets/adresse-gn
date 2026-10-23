@@ -33,18 +33,88 @@ type LoginPageProps = {
 };
 
 
-function safeReturnPath(
+const ROLE_HOME:
+  Record<string, string> = {
+    user: "/mon-compte",
+    agent: "/agent",
+    support: "/support",
+    sales: "/sales",
+    ops: "/ops",
+    supervisor: "/supervisor",
+    admin: "/admin",
+    super_admin: "/admin",
+  };
+
+
+function defaultPathForRole(
+  role: string | null,
+): string {
+  return (
+    ROLE_HOME[
+      role ?? ""
+    ] ??
+    "/"
+  );
+}
+
+
+function safeReturnPathForRole(
+  role: string | null,
   value: string | null | undefined,
 ): string {
+  const fallback =
+    defaultPathForRole(role);
+
   if (
     !value ||
     !value.startsWith("/") ||
     value.startsWith("//")
   ) {
-    return "/mon-compte";
+    return fallback;
   }
 
-  return value;
+  if (
+    role === "admin"
+    || role === "super_admin"
+  ) {
+    const allowed =
+      [
+        "/admin",
+        "/supervisor",
+        "/ops",
+        "/sales",
+        "/support",
+      ].some(
+        (prefix) =>
+          value === prefix
+          || value.startsWith(
+            `${prefix}/`,
+          ),
+      );
+
+    return allowed
+      ? value
+      : fallback;
+  }
+
+  const prefix =
+    role
+      ? ROLE_HOME[role]
+      : null;
+
+  if (
+    prefix
+    && (
+      value === prefix
+      || value.startsWith(
+        `${prefix}/`,
+      )
+    )
+  ) {
+    return value;
+  }
+
+  return fallback;
 }
 
 
@@ -141,7 +211,8 @@ export function LoginPage({
 
 
     const destination =
-      safeReturnPath(
+      safeReturnPathForRole(
+        djangoSession.user.role,
         returnTo,
       );
 
