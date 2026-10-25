@@ -1,0 +1,165 @@
+from pathlib import Path
+from unittest import TestCase
+
+
+REPO = Path(__file__).resolve().parents[3]
+
+
+class R9SupervisorAssignmentSourceTests(TestCase):
+    def source(self, relative: str) -> str:
+        return (REPO / relative).read_text(encoding="utf-8")
+
+    def test_payment_preallocates_physical_v1_as_available_not_activated(self):
+        source = self.source("apps/api/payments/services.py")
+
+        start = source.index("def _fulfill_physical_installation(")
+        end = source.index("@transaction.atomic", start)
+        block = source[start:end]
+
+        expected = """            VALUES (\n                %s,\n                'available',\n                %s,\n                NULL,\n                NULL,\n                %s,\n                %s,\n                %s,\n                'v1'\n            )"""
+        self.assertIn(expected, block)
+        self.assertNotIn("'active',\n                %s,\n                NULL,\n                NOW()", block)
+
+    def test_supervisor_owns_dispatch_actions_and_sales_is_read_only(self):
+        source = self.source("apps/api/backoffice/action_catalog.py")
+
+        supervisor_start = source.index('"supervisor_installations": [')
+        supervisor_end = source.index('"supervisor_planning": [', supervisor_start)
+        supervisor = source[supervisor_start:supervisor_end]
+
+        for token in (
+            '"assign"',
+            '"reassign"',
+            '"schedule"',
+            '"draw_qc"',
+            '"validate"',
+            '"reject"',
+            'source="active_agents"',
+        ):
+            self.assertIn(token, supervisor)
+
+        self.assertIn('"sales_installations": []', source)
+        self.assertIn('when={"record_kind": ["qc"]}', supervisor)
+
+    def test_global_actions_route_dispatch_only_from_supervisor_resource(self):
+        source = self.source("apps/api/backoffice/global_actions.py")
+
+        self.assertIn(
+            'if resource == "supervisor_installations":',
+            source,
+        )
+        self.assertIn(
+            'if action in {"assign", "reassign", "schedule"}:',
+            source,
+        )
+        self.assertNotIn(
+            'if resource == "sales_installations" and action in '
+            '{"assign", "reassign", "schedule"}:',
+            source,
+        )
+
+    def test_initial_assignment_is_available_to_assigned_atomically(self):
+        source = self.source(
+            "apps/api/backoffice/physical_installation_workflow.py"
+        )
+
+        required = (
+            "FOR UPDATE OF pi, o",
+            "FOR UPDATE OF ag",
+            "FROM public.beacons",
+            "numbering_version = 'v1'",
+            'str(beacon_status) != "available"',
+            "status = 'assigned',",
+            "assigned_agent_id = %s",
+            "AND status = 'available'",
+            "UPDATE public.pending_installations",
+            "status = 'assigned',",
+            "installation.assign.v1",
+        )
+        for token in required:
+            self.assertIn(token, source)
+
+    def test_reassignment_preserves_assigned_beacon_and_syncs_agent(self):
+        source = self.source(
+            "apps/api/backoffice/physical_installation_workflow.py"
+        )
+
+        self.assertIn('str(beacon_status) != "assigned"', source)
+        self.assertIn("AND status = 'assigned'", source)
+        self.assertIn("installation.reassign.v1", source)
+        self.assertIn("UPDATE public.pending_installations", source)
+
+    def test_schedule_requires_assigned_beacon_without_beacon_state_update(self):
+        source = self.source(
+            "apps/api/backoffice/physical_installation_workflow.py"
+        )
+
+        start = source.index("def schedule_physical_installation(")
+        end = source.index("def _load_validation_targets(", start)
+        block = source[start:end]
+
+        self.assertIn('str(beacon_status) != "assigned"', block)
+        self.assertIn("installation.schedule.v1", block)
+        self.assertNotIn("UPDATE public.beacons", block)
+
+    def test_supervisor_resource_contains_dispatch_and_qc_rows(self):
+        source = self.source("apps/api/backoffice/global_resources.py")
+
+        configs = source.index("RESOURCE_CONFIGS = {")
+        start = source.index('"supervisor_installations": {', configs)
+        end = source.index('"supervisor_planning": {', start)
+        block = source[start:end]
+
+        required = (
+            "'dispatch'::text AS record_kind",
+            "FROM public.pending_installations pi",
+            "WHERE pi.status IN (",
+            "'pending'",
+            "'assigned'",
+            "'planned'",
+            "UNION ALL",
+            "'qc'::text AS record_kind",
+            "FROM public.installations i",
+            "validation_status",
+        )
+        for token in required:
+            self.assertIn(token, block)
+
+    def test_available_beacons_provider_is_not_needed_for_canonical_preallocation(self):
+        common = self.source("apps/api/backoffice/action_common.py")
+        catalog = self.source("apps/api/backoffice/action_catalog.py")
+
+        self.assertNotIn("available_beacons", common)
+        self.assertNotIn("available_beacons", catalog)
+
+    def test_r9_p4_terrain_source_remains_outside_p3(self):
+        terrain = self.source(
+            "apps/api/backoffice/physical_installations.py"
+        )
+        self.assertIn(
+            'str(beacon_status) != "active"',
+            terrain,
+        )
+
+    def test_ui_copy_matches_authority_split(self):
+        supervisor = self.source(
+            "apps/web/src/app/supervisor/installations/page.tsx"
+        )
+        sales = self.source(
+            "apps/web/src/app/sales/installations/page.tsx"
+        )
+
+        self.assertIn(
+            "affectation, planification et contrôle QC",
+            supervisor,
+        )
+        self.assertIn(
+            "lecture seule",
+            sales,
+        )
+
+
+if __name__ == "__main__":
+    import unittest
+
+    unittest.main()

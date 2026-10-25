@@ -333,6 +333,46 @@ ACTION_DEFINITIONS: dict[str, list[dict[str, Any]]] = {
     ],
     "supervisor_installations": [
         action(
+            "assign", "Affecter", "row", SUPERVISOR,
+            [
+                field(
+                    "agent_id",
+                    "Agent",
+                    "select",
+                    source="active_agents",
+                    required=True,
+                )
+            ],
+            when={"status": ["pending"]},
+        ),
+        action(
+            "reassign", "Réaffecter", "row", SUPERVISOR,
+            [
+                field(
+                    "agent_id",
+                    "Agent",
+                    "select",
+                    source="active_agents",
+                    required=True,
+                    default_from="assigned_agent_id",
+                )
+            ],
+            when={"status": ["assigned", "planned"]},
+        ),
+        action(
+            "schedule", "Planifier", "row", SUPERVISOR,
+            [
+                field(
+                    "scheduled_at",
+                    "Date/heure",
+                    "datetime-local",
+                    required=True,
+                    default_from="scheduled_at",
+                )
+            ],
+            when={"status": ["assigned", "planned"]},
+        ),
+        action(
             "draw_qc", "Tirer un contrôle QC", "global", SUPERVISOR,
             [field("percent", "Pourcentage", "number", required=True)],
             confirm="Créer les contrôles QC pour cet échantillon ?",
@@ -346,6 +386,7 @@ ACTION_DEFINITIONS: dict[str, list[dict[str, Any]]] = {
             "reject", "Rejeter / reprise", "row", SUPERVISOR,
             [field("note", "Motif", "textarea", required=True)],
             variant="danger",
+            when={"record_kind": ["qc"]},
         ),
     ],
     "supervisor_planning": [
@@ -421,11 +462,7 @@ ACTION_DEFINITIONS: dict[str, list[dict[str, Any]]] = {
         action("mark_dispute", "Marquer en litige", "row", OPS, [field("note", "Motif", "textarea", required=True)], variant="danger"),
         action("resolve_dispute", "Lever le litige", "row", OPS, [], confirm="Lever le litige ?"),
     ],
-    "sales_installations": [
-        action("assign", "Affecter", "row", SALES, [field("agent_id", "Agent", "select", source="active_agents", required=True)], when={"status": ["pending"]}),
-        action("reassign", "Réaffecter", "row", SALES, [field("agent_id", "Agent", "select", source="active_agents", required=True)], when={"status": ["assigned", "planned"]}),
-        action("schedule", "Planifier", "row", SALES, [field("scheduled_at", "Date/heure", "datetime-local", required=True, default_from="scheduled_at")], when={"status": ["assigned", "planned"]}),
-    ],
+    "sales_installations": [],
 }
 
 # CMS actions are generated compactly below.

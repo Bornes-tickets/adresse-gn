@@ -16,7 +16,7 @@ export default function Page() {
   return (
     <ResourcePage
       title="Installations à planifier"
-      subtitle="Demandes physiques en attente, affectations et planification terrain."
+      subtitle="Suivi commercial en lecture seule des demandes d’installation physique."
       resource="sales_installations"
     />
   );

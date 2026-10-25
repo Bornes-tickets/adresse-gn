@@ -1447,10 +1447,10 @@ def _fulfill_physical_installation(
             )
             VALUES (
                 %s,
-                'active',
+                'available',
                 %s,
                 NULL,
-                NOW(),
+                NULL,
                 %s,
                 %s,
                 %s,

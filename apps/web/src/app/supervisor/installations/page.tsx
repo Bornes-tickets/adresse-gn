@@ -16,7 +16,7 @@ export default function Page() {
   return (
     <ResourcePage
       title="Installations / QC"
-      subtitle="Installations terrain, précision GPS et état de validation."
+      subtitle="Pilotage des demandes physiques : affectation, planification et contrôle QC."
       resource="supervisor_installations"
     />
   );

@@ -56,6 +56,7 @@ def _require_physical_purchase_snapshot(
     return requirements
 
 
+
 def _load_pending_for_update(*, pending_installation_id: str):
     with connection.cursor() as cursor:
         cursor.execute(
@@ -64,10 +65,12 @@ def _load_pending_for_update(*, pending_installation_id: str):
                 pi.id,
                 pi.order_id,
                 pi.status,
+                pi.beacon_id,
                 pi.assigned_agent_id,
                 pi.scheduled_at,
                 pi.completed_at,
                 o.status AS order_status,
+                o.beacon_id AS order_beacon_id,
                 o.items
             FROM public.pending_installations pi
             JOIN public.orders o
@@ -100,10 +103,14 @@ def _require_active_agent(*, agent_id: str) -> None:
     with connection.cursor() as cursor:
         cursor.execute(
             """
-            SELECT active
-            FROM public.agents
-            WHERE id = %s
-            LIMIT 1
+            SELECT
+                ag.active,
+                (au.id IS NOT NULL) AS auth_user_exists
+            FROM public.agents ag
+            LEFT JOIN auth.users au
+              ON au.id = ag.id
+            WHERE ag.id = %s
+            FOR UPDATE OF ag
             """,
             [agent_id],
         )
@@ -115,6 +122,62 @@ def _require_active_agent(*, agent_id: str) -> None:
     if row[0] is not True:
         raise PhysicalWorkflowStateError("Agent inactif.")
 
+    if row[1] is not True:
+        raise PhysicalWorkflowStateError(
+            "Agent sans identite auth.users valide."
+        )
+
+
+def _canonical_beacon_id(
+    *,
+    pending_beacon_id,
+    order_beacon_id,
+) -> str:
+    if pending_beacon_id is None or order_beacon_id is None:
+        raise PhysicalWorkflowStateError(
+            "La pre-allocation V1 physique est absente."
+        )
+
+    if str(pending_beacon_id) != str(order_beacon_id):
+        raise PhysicalWorkflowStateError(
+            "Les liens de balise pre-allouee sont incoherents."
+        )
+
+    return str(pending_beacon_id)
+
+
+def _load_v1_preallocated_beacon_for_update(
+    *,
+    beacon_id: str,
+):
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+                id,
+                public_number,
+                status,
+                numbering_version,
+                assigned_agent_id
+            FROM public.beacons
+            WHERE id = %s
+            FOR UPDATE
+            """,
+            [beacon_id],
+        )
+        row = cursor.fetchone()
+
+    if row is None:
+        raise PhysicalWorkflowNotFoundError(
+            "Balise pre-allouee introuvable."
+        )
+
+    if str(row[3]) != "v1":
+        raise PhysicalWorkflowStateError(
+            "Seule une balise V1 peut etre affectee."
+        )
+
+    return row
 
 def _ensure_physical_paid_order(
     *,
@@ -132,12 +195,14 @@ def _ensure_physical_paid_order(
         )
 
 
+
 def _insert_audit(
     *,
     actor_id: str,
     action: str,
     entity_id: str,
     after: dict[str, Any],
+    before: dict[str, Any] | None = None,
 ) -> None:
     with connection.cursor() as cursor:
         cursor.execute(
@@ -147,6 +212,7 @@ def _insert_audit(
                 action,
                 entity,
                 entity_id,
+                before,
                 after
             )
             VALUES (
@@ -154,6 +220,7 @@ def _insert_audit(
                 %s,
                 'pending_installations',
                 %s,
+                %s::jsonb,
                 %s::jsonb
             )
             """,
@@ -161,6 +228,11 @@ def _insert_audit(
                 actor_id,
                 action,
                 entity_id,
+                (
+                    __import__("json").dumps(before)
+                    if before is not None
+                    else None
+                ),
                 __import__("json").dumps(after),
             ],
         )
@@ -186,10 +258,12 @@ def assign_physical_installation(
         pending_id,
         order_id,
         current_status,
+        pending_beacon_id,
         assigned_agent_id,
         scheduled_at,
         completed_at,
         order_status,
+        order_beacon_id,
         fulfillment_kind,
     ) = row
 
@@ -197,24 +271,8 @@ def assign_physical_installation(
         order_status=str(order_status),
         fulfillment_kind=str(fulfillment_kind),
     )
-    _require_active_agent(agent_id=agent_id)
 
-    if str(current_status) == "assigned":
-        if str(assigned_agent_id) == str(agent_id):
-            return {
-                "ok": True,
-                "status": "assigned",
-                "idempotent": True,
-                "pending_installation_id": str(pending_id),
-                "order_id": str(order_id),
-                "agent_id": str(agent_id),
-            }
-
-        raise PhysicalWorkflowStateError(
-            "Cette installation est deja affectee a un autre agent."
-        )
-
-    if str(current_status) != "pending":
+    if str(current_status) not in {"pending", "assigned"}:
         raise PhysicalWorkflowStateError(
             "Seule une installation en attente peut etre affectee."
         )
@@ -224,7 +282,80 @@ def assign_physical_installation(
             "Etat incoherent: dates operationnelles deja renseignees."
         )
 
+    beacon_id = _canonical_beacon_id(
+        pending_beacon_id=pending_beacon_id,
+        order_beacon_id=order_beacon_id,
+    )
+
+    _require_active_agent(agent_id=agent_id)
+
+    beacon_row = _load_v1_preallocated_beacon_for_update(
+        beacon_id=beacon_id
+    )
+    (
+        _,
+        public_number,
+        beacon_status,
+        _,
+        beacon_agent_id,
+    ) = beacon_row
+
+    if str(current_status) == "assigned":
+        if (
+            str(beacon_status) == "assigned"
+            and str(assigned_agent_id) == str(agent_id)
+            and str(beacon_agent_id) == str(agent_id)
+        ):
+            return {
+                "ok": True,
+                "status": "assigned",
+                "idempotent": True,
+                "pending_installation_id": str(pending_id),
+                "order_id": str(order_id),
+                "beacon_id": beacon_id,
+                "public_number": str(public_number),
+                "agent_id": str(agent_id),
+            }
+
+        raise PhysicalWorkflowStateError(
+            "Cette installation est deja affectee ou son lien agent/balise "
+            "est incoherent."
+        )
+
+    if assigned_agent_id is not None:
+        raise PhysicalWorkflowStateError(
+            "Etat incoherent: la demande pending a deja un agent."
+        )
+
+    if str(beacon_status) != "available":
+        raise PhysicalWorkflowStateError(
+            "La balise V1 pre-allouee doit etre disponible avant affectation."
+        )
+
+    if beacon_agent_id is not None:
+        raise PhysicalWorkflowStateError(
+            "La balise V1 pre-allouee est deja affectee a un agent."
+        )
+
     with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            UPDATE public.beacons
+            SET
+                status = 'assigned',
+                assigned_agent_id = %s
+            WHERE id = %s
+              AND numbering_version = 'v1'
+              AND status = 'available'
+              AND assigned_agent_id IS NULL
+            """,
+            [agent_id, beacon_id],
+        )
+        if cursor.rowcount != 1:
+            raise PhysicalWorkflowStateError(
+                "La reservation de la balise a ete modifiee concurremment."
+            )
+
         cursor.execute(
             """
             UPDATE public.pending_installations
@@ -233,9 +364,13 @@ def assign_physical_installation(
                 status = 'assigned',
                 updated_at = NOW()
             WHERE id = %s
+              AND beacon_id = %s
               AND status = 'pending'
+              AND assigned_agent_id IS NULL
+              AND scheduled_at IS NULL
+              AND completed_at IS NULL
             """,
-            [agent_id, pending_id],
+            [agent_id, pending_id, beacon_id],
         )
         if cursor.rowcount != 1:
             raise PhysicalWorkflowStateError(
@@ -246,10 +381,23 @@ def assign_physical_installation(
         actor_id=actor_id,
         action="installation.assign.v1",
         entity_id=str(pending_id),
+        before={
+            "order_id": str(order_id),
+            "beacon_id": beacon_id,
+            "public_number": str(public_number),
+            "request_status": "pending",
+            "request_agent_id": None,
+            "beacon_status": "available",
+            "beacon_agent_id": None,
+        },
         after={
             "order_id": str(order_id),
-            "agent_id": str(agent_id),
-            "status": "assigned",
+            "beacon_id": beacon_id,
+            "public_number": str(public_number),
+            "request_status": "assigned",
+            "request_agent_id": str(agent_id),
+            "beacon_status": "assigned",
+            "beacon_agent_id": str(agent_id),
         },
     )
 
@@ -259,9 +407,10 @@ def assign_physical_installation(
         "idempotent": False,
         "pending_installation_id": str(pending_id),
         "order_id": str(order_id),
+        "beacon_id": beacon_id,
+        "public_number": str(public_number),
         "agent_id": str(agent_id),
     }
-
 
 
 @transaction.atomic
@@ -284,20 +433,18 @@ def reassign_physical_installation(
         pending_id,
         order_id,
         current_status,
+        pending_beacon_id,
         assigned_agent_id,
         scheduled_at,
         completed_at,
         order_status,
+        order_beacon_id,
         fulfillment_kind,
     ) = row
 
     _ensure_physical_paid_order(
         order_status=str(order_status),
         fulfillment_kind=str(fulfillment_kind),
-    )
-
-    _require_active_agent(
-        agent_id=agent_id
     )
 
     if str(current_status) not in {
@@ -338,6 +485,39 @@ def reassign_physical_installation(
             "doit avoir une date."
         )
 
+    beacon_id = _canonical_beacon_id(
+        pending_beacon_id=pending_beacon_id,
+        order_beacon_id=order_beacon_id,
+    )
+
+    _require_active_agent(agent_id=agent_id)
+
+    beacon_row = _load_v1_preallocated_beacon_for_update(
+        beacon_id=beacon_id
+    )
+    (
+        _,
+        public_number,
+        beacon_status,
+        _,
+        beacon_agent_id,
+    ) = beacon_row
+
+    if str(beacon_status) != "assigned":
+        raise PhysicalWorkflowStateError(
+            "Etat incoherent: la balise doit etre affectee avant reaffectation."
+        )
+
+    if beacon_agent_id is None:
+        raise PhysicalWorkflowStateError(
+            "Etat incoherent: la balise n a aucun agent affecte."
+        )
+
+    if str(beacon_agent_id) != str(assigned_agent_id):
+        raise PhysicalWorkflowStateError(
+            "Etat incoherent: les agents demande/balise divergent."
+        )
+
     if str(assigned_agent_id) == str(agent_id):
         return {
             "ok": True,
@@ -345,6 +525,8 @@ def reassign_physical_installation(
             "idempotent": True,
             "pending_installation_id": str(pending_id),
             "order_id": str(order_id),
+            "beacon_id": beacon_id,
+            "public_number": str(public_number),
             "previous_agent_id": str(assigned_agent_id),
             "agent_id": str(agent_id),
             "scheduled_at": (
@@ -359,11 +541,33 @@ def reassign_physical_installation(
     with connection.cursor() as cursor:
         cursor.execute(
             """
+            UPDATE public.beacons
+            SET assigned_agent_id = %s
+            WHERE id = %s
+              AND numbering_version = 'v1'
+              AND status = 'assigned'
+              AND assigned_agent_id = %s
+            """,
+            [
+                agent_id,
+                beacon_id,
+                previous_agent_id,
+            ],
+        )
+
+        if cursor.rowcount != 1:
+            raise PhysicalWorkflowStateError(
+                "La reaffectation de la balise a ete modifiee concurremment."
+            )
+
+        cursor.execute(
+            """
             UPDATE public.pending_installations
             SET
                 assigned_agent_id = %s,
                 updated_at = NOW()
             WHERE id = %s
+              AND beacon_id = %s
               AND status IN ('assigned', 'planned')
               AND assigned_agent_id = %s
               AND completed_at IS NULL
@@ -371,6 +575,7 @@ def reassign_physical_installation(
             [
                 agent_id,
                 pending_id,
+                beacon_id,
                 previous_agent_id,
             ],
         )
@@ -384,11 +589,28 @@ def reassign_physical_installation(
         actor_id=actor_id,
         action="installation.reassign.v1",
         entity_id=str(pending_id),
+        before={
+            "order_id": str(order_id),
+            "beacon_id": beacon_id,
+            "public_number": str(public_number),
+            "request_status": str(current_status),
+            "request_agent_id": previous_agent_id,
+            "beacon_status": str(beacon_status),
+            "beacon_agent_id": previous_agent_id,
+            "scheduled_at": (
+                scheduled_at.isoformat()
+                if scheduled_at is not None
+                else None
+            ),
+        },
         after={
             "order_id": str(order_id),
-            "previous_agent_id": previous_agent_id,
-            "agent_id": str(agent_id),
-            "status": str(current_status),
+            "beacon_id": beacon_id,
+            "public_number": str(public_number),
+            "request_status": str(current_status),
+            "request_agent_id": str(agent_id),
+            "beacon_status": str(beacon_status),
+            "beacon_agent_id": str(agent_id),
             "scheduled_at": (
                 scheduled_at.isoformat()
                 if scheduled_at is not None
@@ -403,6 +625,8 @@ def reassign_physical_installation(
         "idempotent": False,
         "pending_installation_id": str(pending_id),
         "order_id": str(order_id),
+        "beacon_id": beacon_id,
+        "public_number": str(public_number),
         "previous_agent_id": previous_agent_id,
         "agent_id": str(agent_id),
         "scheduled_at": (
@@ -438,10 +662,12 @@ def schedule_physical_installation(
         pending_id,
         order_id,
         current_status,
+        pending_beacon_id,
         assigned_agent_id,
         current_scheduled_at,
         completed_at,
         order_status,
+        order_beacon_id,
         fulfillment_kind,
     ) = row
 
@@ -449,6 +675,11 @@ def schedule_physical_installation(
         order_status=str(order_status),
         fulfillment_kind=str(fulfillment_kind),
     )
+
+    if str(current_status) not in {"assigned", "planned"}:
+        raise PhysicalWorkflowStateError(
+            "L'installation doit etre affectee avant sa planification."
+        )
 
     if assigned_agent_id is None:
         raise PhysicalWorkflowStateError(
@@ -460,9 +691,39 @@ def schedule_physical_installation(
             "Une installation terminee ne peut plus etre planifiee."
         )
 
-    if str(current_status) not in {"assigned", "planned"}:
+    beacon_id = _canonical_beacon_id(
+        pending_beacon_id=pending_beacon_id,
+        order_beacon_id=order_beacon_id,
+    )
+
+    _require_active_agent(
+        agent_id=str(assigned_agent_id)
+    )
+
+    beacon_row = _load_v1_preallocated_beacon_for_update(
+        beacon_id=beacon_id
+    )
+    (
+        _,
+        public_number,
+        beacon_status,
+        _,
+        beacon_agent_id,
+    ) = beacon_row
+
+    if str(beacon_status) != "assigned":
         raise PhysicalWorkflowStateError(
-            "L'installation doit etre affectee avant sa planification."
+            "La balise V1 doit etre affectee avant la planification."
+        )
+
+    if beacon_agent_id is None:
+        raise PhysicalWorkflowStateError(
+            "La balise V1 doit etre affectee avant la planification."
+        )
+
+    if str(beacon_agent_id) != str(assigned_agent_id):
+        raise PhysicalWorkflowStateError(
+            "Etat incoherent: les agents demande/balise divergent."
         )
 
     if (
@@ -476,6 +737,8 @@ def schedule_physical_installation(
             "idempotent": True,
             "pending_installation_id": str(pending_id),
             "order_id": str(order_id),
+            "beacon_id": beacon_id,
+            "public_number": str(public_number),
             "agent_id": str(assigned_agent_id),
             "scheduled_at": current_scheduled_at.isoformat(),
         }
@@ -489,11 +752,17 @@ def schedule_physical_installation(
                 status = 'planned',
                 updated_at = NOW()
             WHERE id = %s
+              AND beacon_id = %s
               AND status IN ('assigned', 'planned')
-              AND assigned_agent_id IS NOT NULL
+              AND assigned_agent_id = %s
               AND completed_at IS NULL
             """,
-            [scheduled_at, pending_id],
+            [
+                scheduled_at,
+                pending_id,
+                beacon_id,
+                assigned_agent_id,
+            ],
         )
         if cursor.rowcount != 1:
             raise PhysicalWorkflowStateError(
@@ -504,10 +773,26 @@ def schedule_physical_installation(
         actor_id=actor_id,
         action="installation.schedule.v1",
         entity_id=str(pending_id),
+        before={
+            "order_id": str(order_id),
+            "beacon_id": beacon_id,
+            "public_number": str(public_number),
+            "status": str(current_status),
+            "agent_id": str(assigned_agent_id),
+            "beacon_status": str(beacon_status),
+            "scheduled_at": (
+                current_scheduled_at.isoformat()
+                if current_scheduled_at is not None
+                else None
+            ),
+        },
         after={
             "order_id": str(order_id),
-            "agent_id": str(assigned_agent_id),
+            "beacon_id": beacon_id,
+            "public_number": str(public_number),
             "status": "planned",
+            "agent_id": str(assigned_agent_id),
+            "beacon_status": str(beacon_status),
             "scheduled_at": scheduled_at.isoformat(),
         },
     )
@@ -518,10 +803,11 @@ def schedule_physical_installation(
         "idempotent": False,
         "pending_installation_id": str(pending_id),
         "order_id": str(order_id),
+        "beacon_id": beacon_id,
+        "public_number": str(public_number),
         "agent_id": str(assigned_agent_id),
         "scheduled_at": scheduled_at.isoformat(),
     }
-
 
 def _load_validation_targets(
     *,

@@ -620,11 +620,18 @@ RESOURCE_CONFIGS = {
     },
     "supervisor_installations": {
         "order_by": (
-            "installed_at DESC NULLS LAST"
+            "activity_at DESC NULLS LAST, "
+            "id ASC"
         ),
         "sql": """
             SELECT
-                i.id::text AS id,
+                pi.id::text AS id,
+                'dispatch'::text AS record_kind,
+                pi.status,
+                pi.beacon_id::text AS beacon_id,
+                pi.assigned_agent_id::text
+                    AS assigned_agent_id,
+                o.order_ref,
                 b.public_number,
                 b.numbering_version,
                 b.status AS beacon_status,
@@ -632,6 +639,52 @@ RESOURCE_CONFIGS = {
                     AS agent_badge,
                 p.full_name
                     AS agent_name,
+                pi.scheduled_at,
+                pi.completed_at,
+                NULL AS gps_lat,
+                NULL AS gps_lng,
+                NULL AS accuracy_m,
+                NULL::text AS photo_url,
+                NULL::timestamptz AS installed_at,
+                NULL::timestamptz AS validated_at,
+                NULL::text AS validation_status,
+                NULL::timestamptz AS uninstalled_at,
+                pi.note,
+                pi.created_at AS activity_at
+            FROM public.pending_installations pi
+            LEFT JOIN public.orders o
+                ON o.id = pi.order_id
+            LEFT JOIN public.beacons b
+                ON b.id = pi.beacon_id
+            LEFT JOIN public.agents ag
+                ON ag.id = pi.assigned_agent_id
+            LEFT JOIN public.profiles p
+                ON p.id = pi.assigned_agent_id
+            WHERE pi.status IN (
+                'pending',
+                'assigned',
+                'planned'
+            )
+
+            UNION ALL
+
+            SELECT
+                i.id::text AS id,
+                'qc'::text AS record_kind,
+                NULL::text AS status,
+                i.beacon_id::text AS beacon_id,
+                i.agent_id::text
+                    AS assigned_agent_id,
+                o.order_ref,
+                b.public_number,
+                b.numbering_version,
+                b.status AS beacon_status,
+                ag.badge_number
+                    AS agent_badge,
+                p.full_name
+                    AS agent_name,
+                NULL AS scheduled_at,
+                NULL AS completed_at,
                 i.gps_lat,
                 i.gps_lng,
                 i.accuracy_m,
@@ -645,7 +698,9 @@ RESOURCE_CONFIGS = {
                         THEN 'validated'
                     ELSE 'pending'
                 END AS validation_status,
-                i.uninstalled_at
+                i.uninstalled_at,
+                NULL::text AS note,
+                i.installed_at AS activity_at
             FROM public.installations i
             LEFT JOIN public.beacons b
                 ON b.id = i.beacon_id
@@ -653,6 +708,10 @@ RESOURCE_CONFIGS = {
                 ON ag.id = i.agent_id
             LEFT JOIN public.profiles p
                 ON p.id = i.agent_id
+            LEFT JOIN public.order_sites os
+                ON os.id = i.order_site_id
+            LEFT JOIN public.orders o
+                ON o.id = os.order_id
         """,
     },
     "supervisor_planning": {

@@ -206,6 +206,8 @@ def execute_action(
             return doc_review(actor, row, data)
 
     if resource == "supervisor_installations":
+        if action in {"assign", "reassign", "schedule"}:
+            return _physical_action(actor, row, action, data)
         if action == "draw_qc":
             return qc_draw(actor, data)
         if action == "validate":
@@ -266,8 +268,5 @@ def execute_action(
             return cms_save(actor, resource, row, data)
         if action == "delete":
             return cms_delete(actor, resource, row)
-
-    if resource == "sales_installations" and action in {"assign", "reassign", "schedule"}:
-        return _physical_action(actor, row, action, data)
 
     raise ActionError("Action non implémentée.", status="not_implemented", http_status=501)
