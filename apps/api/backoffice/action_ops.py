@@ -4,7 +4,7 @@ import json
 from decimal import Decimal
 from typing import Any
 
-from django.db import connection
+from django.db import connection, transaction
 
 from .action_common import (
     ActionError,
@@ -42,15 +42,6 @@ CATEGORY_LABELS = {
     "custom": "Balise sur mesure",
 }
 
-BEACON_TRANSITIONS = {
-    "generated": {"assigned", "cancelled"},
-    "assigned": {"generated", "installed", "suspended", "cancelled"},
-    "installed": {"active", "suspended", "cancelled"},
-    "active": {"suspended", "replaced", "cancelled"},
-    "suspended": {"active", "replaced", "cancelled"},
-    "replaced": {"cancelled"},
-    "cancelled": set(),
-}
 LOT_EVENT_FOR_STATUS = {
     "sent": "sent",
     "in_production": "in_production",
@@ -58,110 +49,6 @@ LOT_EVENT_FOR_STATUS = {
     "received": "received",
     "distributed": "distributed",
 }
-
-
-def beacon_set_status(actor: dict[str, Any], row_id: str, data: dict[str, Any]) -> dict[str, Any]:
-    target = required_text(data, "status", "Le statut")
-    note = optional_text(data, "note", max_length=1000)
-    with connection.cursor() as cursor:
-        cursor.execute(
-            "SELECT status, numbering_version, public_number FROM public.beacons WHERE id = %s FOR UPDATE",
-            [row_id],
-        )
-        row = cursor.fetchone()
-        if not row:
-            raise ActionError("Balise introuvable.", status="not_found", http_status=404)
-        current, numbering_version, public_number = row
-        if target == current:
-            return {"ok": True, "status": current, "idempotent": True}
-        if target not in BEACON_TRANSITIONS.get(current, set()):
-            raise ActionError(f"Transition interdite : {current} → {target}.")
-        cursor.execute(
-            """
-            UPDATE public.beacons
-            SET status = %s,
-                activated_at = CASE
-                    WHEN %s = 'active' AND activated_at IS NULL THEN NOW()
-                    ELSE activated_at
-                END
-            WHERE id = %s
-            """,
-            [target, target, row_id],
-        )
-        audit(
-            cursor,
-            actor_id=actor["user_id"],
-            action="beacon.status.update",
-            entity="beacons",
-            entity_id=row_id,
-            before={"status": current},
-            after={
-                "status": target,
-                "note": note,
-                "public_number": public_number,
-                "numbering_version": numbering_version,
-            },
-        )
-    return {"ok": True, "status": target, "beacon_id": row_id}
-
-
-def lot_assign(actor: dict[str, Any], row_id: str, data: dict[str, Any]) -> dict[str, Any]:
-    agent_id = required_text(data, "agent_id", "L’agent")
-    note = optional_text(data, "note")
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT active FROM public.agents WHERE id = %s", [agent_id])
-        agent = cursor.fetchone()
-        if not agent or agent[0] is not True:
-            raise ActionError("Agent actif introuvable.")
-        cursor.execute("SELECT status, code FROM public.lots WHERE id = %s FOR UPDATE", [row_id])
-        lot = cursor.fetchone()
-        if not lot:
-            raise ActionError("Lot introuvable.", status="not_found", http_status=404)
-        cursor.execute(
-            """
-            INSERT INTO public.lot_assignments (lot_id, agent_id)
-            VALUES (%s, %s)
-            ON CONFLICT (lot_id, agent_id) DO NOTHING
-            """,
-            [row_id, agent_id],
-        )
-        cursor.execute(
-            """
-            UPDATE public.beacons
-            SET assigned_agent_id = %s, status = 'assigned'
-            WHERE lot_id = %s AND status = 'generated'
-            """,
-            [agent_id, row_id],
-        )
-        assigned = cursor.rowcount
-        cursor.execute(
-            """
-            UPDATE public.lots
-            SET status = CASE
-                WHEN status IN ('received', 'generated', 'in_use') THEN 'distributed'
-                ELSE status
-            END
-            WHERE id = %s
-            """,
-            [row_id],
-        )
-        cursor.execute(
-            """
-            INSERT INTO public.lot_events (lot_id, event_type, actor_id, notes)
-            VALUES (%s, 'distributed', %s, %s)
-            """,
-            [row_id, actor["user_id"], note or f"Lot affecté à l’agent {agent_id}"],
-        )
-        audit(
-            cursor,
-            actor_id=actor["user_id"],
-            action="lot.assign",
-            entity="lots",
-            entity_id=row_id,
-            before={"status": lot[0]},
-            after={"agent_id": agent_id, "beacons_assigned": assigned, "note": note},
-        )
-    return {"ok": True, "status": "assigned", "lot_id": row_id, "beacons_assigned": assigned}
 
 
 def lot_set_status(actor: dict[str, Any], row_id: str, data: dict[str, Any]) -> dict[str, Any]:
@@ -356,40 +243,301 @@ def update_po(actor: dict[str, Any], lot_id: str, data: dict[str, Any]) -> dict[
     return {"ok": True, "status": "updated", "po_id": str(po_id)}
 
 
-def generate_dn(actor: dict[str, Any], lot_id: str, data: dict[str, Any]) -> dict[str, Any]:
-    quantity_received = int_value(data.get("quantity_received"))
-    quantity_shipped = int_value(data.get("quantity_shipped"), 0) if data.get("quantity_shipped") not in {None, ""} else None
-    if quantity_received < 0 or (quantity_shipped is not None and quantity_shipped < 0):
-        raise ActionError("Les quantités doivent être positives.")
+@transaction.atomic
+def generate_dn(
+    actor: dict[str, Any],
+    lot_id: str,
+    data: dict[str, Any],
+) -> dict[str, Any]:
+    quantity_received = int_value(
+        data.get("quantity_received")
+    )
+    quantity_shipped = (
+        int_value(
+            data.get("quantity_shipped"),
+            0,
+        )
+        if data.get("quantity_shipped") not in {None, ""}
+        else None
+    )
+    qc_passed = bool_value(
+        data.get("qc_passed"),
+        False,
+    )
+
+    if quantity_received <= 0:
+        raise ActionError(
+            "La quantité reçue doit être strictement positive."
+        )
+
+    if (
+        quantity_shipped is not None
+        and quantity_shipped < 0
+    ):
+        raise ActionError(
+            "La quantité expédiée doit être positive."
+        )
+
     with connection.cursor() as cursor:
-        cursor.execute("SELECT id, code, quantity, supplier FROM public.lots WHERE id = %s FOR UPDATE", [lot_id])
-        lot = cursor.fetchone()
-        if not lot:
-            raise ActionError("Lot introuvable.", status="not_found", http_status=404)
-        if quantity_received > int(lot[2]):
-            raise ActionError("La quantité reçue dépasse la quantité commandée.")
-        cursor.execute("SELECT id, supplier_snapshot FROM public.purchase_orders WHERE lot_id = %s ORDER BY created_at DESC LIMIT 1", [lot_id])
-        po = cursor.fetchone()
-        dn_number = next_db_number(cursor, "next_dn_number")
-        supplier_snapshot = po[1] if po and po[1] is not None else {"name": lot[3] or "Fournisseur inconnu"}
-        if isinstance(supplier_snapshot, str):
-            snapshot_json = supplier_snapshot
-        else:
-            snapshot_json = json.dumps(supplier_snapshot)
         cursor.execute(
-            """
-            INSERT INTO public.delivery_notes
-                (dn_number, lot_id, po_id, supplier_snapshot, shipped_at,
-                 carrier, tracking_number, quantity_ordered, quantity_shipped,
-                 quantity_received, qc_passed, defects, receiver_name, notes, created_by)
-            VALUES (%s, %s, %s, %s::jsonb, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            '''
+            SELECT
+                id,
+                code,
+                quantity,
+                supplier,
+                status
+            FROM public.lots
+            WHERE id = %s
+            FOR UPDATE
+            ''',
+            [lot_id],
+        )
+        lot = cursor.fetchone()
+
+        if not lot:
+            raise ActionError(
+                "Lot introuvable.",
+                status="not_found",
+                http_status=404,
+            )
+
+        lot_quantity = int(lot[2] or 0)
+
+        if quantity_received > lot_quantity:
+            raise ActionError(
+                "La quantité reçue dépasse la quantité commandée."
+            )
+
+        cursor.execute(
+            '''
+            SELECT
+                id,
+                supplier_snapshot,
+                status
+            FROM public.purchase_orders
+            WHERE lot_id = %s
+              AND status <> 'cancelled'
+            ORDER BY created_at DESC
+            LIMIT 1
+            FOR UPDATE
+            ''',
+            [lot_id],
+        )
+        po = cursor.fetchone()
+
+        if not po:
+            raise ActionError(
+                (
+                    "Un bon de commande fournisseur actif "
+                    "est obligatoire avant toute réception."
+                ),
+                status="missing_purchase_order",
+                http_status=409,
+            )
+
+        cursor.execute(
+            '''
+            SELECT COALESCE(
+                SUM(quantity_received),
+                0
+            )::integer
+            FROM public.delivery_notes
+            WHERE lot_id = %s
+              AND qc_passed IS TRUE
+            ''',
+            [lot_id],
+        )
+        accepted_before = int(
+            cursor.fetchone()[0] or 0
+        )
+
+        accepted_after = accepted_before
+        selected_ids: list[str] = []
+
+        if qc_passed:
+            accepted_after = (
+                accepted_before + quantity_received
+            )
+
+            if accepted_after > lot_quantity:
+                raise ActionError(
+                    (
+                        "Le cumul des réceptions conformes "
+                        "dépasse la quantité commandée."
+                    ),
+                    status="receipt_overage",
+                    http_status=409,
+                )
+
+            cursor.execute(
+                '''
+                SELECT id::text
+                FROM public.beacons
+                WHERE lot_id = %s
+                  AND numbering_version = 'v1'
+                  AND category <> 'digital_only'
+                  AND status = 'generated'
+                ORDER BY
+                    national_id ASC NULLS LAST,
+                    created_at ASC,
+                    id ASC
+                FOR UPDATE
+                LIMIT %s
+                ''',
+                [lot_id, quantity_received],
+            )
+
+            selected_ids = [
+                str(row[0])
+                for row in cursor.fetchall()
+            ]
+
+            if len(selected_ids) != quantity_received:
+                raise ActionError(
+                    (
+                        "Stock V1 généré insuffisant pour "
+                        "libérer cette réception. "
+                        f"Demandé : {quantity_received}, "
+                        f"disponible : {len(selected_ids)}."
+                    ),
+                    status="stock_mismatch",
+                    http_status=409,
+                )
+
+        dn_number = next_db_number(
+            cursor,
+            "next_dn_number",
+        )
+
+        supplier_snapshot = (
+            po[1]
+            if po[1] is not None
+            else {
+                "name":
+                    lot[3]
+                    or "Fournisseur inconnu"
+            }
+        )
+
+        snapshot_json = (
+            supplier_snapshot
+            if isinstance(supplier_snapshot, str)
+            else json.dumps(supplier_snapshot)
+        )
+
+        cursor.execute(
+            '''
+            INSERT INTO public.delivery_notes (
+                dn_number,
+                lot_id,
+                po_id,
+                supplier_snapshot,
+                shipped_at,
+                carrier,
+                tracking_number,
+                quantity_ordered,
+                quantity_shipped,
+                quantity_received,
+                qc_passed,
+                defects,
+                receiver_name,
+                notes,
+                created_by
+            )
+            VALUES (
+                %s, %s, %s, %s::jsonb, %s,
+                %s, %s, %s, %s, %s,
+                %s, %s, %s, %s, %s
+            )
             RETURNING id
-            """,
-            [dn_number, lot_id, po[0] if po else None, snapshot_json, optional_text(data, "shipped_at"), optional_text(data, "carrier"), optional_text(data, "tracking_number"), int(lot[2]), quantity_shipped, quantity_received, bool_value(data.get("qc_passed"), False), optional_text(data, "defects"), optional_text(data, "receiver_name"), optional_text(data, "notes"), actor["user_id"]],
+            ''',
+            [
+                dn_number,
+                lot_id,
+                po[0],
+                snapshot_json,
+                optional_text(data, "shipped_at"),
+                optional_text(data, "carrier"),
+                optional_text(data, "tracking_number"),
+                lot_quantity,
+                quantity_shipped,
+                quantity_received,
+                qc_passed,
+                optional_text(data, "defects"),
+                optional_text(data, "receiver_name"),
+                optional_text(data, "notes"),
+                actor["user_id"],
+            ],
         )
         dn_id = cursor.fetchone()[0]
-        audit(cursor, actor_id=actor["user_id"], action="delivery_note.create", entity="delivery_notes", entity_id=str(dn_id), after={"dn_number": dn_number, "lot_id": lot_id, "quantity_received": quantity_received})
-    return {"ok": True, "status": "created", "dn_id": str(dn_id), "dn_number": dn_number}
+
+        available_count = 0
+        resulting_lot_status = str(lot[4])
+
+        if qc_passed:
+            cursor.execute(
+                '''
+                UPDATE public.beacons
+                SET status = 'available'
+                WHERE id = ANY(%s::uuid[])
+                  AND status = 'generated'
+                ''',
+                [selected_ids],
+            )
+
+            available_count = len(selected_ids)
+
+            if accepted_after == lot_quantity:
+                cursor.execute(
+                    '''
+                    UPDATE public.lots
+                    SET
+                        status = 'received',
+                        qc_passed = TRUE,
+                        received_at = COALESCE(
+                            received_at,
+                            NOW()
+                        )
+                    WHERE id = %s
+                    ''',
+                    [lot_id],
+                )
+                resulting_lot_status = "received"
+
+        audit(
+            cursor,
+            actor_id=actor["user_id"],
+            action="delivery_note.create",
+            entity="delivery_notes",
+            entity_id=str(dn_id),
+            after={
+                "dn_number": dn_number,
+                "lot_id": lot_id,
+                "quantity_received": quantity_received,
+                "qc_passed": qc_passed,
+                "accepted_before": accepted_before,
+                "accepted_after": accepted_after,
+                "beacons_available": available_count,
+                "lot_status": resulting_lot_status,
+            },
+        )
+
+    return {
+        "ok": True,
+        "status": "created",
+        "dn_id": str(dn_id),
+        "dn_number": dn_number,
+        "qc_passed": qc_passed,
+        "quantity_received": quantity_received,
+        "quantity_available": available_count,
+        "accepted_total": accepted_after,
+        "quantity_remaining": max(
+            0,
+            lot_quantity - accepted_after,
+        ),
+        "lot_status": resulting_lot_status,
+    }
 
 
 def create_invoice(actor: dict[str, Any], lot_id: str, data: dict[str, Any]) -> dict[str, Any]:

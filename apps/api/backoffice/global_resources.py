@@ -820,9 +820,17 @@ RESOURCE_CONFIGS = {
                 )::integer
                     AS quantity_generated,
                 COUNT(b.id) FILTER (
+                    WHERE b.status = 'available'
+                )::integer
+                    AS quantity_available,
+                COUNT(b.id) FILTER (
                     WHERE b.status = 'assigned'
                 )::integer
                     AS quantity_assigned,
+                COUNT(b.id) FILTER (
+                    WHERE b.status = 'installed'
+                )::integer
+                    AS quantity_installed,
                 COUNT(b.id) FILTER (
                     WHERE b.status = 'active'
                 )::integer
@@ -842,7 +850,11 @@ RESOURCE_CONFIGS = {
                             (
                                 COUNT(b.id) FILTER (
                                     WHERE b.status
-                                    IN ('active', 'assigned')
+                                    IN (
+                                        'assigned',
+                                        'installed',
+                                        'active'
+                                    )
                                 )
                             )::numeric
                             / l.quantity::numeric
@@ -898,20 +910,63 @@ RESOURCE_CONFIGS = {
                 dn.received_at
                     AS delivery_received_at,
                 dn.qc_passed,
+                receipt.delivery_count,
+                receipt.quantity_received_total,
+                receipt.quantity_accepted_total,
+                GREATEST(
+                    l.quantity
+                    - receipt.quantity_accepted_total,
+                    0
+                )::integer
+                    AS quantity_remaining,
                 pi.invoice_number,
                 pi.payment_status,
                 pi.amount_ttc
                     AS invoice_amount_ttc,
                 pi.amount_paid
             FROM public.lots l
-            LEFT JOIN public.purchase_orders po
-                ON po.lot_id = l.id
+            LEFT JOIN LATERAL (
+                SELECT current_po.*
+                FROM public.purchase_orders current_po
+                WHERE current_po.lot_id = l.id
+                ORDER BY current_po.created_at DESC
+                LIMIT 1
+            ) po ON TRUE
             LEFT JOIN public.suppliers s
                 ON s.id = po.supplier_id
-            LEFT JOIN public.delivery_notes dn
-                ON dn.po_id = po.id
-            LEFT JOIN public.purchase_invoices pi
-                ON pi.po_id = po.id
+            LEFT JOIN LATERAL (
+                SELECT current_dn.*
+                FROM public.delivery_notes current_dn
+                WHERE current_dn.lot_id = l.id
+                ORDER BY current_dn.created_at DESC
+                LIMIT 1
+            ) dn ON TRUE
+            LEFT JOIN LATERAL (
+                SELECT
+                    COUNT(*)::integer
+                        AS delivery_count,
+                    COALESCE(
+                        SUM(r.quantity_received),
+                        0
+                    )::integer
+                        AS quantity_received_total,
+                    COALESCE(
+                        SUM(r.quantity_received) FILTER (
+                            WHERE r.qc_passed IS TRUE
+                        ),
+                        0
+                    )::integer
+                        AS quantity_accepted_total
+                FROM public.delivery_notes r
+                WHERE r.lot_id = l.id
+            ) receipt ON TRUE
+            LEFT JOIN LATERAL (
+                SELECT current_pi.*
+                FROM public.purchase_invoices current_pi
+                WHERE current_pi.lot_id = l.id
+                ORDER BY current_pi.created_at DESC
+                LIMIT 1
+            ) pi ON TRUE
         """,
     },
     "ops_exports": {

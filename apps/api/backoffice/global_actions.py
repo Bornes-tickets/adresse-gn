@@ -41,13 +41,11 @@ from .export_payloads import (
 )
 from .action_common import ActionError, optional_text, required_text
 from .action_ops import (
-    beacon_set_status,
     create_invoice,
     dispute,
     generate_dn,
     generate_po,
     lot_add_event,
-    lot_assign,
     lot_set_status,
     record_payment,
     supplier_upsert,
@@ -229,12 +227,7 @@ def execute_action(
     if resource == "supervisor_claims" and action == "decide":
         return claim_decide(actor, row, data)
 
-    if resource == "ops_beacons" and action == "set_status":
-        return beacon_set_status(actor, row, data)
-
     if resource == "ops_stock":
-        if action == "assign_lot":
-            return lot_assign(actor, row, data)
         if action == "set_status":
             return lot_set_status(actor, row, data)
         if action == "add_event":

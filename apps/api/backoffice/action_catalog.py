@@ -382,11 +382,8 @@ ACTION_DEFINITIONS: dict[str, list[dict[str, Any]]] = {
     "supervisor_claims": [
         action("decide", "Statuer", "row", SUPERVISOR, [field("decision", "Décision", "select", required=True, options=[opt("approved"), opt("rejected")]), field("note", "Note", "textarea")])
     ],
-    "ops_beacons": [
-        action("set_status", "Changer le statut", "row", OPS, [field("status", "Nouveau statut", "select", required=True, options=[opt(x) for x in ["generated", "assigned", "installed", "active", "suspended", "replaced", "cancelled"]], default_from="status"), field("note", "Motif / note", "textarea")])
-    ],
+    "ops_beacons": [],
     "ops_stock": [
-        action("assign_lot", "Affecter le lot", "row", OPS, [field("agent_id", "Agent", "select", source="active_agents", required=True), field("note", "Note", "textarea")]),
         action("set_status", "Changer le statut", "row", OPS, [field("status", "Statut", "select", required=True, options=LOT_STATUS_OPTIONS, default_from="status"), field("note", "Note", "textarea")]),
         action("add_event", "Ajouter une note", "row", OPS, [field("note", "Note", "textarea", required=True)]),
     ],
@@ -401,7 +398,24 @@ ACTION_DEFINITIONS: dict[str, list[dict[str, Any]]] = {
         action("export_po_pdf", "Télécharger le BC PDF", "row", OPS, []),
         action("export_dn_pdf", "Télécharger le BL PDF", "row", OPS, []),
         action("update_po", "Modifier le BC", "row", OPS, [field("status", "Statut", "select", options=PO_STATUS_OPTIONS, default_from="purchase_order_status"), field("payment_terms", "Conditions de paiement", default_from="payment_terms"), field("notes", "Notes", "textarea", default_from="po_notes"), field("expected_delivery", "Livraison prévue", "date", default_from="expected_delivery")]),
-        action("generate_dn", "Créer le BL", "row", OPS, [field("quantity_received", "Quantité reçue", "number", required=True), field("quantity_shipped", "Quantité expédiée", "number"), field("qc_passed", "QC conforme", "boolean"), field("defects", "Défauts", "textarea"), field("carrier", "Transporteur"), field("tracking_number", "Suivi"), field("shipped_at", "Expédié le", "datetime-local"), field("receiver_name", "Réceptionnaire"), field("notes", "Notes", "textarea")]),
+        action(
+            "generate_dn",
+            "Enregistrer une réception / QC",
+            "row",
+            OPS,
+            [
+                field("quantity_received", "Quantité reçue", "number", required=True, help_text="Quantité physique de ce BL. Les réceptions partielles sont cumulées."),
+                field("quantity_shipped", "Quantité expédiée", "number"),
+                field("qc_passed", "QC conforme", "boolean", help_text="Seule une réception conforme libère des balises disponibles."),
+                field("defects", "Défauts / non-conformités", "textarea"),
+                field("carrier", "Transporteur"),
+                field("tracking_number", "Suivi"),
+                field("shipped_at", "Expédié le", "datetime-local"),
+                field("receiver_name", "Réceptionnaire"),
+                field("notes", "Notes", "textarea"),
+            ],
+            confirm="Enregistrer cette réception et son contrôle qualité ?",
+        ),
         action("create_invoice", "Créer la facture fournisseur", "row", OPS, [field("invoice_number", "Numéro facture", required=True), field("issued_at", "Date facture", "date", required=True), field("due_date", "Échéance", "date"), field("amount_ht", "Montant HT", "number", required=True), field("tva_rate", "TVA %", "number"), field("notes", "Notes", "textarea")]),
         action("record_payment", "Enregistrer un règlement", "row", OPS, [field("amount", "Montant", "number", required=True), field("method", "Mode", "select", required=True, options=[opt(x) for x in ["bank_transfer", "cash", "check", "mobile_money", "other"]]), field("reference", "Référence"), field("paid_at", "Payé le", "datetime-local"), field("notes", "Notes", "textarea")]),
         action("mark_dispute", "Marquer en litige", "row", OPS, [field("note", "Motif", "textarea", required=True)], variant="danger"),
