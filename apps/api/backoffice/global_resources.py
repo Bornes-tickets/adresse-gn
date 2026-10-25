@@ -25,6 +25,10 @@ RESOURCE_ROLES = {
         "admin",
         "super_admin",
     },
+    "admin_beacons": {
+        "admin",
+        "super_admin",
+    },
     "admin_analytics": {
         "admin",
         "super_admin",
@@ -283,6 +287,29 @@ RESOURCE_CONFIGS = {
             FROM public.sectors s
             LEFT JOIN public.districts d
                 ON d.id = s.district_id
+        """,
+    },
+    "admin_beacons": {
+        "order_by": (
+            "created_at DESC NULLS LAST, "
+            "public_number ASC"
+        ),
+        "sql": """
+            SELECT
+                b.id::text AS id,
+                b.public_number,
+                b.status,
+                b.category,
+                b.numbering_version,
+                b.commune_code_at_issue,
+                b.national_id,
+                b.check_digit,
+                l.code AS lot_code,
+                b.created_at,
+                b.activated_at
+            FROM public.beacons b
+            LEFT JOIN public.lots l
+                ON l.id = b.lot_id
         """,
     },
     "admin_analytics": {
@@ -1221,6 +1248,12 @@ def _column_label(
         "installed_at": "Installé le",
         "validated_at": "Validé le",
         "status": "Statut",
+        "category": "Type",
+        "numbering_version": "Codification",
+        "commune_code_at_issue": "Code commune",
+        "national_id": "Identifiant national",
+        "check_digit": "Clé",
+        "lot_code": "Lot",
     }
 
     return labels.get(

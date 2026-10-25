@@ -202,6 +202,65 @@ ACTION_DEFINITIONS: dict[str, list[dict[str, Any]]] = {
             confirm="Confirmer la réaffectation ?",
         ),
     ],
+    "admin_beacons": [
+        action(
+            "generate_batch",
+            "Générer un lot de balises",
+            "global",
+            ADMIN,
+            [
+                field(
+                    "commune_id",
+                    "Commune officielle",
+                    "select",
+                    required=True,
+                    source="communes",
+                    help_text=(
+                        "Le code officiel de la commune est figé "
+                        "dans le numéro de la balise."
+                    ),
+                ),
+                field(
+                    "category",
+                    "Type de balise",
+                    "select",
+                    required=True,
+                    options=[
+                        opt("residential", "Résidentielle — standard"),
+                        opt("residential_plus", "Résidentielle — premium"),
+                        opt("professional", "Professionnelle"),
+                        opt("institutional", "Institutionnelle"),
+                        opt("custom", "Sur mesure"),
+                    ],
+                ),
+                field(
+                    "quantity",
+                    "Quantité à générer",
+                    "number",
+                    required=True,
+                    help_text="De 1 à 5 000 balises par lot.",
+                ),
+                field(
+                    "expected_delivery",
+                    "Livraison fournisseur prévue",
+                    "date",
+                    help_text=(
+                        "Facultatif. OPS pourra ensuite préparer "
+                        "et suivre la commande fournisseur."
+                    ),
+                ),
+                field(
+                    "notes",
+                    "Note interne",
+                    "textarea",
+                ),
+            ],
+            confirm=(
+                "Générer ce lot et réserver les numéros "
+                "nationaux correspondants ?"
+            ),
+        ),
+    ],
     "admin_zones": [
         action(
             "save", "Modifier la zone", "row", ADMIN,

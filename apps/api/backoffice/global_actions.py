@@ -14,6 +14,7 @@ from .action_admin import (
     address_update,
     agent_update,
     doc_review,
+    generate_beacon_batch,
     zone_deactivate,
     zone_save,
 )
@@ -185,6 +186,10 @@ def execute_action(
             return address_update(actor, row, data)
         if action == "reassign_owner":
             return address_reassign_owner(actor, row, data)
+
+    if resource == "admin_beacons":
+        if action == "generate_batch":
+            return generate_beacon_batch(actor, data)
 
     if resource == "admin_zones":
         if action == "save":

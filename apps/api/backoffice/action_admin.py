@@ -2,17 +2,25 @@ from __future__ import annotations
 
 import json
 from typing import Any
+from uuid import uuid4
 
-from django.db import connection
+from django.db import connection, transaction
 
 from .accounts import reactivate_account
 from .action_common import (
     ActionError,
     audit,
     bool_value,
+    int_value,
     json_value,
     optional_text,
     required_text,
+)
+
+from numbering import (
+    NumberingError,
+    next_v1_beacon_number,
+    validate_commune_code,
 )
 
 
@@ -28,6 +36,13 @@ ADDRESS_CATEGORIES = {
 ADDRESS_VISIBILITIES = {"private", "public"}
 ADDRESS_VERIFICATIONS = {"unverified", "pending", "verified"}
 ADDRESS_STATUSES = {"active", "suspended", "deleted"}
+PHYSICAL_BEACON_CATEGORIES = {
+    "residential",
+    "residential_plus",
+    "professional",
+    "institutional",
+    "custom",
+}
 ZONE_TABLES = {
     "region": "regions",
     "prefecture": "prefectures",
@@ -330,6 +345,225 @@ def address_reassign_owner(actor: dict[str, Any], row_id: str, data: dict[str, A
             after={"owner_id": str(owner_id), "owner_email": email},
         )
     return {"ok": True, "status": "reassigned", "address_id": row_id, "owner_id": str(owner_id)}
+
+
+@transaction.atomic
+def generate_beacon_batch(
+    actor: dict[str, Any],
+    data: dict[str, Any],
+) -> dict[str, Any]:
+    commune_id = required_text(
+        data,
+        "commune_id",
+        "La commune",
+    )
+    category = required_text(
+        data,
+        "category",
+        "La catégorie",
+    )
+    quantity = int_value(
+        data.get("quantity")
+    )
+    expected_delivery = optional_text(
+        data,
+        "expected_delivery",
+    )
+    notes = optional_text(
+        data,
+        "notes",
+        max_length=1000,
+    )
+
+    if quantity < 1 or quantity > 5000:
+        raise ActionError(
+            "La quantité doit être comprise entre 1 et 5 000 balises."
+        )
+
+    if category not in PHYSICAL_BEACON_CATEGORIES:
+        raise ActionError(
+            "Catégorie de balise physique invalide."
+        )
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+                code,
+                name,
+                is_active
+            FROM public.communes
+            WHERE id = %s
+            FOR UPDATE
+            """,
+            [commune_id],
+        )
+        commune = cursor.fetchone()
+
+        if not commune:
+            raise ActionError(
+                "Commune introuvable.",
+                status="not_found",
+                http_status=404,
+            )
+
+        if commune[2] is not True:
+            raise ActionError(
+                "La commune sélectionnée est inactive."
+            )
+
+        try:
+            commune_code = validate_commune_code(
+                commune[0]
+            )
+        except NumberingError as exc:
+            raise ActionError(str(exc)) from exc
+
+        cursor.execute(
+            """
+            SELECT 1
+            FROM public.beacon_categories
+            WHERE code = %s
+            LIMIT 1
+            """,
+            [category],
+        )
+
+        if cursor.fetchone() is None:
+            raise ActionError(
+                "Catégorie de balise inconnue."
+            )
+
+        lot_code = (
+            "AGN-"
+            + commune_code
+            + "-"
+            + uuid4().hex[:10].upper()
+        )
+
+        cursor.execute(
+            """
+            INSERT INTO public.lots (
+                code,
+                quantity,
+                category,
+                status,
+                expected_delivery,
+                notes
+            )
+            VALUES (
+                %s,
+                %s,
+                %s,
+                'generated',
+                %s,
+                %s
+            )
+            RETURNING id
+            """,
+            [
+                lot_code,
+                quantity,
+                category,
+                expected_delivery,
+                notes,
+            ],
+        )
+        lot_id = cursor.fetchone()[0]
+
+        generated_numbers: list[str] = []
+
+        for _ in range(quantity):
+            try:
+                numbering = next_v1_beacon_number(
+                    cursor,
+                    commune_code=commune_code,
+                )
+            except NumberingError as exc:
+                raise ActionError(
+                    str(exc),
+                    status="numbering_error",
+                ) from exc
+
+            cursor.execute(
+                """
+                INSERT INTO public.beacons (
+                    public_number,
+                    status,
+                    category,
+                    lot_id,
+                    activated_at,
+                    assigned_agent_id,
+                    national_id,
+                    check_digit,
+                    commune_code_at_issue,
+                    numbering_version
+                )
+                VALUES (
+                    %s,
+                    'generated',
+                    %s,
+                    %s,
+                    NULL,
+                    NULL,
+                    %s,
+                    %s,
+                    %s,
+                    'v1'
+                )
+                RETURNING id
+                """,
+                [
+                    numbering["public_number"],
+                    category,
+                    lot_id,
+                    numbering["national_id"],
+                    numbering["check_digit"],
+                    numbering["commune_code_at_issue"],
+                ],
+            )
+            cursor.fetchone()
+
+            generated_numbers.append(
+                numbering["public_number"]
+            )
+
+        audit(
+            cursor,
+            actor_id=actor["user_id"],
+            action="beacon.batch.generate.v1",
+            entity="lots",
+            entity_id=str(lot_id),
+            after={
+                "lot_code": lot_code,
+                "commune_id": commune_id,
+                "commune_code": commune_code,
+                "commune_name": commune[1],
+                "category": category,
+                "quantity": quantity,
+                "expected_delivery": expected_delivery,
+                "first_public_number": generated_numbers[0],
+                "last_public_number": generated_numbers[-1],
+                "numbering_version": "v1",
+                "beacon_status": "generated",
+            },
+        )
+
+    return {
+        "ok": True,
+        "status": "generated",
+        "lot_id": str(lot_id),
+        "lot_code": lot_code,
+        "commune_id": commune_id,
+        "commune_code": commune_code,
+        "category": category,
+        "quantity": quantity,
+        "first_public_number": generated_numbers[0],
+        "last_public_number": generated_numbers[-1],
+        "numbering_version": "v1",
+        "beacon_status": "generated",
+    }
+
 
 
 def zone_save(actor: dict[str, Any], row_id: str, data: dict[str, Any]) -> dict[str, Any]:
