@@ -288,7 +288,9 @@ def record_physical_installation(
                 a.verification_level,
                 a.status,
                 b.public_number,
-                b.status AS beacon_status
+                b.status AS beacon_status,
+                b.numbering_version,
+                b.assigned_agent_id
             FROM public.addresses a
             JOIN public.beacons b
               ON b.id = a.beacon_id
@@ -312,6 +314,8 @@ def record_physical_installation(
         address_status,
         public_number,
         beacon_status,
+        beacon_numbering_version,
+        beacon_assigned_agent_id,
     ) = address_rows[0]
 
     if address_owner_id is None or str(address_owner_id) != str(customer_id):
@@ -319,9 +323,22 @@ def record_physical_installation(
             "Le propriétaire de l'adresse pré-allouée est incohérent."
         )
 
-    if str(beacon_status) != "active":
+    if str(beacon_numbering_version) != "v1":
         raise PhysicalInstallationStateError(
-            "La balise pré-allouée doit être active."
+            "La balise pré-allouée doit utiliser la numérotation V1."
+        )
+
+    if str(beacon_status) != "assigned":
+        raise PhysicalInstallationStateError(
+            "La balise pré-allouée doit être affectée avant installation."
+        )
+
+    if (
+        beacon_assigned_agent_id is None
+        or str(beacon_assigned_agent_id) != str(agent_id)
+    ):
+        raise PhysicalInstallationStateError(
+            "L agent affecté à la balise est incohérent."
         )
 
     if str(address_status) != "active":
@@ -369,6 +386,23 @@ def record_physical_installation(
         if cursor.rowcount != 1:
             raise PhysicalInstallationStateError(
                 "L'adresse pré-allouée a été modifiée concurremment."
+            )
+
+        cursor.execute(
+            """
+            UPDATE public.beacons
+            SET status = 'installed'
+            WHERE id = %s
+              AND numbering_version = 'v1'
+              AND status = 'assigned'
+              AND assigned_agent_id = %s
+              AND activated_at IS NULL
+            """,
+            [beacon_id, agent_id],
+        )
+        if cursor.rowcount != 1:
+            raise PhysicalInstallationStateError(
+                "La balise a été modifiée concurremment."
             )
 
         cursor.execute(

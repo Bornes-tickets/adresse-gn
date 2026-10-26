@@ -132,14 +132,49 @@ class R9SupervisorAssignmentSourceTests(TestCase):
         self.assertNotIn("available_beacons", common)
         self.assertNotIn("available_beacons", catalog)
 
-    def test_r9_p4_terrain_source_remains_outside_p3(self):
+    def test_r9_p4_terrain_lifecycle_is_assigned_installed_active(self):
         terrain = self.source(
             "apps/api/backoffice/physical_installations.py"
         )
-        self.assertIn(
-            'str(beacon_status) != "active"',
-            terrain,
+        agent = self.source(
+            "apps/api/agent_installations/services.py"
         )
+        workflow = self.source(
+            "apps/api/backoffice/physical_installation_workflow.py"
+        )
+
+        terrain_start = terrain.index("def record_physical_installation(")
+        terrain_block = terrain[terrain_start:]
+        self.assertIn('str(beacon_status) != "assigned"', terrain_block)
+        self.assertIn("UPDATE public.beacons", terrain_block)
+        self.assertIn("SET status = 'installed'", terrain_block)
+        self.assertIn("AND assigned_agent_id = %s", terrain_block)
+        self.assertIn("AND activated_at IS NULL", terrain_block)
+
+        agent_start = agent.index("def complete_agent_installation(")
+        agent_block = agent[agent_start:]
+        self.assertIn(') != "assigned":', agent_block)
+        self.assertIn("UPDATE public.beacons", agent_block)
+        self.assertIn("status = 'installed'", agent_block)
+        self.assertIn("numbering_version = 'v1'", agent_block)
+        self.assertIn("assigned_agent_id = %s", agent_block)
+        self.assertNotIn("activated_at = NOW()", agent_block)
+
+        validate_start = workflow.index("def validate_physical_installation(")
+        publish_start = workflow.index("def publish_physical_address(", validate_start)
+        validate_block = workflow[validate_start:publish_start]
+        publish_block = workflow[publish_start:]
+
+        self.assertIn('str(beacon_status) != "installed"', validate_block)
+        self.assertIn("UPDATE public.beacons", validate_block)
+        self.assertIn("status = 'active'", validate_block)
+        self.assertIn("activated_at = NOW()", validate_block)
+        self.assertIn("status = 'done'", validate_block)
+        self.assertIn("completed_at = NOW()", validate_block)
+
+        self.assertIn('str(beacon_status) != "active"', publish_block)
+        self.assertIn("visibility = 'public'", publish_block)
+        self.assertNotIn("UPDATE public.beacons", publish_block)
 
     def test_ui_copy_matches_authority_split(self):
         supervisor = self.source(

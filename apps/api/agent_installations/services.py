@@ -1394,6 +1394,8 @@ def complete_agent_installation(
                         a.verification_level,
 
                         b.status,
+                        b.numbering_version,
+                        b.assigned_agent_id,
                         b.public_number
 
                     FROM public.addresses a
@@ -1431,6 +1433,8 @@ def complete_agent_installation(
                 address_visibility,
                 verification_level,
                 beacon_status,
+                beacon_numbering_version,
+                beacon_assigned_agent_id,
                 public_number,
             ) = address_rows[0]
 
@@ -1451,10 +1455,29 @@ def complete_agent_installation(
                 )
 
             if str(
-                beacon_status
-            ) != "active":
+                beacon_numbering_version
+            ) != "v1":
                 raise AgentCompletionStateError(
-                    "Balise inactive."
+                    "Balise non V1."
+                )
+
+            if str(
+                beacon_status
+            ) != "assigned":
+                raise AgentCompletionStateError(
+                    "Balise non affectee."
+                )
+
+            if (
+                beacon_assigned_agent_id
+                is None
+                or str(
+                    beacon_assigned_agent_id
+                )
+                != clean_agent_id
+            ):
+                raise AgentCompletionStateError(
+                    "Agent de balise incoherent."
                 )
 
             if str(
@@ -1633,6 +1656,34 @@ def complete_agent_installation(
                     raise AgentCompletionConflictError(
                         (
                             "Adresse modifiee "
+                            "concurremment."
+                        )
+                    )
+
+
+                cursor.execute(
+                    """
+                    UPDATE public.beacons
+
+                    SET
+                        status = 'installed'
+
+                    WHERE id = %s
+                      AND numbering_version = 'v1'
+                      AND status = 'assigned'
+                      AND assigned_agent_id = %s
+                      AND activated_at IS NULL
+                    """,
+                    [
+                        pending_beacon_id,
+                        clean_agent_id,
+                    ],
+                )
+
+                if cursor.rowcount != 1:
+                    raise AgentCompletionConflictError(
+                        (
+                            "Balise modifiee "
                             "concurremment."
                         )
                     )

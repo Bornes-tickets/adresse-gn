@@ -920,13 +920,18 @@ def _load_validation_targets(
         cursor.execute(
             """
             SELECT
-                id,
-                verification_level,
-                visibility,
-                status
-            FROM public.addresses
-            WHERE beacon_id = %s
-            FOR UPDATE
+                a.id,
+                a.verification_level,
+                a.visibility,
+                a.status,
+                b.status AS beacon_status,
+                b.numbering_version,
+                b.activated_at
+            FROM public.addresses a
+            JOIN public.beacons b
+              ON b.id = a.beacon_id
+            WHERE a.beacon_id = %s
+            FOR UPDATE OF a, b
             """,
             [beacon_id],
         )
@@ -942,6 +947,9 @@ def _load_validation_targets(
         verification_level,
         visibility,
         address_status,
+        beacon_status,
+        beacon_numbering_version,
+        beacon_activated_at,
     ) = address_rows[0]
 
     return (
@@ -958,6 +966,9 @@ def _load_validation_targets(
         verification_level,
         visibility,
         address_status,
+        beacon_status,
+        beacon_numbering_version,
+        beacon_activated_at,
     )
 
 
@@ -981,6 +992,9 @@ def validate_physical_installation(
         verification_level,
         visibility,
         address_status,
+        beacon_status,
+        beacon_numbering_version,
+        beacon_activated_at,
     ) = _load_validation_targets(
         pending_installation_id=pending_installation_id
     )
@@ -990,6 +1004,9 @@ def validate_physical_installation(
             completed_at is None
             or validated_at is None
             or str(verification_level) != "verified"
+            or str(beacon_numbering_version) != "v1"
+            or str(beacon_status) != "active"
+            or beacon_activated_at is None
         ):
             raise PhysicalWorkflowStateError(
                 "Etat final incoherent pour cette installation."
@@ -1024,6 +1041,21 @@ def validate_physical_installation(
             "L installation terrain est deja marquee comme validee."
         )
 
+    if str(beacon_numbering_version) != "v1":
+        raise PhysicalWorkflowStateError(
+            "La balise à valider doit utiliser la numérotation V1."
+        )
+
+    if str(beacon_status) != "installed":
+        raise PhysicalWorkflowStateError(
+            "La balise doit être installée avant validation."
+        )
+
+    if beacon_activated_at is not None:
+        raise PhysicalWorkflowStateError(
+            "activated_at doit être vide avant validation."
+        )
+
     if str(address_status) != "active":
         raise PhysicalWorkflowStateError(
             "L adresse doit etre active avant validation."
@@ -1040,6 +1072,24 @@ def validate_physical_installation(
         )
 
     with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            UPDATE public.beacons
+            SET
+                status = 'active',
+                activated_at = NOW()
+            WHERE id = %s
+              AND numbering_version = 'v1'
+              AND status = 'installed'
+              AND activated_at IS NULL
+            """,
+            [beacon_id],
+        )
+        if cursor.rowcount != 1:
+            raise PhysicalWorkflowStateError(
+                "La balise a été modifiée concurremment."
+            )
+
         cursor.execute(
             """
             UPDATE public.installations
