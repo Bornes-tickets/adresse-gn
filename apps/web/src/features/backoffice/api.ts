@@ -1058,6 +1058,10 @@ export function executeBackofficeAction(
     {
       method: "POST",
       signal,
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
       body: JSON.stringify({
         row_id:
           input.rowId ?? null,
