@@ -61,6 +61,12 @@ from .action_supervisor import (
     qc_draw,
     report_update,
 )
+from .generic_supervisor_workflow import (
+    assign_generic_installation_task,
+    generic_installation_task_exists,
+    reassign_generic_installation_task,
+    schedule_generic_installation_task,
+)
 from .physical_installation_workflow import (
     PhysicalWorkflowNotFoundError,
     PhysicalWorkflowStateError,
@@ -120,6 +126,7 @@ def _physical_action(
                 pending_installation_id=row_id,
                 actor_id=actor["user_id"],
                 agent_id=required_text(data, "agent_id", "L’agent"),
+                stock_beacon_id=optional_text(data, "beacon_id"),
             )
         if action == "reassign":
             return reassign_physical_installation(
@@ -147,6 +154,88 @@ def _physical_action(
 
 
 @transaction.atomic
+
+def _supervisor_dispatch_action(
+    actor: dict[str, Any],
+    row_id: str,
+    action: str,
+    data: dict[str, Any],
+) -> dict[str, Any]:
+    if not generic_installation_task_exists(
+        installation_task_id=row_id
+    ):
+        return _physical_action(
+            actor,
+            row_id,
+            action,
+            data,
+        )
+
+    try:
+        if action == "assign":
+            return assign_generic_installation_task(
+                installation_task_id=row_id,
+                actor_id=actor["user_id"],
+                agent_id=required_text(
+                    data,
+                    "agent_id",
+                    "L agent",
+                ),
+                stock_beacon_id=required_text(
+                    data,
+                    "beacon_id",
+                    "La balise",
+                ),
+            )
+
+        if action == "reassign":
+            return reassign_generic_installation_task(
+                installation_task_id=row_id,
+                actor_id=actor["user_id"],
+                agent_id=required_text(
+                    data,
+                    "agent_id",
+                    "L agent",
+                ),
+            )
+
+        if action == "schedule":
+            raw = required_text(
+                data,
+                "scheduled_at",
+                "La date/heure",
+            )
+            parsed = parse_datetime(raw)
+            if parsed is None:
+                raise ActionError(
+                    "Date/heure de planification invalide."
+                )
+            if timezone.is_naive(parsed):
+                parsed = timezone.make_aware(
+                    parsed,
+                    timezone.get_current_timezone(),
+                )
+            return schedule_generic_installation_task(
+                installation_task_id=row_id,
+                actor_id=actor["user_id"],
+                scheduled_at=parsed,
+            )
+
+    except PhysicalWorkflowNotFoundError as exc:
+        raise ActionError(
+            str(exc),
+            status="not_found",
+            http_status=404,
+        ) from exc
+    except PhysicalWorkflowStateError as exc:
+        raise ActionError(
+            str(exc),
+            status="conflict",
+            http_status=409,
+        ) from exc
+
+    raise ActionError("Action Supervisor générique invalide.")
+
 def execute_action(
     request,
     *,
@@ -205,9 +294,44 @@ def execute_action(
         if action == "review":
             return doc_review(actor, row, data)
 
+    if resource == "supervisor_available_beacons":
+        if action == "assign_to_request":
+            try:
+                return assign_generic_installation_task(
+                    installation_task_id=required_text(
+                        data,
+                        "installation_task_id",
+                        "La tâche d installation",
+                    ),
+                    actor_id=actor["user_id"],
+                    agent_id=required_text(
+                        data,
+                        "agent_id",
+                        "L agent",
+                    ),
+                    stock_beacon_id=row,
+                )
+            except PhysicalWorkflowNotFoundError as exc:
+                raise ActionError(
+                    str(exc),
+                    status="not_found",
+                    http_status=404,
+                ) from exc
+            except PhysicalWorkflowStateError as exc:
+                raise ActionError(
+                    str(exc),
+                    status="conflict",
+                    http_status=409,
+                ) from exc
+
     if resource == "supervisor_installations":
         if action in {"assign", "reassign", "schedule"}:
-            return _physical_action(actor, row, action, data)
+            return _supervisor_dispatch_action(
+                actor,
+                row,
+                action,
+                data,
+            )
         if action == "draw_qc":
             return qc_draw(actor, data)
         if action == "validate":

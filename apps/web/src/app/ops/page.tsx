@@ -3,19 +3,18 @@ import type {
 } from "next";
 
 import {
-  RoleDashboardPage,
-} from "@/features/backoffice/components/role-dashboard-page";
+  OpsDashboardPage,
+} from "@/features/backoffice/components/ops-professional-pages";
 
 
 export const metadata: Metadata = {
-  title: "Opérations — Adresse GN",
+  title:
+    "Opérations — Adresse GN",
 };
 
 
 export default function Page() {
   return (
-    <RoleDashboardPage
-      space="ops"
-    />
+    <OpsDashboardPage />
   );
 }

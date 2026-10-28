@@ -3,21 +3,17 @@ import type {
 } from "next";
 
 import {
-  ResourcePage,
-} from "@/features/backoffice/components/resource-page";
+  SupervisorInstallationsQcPage,
+} from "@/features/backoffice/components/supervisor-professional-pages";
 
 
 export const metadata: Metadata = {
-  title: "Installations / QC — Adresse GN",
+  title: "Installations & QC — Adresse GN",
 };
 
 
 export default function Page() {
   return (
-    <ResourcePage
-      title="Installations / QC"
-      subtitle="Pilotage des demandes physiques : affectation, planification et contrôle QC."
-      resource="supervisor_installations"
-    />
+    <SupervisorInstallationsQcPage />
   );
 }

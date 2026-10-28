@@ -70,15 +70,229 @@ RESOURCE_ROLES = {
         "admin",
         "super_admin",
     },
-    "supervisor_installations": {
+    "supervisor_available_beacons": {
         "supervisor",
         "admin",
         "super_admin",
     },
+    "supervisor_installations": {
+        "order_by": (
+            "activity_at DESC NULLS LAST, "
+            "id ASC"
+        ),
+        "sql": """
+            SELECT
+                it.id::text AS id,
+                'dispatch'::text AS record_kind,
+                it.status,
+                it.beacon_id::text AS beacon_id,
+                it.assigned_agent_id::text AS assigned_agent_id,
+                COALESCE(o.order_ref, ir.reference) AS order_ref,
+                b.public_number,
+                b.numbering_version,
+                b.status AS beacon_status,
+                ag.badge_number AS agent_badge,
+                p.full_name AS agent_name,
+                it.scheduled_at,
+                it.completed_at,
+                NULL AS gps_lat,
+                NULL AS gps_lng,
+                NULL AS accuracy_m,
+                NULL::text AS photo_url,
+                NULL::timestamptz AS installed_at,
+                NULL::timestamptz AS validated_at,
+                NULL::text AS validation_status,
+                NULL::timestamptz AS uninstalled_at,
+                it.notes AS note,
+                it.updated_at AS activity_at
+            FROM public.installation_tasks it
+            JOIN public.installation_requests ir
+                ON ir.id = it.request_id
+            LEFT JOIN public.orders o
+                ON o.id = ir.order_id
+            LEFT JOIN public.beacons b
+                ON b.id = it.beacon_id
+            LEFT JOIN public.agents ag
+                ON ag.id = it.assigned_agent_id
+            LEFT JOIN public.profiles p
+                ON p.id = it.assigned_agent_id
+            LEFT JOIN public.pending_installations legacy_pi
+                ON ir.source_type = 'customer_order'
+               AND legacy_pi.order_id = ir.order_id
+            WHERE
+                ir.status IN ('approved', 'in_progress')
+                AND it.status IN ('pending', 'assigned', 'planned')
+                AND (
+                    ir.source_type <> 'customer_order'
+                    OR legacy_pi.id IS NULL
+                    OR legacy_pi.status IN ('pending', 'assigned', 'planned')
+                )
+
+            UNION ALL
+
+            SELECT
+                pi.id::text AS id,
+                'dispatch'::text AS record_kind,
+                pi.status,
+                pi.beacon_id::text AS beacon_id,
+                pi.assigned_agent_id::text AS assigned_agent_id,
+                o.order_ref,
+                b.public_number,
+                b.numbering_version,
+                b.status AS beacon_status,
+                ag.badge_number AS agent_badge,
+                p.full_name AS agent_name,
+                pi.scheduled_at,
+                pi.completed_at,
+                NULL AS gps_lat,
+                NULL AS gps_lng,
+                NULL AS accuracy_m,
+                NULL::text AS photo_url,
+                NULL::timestamptz AS installed_at,
+                NULL::timestamptz AS validated_at,
+                NULL::text AS validation_status,
+                NULL::timestamptz AS uninstalled_at,
+                pi.note,
+                pi.created_at AS activity_at
+            FROM public.pending_installations pi
+            LEFT JOIN public.orders o
+                ON o.id = pi.order_id
+            LEFT JOIN public.beacons b
+                ON b.id = pi.beacon_id
+            LEFT JOIN public.agents ag
+                ON ag.id = pi.assigned_agent_id
+            LEFT JOIN public.profiles p
+                ON p.id = pi.assigned_agent_id
+            WHERE
+                pi.status IN ('pending', 'assigned', 'planned')
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM public.installation_requests irx
+                    JOIN public.installation_tasks itx
+                      ON itx.request_id = irx.id
+                    WHERE
+                        irx.source_type = 'customer_order'
+                        AND irx.order_id = pi.order_id
+                        AND itx.status <> 'cancelled'
+                )
+
+            UNION ALL
+
+            SELECT
+                i.id::text AS id,
+                'qc'::text AS record_kind,
+                NULL::text AS status,
+                i.beacon_id::text AS beacon_id,
+                i.agent_id::text AS assigned_agent_id,
+                o.order_ref,
+                b.public_number,
+                b.numbering_version,
+                b.status AS beacon_status,
+                ag.badge_number AS agent_badge,
+                p.full_name AS agent_name,
+                NULL AS scheduled_at,
+                NULL AS completed_at,
+                i.gps_lat,
+                i.gps_lng,
+                i.accuracy_m,
+                i.photo_url,
+                i.installed_at,
+                i.validated_at,
+                CASE
+                    WHEN i.uninstalled_at IS NOT NULL THEN 'uninstalled'
+                    WHEN i.validated_at IS NOT NULL THEN 'validated'
+                    ELSE 'pending'
+                END AS validation_status,
+                i.uninstalled_at,
+                NULL::text AS note,
+                i.installed_at AS activity_at
+            FROM public.installations i
+            LEFT JOIN public.beacons b
+                ON b.id = i.beacon_id
+            LEFT JOIN public.agents ag
+                ON ag.id = i.agent_id
+            LEFT JOIN public.profiles p
+                ON p.id = i.agent_id
+            LEFT JOIN public.order_sites os
+                ON os.id = i.order_site_id
+            LEFT JOIN public.orders o
+                ON o.id = os.order_id
+        """,
+    },
     "supervisor_planning": {
-        "supervisor",
-        "admin",
-        "super_admin",
+        "order_by": (
+            "scheduled_date DESC, "
+            "created_at DESC"
+        ),
+        "sql": """
+            SELECT
+                it.id::text AS id,
+                'generic_task'::text AS record_kind,
+                it.beacon_id::text AS beacon_id,
+                it.assigned_agent_id::text AS agent_id,
+                it.commune_id::text AS commune_id,
+                it.scheduled_at::date AS scheduled_date,
+                it.status,
+                b.public_number,
+                ag.badge_number AS agent_badge,
+                p.full_name AS agent_name,
+                c.name AS commune_name,
+                it.address_line AS address_hint,
+                it.notes,
+                it.created_at,
+                it.updated_at
+            FROM public.installation_tasks it
+            JOIN public.installation_requests ir
+                ON ir.id = it.request_id
+            LEFT JOIN public.beacons b
+                ON b.id = it.beacon_id
+            LEFT JOIN public.agents ag
+                ON ag.id = it.assigned_agent_id
+            LEFT JOIN public.profiles p
+                ON p.id = it.assigned_agent_id
+            LEFT JOIN public.communes c
+                ON c.id = it.commune_id
+            LEFT JOIN public.pending_installations legacy_pi
+                ON ir.source_type = 'customer_order'
+               AND legacy_pi.order_id = ir.order_id
+            WHERE
+                ir.status IN ('approved', 'in_progress')
+                AND it.status = 'planned'
+                AND it.scheduled_at IS NOT NULL
+                AND (
+                    ir.source_type <> 'customer_order'
+                    OR legacy_pi.id IS NULL
+                    OR legacy_pi.status = 'planned'
+                )
+
+            UNION ALL
+
+            SELECT
+                ip.id::text AS id,
+                'legacy_plan'::text AS record_kind,
+                ip.beacon_id::text AS beacon_id,
+                ip.agent_id::text AS agent_id,
+                ip.commune_id::text AS commune_id,
+                ip.scheduled_date,
+                ip.status,
+                b.public_number,
+                ag.badge_number AS agent_badge,
+                p.full_name AS agent_name,
+                c.name AS commune_name,
+                ip.address_hint,
+                ip.notes,
+                ip.created_at,
+                ip.updated_at
+            FROM public.installation_plans ip
+            LEFT JOIN public.beacons b
+                ON b.id = ip.beacon_id
+            LEFT JOIN public.agents ag
+                ON ag.id = ip.agent_id
+            LEFT JOIN public.profiles p
+                ON p.id = ip.agent_id
+            LEFT JOIN public.communes c
+                ON c.id = ip.commune_id
+        """,
     },
     "supervisor_installation_report": {
         "supervisor",
@@ -616,6 +830,35 @@ RESOURCE_CONFIGS = {
                     WHERE is_active IS TRUE
                 )::bigint
             FROM public.communes
+        """,
+    },
+    "supervisor_available_beacons": {
+        "order_by": (
+            "commune_code_at_issue ASC, "
+            "category ASC, "
+            "public_number ASC"
+        ),
+        "sql": """
+            SELECT
+                b.id::text AS id,
+                b.public_number,
+                b.status,
+                b.category,
+                b.numbering_version,
+                b.commune_code_at_issue,
+                l.code AS lot_code,
+                l.status AS lot_status,
+                l.received_at,
+                l.supplier,
+                b.created_at
+            FROM public.beacons b
+            JOIN public.lots l
+              ON l.id = b.lot_id
+            WHERE
+                b.numbering_version = 'v1'
+                AND b.status = 'available'
+                AND b.assigned_agent_id IS NULL
+                AND b.category <> 'digital_only'
         """,
     },
     "supervisor_installations": {

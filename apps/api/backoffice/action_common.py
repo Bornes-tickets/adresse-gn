@@ -202,3 +202,161 @@ def pending_installation_options() -> list[dict[str, str]]:
             label = f"{row[1]} — {suffix}" if suffix else row[1]
             options.append({"value": row[0], "label": label})
         return options
+
+def available_physical_beacon_options() -> list[dict[str, str]]:
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+                b.id::text,
+                b.public_number,
+                b.category,
+                b.commune_code_at_issue,
+                l.code
+            FROM public.beacons b
+            JOIN public.lots l
+              ON l.id = b.lot_id
+            WHERE
+                b.numbering_version = 'v1'
+                AND b.status = 'available'
+                AND b.assigned_agent_id IS NULL
+                AND b.category <> 'digital_only'
+            ORDER BY
+                b.commune_code_at_issue,
+                b.category,
+                b.public_number
+            LIMIT 1000
+            """
+        )
+
+        return [
+            {
+                "value": row[0],
+                "label": (
+                    f"{row[1]} — {row[3]} — {row[2]} — lot {row[4]}"
+                ),
+            }
+            for row in cursor.fetchall()
+        ]
+
+
+def pending_physical_installation_options() -> list[dict[str, str]]:
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+                pi.id::text,
+                COALESCE(o.order_ref, ''),
+                COALESCE(p.full_name, ''),
+                COALESCE(c.code, ''),
+                COALESCE(b.public_number, '')
+            FROM public.pending_installations pi
+            JOIN public.orders o
+              ON o.id = pi.order_id
+            LEFT JOIN public.profiles p
+              ON p.id = pi.customer_id
+            LEFT JOIN public.order_sites os
+              ON os.order_id = o.id
+             AND os.sequence_no = 1
+            LEFT JOIN public.communes c
+              ON c.id = os.commune_id
+            LEFT JOIN public.beacons b
+              ON b.id = pi.beacon_id
+            WHERE
+                pi.status = 'pending'
+                AND pi.assigned_agent_id IS NULL
+                AND pi.scheduled_at IS NULL
+                AND pi.completed_at IS NULL
+                AND o.status = 'paid'
+            ORDER BY pi.created_at DESC
+            LIMIT 500
+            """
+        )
+
+        options = []
+
+        for row in cursor.fetchall():
+            details = [
+                value
+                for value in (
+                    row[1],
+                    row[2],
+                    row[3],
+                    row[4],
+                )
+                if value
+            ]
+
+            options.append(
+                {
+                    "value": row[0],
+                    "label": " — ".join(details) or row[0],
+                }
+            )
+
+        return options
+
+def pending_generic_installation_task_options() -> list[dict[str, str]]:
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+                it.id::text,
+                ir.reference,
+                ir.source_type,
+                it.sequence_no,
+                it.category,
+                c.code,
+                COALESCE(o.order_ref, '')
+            FROM public.installation_tasks it
+            JOIN public.installation_requests ir
+              ON ir.id = it.request_id
+            JOIN public.communes c
+              ON c.id = it.commune_id
+            LEFT JOIN public.orders o
+              ON o.id = ir.order_id
+            WHERE
+                ir.status IN ('approved', 'in_progress')
+                AND it.status = 'pending'
+                AND it.beacon_id IS NULL
+                AND it.assigned_agent_id IS NULL
+                AND it.scheduled_at IS NULL
+                AND it.installation_id IS NULL
+                AND it.installed_at IS NULL
+                AND it.completed_at IS NULL
+            ORDER BY
+                CASE ir.priority
+                    WHEN 'urgent' THEN 0
+                    WHEN 'high' THEN 1
+                    WHEN 'normal' THEN 2
+                    ELSE 3
+                END,
+                ir.created_at ASC,
+                it.sequence_no ASC
+            LIMIT 500
+            """
+        )
+
+        options: list[dict[str, str]] = []
+
+        for row in cursor.fetchall():
+            details = [
+                str(value)
+                for value in (
+                    row[1],
+                    row[6],
+                    row[2],
+                    f"#{row[3]}",
+                    row[4],
+                    row[5],
+                )
+                if value not in (None, "")
+            ]
+            options.append(
+                {
+                    "value": row[0],
+                    "label": " · ".join(details) or row[0],
+                }
+            )
+
+        return options

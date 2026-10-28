@@ -3,8 +3,8 @@ import type {
 } from "next";
 
 import {
-  ResourcePage,
-} from "@/features/backoffice/components/resource-page";
+  SupervisorPlanningPage,
+} from "@/features/backoffice/components/supervisor-professional-pages";
 
 
 export const metadata: Metadata = {
@@ -14,10 +14,6 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <ResourcePage
-      title="Planification"
-      subtitle="Planning des installations et affectations terrain."
-      resource="supervisor_planning"
-    />
+    <SupervisorPlanningPage />
   );
 }

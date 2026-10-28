@@ -238,12 +238,278 @@ def _insert_audit(
         )
 
 
+def _rebind_placeholder_to_received_stock(
+    *,
+    pending_id: str,
+    order_id: str,
+    current_beacon_id: str,
+    stock_beacon_id: str,
+) -> dict[str, Any]:
+    if str(current_beacon_id) == str(stock_beacon_id):
+        return {
+            "beacon_id": str(current_beacon_id),
+            "public_number": None,
+            "lot_code": None,
+            "replaced_beacon_id": None,
+        }
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+                id,
+                public_number,
+                status,
+                numbering_version,
+                assigned_agent_id,
+                category,
+                commune_code_at_issue,
+                lot_id
+            FROM public.beacons
+            WHERE id = %s
+            FOR UPDATE
+            """,
+            [current_beacon_id],
+        )
+        current = cursor.fetchone()
+
+        cursor.execute(
+            """
+            SELECT
+                b.id,
+                b.public_number,
+                b.status,
+                b.numbering_version,
+                b.assigned_agent_id,
+                b.category,
+                b.commune_code_at_issue,
+                b.lot_id,
+                l.code
+            FROM public.beacons b
+            JOIN public.lots l
+              ON l.id = b.lot_id
+            WHERE b.id = %s
+            FOR UPDATE OF b, l
+            """,
+            [stock_beacon_id],
+        )
+        stock = cursor.fetchone()
+
+    if current is None:
+        raise PhysicalWorkflowNotFoundError(
+            "Balise pré-allouée actuelle introuvable."
+        )
+
+    if stock is None:
+        raise PhysicalWorkflowNotFoundError(
+            "Balise reçue disponible introuvable."
+        )
+
+    (
+        _,
+        _current_public_number,
+        current_status,
+        current_version,
+        current_agent_id,
+        current_category,
+        current_commune,
+        current_lot_id,
+    ) = current
+
+    (
+        _,
+        stock_public_number,
+        stock_status,
+        stock_version,
+        stock_agent_id,
+        stock_category,
+        stock_commune,
+        stock_lot_id,
+        stock_lot_code,
+    ) = stock
+
+    if str(current_version) != "v1":
+        raise PhysicalWorkflowStateError(
+            "La pré-allocation actuelle n’est pas en codification V1."
+        )
+
+    if str(current_status) != "available":
+        raise PhysicalWorkflowStateError(
+            "La pré-allocation actuelle doit encore être disponible."
+        )
+
+    if current_agent_id is not None:
+        raise PhysicalWorkflowStateError(
+            "La pré-allocation actuelle est déjà affectée à un agent."
+        )
+
+    if current_lot_id is not None:
+        raise PhysicalWorkflowStateError(
+            "Une balise physique de stock est déjà liée à cette demande."
+        )
+
+    if str(stock_version) != "v1":
+        raise PhysicalWorkflowStateError(
+            "Seule une balise reçue V1 peut être affectée."
+        )
+
+    if str(stock_status) != "available":
+        raise PhysicalWorkflowStateError(
+            "La balise reçue sélectionnée n’est plus disponible."
+        )
+
+    if stock_agent_id is not None:
+        raise PhysicalWorkflowStateError(
+            "La balise reçue sélectionnée est déjà affectée."
+        )
+
+    if stock_lot_id is None:
+        raise PhysicalWorkflowStateError(
+            "La balise sélectionnée ne provient pas d’un lot OPS."
+        )
+
+    if str(stock_category) == "digital_only":
+        raise PhysicalWorkflowStateError(
+            "Une balise numérique seule ne peut pas être affectée au terrain."
+        )
+
+    if str(stock_category) != str(current_category):
+        raise PhysicalWorkflowStateError(
+            "La catégorie de la balise reçue ne correspond pas à la commande."
+        )
+
+    if str(stock_commune) != str(current_commune):
+        raise PhysicalWorkflowStateError(
+            "La commune de la balise reçue ne correspond pas à la commande."
+        )
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT id
+            FROM public.addresses
+            WHERE beacon_id = %s
+            FOR UPDATE
+            """,
+            [current_beacon_id],
+        )
+        address_rows = cursor.fetchall()
+
+        if len(address_rows) != 1:
+            raise PhysicalWorkflowStateError(
+                "La pré-allocation doit posséder une adresse canonique unique."
+            )
+
+        address_id = address_rows[0][0]
+
+        cursor.execute(
+            """
+            SELECT 1
+            FROM public.addresses
+            WHERE beacon_id = %s
+            LIMIT 1
+            """,
+            [stock_beacon_id],
+        )
+        if cursor.fetchone() is not None:
+            raise PhysicalWorkflowStateError(
+                "La balise reçue sélectionnée est déjà liée à une adresse."
+            )
+
+        cursor.execute(
+            """
+            UPDATE public.addresses
+            SET beacon_id = %s
+            WHERE id = %s
+              AND beacon_id = %s
+            """,
+            [stock_beacon_id, address_id, current_beacon_id],
+        )
+        if cursor.rowcount != 1:
+            raise PhysicalWorkflowStateError(
+                "Le rattachement de l’adresse a été modifié concurremment."
+            )
+
+        cursor.execute(
+            """
+            UPDATE public.orders
+            SET beacon_id = %s
+            WHERE id = %s
+              AND beacon_id = %s
+            """,
+            [stock_beacon_id, order_id, current_beacon_id],
+        )
+        if cursor.rowcount != 1:
+            raise PhysicalWorkflowStateError(
+                "Le rattachement de la commande a été modifié concurremment."
+            )
+
+        cursor.execute(
+            """
+            UPDATE public.order_sites
+            SET beacon_id = %s
+            WHERE order_id = %s
+              AND beacon_id = %s
+            """,
+            [stock_beacon_id, order_id, current_beacon_id],
+        )
+        if cursor.rowcount != 1:
+            raise PhysicalWorkflowStateError(
+                "Le rattachement du site a été modifié concurremment."
+            )
+
+        cursor.execute(
+            """
+            UPDATE public.pending_installations
+            SET
+                beacon_id = %s,
+                updated_at = NOW()
+            WHERE id = %s
+              AND beacon_id = %s
+              AND status = 'pending'
+              AND assigned_agent_id IS NULL
+              AND scheduled_at IS NULL
+              AND completed_at IS NULL
+            """,
+            [stock_beacon_id, pending_id, current_beacon_id],
+        )
+        if cursor.rowcount != 1:
+            raise PhysicalWorkflowStateError(
+                "Le rattachement de la demande a été modifié concurremment."
+            )
+
+        cursor.execute(
+            """
+            UPDATE public.beacons
+            SET status = 'cancelled'
+            WHERE id = %s
+              AND numbering_version = 'v1'
+              AND lot_id IS NULL
+              AND status = 'available'
+              AND assigned_agent_id IS NULL
+            """,
+            [current_beacon_id],
+        )
+        if cursor.rowcount != 1:
+            raise PhysicalWorkflowStateError(
+                "L’ancienne pré-allocation n’a pas pu être neutralisée."
+            )
+
+    return {
+        "beacon_id": str(stock_beacon_id),
+        "public_number": str(stock_public_number),
+        "lot_code": str(stock_lot_code),
+        "replaced_beacon_id": str(current_beacon_id),
+    }
+
+
 @transaction.atomic
 def assign_physical_installation(
     *,
     pending_installation_id: str,
     actor_id: str,
     agent_id: str,
+    stock_beacon_id: str | None = None,
 ) -> dict[str, Any]:
     row = _load_pending_for_update(
         pending_installation_id=pending_installation_id
@@ -286,6 +552,23 @@ def assign_physical_installation(
         pending_beacon_id=pending_beacon_id,
         order_beacon_id=order_beacon_id,
     )
+
+    original_beacon_id = str(beacon_id)
+    selected_stock_beacon_id = str(
+        stock_beacon_id
+        or beacon_id
+    )
+
+    binding = None
+
+    if selected_stock_beacon_id != original_beacon_id:
+        binding = _rebind_placeholder_to_received_stock(
+            pending_id=str(pending_id),
+            order_id=str(order_id),
+            current_beacon_id=original_beacon_id,
+            stock_beacon_id=selected_stock_beacon_id,
+        )
+        beacon_id = binding["beacon_id"]
 
     _require_active_agent(agent_id=agent_id)
 
@@ -398,6 +681,11 @@ def assign_physical_installation(
             "request_agent_id": str(agent_id),
             "beacon_status": "assigned",
             "beacon_agent_id": str(agent_id),
+            "replaced_beacon_id": (
+                binding["replaced_beacon_id"]
+                if binding
+                else None
+            ),
         },
     )
 

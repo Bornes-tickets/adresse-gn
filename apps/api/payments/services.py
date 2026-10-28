@@ -18,6 +18,10 @@ from entitlements import (
     installation_requirements_from_order_items,
 )
 
+from backoffice.generic_installation_requests import (
+    ensure_customer_order_installation_request,
+)
+
 
 class PaymentError(Exception):
     code = "PAYMENT_ERROR"
@@ -972,6 +976,7 @@ def _load_confirmation_result(
                 SELECT
                     pi.id,
                     pi.beacon_id,
+                    pi.status AS pending_installation_status,
                     b.public_number,
                     a.id AS address_id
                 FROM public.pending_installations pi
@@ -996,8 +1001,9 @@ def _load_confirmation_result(
             "fulfillment_kind": "physical_installation",
             "pending_installation_id": str(row[0]),
             "beacon_id": str(row[1]),
-            "public_number": str(row[2]),
-            "address_id": str(row[3]),
+            "pending_installation_status": str(row[2]),
+            "public_number": str(row[3]),
+            "address_id": str(row[4]),
         }
 
     raise SalesPaymentFulfillmentError(
@@ -1709,6 +1715,51 @@ def confirm_manual_payment_core(
             fulfillment_kind=fulfillment_kind,
         )
 
+        generic_installation = None
+
+        if (
+            fulfillment_kind
+            == "physical_installation"
+        ):
+            if (
+                existing_fulfillment[
+                    "pending_installation_status"
+                ]
+                == "pending"
+            ):
+                generic_installation = (
+                    ensure_customer_order_installation_request(
+                        actor_id=actor_id,
+                        order_id=str(
+                            row["order_id"]
+                        ),
+                        legacy_pending_installation_id=(
+                            existing_fulfillment[
+                                "pending_installation_id"
+                            ]
+                        ),
+                        legacy_beacon_id=(
+                            existing_fulfillment[
+                                "beacon_id"
+                            ]
+                        ),
+                    )
+                )
+            else:
+                generic_installation = {
+                    "ok": True,
+                    "idempotent": True,
+                    "skipped": True,
+                    "reason": (
+                        "legacy_installation_not_pending"
+                    ),
+                    "legacy_status": (
+                        existing_fulfillment[
+                            "pending_installation_status"
+                        ]
+                    ),
+                }
+
         return {
             "ok": True,
             "idempotent": True,
@@ -1716,6 +1767,7 @@ def confirm_manual_payment_core(
             "order_ref": str(row["order_ref"]),
             "external_ref": row["external_ref"],
             "fulfillment": existing_fulfillment,
+            "generic_installation": generic_installation,
         }
 
     if row["payment_status"] != "pending":
@@ -1810,6 +1862,8 @@ def confirm_manual_payment_core(
             plan_code=plan_code,
         )
 
+    generic_installation = None
+
     with connection.cursor() as cursor:
         cursor.execute(
             """
@@ -1848,6 +1902,29 @@ def confirm_manual_payment_core(
                 row["order_id"],
             ],
         )
+
+        if (
+            fulfillment_kind
+            == "physical_installation"
+        ):
+            generic_installation = (
+                ensure_customer_order_installation_request(
+                    actor_id=actor_id,
+                    order_id=str(
+                        row["order_id"]
+                    ),
+                    legacy_pending_installation_id=(
+                        fulfillment[
+                            "pending_installation_id"
+                        ]
+                    ),
+                    legacy_beacon_id=(
+                        fulfillment[
+                            "beacon_id"
+                        ]
+                    ),
+                )
+            )
 
         cursor.execute(
             """
@@ -1931,6 +2008,7 @@ def confirm_manual_payment_core(
         "order_ref": str(row["order_ref"]),
         "external_ref": clean_external_ref,
         "fulfillment": fulfillment,
+        "generic_installation": generic_installation,
         "notification_id": str(notification_id),
         "audit_id": str(audit_id),
     }

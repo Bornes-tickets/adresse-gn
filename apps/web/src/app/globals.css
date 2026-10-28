@@ -186,3 +186,47 @@ body {
     0 4px 20px -4px rgb(46 74 123 / 0.15),
     0 1px 3px rgb(15 23 42 / 0.06);
 }
+
+/* =========================================================
+   R9-P5-A1 — Professional back-office foundations
+   ========================================================= */
+
+:root {
+  --backoffice-navy: #13233f;
+  --backoffice-navy-soft: #1e3660;
+  --backoffice-brand: #2e4a7b;
+  --backoffice-accent: #0ea5a4;
+  --backoffice-canvas: #f6f8fb;
+  --backoffice-border: rgb(226 232 240 / 0.9);
+  --backoffice-shadow:
+    0 18px 50px rgb(30 54 96 / 0.08);
+}
+
+.backoffice-canvas {
+  background-color: var(--backoffice-canvas);
+  background-image:
+    radial-gradient(
+      circle at 0% 0%,
+      rgb(46 74 123 / 0.055),
+      transparent 28rem
+    ),
+    radial-gradient(
+      circle at 100% 100%,
+      rgb(14 165 164 / 0.04),
+      transparent 30rem
+    );
+}
+
+.backoffice-sidebar {
+  background:
+    linear-gradient(
+      180deg,
+      var(--backoffice-navy) 0%,
+      #101d34 100%
+    );
+  color: white;
+}
+
+.backoffice-shell-shadow {
+  box-shadow: var(--backoffice-shadow);
+}

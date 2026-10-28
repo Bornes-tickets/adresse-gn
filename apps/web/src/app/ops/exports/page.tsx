@@ -3,21 +3,17 @@ import type {
 } from "next";
 
 import {
-  ResourcePage,
-} from "@/features/backoffice/components/resource-page";
+  OpsExportsPage,
+} from "@/features/backoffice/components/ops-professional-pages";
 
 
 export const metadata: Metadata = {
-  title: "Exports — Adresse GN",
+  title: "Documents & exports — Adresse GN",
 };
 
 
 export default function Page() {
   return (
-    <ResourcePage
-      title="Exports"
-      subtitle="Lots et disponibilité des QR pour les exports opérationnels."
-      resource="ops_exports"
-    />
+    <OpsExportsPage />
   );
 }

@@ -38,20 +38,28 @@ SPACE_NAVIGATION = {
             "label": "Tableau de bord",
         },
         {
-            "href": "/supervisor/consultations",
-            "label": "Consultations",
+            "href": "/supervisor/balises-disponibles",
+            "label": "Balises disponibles",
         },
         {
-            "href": "/supervisor/installations",
-            "label": "Installations / QC",
+            "href": "/supervisor/affectations",
+            "label": "Affectations",
         },
         {
             "href": "/supervisor/planning",
             "label": "Planification",
         },
         {
+            "href": "/supervisor/installations",
+            "label": "Installations / QC",
+        },
+        {
             "href": "/supervisor/report-installations",
             "label": "Rapport installations",
+        },
+        {
+            "href": "/supervisor/consultations",
+            "label": "Consultations",
         },
         {
             "href": "/supervisor/signalements",
@@ -246,6 +254,20 @@ def _supervisor_dashboard() -> dict:
             """,
         )
 
+        available_physical_beacons = _scalar(
+            cursor,
+            """
+            SELECT COUNT(*)
+            FROM public.beacons b
+            WHERE
+                b.numbering_version = 'v1'
+                AND b.status = 'available'
+                AND b.assigned_agent_id IS NULL
+                AND b.lot_id IS NOT NULL
+                AND b.category <> 'digital_only'
+            """,
+        )
+
         pending_installations = _scalar(
             cursor,
             """
@@ -351,6 +373,11 @@ def _supervisor_dashboard() -> dict:
                 "active_beacons",
                 "Balises actives",
                 active_beacons,
+            ),
+            _metric(
+                "available_physical_beacons",
+                "Balises disponibles",
+                available_physical_beacons,
             ),
             _metric(
                 "pending_installations",
