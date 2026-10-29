@@ -48,6 +48,25 @@ def validate_commune_code(commune_code: Any) -> str:
     return value
 
 
+def format_v1_public_number(public_number: Any) -> str:
+    """Render stored V1 as CKY03-58274144-4 without mutating storage."""
+    value = str(public_number or "").strip().upper()
+    match = re.fullmatch(
+        r"([A-Z]{3}[0-9]{2})-([0-9]{8})([0-9])",
+        value,
+    )
+    if match is None:
+        raise NumberingError("Numéro public Adresse GN V1 invalide.")
+
+    commune_code, national_id, check_digit = match.groups()
+    validate_commune_code(commune_code)
+
+    if verhoeff_check_digit(national_id) != check_digit:
+        raise NumberingError("Chiffre de contrôle Adresse GN invalide.")
+
+    return f"{commune_code}-{national_id}-{check_digit}"
+
+
 def verhoeff_check_digit(national_id: Any) -> str:
     value = str(national_id or "").strip()
 
