@@ -126,6 +126,31 @@ class R9SupervisorAssignmentSourceTests(TestCase):
         for token in required:
             self.assertIn(token, block)
 
+        self.assertEqual(
+            block.count("NULL::numeric AS gps_lat"),
+            2,
+        )
+        self.assertEqual(
+            block.count("NULL::numeric AS gps_lng"),
+            2,
+        )
+        self.assertEqual(
+            block.count("NULL::numeric AS accuracy_m"),
+            2,
+        )
+        self.assertNotIn(
+            "                NULL AS gps_lat,",
+            block,
+        )
+        self.assertNotIn(
+            "                NULL AS gps_lng,",
+            block,
+        )
+        self.assertNotIn(
+            "                NULL AS accuracy_m,",
+            block,
+        )
+
     def test_supervisor_resource_roles_are_sets_and_include_admin_hierarchy(self):
         source = self.source("apps/api/backoffice/global_resources.py")
         tree = ast.parse(source)
