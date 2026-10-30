@@ -55,6 +55,51 @@ class ManufacturingRuntimeError(RuntimeError):
         self.http_status = http_status
 
 
+def _normalize_artwork_spec(value: Any) -> dict[str, Any]:
+    if isinstance(value, dict):
+        normalized = dict(value)
+    elif isinstance(value, str):
+        raw = value.strip()
+        if not raw:
+            raise ManufacturingRuntimeError(
+                "artwork_spec du modèle actif doit être un objet JSON non vide.",
+                status="template_incomplete",
+                http_status=409,
+            )
+
+        try:
+            decoded = json.loads(raw)
+        except (TypeError, ValueError, json.JSONDecodeError) as exc:
+            raise ManufacturingRuntimeError(
+                "artwork_spec du modèle actif contient un JSON invalide.",
+                status="template_incomplete",
+                http_status=409,
+            ) from exc
+
+        if not isinstance(decoded, dict):
+            raise ManufacturingRuntimeError(
+                "artwork_spec du modèle actif doit être un objet JSON.",
+                status="template_incomplete",
+                http_status=409,
+            )
+        normalized = dict(decoded)
+    else:
+        raise ManufacturingRuntimeError(
+            "artwork_spec du modèle actif doit être un objet JSON non vide.",
+            status="template_incomplete",
+            http_status=409,
+        )
+
+    if not normalized:
+        raise ManufacturingRuntimeError(
+            "artwork_spec du modèle actif doit être un objet JSON non vide.",
+            status="template_incomplete",
+            http_status=409,
+        )
+
+    return normalized
+
+
 def _canonical_site_origin(value: Any) -> str:
     raw = str(value or "").strip().rstrip("/")
     parsed = urlsplit(raw)
@@ -804,6 +849,7 @@ def get_or_create_official_manufacturing_pdf(
                         )
 
                     template = templates[0]
+                    artwork_spec = _normalize_artwork_spec(template[8])
                     snapshot = freeze_template_snapshot(
                         template_id=template[0],
                         category=template[1],
@@ -813,7 +859,7 @@ def get_or_create_official_manufacturing_pdf(
                         height_mm=template[5],
                         material=template[6],
                         finish=template[7],
-                        artwork_spec=template[8],
+                        artwork_spec=artwork_spec,
                     )
 
                     cursor.execute(

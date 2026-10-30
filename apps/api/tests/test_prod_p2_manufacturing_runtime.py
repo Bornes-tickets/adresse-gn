@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 from unittest.mock import Mock, patch
 import sys
@@ -319,6 +320,130 @@ class ProdP2ManufacturingRuntimeTests(TestCase):
                 },
                 "test_only": True,
             },
+        )
+
+    def test_artwork_spec_normalizer_accepts_dict_and_json_object(self):
+        runtime = self._a2_runtime_module()
+        artwork = self._a2_template_row()[8]
+
+        normalized_dict = runtime._normalize_artwork_spec(artwork)
+        normalized_json = runtime._normalize_artwork_spec(
+            json.dumps(artwork)
+        )
+
+        self.assertEqual(normalized_dict, artwork)
+        self.assertEqual(normalized_json, artwork)
+        self.assertIsNot(normalized_dict, artwork)
+        self.assertEqual(
+            normalized_json["supplier_pdf"]["label"],
+            "Adresse GN TEST",
+        )
+
+    def test_artwork_spec_normalizer_rejects_invalid_inputs(self):
+        runtime = self._a2_runtime_module()
+
+        cases = [
+            ("invalid_json", "{invalid"),
+            ("array_json", "[]"),
+            ("null_json", "null"),
+            ("empty_string", ""),
+            ("whitespace_string", "   "),
+            ("none_value", None),
+            ("empty_dict", {}),
+        ]
+
+        for label, value in cases:
+            with self.subTest(case=label):
+                with self.assertRaises(ManufacturingRuntimeError) as raised:
+                    runtime._normalize_artwork_spec(value)
+                self.assertEqual(
+                    raised.exception.status,
+                    "template_incomplete",
+                )
+                self.assertEqual(
+                    raised.exception.http_status,
+                    409,
+                )
+
+    def test_get_or_create_accepts_django_jsonb_string_artwork_spec(self):
+        runtime = self._a2_runtime_module()
+        events = []
+        template_row = list(self._a2_template_row())
+        template_row[8] = json.dumps(template_row[8])
+        cursor = self._a2_cursor(
+            templates=[tuple(template_row)],
+            events=events,
+        )
+        atomic = _A2AtomicContext()
+        pdf_bytes = b"%PDF-DJANGO-JSONB-STRING"
+        pdf_hash = "f" * 64
+        render_mock = Mock(return_value=pdf_bytes)
+        upload_mock = Mock(
+            side_effect=lambda **kwargs: events.append("upload")
+        )
+        delete_mock = Mock()
+
+        with (
+            patch.object(runtime, "connection", _A2Connection(cursor)),
+            patch.object(runtime, "transaction", _A2Transaction(atomic)),
+            patch.object(
+                runtime,
+                "public_site_url",
+                return_value="https://adresse-gn.example",
+            ),
+            patch.object(
+                runtime,
+                "render_official_manufacturing_pdf",
+                render_mock,
+            ),
+            patch.object(runtime, "sha256_pdf", return_value=pdf_hash),
+            patch.object(
+                runtime,
+                "upload_storage_object",
+                upload_mock,
+            ),
+            patch.object(
+                runtime,
+                "delete_storage_object",
+                delete_mock,
+            ),
+            patch.object(runtime, "audit", Mock()),
+            patch.object(
+                runtime,
+                "signed_storage_url",
+                return_value="https://signed.example/django-jsonb",
+            ),
+        ):
+            result = runtime.get_or_create_official_manufacturing_pdf(
+                actor_id="123e4567-e89b-12d3-a456-426614174020",
+                lot_id="123e4567-e89b-12d3-a456-426614174010",
+            )
+
+        self.assertEqual(result["source"], "created")
+        self.assertEqual(result["pdf_sha256"], pdf_hash)
+        render_mock.assert_called_once()
+        upload_mock.assert_called_once()
+        delete_mock.assert_not_called()
+        self.assertEqual(events, ["upload", "insert"])
+
+        snapshot = render_mock.call_args.kwargs["template_snapshot"]
+        self.assertIsInstance(snapshot.artwork_spec, dict)
+        self.assertEqual(
+            snapshot.artwork_spec["supplier_pdf"]["label"],
+            "Adresse GN TEST",
+        )
+
+        identities = render_mock.call_args.kwargs["identities"]
+        self.assertEqual(
+            [identity.public_number_stored for identity in identities],
+            ["CKY03-582741444", "CKY03-582741459"],
+        )
+        self.assertEqual(
+            [identity.qr_token for identity in identities],
+            [
+                "26fa7253-ae0a-4738-a71a-ec6b6061045c",
+                "c4ca7437-1bd9-455a-b442-7f75b535348a",
+            ],
         )
 
     def _a2_beacon_rows(self):
