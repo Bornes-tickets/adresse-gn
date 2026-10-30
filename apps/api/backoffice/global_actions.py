@@ -74,6 +74,10 @@ from .physical_installation_workflow import (
     reassign_physical_installation,
     schedule_physical_installation,
 )
+from .manufacturing_runtime import (
+    ManufacturingRuntimeError,
+    get_or_create_official_manufacturing_pdf,
+)
 
 
 CMS_RESOURCES = {
@@ -277,6 +281,26 @@ def execute_action(
     if resource == "admin_beacons":
         if action == "generate_batch":
             return generate_beacon_batch(actor, data)
+        if action == "manufacturing_pdf":
+            try:
+                return get_or_create_official_manufacturing_pdf(
+                    actor_id=actor["user_id"],
+                    lot_id=required_text(
+                        data,
+                        "lot_id",
+                        "Le lot",
+                    ),
+                    origin_hint=optional_text(
+                        data,
+                        "_origin",
+                    ),
+                )
+            except ManufacturingRuntimeError as exc:
+                raise ActionError(
+                    str(exc),
+                    status=exc.status,
+                    http_status=exc.http_status,
+                ) from exc
 
     if resource == "admin_zones":
         if action == "save":

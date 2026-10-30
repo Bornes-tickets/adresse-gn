@@ -12,6 +12,7 @@ import {
   ChevronRight,
   CircleAlert,
   Eye,
+  FileDown,
   Hash,
   PackageCheck,
   PackagePlus,
@@ -175,11 +176,20 @@ function DetailRow({
 function BeaconDetail({
   detail,
   onClose,
+  onManufacturingPdf,
+  manufacturingPdfBusy,
+  manufacturingPdfAvailable,
+  manufacturingPdfError,
 }: {
   detail:
     BackofficeBeaconDetailResponse;
   onClose:
     () => void;
+  onManufacturingPdf:
+    (lotId: string) => Promise<void>;
+  manufacturingPdfBusy: boolean;
+  manufacturingPdfAvailable: boolean;
+  manufacturingPdfError: string;
 }) {
   const beacon =
     detail.beacon;
@@ -290,7 +300,38 @@ function BeaconDetail({
             title="Approvisionnement"
             description="Lot physique associé à la balise."
             icon={PackageCheck}
+            actions={
+              beacon.lot
+              && manufacturingPdfAvailable
+                ? (
+                    <button
+                      type="button"
+                      disabled={manufacturingPdfBusy}
+                      onClick={() => {
+                        const lot = beacon.lot;
+                        if (lot) {
+                          void onManufacturingPdf(
+                            lot.id,
+                          );
+                        }
+                      }}
+                      className="inline-flex h-9 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-wait disabled:opacity-50"
+                    >
+                      <FileDown className="h-4 w-4" />
+                      {manufacturingPdfBusy
+                        ? "Préparation…"
+                        : "PDF fournisseur"}
+                    </button>
+                  )
+                : null
+            }
           >
+            {manufacturingPdfError ? (
+              <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
+                {manufacturingPdfError}
+              </div>
+            ) : null}
+
             {beacon.lot ? (
               <dl>
                 <DetailRow
@@ -569,6 +610,24 @@ export function AdminBeaconsPage() {
     setSuccess,
   ] = useState("");
 
+  const [
+    lastGeneratedLot,
+    setLastGeneratedLot,
+  ] = useState<{
+    id: string;
+    code: string;
+  } | null>(null);
+
+  const [
+    manufacturingPdfBusy,
+    setManufacturingPdfBusy,
+  ] = useState(false);
+
+  const [
+    manufacturingPdfError,
+    setManufacturingPdfError,
+  ] = useState("");
+
 
   useEffect(() => {
     const controller =
@@ -685,6 +744,13 @@ export function AdminBeaconsPage() {
         === "generate_batch",
     ) ?? null;
 
+  const manufacturingAction =
+    actions.find(
+      (item) =>
+        item.key
+        === "manufacturing_pdf",
+    ) ?? null;
+
   const communeField =
     generateAction
       ?.fields
@@ -766,6 +832,8 @@ export function AdminBeaconsPage() {
   async function confirmGeneration() {
     setFormError("");
     setSuccess("");
+    setManufacturingPdfError("");
+    setLastGeneratedLot(null);
 
     if (!generateAction) {
       setConfirmationOpen(
@@ -810,27 +878,49 @@ export function AdminBeaconsPage() {
         );
       }
 
-      await executeBackofficeAction(
-        token,
-        "admin_beacons",
-        "generate_batch",
-        {
-          rowId: null,
-          data: {
-            commune_id:
-              form.commune_id,
-            category:
-              form.category,
-            quantity,
-            expected_delivery:
-              form.expected_delivery,
-            notes:
-              form.notes,
-            _origin:
-              window.location.origin,
+      const result =
+        await executeBackofficeAction(
+          token,
+          "admin_beacons",
+          "generate_batch",
+          {
+            rowId: null,
+            data: {
+              commune_id:
+                form.commune_id,
+              category:
+                form.category,
+              quantity,
+              expected_delivery:
+                form.expected_delivery,
+              notes:
+                form.notes,
+              _origin:
+                window.location.origin,
+            },
           },
-        },
-      );
+        );
+
+      const generatedLotId =
+        typeof result.lot_id === "string"
+          ? result.lot_id
+          : "";
+
+      const generatedLotCode =
+        typeof result.lot_code === "string"
+          ? result.lot_code
+          : "";
+
+      if (!generatedLotId) {
+        throw new Error(
+          "Le lot généré n’a pas retourné son identifiant.",
+        );
+      }
+
+      setLastGeneratedLot({
+        id: generatedLotId,
+        code: generatedLotCode || generatedLotId,
+      });
 
       setSuccess(
         `${formatNumber(quantity)} numéro(s) Adresse GN ont été générés et réservés. Ils restent au statut Générée jusqu’à leur prise en charge physique par OPS.`,
@@ -868,6 +958,75 @@ export function AdminBeaconsPage() {
     }
     finally {
       setSaving(false);
+    }
+  }
+
+
+  async function downloadManufacturingPdf(
+    lotId: string,
+  ) {
+    setManufacturingPdfError("");
+
+    if (!manufacturingAction) {
+      setManufacturingPdfError(
+        "L’action PDF fournisseur n’est pas disponible pour cette session.",
+      );
+      return;
+    }
+
+    setManufacturingPdfBusy(true);
+
+    try {
+      const token =
+        await getAccessToken();
+
+      if (!token) {
+        throw new Error(
+          "Session expirée.",
+        );
+      }
+
+      const result =
+        await executeBackofficeAction(
+          token,
+          "admin_beacons",
+          "manufacturing_pdf",
+          {
+            rowId: null,
+            data: {
+              lot_id: lotId,
+              _origin:
+                window.location.origin,
+            },
+          },
+        );
+
+      const signedUrl =
+        typeof result.signed_url === "string"
+          ? result.signed_url
+          : "";
+
+      if (!signedUrl) {
+        throw new Error(
+          "Le PDF fournisseur n’a pas retourné de lien de téléchargement.",
+        );
+      }
+
+      window.open(
+        signedUrl,
+        "_blank",
+        "noopener,noreferrer",
+      );
+    }
+    catch(actionError) {
+      setManufacturingPdfError(
+        actionError instanceof Error
+          ? actionError.message
+          : "Impossible d’ouvrir le PDF fournisseur.",
+      );
+    }
+    finally {
+      setManufacturingPdfBusy(false);
     }
   }
 
@@ -1287,10 +1446,40 @@ export function AdminBeaconsPage() {
       ) : null}
 
       {success ? (
-        <div className="flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
-          <PackageCheck className="mt-0.5 h-4 w-4 shrink-0" />
+        <div className="flex flex-col gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <PackageCheck className="mt-0.5 h-4 w-4 shrink-0" />
+            <p className="leading-6">
+              {success}
+            </p>
+          </div>
+
+          {lastGeneratedLot
+          && manufacturingAction ? (
+            <button
+              type="button"
+              disabled={manufacturingPdfBusy}
+              onClick={() =>
+                void downloadManufacturingPdf(
+                  lastGeneratedLot.id,
+                )
+              }
+              className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-emerald-300 bg-white px-4 text-xs font-semibold text-emerald-800 transition hover:bg-emerald-50 disabled:cursor-wait disabled:opacity-50"
+            >
+              <FileDown className="h-4 w-4" />
+              {manufacturingPdfBusy
+                ? "Préparation…"
+                : `PDF fournisseur · ${lastGeneratedLot.code}`}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+
+      {manufacturingPdfError && !detail ? (
+        <div className="flex items-start gap-3 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900">
+          <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" />
           <p className="leading-6">
-            {success}
+            {manufacturingPdfError}
           </p>
         </div>
       ) : null}
@@ -1896,6 +2085,18 @@ export function AdminBeaconsPage() {
             setDetail(
               null,
             )
+          }
+          onManufacturingPdf={
+            downloadManufacturingPdf
+          }
+          manufacturingPdfBusy={
+            manufacturingPdfBusy
+          }
+          manufacturingPdfAvailable={
+            manufacturingAction != null
+          }
+          manufacturingPdfError={
+            manufacturingPdfError
           }
         />
       ) : null}

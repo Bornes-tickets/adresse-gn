@@ -264,6 +264,17 @@ ACTION_DEFINITIONS: dict[str, list[dict[str, Any]]] = {
                 "nationaux correspondants ?"
             ),
         ),
+        action(
+            "manufacturing_pdf",
+            "PDF fournisseur officiel",
+            "global",
+            ADMIN,
+            [],
+            confirm=(
+                "Générer ou ouvrir le PDF fournisseur officiel "
+                "du lot ?"
+            ),
+        ),
     ],
     "admin_zones": [
         action(
