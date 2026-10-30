@@ -1,3 +1,4 @@
+import ast
 from pathlib import Path
 from unittest import TestCase
 
@@ -113,7 +114,7 @@ class R9SupervisorAssignmentSourceTests(TestCase):
         required = (
             "'dispatch'::text AS record_kind",
             "FROM public.pending_installations pi",
-            "WHERE pi.status IN (",
+            "pi.status IN ('pending', 'assigned', 'planned')",
             "'pending'",
             "'assigned'",
             "'planned'",
@@ -125,12 +126,56 @@ class R9SupervisorAssignmentSourceTests(TestCase):
         for token in required:
             self.assertIn(token, block)
 
+    def test_supervisor_resource_roles_are_sets_and_include_admin_hierarchy(self):
+        source = self.source("apps/api/backoffice/global_resources.py")
+        tree = ast.parse(source)
+
+        roles_node = None
+        for node in tree.body:
+            if not isinstance(node, ast.Assign):
+                continue
+            if any(
+                isinstance(target, ast.Name)
+                and target.id == "RESOURCE_ROLES"
+                for target in node.targets
+            ):
+                roles_node = node.value
+                break
+
+        self.assertIsNotNone(roles_node)
+        roles = ast.literal_eval(roles_node)
+
+        for resource, allowed in roles.items():
+            self.assertIsInstance(
+                allowed,
+                set,
+                f"{resource} must map to a set of roles",
+            )
+
+        expected = {"supervisor", "admin", "super_admin"}
+        self.assertEqual(roles["supervisor_installations"], expected)
+        self.assertEqual(roles["supervisor_planning"], expected)
+
     def test_available_beacons_provider_is_not_needed_for_canonical_preallocation(self):
         common = self.source("apps/api/backoffice/action_common.py")
         catalog = self.source("apps/api/backoffice/action_catalog.py")
 
-        self.assertNotIn("available_beacons", common)
-        self.assertNotIn("available_beacons", catalog)
+        self.assertNotIn(
+            "def available_beacons_options(",
+            common,
+        )
+        self.assertNotIn(
+            'source="available_beacons"',
+            catalog,
+        )
+        self.assertIn(
+            '"supervisor_available_beacons": [',
+            catalog,
+        )
+        self.assertIn(
+            'source="available_physical_beacons"',
+            catalog,
+        )
 
     def test_r9_p4_terrain_lifecycle_is_assigned_installed_active(self):
         terrain = self.source(
@@ -178,15 +223,30 @@ class R9SupervisorAssignmentSourceTests(TestCase):
 
     def test_ui_copy_matches_authority_split(self):
         supervisor = self.source(
-            "apps/web/src/app/supervisor/installations/page.tsx"
+            "apps/web/src/features/backoffice/components/"
+            "supervisor-professional-pages.tsx"
         )
         sales = self.source(
             "apps/web/src/app/sales/installations/page.tsx"
         )
 
+        start = supervisor.index(
+            "export function SupervisorInstallationsQcPage()"
+        )
+        block = supervisor[start:]
+
         self.assertIn(
-            "affectation, planification et contrôle QC",
-            supervisor,
+            'useSupervisorResource(\n      "supervisor_installations"',
+            block,
+        )
+        self.assertIn(
+            'title="Installations & contrôle QC"',
+            block,
+        )
+        self.assertIn(
+            "Contrôlez uniquement les installations "
+            "de la nouvelle codification V1.",
+            block,
         )
         self.assertIn(
             "lecture seule",
