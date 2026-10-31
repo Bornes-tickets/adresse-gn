@@ -98,28 +98,36 @@ SPACE_NAVIGATION = {
             "label": "Tableau de bord",
         },
         {
-            "href": "/sales/paiements",
-            "label": "Paiements",
-        },
-        {
             "href": "/sales/commandes",
             "label": "Commandes",
         },
         {
-            "href": "/sales/abonnements",
-            "label": "Abonnements",
+            "href": "/sales/paiements",
+            "label": "Paiements",
         },
         {
-            "href": "/sales/offres",
-            "label": "Offres",
+            "href": "/sales/devis",
+            "label": "Devis",
         },
         {
             "href": "/sales/clients",
             "label": "Clients",
         },
         {
+            "href": "/sales/offres",
+            "label": "Offres",
+        },
+        {
+            "href": "/sales/abonnements",
+            "label": "Abonnements",
+        },
+        {
             "href": "/sales/installations",
             "label": "Installations à planifier",
+        },
+        {
+            "href": "/sales/rapports",
+            "label": "Rapports",
         },
     ],
     "support": [
