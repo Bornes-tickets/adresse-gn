@@ -3,8 +3,8 @@ import type {
 } from "next";
 
 import {
-  RoleDashboardPage,
-} from "@/features/backoffice/components/role-dashboard-page";
+  SalesReportsPage,
+} from "@/features/sales/components/sales-reports-page";
 
 
 export const metadata: Metadata = {
@@ -14,8 +14,6 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <RoleDashboardPage
-      space="sales"
-    />
+    <SalesReportsPage />
   );
 }

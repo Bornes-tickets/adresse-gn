@@ -3,21 +3,19 @@ import type {
 } from "next";
 
 import {
-  ResourcePage,
-} from "@/features/backoffice/components/resource-page";
+  SalesDataPage,
+} from "@/features/sales/components/sales-data-page";
 
 
 export const metadata: Metadata = {
-  title: "Installations à planifier — Adresse GN",
+  title: "Installations — Adresse GN",
 };
 
 
 export default function Page() {
   return (
-    <ResourcePage
-      title="Installations à planifier"
-      subtitle="Suivi commercial en lecture seule des demandes d’installation physique."
-      resource="sales_installations"
+    <SalesDataPage
+      mode="installations"
     />
   );
 }

@@ -169,6 +169,48 @@ export async function confirmSalesPayment(
 }
 
 
+export async function confirmSalesOrderManualPayment(
+  orderRef: string,
+  payload: {
+    external_ref: string;
+    note?: string | null;
+  },
+): Promise<SalesConfirmResponse> {
+  const response =
+    await fetch(
+      `${API_BASE_URL}/api/v1/payments/sales/orders/${encodeURIComponent(
+        orderRef,
+      )}/confirm/`,
+      {
+        method: "POST",
+        headers: {
+          ...(await authHeaders()),
+          "Content-Type":
+            "application/json",
+        },
+        body: JSON.stringify({
+          external_ref:
+            payload.external_ref,
+          note:
+            payload.note
+            ?? null,
+        }),
+        cache: "no-store",
+      },
+    );
+
+  if (!response.ok) {
+    return readApiError(
+      response,
+    );
+  }
+
+  return (
+    await response.json()
+  ) as SalesConfirmResponse;
+}
+
+
 export async function rejectSalesPayment(
   paymentId: string,
   reason: string,

@@ -3,8 +3,8 @@ import type {
 } from "next";
 
 import {
-  ResourcePage,
-} from "@/features/backoffice/components/resource-page";
+  SalesDataPage,
+} from "@/features/sales/components/sales-data-page";
 
 
 export const metadata: Metadata = {
@@ -14,10 +14,8 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <ResourcePage
-      title="Offres"
-      subtitle="Catalogue commercial actuel issu du CMS des plans."
-      resource="sales_offers"
+    <SalesDataPage
+      mode="offers"
     />
   );
 }

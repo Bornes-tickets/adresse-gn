@@ -56,7 +56,7 @@ import {
 } from "@/lib/supabase/browser";
 
 import {
-  confirmSalesPayment,
+  confirmSalesOrderManualPayment,
   listSalesPayments,
   rejectSalesPayment,
   SalesApiError,
@@ -385,7 +385,7 @@ function paymentText(
   }
 
   if (
-    payment?.status === "pending"
+    order.status === "pending"
     && order.payment_method === "manual"
   ) {
     return "À valider";
@@ -1128,14 +1128,13 @@ export function SalesOrdersPage({
 
   const canValidate =
     Boolean(
-      selected
+      mode === "orders"
+      && selected
+      && !selected.devis_demande
       && selected.status
         === "pending"
       && selected.payment_method
-        === "manual"
-      && selectedPayment
-      && selectedPayment.status
-        === "pending",
+        === "manual",
     );
 
 
@@ -1209,10 +1208,7 @@ export function SalesOrdersPage({
 
 
   async function validateOrder() {
-    if (
-      !selected
-      || !selectedPayment
-    ) {
+    if (!selected) {
       return;
     }
 
@@ -1231,8 +1227,8 @@ export function SalesOrdersPage({
     setError("");
 
     try {
-      await confirmSalesPayment(
-        selectedPayment.id,
+      await confirmSalesOrderManualPayment(
+        selected.order_ref,
         {
           external_ref:
             reference,
@@ -1671,12 +1667,12 @@ export function SalesOrdersPage({
                           );
 
                         const confirmable =
-                          order.status
+                          mode === "orders"
+                          && !order.devis_demande
+                          && order.status
                             === "pending"
                           && order.payment_method
-                            === "manual"
-                          && payment?.status
-                            === "pending";
+                            === "manual";
 
                         return (
                           <tr
@@ -1923,7 +1919,7 @@ export function SalesOrdersPage({
 
       {selected && modalMode ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
-          <div className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl">
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
             <div className="flex items-start justify-between border-b p-5">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.14em] text-blue-600">
@@ -1993,36 +1989,115 @@ export function SalesOrdersPage({
               </div>
 
               {modalMode === "detail" ? (
-                <div className="grid gap-3 text-sm sm:grid-cols-2">
-                  <p>
-                    <span className="text-slate-500">
-                      Email :
-                    </span>{" "}
-                    {selected.client_email || "—"}
-                  </p>
+                <div className="space-y-4">
+                  <div className="grid gap-3 text-sm sm:grid-cols-2">
+                    <p>
+                      <span className="text-slate-500">
+                        Email :
+                      </span>{" "}
+                      {selected.client_email || "—"}
+                    </p>
 
-                  <p>
-                    <span className="text-slate-500">
-                      Téléphone :
-                    </span>{" "}
-                    {selected.client_phone || "—"}
-                  </p>
+                    <p>
+                      <span className="text-slate-500">
+                        Téléphone :
+                      </span>{" "}
+                      {selected.client_phone || "—"}
+                    </p>
 
-                  <p>
-                    <span className="text-slate-500">
-                      Statut :
-                    </span>{" "}
-                    {humanStatus(
-                      selected.status,
-                    )}
-                  </p>
+                    <p>
+                      <span className="text-slate-500">
+                        Statut commande :
+                      </span>{" "}
+                      {humanStatus(
+                        selected.status,
+                      )}
+                    </p>
 
-                  <p>
-                    <span className="text-slate-500">
-                      Nombre d&apos;adresses :
-                    </span>{" "}
-                    {selected.nb_adresses}
-                  </p>
+                    <p>
+                      <span className="text-slate-500">
+                        Nombre d&apos;adresses :
+                      </span>{" "}
+                      {selected.nb_adresses}
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <p className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
+                      Paiement
+                    </p>
+
+                    <div className="grid gap-3 text-sm sm:grid-cols-2">
+                      <p>
+                        <span className="text-slate-500">
+                          Mode :
+                        </span>{" "}
+                        {selected.payment_method === "manual"
+                          ? "Manuel"
+                          : selected.payment_method || "—"}
+                      </p>
+
+                      <p>
+                        <span className="text-slate-500">
+                          État :
+                        </span>{" "}
+                        {paymentText(
+                          selectedPayment,
+                          selected,
+                        )}
+                      </p>
+
+                      <p>
+                        <span className="text-slate-500">
+                          Référence :
+                        </span>{" "}
+                        {selectedPayment?.external_ref || "—"}
+                      </p>
+
+                      <p>
+                        <span className="text-slate-500">
+                          Enregistrement :
+                        </span>{" "}
+                        {selectedPayment
+                          ? formatDate(
+                              selectedPayment.payment_created_at,
+                            )
+                          : "Créé automatiquement lors de la validation"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-3 text-sm sm:grid-cols-3">
+                    <p>
+                      <span className="block text-xs text-slate-500">
+                        Création
+                      </span>
+
+                      {formatDate(
+                        selected.created_at,
+                      )}
+                    </p>
+
+                    <p>
+                      <span className="block text-xs text-slate-500">
+                        Confirmation
+                      </span>
+
+                      {formatDate(
+                        selected.confirmed_at,
+                      )}
+                    </p>
+
+                    <p>
+                      <span className="block text-xs text-slate-500">
+                        Installation
+                      </span>
+
+                      {formatDate(
+                        selected.installed_at,
+                      )}
+                    </p>
+                  </div>
                 </div>
               ) : null}
 
@@ -2082,34 +2157,58 @@ export function SalesOrdersPage({
             </div>
 
             <div className="flex flex-wrap justify-end gap-2 border-t p-5">
-              {modalMode === "detail" && canValidate ? (
-                <>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() =>
-                      setModalMode(
-                        "reject",
-                      )
-                    }
-                  >
-                    <XCircle className="mr-2 h-4 w-4" />
-                    Rejeter
-                  </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  if (
+                    modalMode === "detail"
+                  ) {
+                    setSelected(null);
+                    setModalMode(null);
+                  } else {
+                    setModalMode(
+                      "detail",
+                    );
+                    setError("");
+                  }
+                }}
+              >
+                {modalMode === "detail"
+                  ? "Fermer"
+                  : "Retour"}
+              </Button>
 
-                  <Button
-                    type="button"
-                    onClick={() =>
-                      setModalMode(
-                        "confirm",
-                      )
-                    }
-                    className="bg-teal-700 hover:bg-teal-800"
-                  >
-                    <CheckCircle2 className="mr-2 h-4 w-4" />
-                    Valider la commande
-                  </Button>
-                </>
+              {modalMode === "detail"
+                && mode === "orders"
+                && selectedPayment?.status === "pending" ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() =>
+                    setModalMode(
+                      "reject",
+                    )
+                  }
+                >
+                  <XCircle className="mr-2 h-4 w-4" />
+                  Rejeter
+                </Button>
+              ) : null}
+
+              {modalMode === "detail" && canValidate ? (
+                <Button
+                  type="button"
+                  onClick={() =>
+                    setModalMode(
+                      "confirm",
+                    )
+                  }
+                  className="bg-teal-700 hover:bg-teal-800"
+                >
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  Valider la commande
+                </Button>
               ) : null}
 
               {modalMode === "confirm" ? (

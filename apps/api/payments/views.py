@@ -282,6 +282,7 @@ from .services import (
     SalesPaymentConfirmStateError,
     SalesPaymentFulfillmentError,
     confirm_manual_payment_with_invoice,
+    confirm_sales_order_manual_payment_with_invoice,
 )
 
 
@@ -423,6 +424,158 @@ class SalesPaymentConfirmView(APIView):
                 {
                     "detail": (
                         "Configuration de facturation indisponible."
+                    ),
+                    "code": "INVOICE_CONFIGURATION_REQUIRED",
+                },
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        return Response(
+            result,
+            status=status.HTTP_200_OK,
+        )
+
+
+class SalesOrderManualConfirmView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsSalesTeam,
+    ]
+
+    def post(
+        self,
+        request,
+        order_ref: str,
+    ):
+        actor_id = _user_id(
+            request
+        )
+
+        if not actor_id:
+            return Response(
+                {
+                    "detail": "Authentification requise.",
+                    "code": "AUTH_REQUIRED",
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        external_ref = str(
+            request.data.get(
+                "external_ref",
+                "",
+            )
+            or ""
+        ).strip()
+
+        if not external_ref:
+            return Response(
+                {
+                    "detail": "La r?f?rence du paiement est obligatoire.",
+                    "code": "EXTERNAL_REF_REQUIRED",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if len(external_ref) > 200:
+            return Response(
+                {
+                    "detail": "La r?f?rence du paiement est trop longue.",
+                    "code": "EXTERNAL_REF_TOO_LONG",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        raw_note = request.data.get(
+            "note"
+        )
+
+        if raw_note is None:
+            note = None
+        else:
+            note = (
+                str(
+                    raw_note
+                ).strip()
+                or None
+            )
+
+        if (
+            note is not None
+            and len(note) > 1000
+        ):
+            return Response(
+                {
+                    "detail": "La note est trop longue.",
+                    "code": "NOTE_TOO_LONG",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            result = (
+                confirm_sales_order_manual_payment_with_invoice(
+                    actor_id=str(
+                        actor_id
+                    ),
+                    order_ref=str(
+                        order_ref
+                    ),
+                    external_ref=external_ref,
+                    note=note,
+                )
+            )
+
+        except PaymentOrderNotFoundError as exc:
+            return Response(
+                {
+                    "detail": str(exc),
+                    "code": exc.code,
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        except (
+            SalesPaymentConfirmStateError,
+            SalesPaymentFulfillmentError,
+            SalesPaymentStateError,
+            ManualPaymentInvoiceOrchestrationError,
+        ) as exc:
+            return Response(
+                {
+                    "detail": str(exc),
+                    "code": getattr(
+                        exc,
+                        "code",
+                        "PAYMENT_CONFIRM_STATE_INVALID",
+                    ),
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        except SalesPaymentConfirmError as exc:
+            return Response(
+                {
+                    "detail": str(exc),
+                    "code": exc.code,
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        except SalesPaymentError as exc:
+            return Response(
+                {
+                    "detail": str(exc),
+                    "code": exc.code,
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        except RuntimeError:
+            return Response(
+                {
+                    "detail": (
+                        "La facturation n'est pas disponible pour le moment."
                     ),
                     "code": "INVOICE_CONFIGURATION_REQUIRED",
                 },

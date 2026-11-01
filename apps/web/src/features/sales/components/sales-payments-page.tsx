@@ -115,13 +115,13 @@ function humanizeInvoiceState(
       return "Facture publiée";
 
     case "storage_pending_retry":
-      return "Paiement confirmé — publication PDF à réessayer";
+      return "Paiement confirmé — facture à finaliser";
 
     case "db_pending_retry":
-      return "Paiement confirmé — facture DB à réessayer";
+      return "Paiement confirmé — facture à finaliser";
 
     default:
-      return state;
+      return "Facturation en cours";
   }
 }
 
@@ -512,7 +512,7 @@ export function SalesPaymentsPage() {
       } else {
         setRetryState(null);
         setError(
-          "Référence externe persistée introuvable pour reprendre la facturation.",
+          "La référence du paiement est introuvable pour finaliser la facture.",
         );
       }
     } else {
@@ -806,7 +806,7 @@ export function SalesPaymentsPage() {
       <main className="mx-auto flex min-h-[60vh] max-w-6xl items-center justify-center px-4 py-12">
         <div className="flex items-center gap-3 text-sm text-slate-600">
           <RefreshCw className="h-4 w-4 animate-spin" />
-          Vérification de l’accès Sales…
+          Chargement de votre espace commercial…
         </div>
       </main>
     );
@@ -822,13 +822,13 @@ export function SalesPaymentsPage() {
               Accès refusé
             </CardTitle>
             <CardDescription>
-              Cet espace est réservé aux rôles sales, admin et super_admin.
+              Cet espace est réservé à l’équipe commerciale autorisée.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-start gap-3 rounded-lg border p-4 text-sm text-slate-600">
               <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0" />
-              Le contrôle d’autorisation définitif reste appliqué par l’API Django.
+              Votre accès est protégé par les autorisations de votre compte.
             </div>
           </CardContent>
         </Card>
@@ -842,7 +842,7 @@ export function SalesPaymentsPage() {
       <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="mb-2 text-sm font-medium text-slate-500">
-            Espace Sales
+            Commercial
           </p>
           <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
             Paiements manuels en attente
@@ -906,7 +906,7 @@ export function SalesPaymentsPage() {
               </div>
 
               <Badge>
-                Pending
+                À traiter
               </Badge>
             </div>
           </CardHeader>

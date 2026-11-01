@@ -7,6 +7,7 @@ from .views import (
     SalesPaymentListView,
     SalesPaymentRejectView,
     SalesPaymentConfirmView,
+    SalesOrderManualConfirmView,
 )
 
 
@@ -42,5 +43,11 @@ urlpatterns = [
         "sales/<uuid:payment_id>/confirm/",
         SalesPaymentConfirmView.as_view(),
         name="sales-payment-confirm",
+    ),
+
+    path(
+        "sales/orders/<str:order_ref>/confirm/",
+        SalesOrderManualConfirmView.as_view(),
+        name="sales-order-manual-confirm",
     ),
 ]

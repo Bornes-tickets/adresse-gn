@@ -8,7 +8,7 @@ import {
 
 
 export const metadata: Metadata = {
-  title: "Paiements Sales",
+  title: "Paiements — Adresse GN",
 };
 
 

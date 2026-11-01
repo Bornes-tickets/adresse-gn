@@ -2154,3 +2154,254 @@ def confirm_manual_payment_with_invoice(
         "publication": publication,
         "invoice_error": None,
     }
+
+# ============================================================
+# SALES-PRO-V8 ? order-level manual Sales confirmation
+# ============================================================
+
+@transaction.atomic
+def ensure_sales_manual_payment_for_order(
+    *,
+    order_ref: str,
+) -> dict[str, Any]:
+    """
+    Pr?pare un paiement manuel pending pour une commande
+    commerciale historique ou cr??e sans payment intent.
+    """
+    clean_order_ref = str(
+        order_ref
+        or ""
+    ).strip()
+
+    if not clean_order_ref:
+        raise PaymentOrderNotFoundError(
+            "Commande introuvable."
+        )
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+                o.id,
+                o.order_ref,
+                o.customer_id,
+                o.amount_gnf,
+                o.status,
+                o.payment_method,
+                o.devis_demande
+            FROM public.orders o
+            WHERE o.order_ref = %s
+            LIMIT 1
+            FOR UPDATE
+            """,
+            [clean_order_ref],
+        )
+
+        order = _dict_one(
+            cursor
+        )
+
+        if order is None:
+            raise PaymentOrderNotFoundError(
+                "Commande introuvable."
+            )
+
+        if str(
+            order["status"]
+            or ""
+        ) != "pending":
+            raise SalesPaymentConfirmStateError(
+                "La commande n'est plus en attente."
+            )
+
+        if str(
+            order["payment_method"]
+            or ""
+        ) != "manual":
+            raise SalesPaymentConfirmStateError(
+                "Cette commande n'utilise pas un paiement manuel."
+            )
+
+        if bool(
+            order["devis_demande"]
+        ):
+            raise SalesPaymentConfirmStateError(
+                "Une demande de devis ne peut pas ?tre valid?e comme un paiement."
+            )
+
+        if order["customer_id"] is None:
+            raise SalesPaymentFulfillmentError(
+                "La commande n'est pas rattach?e ? un client."
+            )
+
+        amount_gnf = int(
+            order["amount_gnf"]
+            or 0
+        )
+
+        if amount_gnf <= 0:
+            raise SalesPaymentConfirmStateError(
+                "Le montant de la commande est invalide."
+            )
+
+        cursor.execute(
+            """
+            SELECT
+                p.id,
+                p.status,
+                p.amount_gnf,
+                p.external_ref,
+                p.created_at
+            FROM public.payments p
+            WHERE
+                p.order_id = %s
+                AND p.provider = 'manual'
+                AND p.status = 'pending'
+            ORDER BY
+                p.created_at DESC,
+                p.id DESC
+            LIMIT 1
+            FOR UPDATE
+            """,
+            [order["id"]],
+        )
+
+        payment = _dict_one(
+            cursor
+        )
+
+        created = False
+
+        if payment is None:
+            cursor.execute(
+                """
+                SELECT
+                    p.id
+                FROM public.payments p
+                WHERE
+                    p.order_id = %s
+                    AND p.provider = 'manual'
+                    AND p.status = 'success'
+                ORDER BY
+                    p.created_at DESC,
+                    p.id DESC
+                LIMIT 1
+                """,
+                [order["id"]],
+            )
+
+            successful_payment = (
+                cursor.fetchone()
+            )
+
+            if successful_payment is not None:
+                raise SalesPaymentConfirmStateError(
+                    "Cette commande poss?de d?j? un paiement confirm?."
+                )
+
+            intent_id = (
+                f"sales_manual_{clean_order_ref}_"
+                f"{uuid4().hex[:12]}"
+            )
+
+            cursor.execute(
+                """
+                INSERT INTO public.payments (
+                    order_id,
+                    provider,
+                    amount_gnf,
+                    status,
+                    intent_id
+                )
+                VALUES (
+                    %s,
+                    'manual',
+                    %s,
+                    'pending',
+                    %s
+                )
+                RETURNING
+                    id,
+                    status,
+                    amount_gnf,
+                    external_ref,
+                    created_at
+                """,
+                [
+                    order["id"],
+                    amount_gnf,
+                    intent_id,
+                ],
+            )
+
+            payment = _dict_one(
+                cursor
+            )
+
+            created = True
+
+    if payment is None:
+        raise SalesPaymentConfirmError(
+            "Impossible de pr?parer le paiement manuel."
+        )
+
+    if int(
+        payment["amount_gnf"]
+        or 0
+    ) != amount_gnf:
+        raise SalesPaymentConfirmStateError(
+            "Le montant du paiement ne correspond pas ? la commande."
+        )
+
+    return {
+        "payment_id": str(
+            payment["id"]
+        ),
+        "order_id": str(
+            order["id"]
+        ),
+        "order_ref": str(
+            order["order_ref"]
+        ),
+        "created": created,
+    }
+
+
+def confirm_sales_order_manual_payment_with_invoice(
+    *,
+    actor_id: str,
+    order_ref: str,
+    external_ref: str,
+    note: str | None = None,
+) -> dict:
+    prepared = (
+        ensure_sales_manual_payment_for_order(
+            order_ref=order_ref,
+        )
+    )
+
+    result = (
+        confirm_manual_payment_with_invoice(
+            actor_id=actor_id,
+            payment_id=prepared[
+                "payment_id"
+            ],
+            external_ref=external_ref,
+            note=note,
+        )
+    )
+
+    return {
+        **result,
+        "order_ref": prepared[
+            "order_ref"
+        ],
+        "payment_id": prepared[
+            "payment_id"
+        ],
+        "payment_created_for_confirmation": (
+            prepared[
+                "created"
+            ]
+        ),
+    }
