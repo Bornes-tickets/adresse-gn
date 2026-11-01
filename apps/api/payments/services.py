@@ -7,6 +7,7 @@ from typing import Any
 from numbering import (
     NumberingError,
     next_v1_beacon_number,
+    validate_commune_code,
     verhoeff_check_digit,
 )
 from uuid import uuid4
@@ -1132,10 +1133,14 @@ def _next_v1_beacon_number(
     commune_code: str,
 ) -> dict[str, str]:
     try:
+        clean_commune_code = validate_commune_code(
+            commune_code
+        )
+
         with connection.cursor() as cursor:
             return next_v1_beacon_number(
                 cursor,
-                commune_code=commune_code,
+                commune_code=clean_commune_code,
             )
     except NumberingError as exc:
         raise SalesPaymentFulfillmentError(

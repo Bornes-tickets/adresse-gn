@@ -12,4 +12,8 @@ urlpatterns = [
         "api/v1/tracking/",
         include("tracking.urls"),
     ),
+    path(
+        "api/v1/agent/",
+        include("agent_portal.urls"),
+    ),
 ]
