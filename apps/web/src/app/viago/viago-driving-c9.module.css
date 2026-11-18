@@ -1,0 +1,37 @@
+/* P6-C9 isolated driving HUD: old viago-v3 navigation cascade does not match these local classes. */
+.shell { position:absolute; inset:0; z-index:530; pointer-events:none; font-family:inherit; color:#102c3c; }
+.shell * { box-sizing:border-box; }
+.shell button { pointer-events:auto; cursor:pointer; touch-action:manipulation; }
+.banner { position:absolute; top:0; left:0; right:0; min-height:116px; padding:calc(12px + env(safe-area-inset-top,0px)) 18px 13px; display:flex; gap:15px; align-items:center; background:linear-gradient(112deg,#0875c5,#0064aa); color:white; box-shadow:0 6px 20px rgba(6,43,78,.22); }
+.turnSymbol { width:76px; min-width:76px; display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1; }
+.turnSymbol > span { display:block; font-size:58px; font-weight:800; line-height:.92; text-shadow:0 1px 2px rgba(0,0,0,.1); }
+.turnSymbol small { font-size:14px; line-height:1.2; font-weight:900; margin-top:8px; white-space:nowrap; }
+.bannerText { display:flex; flex-direction:column; min-width:0; gap:4px; }
+.eyebrow { font-size:10px; font-weight:800; letter-spacing:.11em; opacity:.84; }
+.turnTitle { display:block; font-size:clamp(21px,5vw,29px); font-weight:850; line-height:1.13; letter-spacing:-.03em; }
+.destination { display:block; font-size:clamp(11px,3vw,14px); line-height:1.35; color:#eaf7ff; overflow-wrap:anywhere; }
+.nextCard { position:absolute; top:calc(116px + env(safe-area-inset-top,0px)); left:12px; max-width:min(65vw,280px); min-height:57px; display:flex; align-items:center; gap:10px; padding:10px 13px; background:#fff; border:1px solid #e9edf4; border-radius:0 0 18px 18px; box-shadow:0 6px 17px #113c5b35; }
+.nextLabel { color:#557085; font-size:10px; letter-spacing:.08em; font-weight:850; }
+.nextArrow { font-size:30px; line-height:1; color:#0875c5; }
+.nextText { font-size:12px; font-weight:850; line-height:1.2; color:#173e55; }
+.speed { position:absolute; top:calc(208px + env(safe-area-inset-top,0px)); left:17px; width:83px; height:83px; background:#fff; border:3px solid #eef3f7; color:#183c51; border-radius:999px; box-shadow:0 3px 17px #14395130; display:flex; align-items:center; justify-content:center; flex-direction:column; }
+.speedNumber { font-size:34px; font-weight:900; line-height:1; font-variant-numeric:tabular-nums; }
+.speedUnit { font-size:12px; font-weight:800; line-height:1.5; }
+.gpsNotice { position:absolute; top:calc(183px + env(safe-area-inset-top,0px)); left:17px; max-width:calc(100vw - 105px); display:flex; align-items:center; gap:7px; padding:6px 10px; border-radius:10px; background:#fffdfa; border:1px solid #e6e9eb; box-shadow:0 2px 12px #173b5520; color:#3d5668; font-size:11px; font-weight:700; }
+.gpsDot,.gpsDotGood { display:inline-block; width:8px; height:8px; border-radius:100%; flex:none; background:#f1ac3e; }
+.gpsDotGood { background:#10a982; }
+.controls { position:absolute; top:calc(190px + env(safe-area-inset-top,0px)); right:14px; display:flex; flex-direction:column; gap:12px; }
+.roundButton { border:1px solid #e7edf2; border-radius:50%; background:#fff; color:#086fb9; display:flex; align-items:center; justify-content:center; width:51px; height:51px; box-shadow:0 5px 17px #173b5329; }
+.roundButton:focus-visible,.stopButton:focus-visible {outline:3px solid #f4a900; outline-offset:3px;}
+.dock { position:absolute; bottom:calc(58px + env(safe-area-inset-bottom,0px)); left:11px; right:11px; min-height:84px; display:flex; align-items:center; gap:6px; padding:13px 12px; background:#fff; border:1px solid #e3eaf0; border-radius:22px; box-shadow:0 7px 26px #102e4832; }
+.metrics { min-width:0; flex:1; display:grid; grid-template-columns:1fr .8fr .8fr; gap:0; }
+.metric { min-width:0; display:flex; align-items:flex-start; flex-direction:column; gap:3px; padding:0 7px; border-right:1px solid #dbe5ec; }
+.metric:first-child { padding-left:0; }
+.metric:last-child { border-right:0; }
+.metric strong { color:#0b578d; font-size:clamp(14px,3.7vw,19px); line-height:1.1; white-space:nowrap; font-weight:900; font-variant-numeric:tabular-nums; }
+.metricLabel { color:#667c8a; font-size:clamp(9px,2.25vw,11px); line-height:1.2; font-weight:650; }
+.stopButton { min-width:62px; min-height:54px; padding:6px 8px; border:none; border-radius:15px; background:#f1f5f8; color:#264b64; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:3px; font-size:10px; font-weight:800; }
+.noTraffic { position:absolute; left:0; right:0; bottom:calc(40px + env(safe-area-inset-bottom,0px)); text-align:center; padding:0 10px; font-size:9px; line-height:1.2; color:#415e70; text-shadow:0 1px 3px #fff; }
+@media (max-width:380px) { .banner{gap:9px;padding-left:10px;padding-right:10px;} .turnSymbol{width:64px;min-width:64px;} .turnSymbol > span{font-size:49px;} .metric{padding:0 4px;} .dock{left:6px;right:6px;padding:10px 8px;} .stopButton{min-width:52px;} }
+@media (max-height:680px) { .banner{min-height:96px;} .turnSymbol > span{font-size:46px;} .nextCard{top:calc(96px + env(safe-area-inset-top,0px)); min-height:46px;} .gpsNotice{top:calc(160px + env(safe-area-inset-top,0px));} .speed{top:calc(194px + env(safe-area-inset-top,0px));width:67px;height:67px;} .controls{top:calc(165px + env(safe-area-inset-top,0px));} .dock{bottom:calc(25px + env(safe-area-inset-bottom,0px));} .noTraffic{display:none;} }
+@media (min-width:768px) { .banner{left:20px;right:auto;top:20px;border-radius:20px;width:min(560px,calc(100% - 40px));} .nextCard{top:148px;left:30px;border-radius:18px;} .gpsNotice{top:219px;left:30px;} .speed{top:257px;left:30px;} .controls{top:30px;right:30px;} .dock{bottom:34px;left:50%;right:auto;transform:translateX(-50%);width:min(630px,calc(100% - 40px));} .noTraffic{bottom:13px;} }

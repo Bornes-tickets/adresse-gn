@@ -1,0 +1,1697 @@
+
+/* VIAGO V3 ? Journey planning and navigation surfaces.
+   Isolated from other Adresse GN pages. */
+
+.viago-v3-planner {
+  top: 18px !important;
+  bottom: 18px !important;
+  left: 18px !important;
+  right: auto !important;
+  width: min(420px, calc(100vw - 36px)) !important;
+  max-width: none !important;
+  display: flex;
+  z-index: 500;
+}
+
+.viago-v3-planner > div {
+  width: 100%;
+  max-height: 100% !important;
+  border-radius: 26px !important;
+  border: 1px solid rgba(12, 100, 90, 0.1);
+  background: #ffffff !important;
+  box-shadow: 0 20px 64px rgba(8, 48, 54, 0.18) !important;
+}
+
+.viago-v3-planner h1 {
+  font-size: 29px;
+  letter-spacing: -1.2px;
+}
+
+.viago-v3-planner input {
+  min-width: 0;
+  font-size: 14px;
+}
+
+.viago-v3-planner input:focus {
+  outline-color: #009b88;
+}
+
+.viago-v3-planner button {
+  transition:
+    background-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+.viago-v3-planner button:active {
+  transform: scale(0.98);
+}
+
+.viago-v3-route-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.viago-v3-navigation {
+  position: absolute;
+  inset: 0;
+  z-index: 530;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
+  padding: 20px;
+  color: #143a38;
+}
+
+.viago-v3-nav-header {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: min(440px, calc(100vw - 40px));
+  padding: 15px;
+  border-radius: 22px;
+  border: 1px solid rgba(12, 86, 82, 0.09);
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 12px 38px rgba(17, 48, 52, 0.15);
+  backdrop-filter: blur(14px);
+}
+
+.viago-v3-nav-symbol {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 51px;
+  height: 51px;
+  border-radius: 16px;
+  background: #007e72;
+  color: white;
+}
+
+.viago-v3-nav-heading {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.viago-v3-eyebrow {
+  color: #007e72;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+}
+
+.viago-v3-nav-heading strong {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.viago-v3-nav-target {
+  overflow: hidden;
+  color: #64748b;
+  font-size: 12px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.viago-v3-live {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 9px;
+  border-radius: 99px;
+  background: #e8f8f3;
+  color: #00755c;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.viago-v3-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.viago-v3-nav-controls {
+  position: absolute;
+  top: 116px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  align-items: flex-end;
+  pointer-events: auto;
+}
+
+.viago-v3-control {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 46px;
+  padding: 10px 14px;
+  border: 1px solid #e2eceb;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 6px 20px rgba(7, 42, 46, 0.13);
+  color: #075e55;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.viago-v3-control:hover {
+  background: #e5faf4;
+}
+
+.viago-v3-nav-footer {
+  pointer-events: auto;
+  width: min(610px, calc(100vw - 40px));
+  align-self: center;
+  margin-bottom: 4px;
+  padding: 17px;
+  border: 1px solid rgba(11, 88, 83, 0.1);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 14px 45px rgba(5, 36, 39, 0.21);
+  backdrop-filter: blur(14px);
+}
+
+.viago-v3-nav-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.viago-v3-nav-stats > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+  padding: 5px 10px 10px;
+}
+
+.viago-v3-nav-stats > div + div {
+  border-left: 1px solid #e3eeec;
+}
+
+.viago-v3-nav-stats span {
+  color: #6b8190;
+  font-size: 11px;
+}
+
+.viago-v3-nav-stats strong {
+  color: #08685c;
+  font-size: clamp(15px, 1.6vw, 23px);
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.viago-v3-nav-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #edf2f1;
+}
+
+.viago-v3-nav-actions p {
+  max-width: 360px;
+  color: #70818c;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.viago-v3-stop {
+  flex: none;
+  min-height: 44px;
+  padding: 10px 22px;
+  border-radius: 13px;
+  background: #113d40;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.viago-v3-stop:hover {
+  background: #075c56;
+}
+
+@media (max-width: 767px) {
+  .viago-v3-planner {
+    inset: 0 !important;
+    width: 100% !important;
+    justify-content: flex-end;
+  }
+
+  .viago-v3-planner > div {
+    max-height: min(85dvh, 760px) !important;
+    border-radius: 28px 28px 0 0 !important;
+  }
+
+  .viago-v3-navigation {
+    padding: 12px;
+  }
+
+  .viago-v3-nav-header {
+    width: 100%;
+    padding: 11px;
+    gap: 10px;
+    border-radius: 18px;
+  }
+
+  .viago-v3-nav-symbol {
+    width: 43px;
+    height: 43px;
+    border-radius: 13px;
+  }
+
+  .viago-v3-nav-heading strong {
+    font-size: 15px;
+  }
+
+  .viago-v3-nav-controls {
+    top: 104px;
+    right: 12px;
+  }
+
+  .viago-v3-control {
+    min-height: 44px;
+  }
+
+  .viago-v3-nav-footer {
+    width: 100%;
+    margin-bottom: 2px;
+    padding: 13px;
+    border-radius: 19px;
+  }
+
+  .viago-v3-nav-stats {
+    gap: 2px;
+  }
+
+  .viago-v3-nav-stats > div {
+    padding: 5px 7px 10px;
+  }
+
+  .viago-v3-nav-stats span {
+    font-size: 10px;
+  }
+
+  .viago-v3-nav-stats strong {
+    font-size: 17px;
+  }
+
+  .viago-v3-nav-actions p {
+    font-size: 10px;
+  }
+
+  .viago-v3-stop {
+    padding: 10px 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .viago-v3-planner button {
+    transition: none;
+  }
+}
+
+/* VIAGO V3-P3 - COMPACT NAVIGATION CONTROLS */
+
+.viago-v3-nav-header {
+  width: min(365px, calc(100vw - 32px));
+  padding: 10px 12px;
+  border-radius: 17px;
+  gap: 10px;
+}
+
+.viago-v3-nav-symbol {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+}
+
+.viago-v3-nav-heading strong {
+  font-size: 15px;
+}
+
+.viago-v3-nav-target {
+  font-size: 11px;
+}
+
+.viago-v3-nav-controls {
+  top: 96px;
+  right: 16px;
+  bottom: auto;
+  flex-direction: row;
+  align-items: center;
+  gap: 0;
+  padding: 4px;
+  border: 1px solid #dbece7;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 6px 24px rgba(7, 42, 46, 0.15);
+}
+
+.viago-v3-control {
+  min-height: 42px;
+  gap: 7px;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  box-shadow: none;
+  font-size: 12px;
+}
+
+.viago-v3-control + .viago-v3-control {
+  border-left: 1px solid #dbece7;
+  border-radius: 0 11px 11px 0;
+}
+
+.viago-v3-nav-footer {
+  width: min(480px, calc(100vw - 32px));
+  margin-bottom: 0;
+  padding: 10px 13px;
+  border-radius: 18px;
+}
+
+.viago-v3-nav-stats {
+  gap: 2px;
+}
+
+.viago-v3-nav-stats > div {
+  padding: 2px 8px 6px;
+  gap: 4px;
+}
+
+.viago-v3-nav-stats span {
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.viago-v3-nav-stats strong {
+  font-size: clamp(15px, 1.4vw, 19px);
+}
+
+.viago-v3-nav-actions {
+  gap: 10px;
+  margin-top: 5px;
+  padding-top: 8px;
+}
+
+.viago-v3-nav-actions p {
+  max-width: 300px;
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.viago-v3-stop {
+  min-height: 40px;
+  padding: 8px 16px;
+  border-radius: 11px;
+}
+
+@media (max-width: 767px) {
+  .viago-v3-navigation {
+    padding: 10px;
+  }
+
+  .viago-v3-nav-header {
+    width: 100%;
+    padding: 9px;
+  }
+
+  .viago-v3-nav-controls {
+    top: 93px;
+    right: 10px;
+  }
+
+  .viago-v3-control {
+    padding: 8px 10px;
+  }
+
+  .viago-v3-nav-footer {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 0;
+  }
+
+  .viago-v3-nav-stats > div {
+    padding: 3px 5px 7px;
+  }
+
+  .viago-v3-nav-stats strong {
+    font-size: 16px;
+  }
+
+  .viago-v3-nav-actions p {
+    font-size: 9px;
+  }
+
+  .viago-v3-stop {
+    min-height: 40px;
+    padding: 9px 13px;
+  }
+}
+
+@media (max-width: 390px) {
+  .viago-v3-nav-controls {
+    top: 105px;
+  }
+
+  .viago-v3-control span {
+    font-size: 11px;
+  }
+
+  .viago-v3-nav-stats strong {
+    font-size: 14px;
+  }
+}
+
+
+/* VIAGO V3-P4 - Safe navigation footer */
+.viago-v3-nav-footer {
+  margin-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+}
+
+.viago-v3-navigation {
+  padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+}
+
+.viago-v3-live {
+  white-space: nowrap;
+}
+
+/* VIAGO V3-P4-A3-B - GPS quality and route progress */
+
+.viago-v3-navigation {
+  padding-bottom: max(26px, env(safe-area-inset-bottom, 0px));
+}
+
+.viago-v3-nav-footer {
+  margin-bottom: max(24px, env(safe-area-inset-bottom, 0px));
+}
+
+.viago-v3-route-progress {
+  position: absolute;
+  top: 174px;
+  left: 28px;
+  z-index: 3;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  max-width: min(480px, calc(100vw - 56px));
+  padding: 10px 14px;
+  border: 1px solid #dbece7;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.96);
+  color: #164e48;
+  box-shadow: 0 4px 16px rgba(6, 43, 47, 0.12);
+  font-size: 12px;
+}
+
+.viago-v3-route-progress strong {
+  font-size: 19px;
+  color: #006d5a;
+}
+
+@media (max-width: 767px) {
+  .viago-v3-route-progress {
+    top: 166px;
+    left: 10px;
+    right: 10px;
+    max-width: none;
+    font-size: 11px;
+  }
+
+  .viago-v3-route-progress strong {
+    font-size: 16px;
+  }
+}
+
+/* VIAGO MOBILE P5 - refined active navigation */
+@media (max-width: 767px) {
+  .viago-v3-navigation {
+    padding-bottom: max(28px, env(safe-area-inset-bottom, 0px));
+  }
+
+  .viago-v3-nav-header {
+    max-width: calc(100vw - 20px);
+  }
+
+  .viago-v3-nav-footer {
+    max-width: calc(100vw - 20px);
+    margin-bottom: max(24px, env(safe-area-inset-bottom, 0px));
+  }
+
+  .viago-v3-nav-controls {
+    max-width: calc(100vw - 20px);
+  }
+}
+
+/* VIAGO P6-A - mobile navigation viewport */
+
+@media (max-width: 767px) {
+  .viago-v3-navigation {
+    position: absolute;
+    inset: 0;
+    padding: 0;
+    pointer-events: none;
+  }
+
+  .viago-v3-nav-header {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    bottom: auto;
+    box-sizing: border-box;
+    width: auto;
+    max-width: none;
+    margin: 0;
+    z-index: 6;
+  }
+
+  .viago-v3-nav-controls {
+    position: absolute;
+    top: 112px;
+    right: 12px;
+    left: auto;
+    bottom: auto;
+    z-index: 6;
+  }
+
+  .viago-v3-nav-footer {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: max(16px, env(safe-area-inset-bottom, 0px));
+    top: auto;
+    box-sizing: border-box;
+    width: auto;
+    max-width: none;
+    margin: 0;
+    z-index: 6;
+  }
+
+  .viago-v3-route-progress {
+    top: 184px;
+    left: 12px;
+    right: 12px;
+    max-width: none;
+    z-index: 5;
+  }
+
+  .viago-v3-nav-header,
+  .viago-v3-nav-controls,
+  .viago-v3-nav-footer,
+  .viago-v3-route-progress {
+    pointer-events: auto;
+  }
+}
+
+@media (max-width: 390px) {
+  .viago-v3-nav-controls {
+    top: 120px;
+  }
+
+  .viago-v3-route-progress {
+    top: 190px;
+  }
+}
+
+/* VIAGO-MOBILE-P6-B - ROUTE FIRST / MINIMAL HUD */
+
+/* Remove the duplicate intermediate progress card. */
+.viago-v3-route-progress {
+  display: none !important;
+}
+
+/* Remove explanatory paragraphs from driving mode. */
+.viago-v3-nav-actions p {
+  display: none !important;
+}
+
+@media (max-width: 767px) {
+
+  /* Preserve the entire map as the main viewport. */
+  .viago-v3-navigation {
+    position: absolute !important;
+    inset: 0 !important;
+    padding: 0 !important;
+    pointer-events: none;
+  }
+
+  /* Destination and GPS: one compact top bar. */
+  .viago-v3-nav-header {
+    position: absolute !important;
+    top: 8px !important;
+    left: 10px !important;
+    right: 10px !important;
+    bottom: auto !important;
+    width: auto !important;
+    max-width: none !important;
+    min-height: 52px !important;
+    padding: 8px 10px !important;
+    margin: 0 !important;
+    border-radius: 14px !important;
+    gap: 8px !important;
+    z-index: 20 !important;
+    pointer-events: auto;
+  }
+
+  /* Decorative symbol and redundant heading are hidden. */
+  .viago-v3-nav-symbol {
+    display: none !important;
+  }
+
+  .viago-v3-nav-heading strong {
+    display: none !important;
+  }
+
+  .viago-v3-nav-heading {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .viago-v3-nav-target {
+    display: block;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .viago-v3-live {
+    flex: 0 0 auto;
+    max-width: 145px;
+    padding: 6px 8px !important;
+    font-size: 10px !important;
+    white-space: nowrap;
+  }
+
+  /* Two compact icon controls at the right edge. */
+  .viago-v3-nav-controls {
+    position: absolute !important;
+    top: 70px !important;
+    right: 10px !important;
+    left: auto !important;
+    bottom: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    width: 48px !important;
+    max-width: 48px !important;
+    padding: 3px !important;
+    gap: 3px !important;
+    border-radius: 15px !important;
+    z-index: 20 !important;
+    pointer-events: auto;
+  }
+
+  .viago-v3-control {
+    width: 42px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    padding: 9px !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 0 !important;
+    font-size: 0 !important;
+    border: 0 !important;
+    border-radius: 11px !important;
+  }
+
+  .viago-v3-control svg {
+    width: 21px !important;
+    height: 21px !important;
+    flex-shrink: 0;
+  }
+
+  .viago-v3-control + .viago-v3-control {
+    border-top: 1px solid #dbece7 !important;
+    border-left: 0 !important;
+  }
+
+  /* One compact bottom dashboard. */
+  .viago-v3-nav-footer {
+    position: absolute !important;
+    left: 10px !important;
+    right: 10px !important;
+    bottom: max(10px, env(safe-area-inset-bottom, 0px)) !important;
+    top: auto !important;
+    width: auto !important;
+    max-width: none !important;
+    padding: 8px 10px !important;
+    margin: 0 !important;
+    border-radius: 16px !important;
+    z-index: 20 !important;
+    pointer-events: auto;
+  }
+
+  .viago-v3-nav-stats {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0 !important;
+  }
+
+  .viago-v3-nav-stats > div {
+    min-width: 0;
+    padding: 1px 7px 5px !important;
+    gap: 3px !important;
+  }
+
+  .viago-v3-nav-stats span {
+    display: block;
+    font-size: 9px !important;
+    line-height: 1.2 !important;
+  }
+
+  .viago-v3-nav-stats strong {
+    display: block;
+    font-size: 17px !important;
+    line-height: 1.15 !important;
+    white-space: nowrap;
+  }
+
+  .viago-v3-nav-actions {
+    margin-top: 3px !important;
+    padding-top: 5px !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+  }
+
+  .viago-v3-stop {
+    height: 38px !important;
+    min-height: 38px !important;
+    padding: 7px 15px !important;
+    border-radius: 10px !important;
+    font-size: 12px !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .viago-v3-nav-stats strong {
+    font-size: 15px !important;
+  }
+
+  .viago-v3-live {
+    max-width: 125px;
+    font-size: 9px !important;
+  }
+}
+
+/* VIAGO P6-B-R1 FINAL HUD */
+@media (max-width: 767px) {
+
+  /* Hide the redundant navigation eyebrow. */
+  .viago-v3-nav-heading > :first-child:not(:last-child) {
+    display: none !important;
+  }
+
+  /* Icon-only navigation controls. */
+  .viago-v3-nav-controls {
+    width: 50px !important;
+    max-width: 50px !important;
+    overflow: hidden;
+  }
+
+  .viago-v3-control {
+    width: 44px !important;
+    height: 48px !important;
+    min-width: 44px !important;
+    min-height: 48px !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  .viago-v3-control > span {
+    display: none !important;
+  }
+
+  .viago-v3-control svg {
+    display: block !important;
+    width: 22px !important;
+    height: 22px !important;
+    flex-shrink: 0 !important;
+    font-size: initial !important;
+  }
+
+  /* Single-row bottom dashboard. */
+  .viago-v3-nav-footer {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 9px 7px !important;
+    min-height: 64px !important;
+    box-sizing: border-box;
+  }
+
+  .viago-v3-nav-stats {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    width: auto !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .viago-v3-nav-stats > div {
+    padding: 2px 4px !important;
+  }
+
+  .viago-v3-nav-stats span {
+    font-size: 8px !important;
+  }
+
+  .viago-v3-nav-stats strong {
+    font-size: 14px !important;
+  }
+
+  .viago-v3-nav-actions {
+    flex: 0 0 auto !important;
+    display: flex !important;
+    align-items: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+  }
+
+  .viago-v3-nav-actions p {
+    display: none !important;
+  }
+
+  .viago-v3-stop {
+    min-height: 44px !important;
+    height: 44px !important;
+    padding: 6px 10px !important;
+    white-space: nowrap !important;
+    font-size: 11px !important;
+  }
+}
+
+/* VIAGO P6-C1 - Blue driving presentation, real data only. */
+@media (max-width: 767px) {
+  .viago-v3-navigation {
+    padding: 0 !important;
+  }
+  /* Large blue direction-first banner, inspired by the reference layout. */
+  .viago-c1-direction {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 23;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    min-height: 112px;
+    padding: 17px 18px;
+    color: #fff;
+    background: linear-gradient(115deg, #0579d5 0%, #0068bc 100%);
+    box-shadow: 0 5px 15px rgba(4, 43, 84, .22);
+    box-sizing: border-box;
+  }
+  .viago-c1-direction-icon {
+    width: 43px;
+    height: 43px;
+    flex: 0 0 43px;
+  }
+  .viago-c1-direction-copy { min-width: 0; flex: 1; }
+  .viago-c1-direction-caption {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: #dcefff;
+    margin-bottom: 5px;
+  }
+  .viago-c1-direction-title {
+    display: block;
+    font-size: clamp(19px, 5.3vw, 25px);
+    line-height: 1.12;
+    font-weight: 800;
+    letter-spacing: -.025em;
+  }
+  .viago-c1-direction-place {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 12px;
+    color: #e7f5ff;
+    margin-top: 5px;
+  }
+  /* Keep GPS quality visible without covering the instruction. */
+  .viago-v3-nav-header {
+    top: 121px !important;
+    left: 11px !important;
+    right: auto !important;
+    min-height: 0 !important;
+    width: auto !important;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    pointer-events: none !important;
+  }
+  .viago-v3-nav-heading { display: none !important; }
+  .viago-v3-live {
+    max-width: none !important;
+    font-size: 11px !important;
+    border-radius: 12px !important;
+    color: #096347 !important;
+    background: rgba(255,255,255,.98) !important;
+    border: 1px solid rgba(4,90,84,.12);
+    padding: 8px 11px !important;
+    box-shadow: 0 4px 14px rgba(0,0,0,.14);
+  }
+  .viago-v3-nav-controls {
+    top: 120px !important;
+    right: 10px !important;
+    z-index: 24 !important;
+  }
+  .viago-v3-control {
+    width: 48px !important;
+    min-width: 48px !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    border-radius: 12px !important;
+  }
+  /* Floating speedometer: shows browser GPS speed only when reliable. */
+  .viago-c1-speed {
+    position: absolute;
+    top: 177px;
+    left: 12px;
+    z-index: 21;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 79px;
+    height: 79px;
+    border-radius: 50%;
+    border: 5px solid rgba(255,255,255,.95);
+    background: rgba(255,255,255,.98);
+    box-shadow: 0 5px 16px rgba(3,34,62,.23);
+    box-sizing: border-box;
+    color: #182b38;
+  }
+  .viago-c1-speed-value { font-size: 27px; font-weight: 900; line-height: 1; }
+  .viago-c1-speed-unit { font-size: 10px; font-weight: 750; }
+  /* No fictional speed-limit, traffic camera, hazard or maneuver widgets. */
+  /* HUD clears both map compass and the leftmost distance column. */
+  .viago-v3-nav-footer {
+    left: 12px !important;
+    right: 12px !important;
+    bottom: max(13px, env(safe-area-inset-bottom, 0px)) !important;
+    padding: 10px 8px !important;
+    border-radius: 17px !important;
+    color: #0d2c43 !important;
+    background: rgba(255,255,255,.97) !important;
+    box-shadow: 0 8px 30px rgba(0,0,0,.20) !important;
+  }
+  .viago-v3-nav-stats > div { padding: 2px 5px !important; }
+  .viago-v3-nav-stats span { color: #576b77 !important; font-size: 9px !important; }
+  .viago-v3-nav-stats strong { color: #0767b4 !important; font-size: 14px !important; }
+  .viago-v3-stop { background: #006ebd !important; min-width: 69px !important; }
+}
+@media (max-width: 360px) {
+  .viago-v3-nav-stats span { font-size: 8px !important; }
+  .viago-v3-nav-stats strong { font-size: 12px !important; }
+  .viago-v3-stop { padding: 5px 6px !important; min-width: 60px !important; }
+}
+
+/* VIAGO P6-C1-R1: Reference-oriented driving surface, active mode only. */
+@media (max-width: 767px) {
+  /* Blue instruction bar should feel like navigation, not a hero section. */
+  .viago-v3-navigation .viago-c1-direction {
+    min-height: 92px !important;
+    height: 92px !important;
+    padding: 11px 15px !important;
+    gap: 13px !important;
+    background: linear-gradient(125deg, #0582d8 0%, #006cc6 100%) !important;
+    box-shadow: 0 3px 12px rgba(10, 44, 90, .20) !important;
+  }
+  .viago-v3-navigation .viago-c1-direction-icon {
+    width: 43px !important;
+    height: 43px !important;
+    flex-basis: 43px !important;
+    color: #fff !important;
+  }
+  .viago-v3-navigation .viago-c1-direction-caption {
+    font-size: 10px !important;
+    margin-bottom: 3px !important;
+  }
+  .viago-v3-navigation .viago-c1-direction-title {
+    font-size: clamp(18px, 5.1vw, 23px) !important;
+    line-height: 1.12 !important;
+  }
+  .viago-v3-navigation .viago-c1-direction-place {
+    margin-top: 4px !important;
+    font-size: 11px !important;
+  }
+  /* Real GPS precision remains separate from the instruction text. */
+  .viago-v3-navigation .viago-v3-nav-header {
+    top: 102px !important;
+    left: 10px !important;
+    right: auto !important;
+    width: auto !important;
+  }
+  .viago-v3-navigation .viago-v3-live {
+    border-radius: 14px !important;
+    background: rgba(255,255,255,.98) !important;
+    color: #0b6d59 !important;
+    padding: 8px 10px !important;
+    font-size: 11px !important;
+  }
+  /* In the reference, compass controls float on the right. */
+  .viago-v3-navigation .viago-v3-nav-controls {
+    top: 102px !important;
+    right: 10px !important;
+    border-radius: 25px !important;
+    background: rgba(255,255,255,.98) !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,.18) !important;
+  }
+  .viago-v3-navigation .viago-v3-control {
+    border-radius: 20px !important;
+    background: #fff !important;
+    color: #076aa7 !important;
+    min-height: 48px !important;
+  }
+  .viago-v3-navigation .viago-c1-speed {
+    top: 155px !important;
+    left: 12px !important;
+    width: 78px !important;
+    height: 78px !important;
+    border: 5px solid white !important;
+    background: rgba(255,255,255,.99) !important;
+    box-shadow: 0 5px 15px rgba(0,0,0,.20) !important;
+  }
+  .viago-v3-navigation .viago-c1-speed-value {
+    color: #172b37 !important;
+    font-size: 29px !important;
+  }
+  .viago-v3-navigation .viago-c1-speed-unit {
+    color: #314555 !important;
+    font-size: 10px !important;
+  }
+  /* Protect the bottom dashboard from the existing floating N compass.
+     Move the dashboard above it rather than allowing overlap. */
+  .viago-v3-navigation .viago-v3-nav-footer {
+    bottom: max(72px, calc(env(safe-area-inset-bottom, 0px) + 65px)) !important;
+    left: 10px !important;
+    right: 10px !important;
+    padding: 10px 8px !important;
+    border-radius: 17px !important;
+    min-height: 66px !important;
+    background: rgba(255,255,255,.98) !important;
+    color: #1f3344 !important;
+  }
+  .viago-v3-navigation .viago-v3-nav-stats {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    grid-template-columns: repeat(3,minmax(0,1fr)) !important;
+  }
+  .viago-v3-navigation .viago-v3-nav-stats > div {
+    min-width: 0 !important;
+    padding: 2px 4px !important;
+  }
+  .viago-v3-navigation .viago-v3-nav-stats span {
+    color: #5a6879 !important;
+    font-size: clamp(8px,2.1vw,10px) !important;
+    line-height: 1.15 !important;
+  }
+  .viago-v3-navigation .viago-v3-nav-stats strong {
+    display: block !important;
+    color: #086fb7 !important;
+    font-size: clamp(12px,3.55vw,17px) !important;
+    line-height: 1.2 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  .viago-v3-navigation .viago-v3-stop {
+    background: #0077cf !important;
+    color: #fff !important;
+    border-radius: 12px !important;
+    min-width: 68px !important;
+    min-height: 44px !important;
+  }
+}
+@media (max-width: 380px) {
+  .viago-v3-navigation .viago-v3-nav-footer { padding: 8px 5px !important; }
+  .viago-v3-navigation .viago-v3-nav-stats > div { padding: 2px 3px !important; }
+  .viago-v3-navigation .viago-v3-stop { min-width: 62px !important; padding: 6px 6px !important; }
+}
+
+/* VIAGO P6-C3: independent immersive driving screen. No simulated traffic data. */
+@media (max-width: 767px) {
+  main.viago-c3-driving {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 9999 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #e9edf0 !important;
+  }
+  .viago-c3-driving .viago-v3-navigation {
+    position: absolute !important;
+    inset: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    z-index: 530 !important;
+  }
+  .viago-c3-driving .viago-c1-direction,
+  .viago-c3-driving .viago-v3-navigation .viago-c1-direction {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    min-height: 128px !important;
+    height: 128px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 16px !important;
+    padding: calc(15px + env(safe-area-inset-top, 0px)) 18px 13px !important;
+    border-radius: 0 !important;
+    background: linear-gradient(135deg, #098ee2, #0061b8) !important;
+    box-shadow: 0 5px 18px rgba(9, 43, 85, .25) !important;
+    color: #fff !important;
+  }
+  .viago-c3-driving .viago-c1-direction-icon {
+    width: 48px !important;
+    height: 48px !important;
+    flex: 0 0 48px !important;
+    stroke-width: 2.7px !important;
+  }
+  .viago-c3-driving .viago-c1-direction-caption {
+    font-size: 11px !important;
+    font-weight: 650 !important;
+    color: #e8f5ff !important;
+  }
+  .viago-c3-driving .viago-c1-direction-title {
+    font-size: clamp(21px, 5.6vw, 29px) !important;
+    line-height: 1.13 !important;
+    font-weight: 850 !important;
+    color: white !important;
+  }
+  .viago-c3-driving .viago-c1-direction-place {
+    font-size: 12px !important;
+    color: #ebf7ff !important;
+    margin-top: 7px !important;
+  }
+  .viago-c3-driving .viago-v3-nav-header,
+  .viago-c3-driving .viago-v3-navigation .viago-v3-nav-header {
+    top: 143px !important;
+    left: 13px !important;
+    right: auto !important;
+    width: auto !important;
+  }
+  .viago-c3-driving .viago-v3-live,
+  .viago-c3-driving .viago-v3-navigation .viago-v3-live {
+    color: #146253 !important;
+    background: #fff !important;
+    border: 0 !important;
+    border-radius: 14px !important;
+    padding: 9px 12px !important;
+    box-shadow: 0 3px 14px #0002 !important;
+  }
+  .viago-c3-driving .viago-c1-speed,
+  .viago-c3-driving .viago-v3-navigation .viago-c1-speed {
+    position: absolute !important;
+    top: 207px !important;
+    left: 16px !important;
+    width: 87px !important;
+    height: 87px !important;
+    border: 6px solid white !important;
+    border-radius: 100% !important;
+    background: #fff !important;
+    color: #152633 !important;
+    box-shadow: 0 4px 18px #0003 !important;
+  }
+  .viago-c3-driving .viago-c1-speed-value {font-size: 31px !important; color: #182c35 !important;}
+  .viago-c3-driving .viago-c1-speed-unit {font-size: 10px !important; color: #334856 !important;}
+  .viago-c3-driving .viago-v3-nav-controls,
+  .viago-c3-driving .viago-v3-navigation .viago-v3-nav-controls {
+    top: 144px !important;
+    right: 12px !important;
+    width: 54px !important;
+    max-width: 54px !important;
+    gap: 10px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  .viago-c3-driving .viago-v3-control,
+  .viago-c3-driving .viago-v3-navigation .viago-v3-control {
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    min-height: 52px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 50% !important;
+    background: white !important;
+    color: #1678b2 !important;
+    box-shadow: 0 4px 13px #0003 !important;
+  }
+  .viago-c3-driving .viago-v3-control > span {display: none !important;}
+  .viago-c3-driving .viago-v3-control > svg {width: 23px !important; height: 23px !important;}
+  .viago-c3-driving .viago-v3-nav-footer,
+  .viago-c3-driving .viago-v3-navigation .viago-v3-nav-footer {
+    position: absolute !important;
+    bottom: max(18px, env(safe-area-inset-bottom, 0px)) !important;
+    left: 10px !important;
+    right: 10px !important;
+    width: auto !important;
+    max-width: none !important;
+    min-height: 76px !important;
+    margin: 0 !important;
+    padding: 10px 8px !important;
+    border-radius: 18px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 7px !important;
+    background: rgba(255,255,255,.98) !important;
+    color: #1c3345 !important;
+    box-shadow: 0 7px 26px #0003 !important;
+  }
+  .viago-c3-driving .viago-v3-nav-stats {
+    display: grid !important;
+    flex: 1 1 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0 !important;
+  }
+  .viago-c3-driving .viago-v3-nav-stats > div {min-width: 0 !important; padding: 2px 4px !important;}
+  .viago-c3-driving .viago-v3-nav-stats span {font-size: clamp(8px,2.2vw,10px) !important; color: #5e6e78 !important; line-height: 1.1 !important;}
+  .viago-c3-driving .viago-v3-nav-stats strong {font-size: clamp(12px,3.3vw,17px) !important; color: #006bbb !important; line-height: 1.3 !important; overflow: visible !important;}
+  .viago-c3-driving .viago-v3-nav-actions {margin: 0 !important; padding: 0 !important; border: 0 !important; flex: 0 0 auto !important;}
+  .viago-c3-driving .viago-v3-nav-actions p {display: none !important;}
+  .viago-c3-driving .viago-v3-stop {
+    min-width: 65px !important;
+    min-height: 47px !important;
+    padding: 8px !important;
+    color: white !important;
+    background: #0876d0 !important;
+    border-radius: 13px !important;
+    font-size: 12px !important;
+  }
+  /* Move map compass clear of the arrival panel. Attribution remains visible. */
+  .viago-c3-driving .leaflet-bottom.leaflet-left {bottom: 114px !important; left: 10px !important;}
+  .viago-c3-driving .leaflet-bottom.leaflet-right {bottom: 108px !important;}
+  .viago-c3-driving .leaflet-control-attribution {font-size: 9px !important;}
+}
+
+/* VIAGO P6-C4: MOBILE DRIVING HUD FINISH - START */
+/* Overrides legacy mobile HUD declarations without changing routing or GPS. */
+@media (max-width: 767px) {
+  main.viago-c3-driving .viago-v3-navigation .viago-c1-direction {
+    top: 0 !important;
+    height: 96px !important;
+    min-height: 96px !important;
+    padding: 12px 15px !important;
+    gap: 12px !important;
+    background: linear-gradient(115deg, #0879cd 0%, #075bb4 100%) !important;
+    border-radius: 0 !important;
+    z-index: 55 !important;
+  }
+  main.viago-c3-driving .viago-v3-navigation .viago-c1-direction-icon {
+    width: 40px !important;
+    height: 40px !important;
+    flex-basis: 40px !important;
+  }
+  main.viago-c3-driving .viago-v3-navigation .viago-c1-direction-title {
+    font-size: clamp(18px, 5.1vw, 23px) !important;
+    line-height: 1.17 !important;
+    overflow-wrap: anywhere !important;
+  }
+  main.viago-c3-driving .viago-v3-navigation .viago-c1-direction-caption {
+    margin-bottom: 3px !important;
+  }
+  main.viago-c3-driving .viago-v3-navigation .viago-c1-direction-place {
+    margin-top: 4px !important;
+  }
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-nav-header {
+    top: 106px !important;
+    left: 12px !important;
+    z-index: 54 !important;
+  }
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-live {
+    padding: 8px 10px !important;
+    color: #116c57 !important;
+    background: #fff !important;
+    border: 1px solid #d8e7e8 !important;
+    border-radius: 13px !important;
+    box-shadow: 0 4px 12px rgba(0, 23, 42, .14) !important;
+  }
+  main.viago-c3-driving .viago-v3-navigation .viago-c1-speed {
+    top: 166px !important;
+    left: 13px !important;
+    width: 84px !important;
+    height: 84px !important;
+    border: 4px solid #fff !important;
+    background: #fff !important;
+    color: #14344a !important;
+    box-shadow: 0 4px 16px rgba(0, 21, 43, .23) !important;
+    z-index: 53 !important;
+  }
+  main.viago-c3-driving .viago-v3-navigation .viago-c1-speed-value {
+    color: #132d44 !important;
+    font-size: 30px !important;
+  }
+  main.viago-c3-driving .viago-v3-navigation .viago-c1-speed-unit {
+    color: #42566a !important;
+    font-size: 10px !important;
+  }
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-nav-controls {
+    top: 105px !important;
+    right: 12px !important;
+    width: 52px !important;
+    max-width: 52px !important;
+    padding: 0 !important;
+    gap: 9px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    z-index: 54 !important;
+  }
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-control {
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    min-height: 52px !important;
+    border: 1px solid #e0e9ef !important;
+    border-radius: 50% !important;
+    background: #fff !important;
+    color: #0876b8 !important;
+    box-shadow: 0 4px 14px rgba(0, 22, 46, .17) !important;
+  }
+  /* The lower 70px are reserved for the independent map compass.
+     This keeps its floating control completely outside the arrival HUD. */
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-nav-footer {
+    position: absolute !important;
+    left: 10px !important;
+    right: 10px !important;
+    bottom: max(83px, calc(env(safe-area-inset-bottom, 0px) + 78px)) !important;
+    width: auto !important;
+    min-height: 76px !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 11px 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    border: 1px solid rgba(214, 229, 237, .9) !important;
+    border-radius: 18px !important;
+    background: rgba(255, 255, 255, .98) !important;
+    color: #153950 !important;
+    box-shadow: 0 6px 24px rgba(0, 25, 50, .22) !important;
+    z-index: 56 !important;
+  }
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-nav-stats {
+    display: grid !important;
+    flex: 1 1 0 !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0 !important;
+    min-width: 0 !important;
+    width: auto !important;
+  }
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-nav-stats > div {
+    min-width: 0 !important;
+    padding: 3px 5px !important;
+    overflow: hidden !important;
+  }
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-nav-stats span {
+    display: block !important;
+    color: #5b6d7b !important;
+    font-size: clamp(9px, 2.35vw, 11px) !important;
+    line-height: 1.2 !important;
+    white-space: normal !important;
+  }
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-nav-stats strong {
+    display: block !important;
+    color: #0672bc !important;
+    font-size: clamp(13px, 3.5vw, 18px) !important;
+    line-height: 1.23 !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-nav-actions {
+    flex: 0 0 auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+  }
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-stop {
+    min-width: 67px !important;
+    min-height: 49px !important;
+    padding: 7px 8px !important;
+    background: #096ab8 !important;
+    color: #fff !important;
+    border-radius: 12px !important;
+    font-size: 12px !important;
+  }
+  /* The Leaflet attribution and any Leaflet bottom-left control stay below the HUD. */
+  main.viago-c3-driving .leaflet-bottom.leaflet-left {
+    bottom: max(10px, env(safe-area-inset-bottom, 0px)) !important;
+    left: 10px !important;
+  }
+  main.viago-c3-driving .leaflet-bottom.leaflet-right {
+    bottom: max(10px, env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+@media (max-width: 360px) {
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-nav-footer {
+    left: 6px !important;
+    right: 6px !important;
+    padding: 8px 5px !important;
+    gap: 4px !important;
+  }
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-nav-stats > div {padding: 2px 3px !important;}
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-nav-stats strong {font-size: 12px !important;}
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-stop {min-width: 59px !important; padding: 6px !important;}
+}
+/* VIAGO P6-C4: MOBILE DRIVING HUD FINISH - END */
+
+/* VIAGO P6-C5: MOBILE CONDUITE — layout reference, not synthetic route data */
+@media (max-width: 767px) {
+  html:has(main.viago-c3-driving), body:has(main.viago-c3-driving) {overflow: hidden !important;}
+  body:has(main.viago-c3-driving) {background: #ebf1f3 !important;}
+  main.viago-c3-driving {height: 100dvh !important; min-height: 0 !important; background: #e6eff1 !important;}
+  main.viago-c3-driving .viago-v3-navigation {inset: 0 !important; pointer-events: none !important;}
+  main.viago-c3-driving .viago-v3-navigation button {pointer-events: auto !important;}
+  main.viago-c3-driving .viago-v3-navigation .viago-c1-direction {
+    position: absolute !important; top: 0 !important; left: 0 !important; right: 0 !important;
+    display: flex !important; min-height: 0 !important; height: auto !important;
+    padding: 15px 17px 14px !important; gap: 13px !important; align-items: center !important;
+    background: linear-gradient(120deg, #087bdb, #0561bc) !important;
+    box-shadow: 0 3px 12px rgba(10,42,79,.20) !important; z-index: 80 !important;
+  }
+  main.viago-c3-driving .viago-v3-navigation .viago-c1-direction-icon {width: 40px !important; height: 40px !important; flex: 0 0 40px !important; color: #fff !important;}
+  main.viago-c3-driving .viago-v3-navigation .viago-c1-direction-copy {min-width: 0 !important;}
+  main.viago-c3-driving .viago-v3-navigation .viago-c1-direction-caption {font-size: 11px !important; font-weight: 700 !important; color: #dcf1ff !important;}
+  main.viago-c3-driving .viago-v3-navigation .viago-c1-direction-title {font-size: clamp(17px, 5.2vw, 24px) !important; line-height: 1.16 !important; color: white !important;}
+  main.viago-c3-driving .viago-v3-navigation .viago-c1-direction-place {font-size: 12px !important; line-height: 1.2 !important; color: #e4f4ff !important; margin-top: 4px !important;}
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-nav-header {top: 117px !important; left: 12px !important; z-index: 75 !important;}
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-live {background: #fff !important; color: #146b5a !important; border: 1px solid #d8e7e8 !important; border-radius: 16px !important; padding: 9px 11px !important; box-shadow: 0 3px 12px #162c3d20 !important;}
+  main.viago-c3-driving .viago-v3-navigation .viago-c1-speed {
+    position: absolute !important; top: 170px !important; left: 14px !important;
+    display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important;
+    width: 88px !important; height: 88px !important; border: 5px solid #fff !important;
+    border-radius: 50% !important; background: #fff !important; color: #152e43 !important;
+    box-shadow: 0 3px 18px #11283935 !important; z-index: 74 !important;
+  }
+  main.viago-c3-driving .viago-v3-navigation .viago-c1-speed .viago-c1-speed-value {color: #173650 !important; font-size: 32px !important; line-height: 1.1 !important; font-weight: 850 !important;}
+  main.viago-c3-driving .viago-v3-navigation .viago-c1-speed .viago-c1-speed-unit {color: #46637a !important; font-size: 10px !important;}
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-nav-controls {top: 115px !important; right: 11px !important; width: 50px !important; max-width: 50px !important; gap: 9px !important; z-index: 77 !important; background: transparent !important;}
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-nav-controls .viago-v3-control {
+    display: flex !important; align-items: center !important; justify-content: center !important;
+    width: 50px !important; min-width: 50px !important; height: 50px !important; min-height: 50px !important;
+    border: 1px solid #dbe9f0 !important; border-radius: 50% !important;
+    background: #fff !important; color: #0879bf !important; box-shadow: 0 3px 13px #112b4333 !important;
+  }
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-nav-controls .viago-v3-control svg {stroke: #0879bf !important;}
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-nav-controls .viago-v3-control > span {display: none !important;}
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-nav-footer {
+    position: absolute !important; top: auto !important; bottom: calc(88px + env(safe-area-inset-bottom, 0px)) !important;
+    left: 10px !important; right: 10px !important; width: auto !important; height: auto !important;
+    min-height: 76px !important; max-height: 112px !important; padding: 10px 7px !important; margin: 0 !important;
+    display: flex !important; flex-direction: row !important; align-items: center !important; gap: 5px !important;
+    border: 1px solid #e0ebf1 !important; border-radius: 17px !important;
+    background: #fff !important; color: #133f56 !important;
+    box-shadow: 0 5px 20px #122e4635 !important; z-index: 78 !important;
+  }
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-nav-stats {display: grid !important; flex: 1 1 0 !important; min-width: 0 !important; grid-template-columns: repeat(3, minmax(0, 1fr)) !important;}
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-nav-stats > div {min-width: 0 !important; overflow: hidden !important; padding: 3px 4px !important;}
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-nav-stats span {display: block !important; font-size: clamp(8px, 2.3vw, 10px) !important; line-height: 1.2 !important; color: #556a78 !important; overflow-wrap: anywhere !important; white-space: normal !important;}
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-nav-stats strong {display: block !important; font-size: clamp(12px, 3.7vw, 17px) !important; line-height: 1.25 !important; color: #0474bf !important; white-space: nowrap !important; overflow: visible !important;}
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-nav-actions {flex: 0 0 auto !important; margin: 0 !important; padding: 0 !important;}
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-stop {background: #096bb6 !important; color: #fff !important; border-radius: 12px !important; min-width: 64px !important; min-height: 49px !important; padding: 7px !important; font-size: 12px !important;}
+  /* Move Leaflet controls clear of the HUD without creating a black bottom band. */
+  main.viago-c3-driving .leaflet-container {height: 100% !important; width: 100% !important; background: #dce8e7 !important;}
+  main.viago-c3-driving .leaflet-bottom.leaflet-left {bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important; left: 12px !important; z-index: 70 !important;}
+  main.viago-c3-driving .leaflet-bottom.leaflet-right {bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important; z-index: 70 !important;}
+  main.viago-c3-driving .leaflet-control-attribution {background: rgba(255,255,255,.78) !important; color: #40515a !important; font-size: 9px !important;}
+}
+@media (max-width: 360px) {
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-nav-footer {left: 6px !important; right: 6px !important; padding: 8px 4px !important; gap: 3px !important;}
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-nav-stats > div {padding: 2px !important;}
+  main.viago-c3-driving .viago-v3-navigation .viago-v3-nav-stats strong {font-size: 12px !important;}
+}
+/* END VIAGO P6-C5 */
+
+/* VIAGO P6-C8 — distinct DOM identities for driving HUD; supersede legacy cascades. */
+@media (max-width: 767px) {
+  main.viago-c3-driving #viago-driving-banner {
+    position: absolute !important; inset: 0 0 auto !important;
+    width: 100% !important; min-height: 0 !important; height: 100px !important;
+    display: flex !important; align-items: center !important; gap: 12px !important;
+    padding: 12px 16px !important; background: #007a79 !important;
+    color: #fff !important; border-radius: 0 !important;
+    box-shadow: 0 3px 12px #12344232 !important; z-index: 90 !important;
+  }
+  main.viago-c3-driving #viago-driving-banner .viago-c1-direction-icon {
+    color: #fff !important; width: 42px !important; height: 42px !important;
+    flex: 0 0 42px !important;
+  }
+  main.viago-c3-driving #viago-driving-banner .viago-c1-direction-copy { min-width: 0 !important; }
+  main.viago-c3-driving #viago-driving-banner .viago-c1-direction-title {
+    color: #fff !important; font-size: clamp(18px, 5vw, 24px) !important;
+    line-height: 1.13 !important; font-weight: 800 !important;
+  }
+  main.viago-c3-driving #viago-driving-banner .viago-c1-direction-place {
+    color: #e1f8f5 !important; font-size: 12px !important;
+    margin-top: 4px !important; overflow-wrap: anywhere !important;
+  }
+  main.viago-c3-driving #viago-driving-then {
+    position: absolute !important; top: 100px !important; left: 0 !important;
+    max-width: 76vw !important; width: max-content !important; height: 38px !important;
+    display: flex !important; align-items: center !important; gap: 7px !important;
+    padding: 6px 13px !important; border-radius: 0 0 16px 0 !important;
+    background: #006865 !important; color: #fff !important;
+    z-index: 89 !important; font-size: 13px !important; font-weight: 700 !important;
+    box-shadow: 0 2px 9px #092b2f26 !important;
+  }
+  main.viago-c3-driving #viago-driving-then strong {font-size: 22px !important; line-height: 1 !important;}
+  main.viago-c3-driving #viago-driving-then .viago-driving-then-label {
+    overflow: hidden !important; white-space: nowrap !important; text-overflow: ellipsis !important;
+    font-size: 11px !important;
+  }
+  main.viago-c3-driving .viago-v3-nav-header {
+    position: absolute !important; top: 147px !important; left: 12px !important;
+    width: max-content !important; padding: 0 !important; z-index: 73 !important;
+    border: 0 !important; background: transparent !important; box-shadow: none !important;
+  }
+  main.viago-c3-driving #viago-driving-gps {
+    font-size: 10px !important; padding: 7px 9px !important;
+    border-radius: 100px !important; background: #ffffffee !important;
+    border: 1px solid #dde9e8 !important; color: #175d55 !important;
+    box-shadow: 0 3px 12px #183e4630 !important;
+  }
+  main.viago-c3-driving #viago-driving-speed {
+    position: absolute !important; left: 13px !important; top: 196px !important;
+    display: flex !important; width: 82px !important; height: 82px !important;
+    flex-direction: column !important; justify-content: center !important;
+    align-items: center !important; border-radius: 50% !important;
+    border: 3px solid #fff !important; background: #fff !important;
+    color: #152b43 !important; box-shadow: 0 3px 16px #122b3d3b !important;
+    z-index: 72 !important;
+  }
+  main.viago-c3-driving #viago-driving-speed .viago-c1-speed-value {
+    color: #142c44 !important; font-size: 31px !important; font-weight: 800 !important;
+  }
+  main.viago-c3-driving #viago-driving-speed .viago-c1-speed-unit {
+    color: #426073 !important; font-size: 10px !important;
+  }
+  main.viago-c3-driving #viago-driving-controls {
+    position: absolute !important; top: 147px !important; right: 12px !important;
+    display: flex !important; flex-direction: column !important;
+    align-items: center !important; gap: 10px !important;
+    width: 50px !important; max-width: 50px !important;
+    padding: 0 !important; background: transparent !important;
+    box-shadow: none !important; z-index: 74 !important;
+  }
+  main.viago-c3-driving #viago-driving-follow,
+  main.viago-c3-driving #viago-driving-overview {
+    display: flex !important; align-items: center !important; justify-content: center !important;
+    width: 50px !important; min-width: 50px !important;
+    height: 50px !important; min-height: 50px !important;
+    padding: 0 !important; border-radius: 50% !important;
+    border: 1px solid #e0ebf0 !important; background: #fff !important;
+    color: #076d8b !important; box-shadow: 0 3px 13px #19344634 !important;
+  }
+  main.viago-c3-driving #viago-driving-follow svg,
+  main.viago-c3-driving #viago-driving-overview svg { stroke: #076d8b !important; }
+  main.viago-c3-driving #viago-driving-footer {
+    position: absolute !important; top: auto !important;
+    bottom: calc(62px + env(safe-area-inset-bottom, 0px)) !important;
+    left: 10px !important; right: 10px !important; width: auto !important;
+    min-height: 82px !important; max-height: 110px !important;
+    display: flex !important; flex-direction: row !important;
+    align-items: center !important; gap: 5px !important;
+    padding: 10px 7px !important; margin: 0 !important;
+    border-radius: 19px !important; border: 1px solid #e6ebef !important;
+    background: #fff !important; color: #14344b !important;
+    box-shadow: 0 5px 21px #1e384634 !important; z-index: 77 !important;
+  }
+  main.viago-c3-driving #viago-driving-stats {
+    display: grid !important; flex: 1 1 0 !important; min-width: 0 !important;
+    width: auto !important; grid-template-columns: repeat(3,minmax(0,1fr)) !important;
+    gap: 0 !important;
+  }
+  main.viago-c3-driving #viago-driving-stats > div {
+    min-width: 0 !important; overflow: hidden !important; padding: 2px 4px !important;
+  }
+  main.viago-c3-driving #viago-driving-stats span {
+    font-size: clamp(8px,2vw,10px) !important; line-height: 1.17 !important;
+    color: #637380 !important; white-space: normal !important;
+  }
+  main.viago-c3-driving #viago-driving-stats strong {
+    display: block !important; color: #08758b !important;
+    font-size: clamp(12px,3.5vw,17px) !important; line-height: 1.35 !important;
+    white-space: nowrap !important; overflow: visible !important;
+  }
+  main.viago-c3-driving #viago-driving-stop {
+    min-width: 63px !important; min-height: 47px !important; padding: 7px !important;
+    border-radius: 13px !important; background: #086b7b !important;
+    color: #fff !important; font-size: 12px !important;
+  }
+  main.viago-c3-driving .leaflet-bottom.leaflet-left {
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+    left: 12px !important;
+  }
+  main.viago-c3-driving .leaflet-bottom.leaflet-right {
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  main.viago-c3-driving .leaflet-control-attribution {
+    background: #ffffffbc !important; font-size: 9px !important;
+  }
+}
+@media (max-width: 360px) {
+  main.viago-c3-driving #viago-driving-then .viago-driving-then-label {display: none !important;}
+  main.viago-c3-driving #viago-driving-footer {left: 6px !important; right: 6px !important;}
+  main.viago-c3-driving #viago-driving-stats > div {padding: 2px !important;}
+}

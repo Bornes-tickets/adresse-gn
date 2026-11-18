@@ -16,6 +16,8 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { SiteShell } from "@/components/layout/site-shell";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
+import { ViagoShellBoundary } from "./viago-shell-boundary";
+
 import "leaflet/dist/leaflet.css";
 
 import "./globals.css";
@@ -107,7 +109,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr">
+    <html lang="fr" suppressHydrationWarning>
       <body
         className={`
           ${inter.variable}
@@ -123,16 +125,14 @@ export default function RootLayout({
         <TooltipProvider
           delayDuration={150}
         >
-          <SiteShell
-            header={
-              <SiteHeader />
+          <ViagoShellBoundary
+            viago={children}
+            site={
+              <SiteShell header={<SiteHeader />} footer={<SiteFooter />}>
+                {children}
+              </SiteShell>
             }
-            footer={
-              <SiteFooter />
-            }
-          >
-            {children}
-          </SiteShell>
+          />
 
           <Toaster
             richColors

@@ -760,10 +760,23 @@ export function AddressDetailPage({
           <div className="my-6 h-px bg-border" />
 
 
+          <Button
+            asChild
+            className="mb-2 h-14 w-full bg-accent text-base font-semibold text-white hover:bg-accent-dark"
+          >
+            <a
+              href={`/viago?to=${encodeURIComponent(address.public_number)}`}
+            >
+              <Navigation className="size-5" />
+
+              Naviguer avec Viago
+            </a>
+          </Button>
+
           <div className="grid grid-cols-2 gap-2">
             <Button
               asChild
-              className="h-14 bg-accent text-base font-semibold text-white hover:bg-accent-dark"
+              className="h-14 border border-border bg-white text-base font-semibold text-foreground hover:bg-muted"
             >
               <a
                 href={mapsUrl}
