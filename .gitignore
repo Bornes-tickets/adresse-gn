@@ -62,3 +62,6 @@ test-results/
 *.prj
 *.cpg
 *.geojson
+
+# Tuiles locales Viago (générées, volumineuses)
+.tiles/
