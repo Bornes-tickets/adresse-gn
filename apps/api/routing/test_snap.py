@@ -262,7 +262,7 @@ class SnapServiceUnitTests(unittest.TestCase):
         )
 
         self.assertIn(
-            "ORDER BY distance_m, edge_id LIMIT 1",
+            "DESC, x.distance_m, x.edge_id LIMIT 1",
             normalized,
         )
 
@@ -289,6 +289,69 @@ class SnapServiceUnitTests(unittest.TestCase):
             result["radius_status"],
             "UNQUALIFIED_NO_PRODUCTION_RADIUS",
         )
+
+    def test_fast_path_prefers_usable_edges_and_strict_fallback_exists(self):
+        _, cursor = self.call_service(make_row(), profile="foot")
+        normalized = " ".join(cursor.sql.split())
+        self.assertIn(
+            "LEFT JOIN maps_routing_stage.routing_edges_foot AS cv",
+            normalized,
+        )
+        strict = " ".join(
+            snap._snap_sql_strict(
+                "maps_routing_stage.routing_edges_foot"
+            ).split()
+        )
+        self.assertEqual(
+            strict.count(
+                "JOIN maps_routing_stage.routing_edges_foot AS ev "
+                "ON ev.id = e.edge_id "
+                "AND (ev.cost >= 0 OR ev.reverse_cost >= 0)"
+            ),
+            2,
+        )
+
+    def test_strict_search_runs_only_when_fast_path_has_no_usable_edge(self):
+        fake_connection = FakeConnection(
+            make_row(forward_cost=None, reverse_cost=None)
+        )
+        calls = []
+        original = fake_connection.cursor_instance.execute
+
+        def spy(sql, params):
+            calls.append(sql)
+            original(sql, params)
+
+        fake_connection.cursor_instance.execute = spy
+        with patch.object(snap, "connection", fake_connection):
+            snap.snap_point_to_routing_graph(
+                longitude=-13.5, latitude=9.5, profile="car",
+                candidate_limit=64,
+            )
+        self.assertEqual(len(calls), 2)
+
+    def test_max_distance_rejects_far_points_with_typed_status(self):
+        fake_connection = FakeConnection(make_row(distance_m=1500.0))
+        with patch.object(snap, "connection", fake_connection):
+            far = snap.snap_point_to_routing_graph(
+                longitude=-13.5, latitude=9.5, profile="car",
+                candidate_limit=64, max_distance_m=1000,
+            )
+            near = snap.snap_point_to_routing_graph(
+                longitude=-13.5, latitude=9.5, profile="car",
+                candidate_limit=64, max_distance_m=2000,
+            )
+        self.assertEqual(far["status"], "too_far_from_network")
+        self.assertEqual(near["status"], "ok")
+
+    def test_invalid_max_distance_is_rejected(self):
+        for value in (0, -5, True, float("nan"), "100"):
+            with self.subTest(value=value):
+                with self.assertRaises(snap.SnapValidationError):
+                    snap.snap_point_to_routing_graph(
+                        longitude=-13.5, latitude=9.5, profile="car",
+                        candidate_limit=64, max_distance_m=value,
+                    )
 
     def test_invalid_coordinates_are_rejected(self):
         invalid_cases = [

@@ -175,6 +175,7 @@ def execute_state_od_matrix(
     source_state_ids: Any,
     target_state_ids: Any,
     connection_obj=None,
+    path_sink: dict | None = None,
 ) -> list[dict[str, Any]]:
     normalized_sources = (
         _validate_state_ids(
@@ -373,6 +374,15 @@ def execute_state_od_matrix(
                 ),
             }
         )
+
+    if path_sink is not None:
+        # Optional: keep the paths already computed so callers need no
+        # second shortest-path run (each run re-reads the whole state graph).
+        for pair, pair_rows in grouped.items():
+            path_sink[pair] = [
+                (r["path_seq"], r["node"], r["edge"], r["agg_cost"])
+                for r in sorted(pair_rows, key=lambda r: r["path_seq"])
+            ]
 
     result = []
 
