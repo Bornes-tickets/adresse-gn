@@ -1,0 +1,23 @@
+{
+  "name": "viago-android-foundation",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Viago Android development shell (C14-P1, no production release)",
+  "scripts": {
+    "android:add": "cap add android",
+    "android:sync": "cap sync android",
+    "android:open": "cap open android",
+    "android:run": "cap run android"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.6.0",
+    "@capacitor/core": "8.6.0",
+    "@capacitor/geolocation": "^8.2.4"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.6.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

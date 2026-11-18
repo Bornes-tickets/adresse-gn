@@ -1,0 +1,6 @@
+node_modules/
+android/
+dist/
+.gradle/
+# Development-only server URL; never commit or ship it in a release
+capacitor.config.json
