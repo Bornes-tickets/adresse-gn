@@ -661,7 +661,7 @@ export default function ViagoPage() {
       if (controller.signal.aborted) return;
       if (!response.ok) {
         if (response.status === 404) throw new Error("API Viago non activée sur le serveur de routage.");
-        if (response.status === 401 || response.status === 403) throw new Error("Accès au moteur Viago local refusé. Vérifiez le serveur isolé sur le port 8001.");
+        if (response.status === 401 || response.status === 403) throw new Error("Accès au moteur Viago refusé (origine non autorisée ou jeton invalide). Relancez lancer_viago_national.ps1.");
         throw new Error(`Calcul d’itinéraire indisponible (HTTP ${response.status}).`);
       }
       const data = await response.json() as RouteResult;

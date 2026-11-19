@@ -47,7 +47,27 @@ function parseRoutePayload(value: unknown): RoutePayload | null {
 export async function POST(request: NextRequest): Promise<Response> {
   const origin = request.headers.get("origin");
 
-  if (origin && new URL(origin).host !== request.headers.get("host")) {
+  // Same-origin only. Hosts behind a trusted HTTPS proxy (e.g. tailscale serve,
+  // which rewrites Host to the local backend) must be listed explicitly.
+  const allowedHosts = new Set<string>(
+    (process.env.VIAGO_ALLOWED_ORIGIN_HOSTS ?? "")
+      .split(",")
+      .map((value) => value.trim().toLowerCase())
+      .filter(Boolean),
+  );
+  const requestHost = request.headers.get("host");
+  if (requestHost) allowedHosts.add(requestHost.toLowerCase());
+
+  let originHost: string | null = null;
+  if (origin) {
+    try {
+      originHost = new URL(origin).host.toLowerCase();
+    } catch {
+      originHost = "";
+    }
+  }
+
+  if (originHost !== null && !allowedHosts.has(originHost)) {
     return Response.json(
       { status: "error", message: "Cross-origin request denied." },
       { status: 403 },

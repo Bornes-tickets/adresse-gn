@@ -1,4 +1,4 @@
-# VIAGO - lance la carte + le routage sur le graphe national, en LOCAL.
+﻿# VIAGO - lance la carte + le routage sur le graphe national, en LOCAL.
 # Usage (PowerShell, depuis la racine du depot) :  .\lancer_viago_national.ps1
 # Arret : fermez les deux fenetres ouvertes, puis  docker stop viago-p4p7-r3
 $ErrorActionPreference = "Stop"
@@ -30,10 +30,14 @@ if ((Test-Path (Join-Path $root ".tiles\guinea.pmtiles")) -and (Test-Path (Join-
   Write-Host "   Fond de carte : OpenFreeMap (tuiles locales non preparees)."
 }
 
-Write-Host "3/4 Application web (http://localhost:3000)..."
+# Hotes autorises a appeler le proxy de routage derriere tailscale serve (Origin != Host local).
+$env:VIAGO_ALLOWED_ORIGIN_HOSTS = "pc-dieila.tail2e1adc.ts.net"
+
+Write-Host "3/4 Application web (http://localhost:3107)..."
 Start-Process -FilePath "powershell.exe" -WorkingDirectory (Join-Path $root "apps\web") `
-  -ArgumentList @("-NoExit", "-Command", "npm run dev")
+  -ArgumentList @("-NoExit", "-Command", "npm run dev -- -p 3107")
 
 Start-Sleep -Seconds 12
-Write-Host "4/4 Ouverture : http://localhost:3000/viago"
-Start-Process "http://localhost:3000/viago"
+Write-Host "4/4 Ouverture : http://localhost:3107/viago"
+Start-Process "http://localhost:3107/viago"
+
