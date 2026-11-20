@@ -9,6 +9,7 @@ type RoutePayload = {
   start_longitude: number;
   end_latitude: number;
   end_longitude: number;
+  alternatives?: number;
 };
 
 function validCoordinate(value: unknown, limit: number): value is number {
@@ -35,7 +36,10 @@ function parseRoutePayload(value: unknown): RoutePayload | null {
     return null;
   }
 
+  const alternatives = body.alternatives === 1 || body.alternatives === 2 ? body.alternatives : 0;
+
   return {
+    ...(alternatives > 0 ? { alternatives } : {}),
     profile: body.profile,
     start_latitude: body.start_latitude,
     start_longitude: body.start_longitude,

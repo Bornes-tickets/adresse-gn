@@ -24,7 +24,7 @@ type Props = {
 
 function ClickLocation({ onSelect, navigationActive, followUser }: Pick<Props, "onSelect" | "navigationActive" | "followUser">) {
   useMapEvents({ click: (event) => {
-    if (navigationActive && followUser) return;
+    if (navigationActive) return;
     onSelect({ lat: event.latlng.lat, lng: event.latlng.lng });
   } });
   return null;

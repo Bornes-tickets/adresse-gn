@@ -80,7 +80,9 @@ def rewrite_style(style: dict) -> dict:
             print("Source distante retiree :", name, src.get("type"))
     style["glyphs"] = "__ORIGIN__/viago-map/fonts/{fontstack}/{range}.pbf"
     style["sprite"] = "__ORIGIN__/viago-map/sprite/ofm"
-    return style
+    # Theme navigation (routes plus lisibles, batiments plats) : voir apply_nav_theme.py
+    from apply_nav_theme import apply_nav_theme
+    return apply_nav_theme(style)
 
 
 def main() -> int:

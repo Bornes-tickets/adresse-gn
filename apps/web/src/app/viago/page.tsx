@@ -2,7 +2,7 @@
 import { Capacitor, registerPlugin } from "@capacitor/core";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   CarFront, ChevronUp, Crosshair,
   Footprints, MapPin, Navigation2, RotateCcw, Search, Settings2,
@@ -16,6 +16,12 @@ import { initialRoadLock, updateRoadLock, type RoadLockState } from "./viago-roa
 import { getViagoCurrentPosition, watchViagoPosition, viagoGpsSource, type ViagoGpsWatch } from "./viago-native-location";
 
 import ViagoDrivingHud from "./viago-driving-hud";
+import ViagoRoutePreview from "./viago-route-preview";
+import ViagoReportSheet from "./viago-report-sheet";
+import { ALERT_META, alertFeatures, alertsAhead, deviceId, timeAgo, type AlertType, type ViagoAlert } from "@/features/viago/viago-alerts";
+import ViagoDirectionsCard, { type DirectionsRole, type Suggestion } from "./viago-directions-card";
+import { alternativeFeatures, durationDelta, formatMinutes, type RouteCandidate } from "@/features/viago/viago-alternatives";
+import { surfaceSectionLines, surfaceSummaryLabel, upcomingSurfaceNotice, verifiedSurface, type SurfaceInfo } from "@/features/viago/viago-surface";
 import { matchRouteProgress, type RouteProgress } from "./viago-progress";
 import { confirmedRouteSpeedKmh, deriveViagoGuidance, type ConfirmedGuidanceProgress } from "./viago-guidance";
 import { deriveViagoTripEstimate } from "./viago-trip-estimate";
@@ -57,6 +63,7 @@ type RouteResult = {
   total_cost: number | null;
   message?: string;
   maneuvers?: unknown;
+  surface?: unknown;
 };
 
 // P6-C6: certified, explicit backend instructions only. Never derive turns from polyline curvature.
@@ -114,7 +121,14 @@ function maneuverArrow(m: ViagoManeuver): string {
   return "↑";
 }
 
-type Place = { place_id: number; display_name: string; lat: string; lon: string };
+type Place = { place_id: number; display_name: string; lat: string; lon: string; label?: string; sub?: string; agn?: string };
+const AGN_CATEGORY_LABELS: Record<string, string> = {
+  restaurant: "Restaurant", hotel: "Hôtel", bar: "Bar", commerce: "Commerce", entreprise: "Entreprise",
+  administration: "Administration", ecole: "École", sante: "Santé", pharmacie: "Pharmacie", banque: "Banque",
+  tourisme: "Tourisme", other: "Lieu",
+};
+type AgnPlaceHit = { public_number: string; name: string; category: string; commune: string | null; lat: number; lng: number; distance_m: number | null };
+function formatPlaceDistance(m: number): string { return m < 950 ? `${Math.round(m / 10) * 10} m` : `${(m / 1000).toFixed(m < 10000 ? 1 : 0).replace(".", ",")} km`; }
 // Le service Adresse GN reste séparé du laboratoire de routage Viago.
 // Viago uses dedicated same-origin Next.js server routes.
 // Backend loopback addresses never reach the mobile browser.
@@ -165,6 +179,13 @@ function prettyDistance(m: number) {
   return m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1).replace(".", ",")} km`;
 }
 
+function spokenDistance(m: number): string {
+  if (m < 40) return "Dans quelques mètres";
+  if (m < 1000) return `Dans ${Math.round(m / 10) * 10} mètres`;
+  const km = Math.round(m / 100) / 10;
+  return `Dans ${String(km).replace(".", ",")} ${km >= 2 ? "kilomètres" : "kilomètre"}`;
+}
+
 function prettyDuration(seconds: number): string {
   if (seconds < 60) return `${Math.ceil(seconds)} s`;
   const minutes = Math.ceil(seconds / 60);
@@ -200,6 +221,12 @@ export default function ViagoPage() {
   useEffect(() => { routeForGps.current = route; }, [route]);
   const [maneuvers, setManeuvers] = useState<ViagoManeuver[]>([]);
   const [distance, setDistance] = useState<number | null>(null);
+  const [surface, setSurface] = useState<SurfaceInfo | null>(null);
+  const [candidates, setCandidates] = useState<RouteCandidate[]>([]);
+  const [chosenRoute, setChosenRoute] = useState(0);
+  const [altBusy, setAltBusy] = useState(false);
+  const altGeneration = useRef(0);
+  const chosenRouteRef = useRef(0);
   const [duration, setDuration] = useState<number | null>(null);
   const [arrivalAt, setArrivalAt] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
@@ -209,6 +236,17 @@ export default function ViagoPage() {
   const [searchRole, setSearchRole] = useState<PointRole>("end");
   const [places, setPlaces] = useState<Place[]>([]);
   const [searching, setSearching] = useState(false);
+  // Etapes intermediaires (max 3) : les points ne changent qu'a la selection, le texte est a part.
+  const [stops, setStops] = useState<{ point: ViagoPoint | null; name: string }[]>([]);
+  const [stopQueries, setStopQueries] = useState<string[]>([]);
+  const [stopPlaces, setStopPlaces] = useState<Place[]>([]);
+  const [dirFocus, setDirFocus] = useState<DirectionsRole | null>(null);
+  // Signalements communautaires.
+  const [alerts, setAlerts] = useState<ViagoAlert[]>([]);
+  const [reporting, setReporting] = useState(false);
+  const [reportBusy, setReportBusy] = useState(false);
+  const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null);
+  const spokenAlerts = useRef<Set<string>>(new Set());
   const [advanced, setAdvanced] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(true);
   const [fitRequest, setFitRequest] = useState(0);
@@ -380,6 +418,9 @@ export default function ViagoPage() {
        `/viago-mobile/api/address/${encodeURIComponent(number)}`.trim(),
       { method: "GET", headers: { Accept: "application/json" }, cache: "no-store" },
     );
+    if (!response.headers.get("content-type")?.includes("json")) {
+      throw new Error(`Recherche Adresse GN : le serveur a renvoyé une page au lieu d’une réponse (HTTP ${response.status}). Vérifiez que l’application web tourne et rechargez.`);
+    }
     const data = await response.json() as AddressGNResponse;
     if (response.status >= 500) {
       throw new Error(`Service Adresse GN : erreur interne (HTTP ${response.status}). La recherche ne peut pas aboutir tant que l’API ne répond pas.`);
@@ -490,6 +531,11 @@ export default function ViagoPage() {
     setManeuvers([]);
     setRoute(null);
     setDistance(null);
+    setSurface(null);
+    altGeneration.current += 1;
+    setCandidates([]);
+    setChosenRoute(0);
+    setAltBusy(false);
     setDuration(null);
     setArrivalAt(null);
     stopTracking();
@@ -522,8 +568,181 @@ export default function ViagoPage() {
   }, [clearRoute]);
 
   const choosePoint = useCallback((point: ViagoPoint) => {
+    // Garde-fou : pendant le guidage, un toucher sur la carte ne change ni le depart ni l'arrivee.
+    if (tracking) return;
     applyPoint(point, selection);
-  }, [applyPoint, selection]);
+  }, [applyPoint, selection, tracking]);
+
+  // Lieux publics Adresse GN recherches par nom (lecture seule, tri par pertinence puis proximite).
+  async function searchNamedPlaces(q: string): Promise<Place[]> {
+    const near = livePosition ?? start;
+    const params = new URLSearchParams({ q });
+    if (near) { params.set("lat", String(near.lat)); params.set("lng", String(near.lng)); }
+    const response = await fetch(`/viago-mobile/api/places?${params.toString()}`, { headers: { Accept: "application/json" }, cache: "no-store" });
+    if (!response.headers.get("content-type")?.includes("json")) throw new Error("Service Adresse GN indisponible.");
+    const data = await response.json() as { status: string; results?: AgnPlaceHit[] };
+    if (data.status !== "ok" || !Array.isArray(data.results)) return [];
+    return data.results
+      .filter((h) => Number.isFinite(h.lat) && Number.isFinite(h.lng))
+      .map((h, i): Place => {
+        const name = h.name.replace(/,/g, " ").trim();
+        const parts = [AGN_CATEGORY_LABELS[h.category] ?? "Lieu", h.commune, h.distance_m !== null ? formatPlaceDistance(h.distance_m) : null].filter(Boolean);
+        return { place_id: -1000 - i, display_name: name, lat: String(h.lat), lon: String(h.lng), label: name, sub: `${parts.join(" · ")} · ${h.public_number}`, agn: h.public_number };
+      });
+  }
+
+  // Recherche generique (etapes) : coordonnees, Adresse GN ou lieu (Nominatim, limite a la Guinee).
+  async function lookupQuery(q: string): Promise<Place[]> {
+    const coordinate = parseCoordinates(q);
+    if (coordinate) return [{ place_id: -1, display_name: "Point GPS", lat: String(coordinate.lat), lon: String(coordinate.lng) }];
+    if (looksLikeAddressGN(q)) {
+      const response = await fetch(`/viago-mobile/api/address/${encodeURIComponent(q)}`, { headers: { Accept: "application/json" }, cache: "no-store" });
+      if (!response.headers.get("content-type")?.includes("json")) throw new Error("Service Adresse GN indisponible.");
+      const data = await response.json() as AddressGNResponse;
+      if (data.status !== "found" || !data.result) throw new Error(data.message || "Cette Adresse GN est introuvable ou n'est pas publique.");
+      const r = data.result;
+      if (typeof r.lat !== "number" || typeof r.lng !== "number") throw new Error("Cette Adresse GN n'a pas de position GPS publique exploitable.");
+      return [{ place_id: -2, display_name: r.name || r.business_name || `Adresse GN ${r.public_number}`, lat: String(r.lat), lon: String(r.lng) }];
+    }
+    if (q.length < 2) throw new Error("Saisissez au moins deux caractères.");
+    const [agn, osm] = await Promise.allSettled([
+      searchNamedPlaces(q),
+      q.length < 3 ? Promise.resolve([] as Place[]) : fetch(`https://nominatim.openstreetmap.org/search?format=json&countrycodes=gn&limit=5&q=${encodeURIComponent(q)}`, { headers: { Accept: "application/json" } })
+        .then(async (res) => { if (!res.ok) throw new Error("osm"); return await res.json() as Place[]; }),
+    ]);
+    const named = agn.status === "fulfilled" ? agn.value : [];
+    const other = osm.status === "fulfilled" ? osm.value.filter((p) => Number.isFinite(Number(p.lat)) && Number.isFinite(Number(p.lon))) : [];
+    if (named.length === 0 && other.length === 0 && agn.status === "rejected" && osm.status === "rejected") throw new Error("Recherche temporairement indisponible.");
+    return [...named, ...other];
+  }
+
+  async function searchStop(index: number) {
+    const q = (stopQueries[index] ?? "").trim();
+    if (!q) return;
+    setSearching(true);
+    setStopPlaces([]);
+    try {
+      const found = await lookupQuery(q);
+      if (found.length === 1 && found[0].place_id < 0) pickStop(index, found[0]);
+      else { setStopPlaces(found); if (found.length === 0) setMessage("Aucun lieu trouvé pour cette étape."); }
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Recherche indisponible.");
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  function pickStop(index: number, place: Place) {
+    const label = place.display_name.split(",").slice(0, 2).join(",");
+    setStops((current) => current.map((s, i) => i === index ? { point: { lat: Number(place.lat), lng: Number(place.lon) }, name: label } : s));
+    setStopQueries((current) => current.map((q, i) => i === index ? label : q));
+    setStopPlaces([]);
+    setDirFocus(null);
+  }
+
+  function addStop() {
+    if (stops.length >= 3) { setMessage("Trois étapes au maximum."); return; }
+    setStops((current) => [...current, { point: null, name: "" }]);
+    setStopQueries((current) => [...current, ""]);
+    setStopPlaces([]);
+    setDirFocus(stops.length);
+  }
+
+  function removeStop(index: number) {
+    setStops((current) => current.filter((_, i) => i !== index));
+    setStopQueries((current) => current.filter((_, i) => i !== index));
+    setStopPlaces([]);
+    setDirFocus(null);
+  }
+
+  const refreshAlerts = useCallback(async () => {
+    if (!route || route.length < 2) { setAlerts([]); return; }
+    let minLat = 90, maxLat = -90, minLng = 180, maxLng = -180;
+    for (const p of route) { minLat = Math.min(minLat, p.lat); maxLat = Math.max(maxLat, p.lat); minLng = Math.min(minLng, p.lng); maxLng = Math.max(maxLng, p.lng); }
+    const pad = 0.02;
+    try {
+      const response = await fetch(`/viago-mobile/api/alerts?bbox=${[minLng - pad, minLat - pad, maxLng + pad, maxLat + pad].map((v) => v.toFixed(5)).join(",")}`, { cache: "no-store" });
+      if (!response.ok || !response.headers.get("content-type")?.includes("json")) return;
+      const data = await response.json() as { alerts?: ViagoAlert[] };
+      if (Array.isArray(data.alerts)) setAlerts(data.alerts);
+    } catch { /* signalements facultatifs */ }
+  }, [route]);
+
+  useEffect(() => {
+    void refreshAlerts();
+    if (!route) return;
+    const timer = window.setInterval(() => { void refreshAlerts(); }, 45000);
+    return () => window.clearInterval(timer);
+  }, [route, refreshAlerts]);
+
+  async function sendReport(type: AlertType) {
+    const where = livePosition ?? start;
+    if (!where) { setMessage("Position GPS indisponible : impossible de placer le signalement."); setReporting(false); return; }
+    setReportBusy(true);
+    try {
+      const response = await fetch("/viago-mobile/api/alerts", {
+        method: "POST", cache: "no-store",
+        headers: { "Content-Type": "application/json", Accept: "application/json", "X-Viago-Device": deviceId() },
+        body: JSON.stringify({ type, lat: where.lat, lng: where.lng }),
+      });
+      const data = await response.json().catch(() => ({})) as { message?: string; merged?: boolean };
+      if (!response.ok) throw new Error(data.message || `Signalement refusé (HTTP ${response.status}).`);
+      setMessage(data.merged ? `Merci ! « ${ALERT_META[type].label} » confirmé.` : `Merci ! « ${ALERT_META[type].label} » signalé.`);
+      void refreshAlerts();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Signalement impossible.");
+    } finally {
+      setReportBusy(false);
+      setReporting(false);
+    }
+  }
+
+  async function voteAlert(id: string, vote: "still" | "gone") {
+    try {
+      await fetch(`/viago-mobile/api/alerts/${encodeURIComponent(id)}/vote`, {
+        method: "POST", cache: "no-store",
+        headers: { "Content-Type": "application/json", "X-Viago-Device": deviceId() },
+        body: JSON.stringify({ vote }),
+      });
+      setMessage(vote === "still" ? "Merci, signalement confirmé." : "Merci, signalement mis à jour.");
+      void refreshAlerts();
+    } catch { /* hors ligne : on ne bloque pas la conduite */ }
+    setSelectedAlertId(null);
+  }
+
+  async function shareRoute() {
+    if (!end) return;
+    const url = new URL("/viago", window.location.origin);
+    url.searchParams.set("dlat", end.lat.toFixed(6));
+    url.searchParams.set("dlng", end.lng.toFixed(6));
+    url.searchParams.set("dname", endName);
+    url.searchParams.set("mode", profile);
+    const text = `Itinéraire Viago vers ${endName}`;
+    try {
+      if (typeof navigator.share === "function") {
+        await navigator.share({ title: "Viago", text, url: url.toString() });
+        return;
+      }
+      await navigator.clipboard.writeText(url.toString());
+      setMessage("Lien de l’itinéraire copié.");
+    } catch {
+      /* partage annule par l'utilisateur : rien a signaler */
+    }
+  }
+
+  function resetAll() {
+    clearRoute();
+    setStart(null);
+    setEnd(null);
+    setStops([]);
+    setStopQueries([]);
+    setStopPlaces([]);
+    setStartQuery("");
+    setEndQuery("");
+    setPlaces([]);
+    setDirFocus(null);
+    setMessage(null);
+  }
 
   function swapPoints() {
     clearRoute();
@@ -550,11 +769,52 @@ export default function ViagoPage() {
 
   // Lien profond depuis Adresse GN : /viago?to=<numéro> fixe la destination
   // et prend la position GPS actuelle comme départ (comme Waze / Google Maps).
+  // Reveil anticipe du service Adresse GN (demarrage a froid de l'hebergement).
+  useEffect(() => {
+    void fetch("/viago-mobile/api/address-warmup", { cache: "no-store" }).catch(() => undefined);
+  }, []);
+  const [slowSearch, setSlowSearch] = useState(false);
+  useEffect(() => {
+    if (!searching) { setSlowSearch(false); return; }
+    const timer = window.setTimeout(() => setSlowSearch(true), 4000);
+    return () => window.clearTimeout(timer);
+  }, [searching]);
+  // Suggestions instantanees pendant la saisie : lieux Adresse GN par nom (service rapide, cache 2 min).
+  // OSM reste sur validation explicite (limitation du service public).
+  const liveSuggestToken = useRef(0);
+  useEffect(() => {
+    if (dirFocus === null || tracking) return;
+    const q = (dirFocus === "start" ? startQuery : dirFocus === "end" ? endQuery : (stopQueries[dirFocus] ?? "")).trim();
+    if (q.length < 2 || parseCoordinates(q) || looksLikeAddressGN(q)) return;
+    const token = ++liveSuggestToken.current;
+    const timer = window.setTimeout(() => {
+      void searchNamedPlaces(q).then((found) => {
+        if (token !== liveSuggestToken.current || found.length === 0) return;
+        if (typeof dirFocus === "number") setStopPlaces(found);
+        else { setSearchRole(dirFocus); setPlaces(found); }
+      }).catch(() => undefined);
+    }, 350);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startQuery, endQuery, stopQueries, dirFocus, tracking]);
   const deepLinkHandled = useRef(false);
   useEffect(() => {
     if (deepLinkHandled.current) return;
     deepLinkHandled.current = true;
-    const target = (new URLSearchParams(window.location.search).get("to") ?? "").trim();
+    const params = new URLSearchParams(window.location.search);
+    const dlat = Number(params.get("dlat")), dlng = Number(params.get("dlng"));
+    const shared = params.get("dlat") !== null && Number.isFinite(dlat) && Number.isFinite(dlng) && Math.abs(dlat) <= 90 && Math.abs(dlng) <= 180;
+    if (shared) {
+      const mode = params.get("mode");
+      if (mode === "car" || mode === "motorcycle" || mode === "foot") setProfile(mode);
+      const name = (params.get("dname") ?? "").slice(0, 80) || "Destination partagée";
+      void (async () => {
+        applyPoint({ lat: dlat, lng: dlng }, "end", name);
+        await positionGps();
+      })();
+      return;
+    }
+    const target = (params.get("to") ?? "").trim();
     if (!target || target.length > 40) return;
     void (async () => {
       try {
@@ -577,8 +837,8 @@ export default function ViagoPage() {
       setPlaces([]);
       return;
     }
-    if (q.length < 3) {
-      setMessage("Saisissez une Adresse GN ou au moins trois caractères d'un lieu.");
+    if (q.length < 2) {
+      setMessage("Saisissez une Adresse GN ou au moins deux caractères d'un lieu.");
       return;
     }
     setSearching(true);
@@ -591,12 +851,9 @@ export default function ViagoPage() {
         await resolveAddressGN(q, role);
         return;
       }
-      // Recherche explicite, sans autocomplétion automatique : limitation des requêtes au service public OSM.
-      const url = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=gn&limit=5&q=${encodeURIComponent(q)}`;
-      const response = await fetch(url, { headers: { Accept: "application/json" } });
-      if (!response.ok) throw new Error("Recherche temporairement indisponible.");
-      const results = await response.json() as Place[];
-      setPlaces(results.filter(p => Number.isFinite(Number(p.lat)) && Number.isFinite(Number(p.lon))));
+      // Lieux Adresse GN d'abord (par nom), puis OSM sur validation explicite (limitation du service public OSM).
+      const results = await lookupQuery(q);
+      setPlaces(results);
       if (results.length === 0) setMessage("Aucun lieu trouvé. Choisissez un point sur la carte.");
     } catch (error) {
       setMessage(looksLikeAddressGN(q)
@@ -634,6 +891,44 @@ export default function ViagoPage() {
 
   // Recalcule sans clic supplémentaire lorsque départ, arrivée ou profil changent.
   // Les requêtes précédentes sont annulées pour ne jamais afficher une route périmée.
+  // Alternatives : demandees apres l'affichage du trajet principal (le calcul est plus long).
+  const loadAlternatives = useCallback(async (main: RouteCandidate, generation: number) => {
+    if (!start || !end) return;
+    setAltBusy(true);
+    try {
+      // Une alternative a la fois : la premiere s'affiche des qu'elle est prete.
+      for (const wanted of [1, 2]) {
+        const response = await fetch("/viago-mobile/api/route", {
+          method: "POST", cache: "no-store", signal: AbortSignal.timeout(60000),
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            profile, start_latitude: start.lat, start_longitude: start.lng,
+            end_latitude: end.lat, end_longitude: end.lng, alternatives: wanted,
+          }),
+        });
+        if (!response.ok || altGeneration.current !== generation) return;
+        const data = await response.json() as { alternatives?: unknown };
+        if (altGeneration.current !== generation || !Array.isArray(data.alternatives)) return;
+        const parsed: RouteCandidate[] = [];
+        for (const raw of data.alternatives.slice(0, wanted)) {
+          const alt = raw as RouteResult;
+          const line = validLine(alt, profile);
+          const maneuvers = verifiedManeuvers(alt.maneuvers);
+          const distanceM = typeof alt.distance_m === "number" && Number.isFinite(alt.distance_m) && alt.distance_m >= 0 ? alt.distance_m : null;
+          const durationS = typeof alt.duration_s === "number" && Number.isFinite(alt.duration_s) && alt.duration_s >= 0 &&
+            alt.duration_source === "profile_effective_speed" ? alt.duration_s : null;
+          if (line && maneuvers.length > 0 && distanceM !== null) parsed.push({ line, distance: distanceM, duration: durationS, maneuvers });
+        }
+        if (parsed.length > 0) setCandidates([main, ...parsed]);   // ordre stable : le choix de l'utilisateur reste valide
+        if (parsed.length < wanted) return;   // pas d'autre alternative utile
+      }
+    } catch {
+      /* alternatives facultatives : le trajet principal reste utilisable */
+    } finally {
+      if (altGeneration.current === generation) setAltBusy(false);
+    }
+  }, [start, end, profile]);
+
   const calculate = useCallback(async () => {
     if (!start || !end) return;
     routeRequest.current?.abort();
@@ -643,11 +938,69 @@ export default function ViagoPage() {
     setManeuvers([]);
     setRoute(null);
     setDistance(null);
+    setSurface(null);
+    altGeneration.current += 1;
+    setCandidates([]);
+    setChosenRoute(0);
+    setAltBusy(false);
     setDuration(null);
     setArrivalAt(null);
     stopTracking();
     setMessage("Calcul automatique de l’itinéraire…");
     try {
+      const viaPoints = stops.filter((s): s is { point: ViagoPoint; name: string } => s.point !== null);
+      if (viaPoints.length > 0) {
+        // Plusieurs etapes : un calcul par troncon, puis assemblage (pas d'alternatives dans ce mode).
+        const waypoints = [start, ...viaPoints.map((s) => s.point), end];
+        let mergedLine: ViagoPoint[] = [];
+        const mergedManeuvers: ViagoManeuver[] = [];
+        let totalDistance = 0;
+        let totalDuration: number | null = 0;
+        for (let leg = 0; leg < waypoints.length - 1; leg++) {
+          const a = waypoints[leg], b = waypoints[leg + 1];
+          const legResponse = await fetch("/viago-mobile/api/route", {
+            method: "POST", cache: "no-store", signal: controller.signal,
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify({ profile, start_latitude: a.lat, start_longitude: a.lng, end_latitude: b.lat, end_longitude: b.lng }),
+          });
+          if (controller.signal.aborted) return;
+          if (!legResponse.ok) throw new Error(`Calcul d’itinéraire indisponible (HTTP ${legResponse.status}).`);
+          const legData = await legResponse.json() as RouteResult;
+          if (controller.signal.aborted) return;
+          const legLine = validLine(legData, profile);
+          const legManeuvers = verifiedManeuvers(legData.maneuvers);
+          const legDistance = typeof legData.distance_m === "number" && Number.isFinite(legData.distance_m) && legData.distance_m >= 0 ? legData.distance_m : null;
+          if (!legLine || legManeuvers.length === 0 || legDistance === null) {
+            setMessage(`Aucun trajet vérifié ${leg === 0 ? "jusqu’à l’étape 1" : leg === waypoints.length - 2 ? "vers la destination" : `entre les étapes ${leg} et ${leg + 1}`}.`);
+            return;
+          }
+          const last = leg === waypoints.length - 2;
+          for (const m of legManeuvers) {
+            if (leg > 0 && m.kind === "depart") continue;
+            if (!last && m.kind === "arrive") {
+              mergedManeuvers.push({ kind: "continue", modifier: "straight", distanceFromStartM: totalDistance + m.distanceFromStartM, streetName: `Étape ${leg + 1}` });
+            } else {
+              mergedManeuvers.push({ ...m, distanceFromStartM: totalDistance + m.distanceFromStartM });
+            }
+          }
+          mergedLine = mergedLine.length === 0 ? legLine : [...mergedLine, ...legLine.slice(1)];
+          totalDistance += legDistance;
+          const legDuration = typeof legData.duration_s === "number" && Number.isFinite(legData.duration_s) && legData.duration_s >= 0 &&
+            legData.duration_source === "profile_effective_speed" ? legData.duration_s : null;
+          totalDuration = totalDuration !== null && legDuration !== null ? totalDuration + legDuration : null;
+        }
+        setMapView("overview");
+        setRoute(mergedLine);
+        setManeuvers(mergedManeuvers);
+        setDistance(totalDistance);
+        setDuration(totalDuration);
+        setArrivalAt(totalDuration !== null ? Date.now() + totalDuration * 1000 : null);
+        setCandidates([{ line: mergedLine, distance: totalDistance, duration: totalDuration, maneuvers: mergedManeuvers }]);
+        setChosenRoute(0);
+        chosenRouteRef.current = 0;
+        setMessage(null);
+        return;
+      }
       // The local Viago lab is loopback-only and explicitly rejects remote clients.
       // No Supabase session is required for public navigation testing.
       const response = await fetch("/viago-mobile/api/route", {
@@ -680,6 +1033,7 @@ export default function ViagoPage() {
       setMapView("overview");
       setRoute(line);
       setManeuvers(verifiedManeuvers(data.maneuvers));
+      setSurface(verifiedSurface(data.surface));
       setDistance(typeof data.distance_m === "number" && Number.isFinite(data.distance_m) && data.distance_m >= 0
         ? data.distance_m : null);
 
@@ -698,6 +1052,13 @@ export default function ViagoPage() {
           : null
       );
       setMessage(null);
+      if (typeof data.distance_m === "number" && Number.isFinite(data.distance_m)) {
+        const mainCandidate: RouteCandidate = { line, distance: data.distance_m, duration: nextDuration, maneuvers: verifiedManeuvers(data.maneuvers) };
+        setCandidates([mainCandidate]);
+        setChosenRoute(0);
+        chosenRouteRef.current = 0;
+        void loadAlternatives(mainCandidate, altGeneration.current);
+      }
       // On small screens, reveal the actual computed route instead of
       // keeping the full-height search panel over the map.
       if (window.matchMedia("(max-width: 767px)").matches) {
@@ -713,7 +1074,7 @@ export default function ViagoPage() {
         setBusy(false);
       }
     }
-  }, [start, end, profile, stopTracking]);
+  }, [start, end, stops, profile, stopTracking, loadAlternatives]);
 
   useEffect(() => {
     if (!start || !end) return;
@@ -722,7 +1083,7 @@ export default function ViagoPage() {
       window.clearTimeout(timeout);
       routeRequest.current?.abort();
     };
-  }, [start, end, profile, calculate]);
+  }, [start, end, stops, profile, calculate]);
 
   // G1-P4: verified, local routing only. Keep the last route if the retry fails.
   // The source is a fresh GPS fix after three independent off-route confirmations.
@@ -768,6 +1129,7 @@ export default function ViagoPage() {
       setRouteProgress(null);
       setRoute(line);
       setManeuvers(newManeuvers);
+      setSurface(verifiedSurface(data.surface));
       setDistance(newDistance);
       setDuration(newDuration);
       setArrivalAt(newDuration !== null ? Date.now() + newDuration * 1000 : null);
@@ -816,6 +1178,14 @@ export default function ViagoPage() {
     setTracking(true);
     setMessage(null);
     setSheetOpen(false);
+    // Annonce de depart : declenchee par le toucher sur "Demarrer" (autorisation audio du navigateur).
+    if (voiceEnabled) {
+      const first = maneuvers.find((m) => m.kind !== "depart");
+      const sentence = !first ? "" : first.kind === "arrive"
+        ? " Vous arriverez directement à destination."
+        : ` ${spokenDistance(first.distanceFromStartM)}, ${maneuverTitle(first).toLowerCase()}${first.streetName ? ` sur ${first.streetName}` : ""}.`;
+      void speakViagoFrench(`Allons-y !${sentence}`).catch(() => undefined);
+    }
     const openGpsWatch = async (requestPermission = false) => {
       if (watchGeneration.current !== generation || locationDenied.current || watchStarting.current) return;
       // The previous watch must finish clearing before any retry.
@@ -1266,20 +1636,58 @@ export default function ViagoPage() {
   const confirmedRemainingM = tripEstimate.remainingMeters;
   const displayedDurationS = tripEstimate.durationS;
   const displayedArrivalAt = tripEstimate.arrivalAtMs;
+  const chooseCandidate = (index: number) => {
+    const c = candidates[index];
+    if (!c || tracking) return;
+    setChosenRoute(index);
+    chosenRouteRef.current = index;
+    setRoute(c.line);
+    setManeuvers(c.maneuvers as ViagoManeuver[]);
+    setDistance(c.distance);
+    setDuration(c.duration);
+    setArrivalAt(c.duration !== null ? Date.now() + c.duration * 1000 : null);
+    setSurface(null);
+  };
+  const previewShown = !tracking && route !== null && distance !== null;
+  const dirSuggestions: Suggestion[] = (() => {
+    const source = dirFocus === null ? [] : typeof dirFocus === "number" ? stopPlaces : (searchRole === dirFocus ? places : []);
+    return source.map((p, i) => ({ id: String(i), label: p.label ?? p.display_name.split(",")[0], sub: p.sub ?? p.display_name.split(",").slice(1, 3).join(",").trim(), agn: Boolean(p.agn) }));
+  })();
+  const alongForAlerts = distance !== null && confirmedRemainingM !== null ? Math.max(0, distance - confirmedRemainingM) : 0;
+  const alongBucket = Math.floor(alongForAlerts / 25) * 25;
+  const alertsOnRoute = useMemo(() => alertsAhead(route, alerts, alongBucket), [route, alerts, alongBucket]);
+  const alertNotice = tracking && alertsOnRoute.length > 0 && alertsOnRoute[0].aheadM <= 800
+    ? `${ALERT_META[alertsOnRoute[0].alert.type].emoji} ${ALERT_META[alertsOnRoute[0].alert.type].label} · ${alertsOnRoute[0].aheadM < 40 ? "maintenant" : `dans ${prettyDistance(alertsOnRoute[0].aheadM)}`}`
+    : null;
+  const alertGeo = useMemo(() => alertFeatures(alerts), [alerts]);
+  const selectedAlert = selectedAlertId ? alerts.find((a) => a.id === selectedAlertId) ?? null : null;
+  // Annonce vocale unique d'un signalement qui approche sur l'itineraire (a moins de 600 m).
+  const nextAlert = alertsOnRoute[0] ?? null;
+  useEffect(() => {
+    if (!tracking) { spokenAlerts.current.clear(); return; }
+    if (!voiceEnabled || !nextAlert || nextAlert.aheadM > 600 || spokenAlerts.current.has(nextAlert.alert.id)) return;
+    spokenAlerts.current.add(nextAlert.alert.id);
+    const when = nextAlert.aheadM < 60 ? "juste devant" : spokenDistance(nextAlert.aheadM).replace(/^Dans/, "dans");
+    void speakViagoFrench(`Attention, ${ALERT_META[nextAlert.alert.type].spoken} ${when}.`).catch(() => undefined);
+  }, [tracking, voiceEnabled, nextAlert]);
+  const altLines = useMemo(() => (tracking ? undefined : alternativeFeatures(candidates, chosenRoute)), [tracking, candidates, chosenRoute]);
+  const surfaceLines = useMemo(() => surfaceSectionLines(route, surface, distance), [route, surface, distance]);
+  const surfaceLabel = surfaceSummaryLabel(surface);
+  const roadNotice = upcomingSurfaceNotice(surface, distance !== null && confirmedRemainingM !== null ? Math.max(0, distance - confirmedRemainingM) : null);
 
   return (
     <main className={`${tracking ? "viago-c3-driving" : ""} relative isolate h-[calc(100dvh-66px)] min-h-[570px] w-full overflow-hidden bg-[#e6f4f1] text-slate-900`} aria-label="Navigation Viago">
       {/* Carte interactive, jamais remplacée par une image de démonstration. */}
       <div className="absolute inset-0 z-0">
         {mapLibreEnabled ? (
-          <ViagoMapLibre start={start} end={end} route={route} onSelect={choosePoint}
-            userPosition={livePosition} pedestrianMode={profile === "foot"}
+          <ViagoMapLibre start={start} end={end} route={route} alertFeatures={alertGeo} onSelectAlert={(id) => setSelectedAlertId(id)} stopPoints={stops.flatMap((x) => x.point ? [x.point] : [])} altLines={altLines} onSelectAlt={chooseCandidate} surfaceLines={surfaceLines} onSelect={choosePoint}
+            userPosition={livePosition} pedestrianMode={profile === "foot"} profile={profile}
             pedestrianPosition={profile === "foot" ? pedestrianGpsPosition : null}
             pedestrianAccuracyM={profile === "foot" ? gpsAccuracy : null}
-            vehicleHeading={vehicleHeading} motionPhase={motionPhase} followUser={tracking && follow} recenterRequest={recenterRequest} onUserPan={() => setFollow(false)} gpsFixValid={gpsSignal === "valid" && routeProgress?.status === "on_route"} visualGpsUsable={(gpsSignal === "valid" || gpsSignal === "imprecise") && livePosition !== null && typeof gpsAccuracy === "number" && gpsAccuracy <= MAX_GPS_VISUAL_ACCURACY_M} navigationActive={tracking} sheetOpen={sheetOpen} fitRequest={fitRequest} viewMode={mapView} detailRequest={detailRequest} />
+            vehicleHeading={vehicleHeading} motionPhase={motionPhase} followUser={tracking && follow} recenterRequest={recenterRequest} onUserPan={() => setFollow(false)} gpsFixValid={gpsSignal === "valid" && routeProgress?.status === "on_route"} visualGpsUsable={(gpsSignal === "valid" || gpsSignal === "imprecise") && livePosition !== null && typeof gpsAccuracy === "number" && gpsAccuracy <= MAX_GPS_VISUAL_ACCURACY_M} navigationActive={tracking} sheetOpen={false} fitRequest={fitRequest} viewMode={mapView} detailRequest={detailRequest} />
         ) : (
           <ViagoLeafletMap start={start} end={end} route={route} onSelect={choosePoint}
-            userPosition={livePosition} vehicleHeading={vehicleHeading} followUser={tracking && follow} gpsFixValid={gpsSignal === "valid" && routeProgress?.status === "on_route"} navigationActive={tracking} sheetOpen={sheetOpen} fitRequest={fitRequest} viewMode={mapView} detailRequest={detailRequest} />
+            userPosition={livePosition} vehicleHeading={vehicleHeading} followUser={tracking && follow} gpsFixValid={gpsSignal === "valid" && routeProgress?.status === "on_route"} navigationActive={tracking} sheetOpen={false} fitRequest={fitRequest} viewMode={mapView} detailRequest={detailRequest} />
         )}
       </div>
 
@@ -1288,121 +1696,6 @@ export default function ViagoPage() {
         <div className="rounded-2xl bg-white/95 px-4 py-2.5 text-xs font-semibold text-emerald-900 shadow-md backdrop-blur">VIAGO · Navigation en Guinée</div>
       </div>
 
-      {sheetOpen && <section className="viago-v3-planner pointer-events-none absolute inset-x-0 bottom-0 top-0 z-[500] flex flex-col md:bottom-auto md:left-5 md:right-auto md:top-5 md:w-[430px] md:max-w-[calc(100vw-40px)]">
-        <div className="pointer-events-auto flex max-h-full min-h-0 flex-col overflow-hidden rounded-t-[30px] bg-white/95 shadow-[0_14px_50px_rgba(11,66,58,0.18)] backdrop-blur-xl md:max-h-[calc(100dvh-106px)] md:rounded-[28px]">
-          <div className="relative shrink-0 overflow-hidden bg-gradient-to-r from-[#d5f3ef] via-[#e8fbf7] to-[#c5e9e6] px-5 pb-4 pt-5">
-            <div className="absolute -right-8 -top-10 size-44 rounded-full bg-teal-300/20" aria-hidden="true" />
-            <div className="absolute right-9 top-7 flex gap-1" aria-label="Guinée"><span className="h-5 w-2 bg-red-500"/><span className="h-5 w-2 bg-yellow-400"/><span className="h-5 w-2 bg-green-600"/></div>
-            <div className="relative flex items-center gap-3">
-              <div className="flex size-12 items-center justify-center rounded-2xl bg-[#007c76] text-white shadow-md"><Navigation2 className="size-6 fill-current" /></div>
-              <div><h1 className="text-[27px] font-black leading-none tracking-tight text-[#103a35]">Viago</h1><p className="mt-1 text-xs text-[#315f59]">Navigation en Guinée</p></div>
-              <button type="button" aria-label="Réduire le planificateur" onClick={() => setSheetOpen(false)} className="ml-auto rounded-full p-2 text-[#1e4b45] hover:bg-white/70"><X className="size-5" /></button>
-            </div>
-          </div>
-
-          <div className="min-h-0 overflow-y-auto overscroll-contain px-4 pb-5 pt-4 md:px-5">
-            <div className="grid grid-cols-3 gap-2" aria-label="Mode de déplacement">
-              {PROFILE_OPTIONS.map(({ value, label, Icon }) => (
-                <button key={value} type="button" aria-pressed={profile === value} onClick={() => chooseProfile(value)}
-                  className={`flex flex-col items-center gap-1.5 rounded-2xl border px-2 py-3 text-[13px] font-semibold transition ${profile === value ? "border-[#00a28f] bg-[#dff6ed] text-[#006d61]" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"}`}>
-                  <Icon className="size-6" />{label}
-                </button>
-              ))}
-            </div>
-
-            <div className="relative mt-4 rounded-[22px] border border-slate-100 bg-[#fbfcfc] px-3 py-3 shadow-sm">
-              <div className="absolute bottom-[78px] left-[22px] top-[47px] w-px border-l-2 border-dotted border-slate-300" aria-hidden="true" />
-              <div className="flex items-center gap-2.5">
-                <span className="relative z-10 size-3 shrink-0 rounded-full border-[3px] border-[#087e73] bg-white" />
-                <form onSubmit={(event) => void searchDestination(event, "start")} className="flex min-w-0 flex-1 items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 focus-within:border-teal-500">
-                  <input type="text" value={startQuery} onChange={(event) => { setStartQuery(event.target.value); setPlaces([]); }}
-                    onFocus={() => setSearchRole("start")} aria-label="Saisir une Adresse GN ou un lieu de départ"
-                    placeholder={start ? startName : "Saisir un départ ou une Adresse GN"}
-                    className="h-10 min-w-0 flex-1 bg-transparent px-2 text-sm text-slate-900 outline-none placeholder:text-slate-500" />
-                  <button type="submit" disabled={searching} aria-label="Rechercher le départ" title="Rechercher le départ"
-                    className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[#007f70] text-white disabled:opacity-50"><Search className="size-4" /></button>
-                </form>
-                <button type="button" aria-label="Inverser départ et arrivée" onClick={swapPoints}
-                  className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#e0f3ee] text-[#006f62] hover:bg-[#ccebe2]"><RotateCcw className="size-4" /></button>
-              </div>
-              {searchRole === "start" && places.length > 0 && <div className="ml-6 mt-1 max-h-44 overflow-y-auto rounded-xl border bg-white shadow-sm" role="listbox" aria-label="Résultats des départs">
-                {places.map(place => <button key={place.place_id} type="button" role="option" aria-selected={false}
-                  className="block w-full border-b px-3 py-2 text-left text-xs hover:bg-teal-50" onClick={() => {
-                    applyPoint({lat:Number(place.lat), lng:Number(place.lon)}, "start", place.display_name.split(",").slice(0,2).join(","));
-                    setPlaces([]);
-                  }}>{place.display_name}</button>)}
-              </div>}
-              <button type="button" onClick={positionGps} className="ml-6 mt-1.5 flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-medium text-[#00796e]"><LocateFixed className="size-3.5" /> Utiliser ma position actuelle</button>
-              <div className="mt-3 flex items-center gap-2.5">
-                <MapPin className="relative z-10 size-4 shrink-0 text-red-500" />
-                <form onSubmit={(event) => void searchDestination(event, "end")} className="flex min-w-0 flex-1 items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 focus-within:border-teal-500">
-                  <input type="text" value={endQuery} onChange={(event) => { setEndQuery(event.target.value); setPlaces([]); }}
-                    onFocus={() => setSearchRole("end")} aria-label="Saisir une Adresse GN ou une destination"
-                    placeholder={end ? endName : "Saisir une Adresse GN ou destination"}
-                    className="h-10 min-w-0 flex-1 bg-transparent px-2 text-sm text-slate-900 outline-none placeholder:text-slate-500" />
-                  <button type="submit" disabled={searching} aria-label="Rechercher l’arrivée" title="Rechercher l’arrivée"
-                    className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[#007f70] text-white disabled:opacity-50"><Search className="size-4" /></button>
-                </form>
-              </div>
-              {searchRole === "end" && places.length > 0 && <div className="ml-6 mt-1 max-h-44 overflow-y-auto rounded-xl border bg-white shadow-sm" role="listbox" aria-label="Résultats des destinations">
-                {places.map(place => <button key={place.place_id} type="button" role="option" aria-selected={false}
-                  className="block w-full border-b px-3 py-2 text-left text-xs hover:bg-teal-50" onClick={() => {
-                    applyPoint({lat:Number(place.lat), lng:Number(place.lon)}, "end", place.display_name.split(",").slice(0,2).join(","));
-                    setPlaces([]);
-                  }}>{place.display_name}</button>)}
-              </div>}
-              <div className="mt-2 flex items-center gap-2 pl-6 text-xs text-slate-500">
-                <MapPin className="size-3.5" />
-                <button type="button" onClick={() => { setSelection("end"); setMessage("Touchez la carte pour sélectionner l’arrivée."); setSheetOpen(false); }} className="text-left text-[#00796e] underline underline-offset-2">Ou choisir l’arrivée sur la carte</button>
-              </div>
-              <div className="mt-3 flex items-center gap-2 pl-6 text-xs text-slate-500">
-                <span className="text-lg leading-none">＋</span><span>Ajout d’étapes : prochain développement</span>
-              </div>
-            </div>
-
-            <div className="mt-4 flex items-center justify-between gap-2 border-t border-slate-100 pt-4">
-              <span className="flex items-center gap-2 rounded-full bg-slate-100 px-3 py-2 text-xs font-semibold"><span className="text-base">◷</span> Départ immédiat</span>
-              <button type="button" onClick={() => setAdvanced(true)} className="flex items-center gap-1.5 text-xs font-semibold text-[#00796e]"><Settings2 className="size-4"/> Options</button>
-            </div>
-
-            <div className="mt-4 flex items-center justify-between rounded-xl bg-[#e8f7f3] p-3 text-xs text-[#087a70]">
-              <span className="viago-v3-route-label">APERÇU DU TRAJET</span>
-              <button type="button" onClick={() => { setSelection("start"); setSheetOpen(false); setMessage("Touchez la carte pour choisir le départ."); }} className="font-semibold underline underline-offset-2">Départ sur carte</button>
-            </div>
-
-            <div className="mt-4 space-y-3" aria-live="polite">
-              {route && distance !== null ? (
-                <div className="rounded-[22px] border border-[#82cbb5] bg-[#f1fbf6] p-4 shadow-sm">
-                  <span className="inline-flex rounded-full bg-emerald-700 px-3 py-1 text-[11px] font-bold text-white">Itinéraire calculé</span>
-                  <div className="mt-3 flex items-center gap-3">
-                    <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-800">{profile === "car" ? <CarFront className="size-6"/> : profile === "motorcycle" ? <Bike className="size-6"/> : <Footprints className="size-6"/>}</div>
-                    <div className="min-w-0 flex-1"><p className="text-sm font-extrabold">Trajet jusqu’à votre destination</p><p className="mt-1 text-xs text-slate-500">Tracé vérifié sur le graphe local</p></div>
-                    <div className="text-right"><p className="text-lg font-black text-[#00745f]">{prettyDistance(distance)}</p><p className="text-[11px] text-slate-500">{duration !== null ? prettyDuration(duration) : "Durée indisponible"}</p></div>
-                  </div>
-                  {duration !== null && arrivalAt !== null && (
-                    <div className="mt-3 rounded-xl bg-white/80 px-3 py-2 text-xs text-slate-700">
-                      <p className="font-semibold">
-                        Arrivée estimée : {new Date(arrivalAt).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
-                      </p>
-                      <p className="mt-1 text-[11px] text-slate-500">
-                        Durée estimée hors trafic en temps réel.
-                      </p>
-                    </div>
-                  )}
-                  <button type="button" onClick={tracking ? stopTracking : startTracking} className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[#007e6a] px-4 py-3 text-sm font-bold text-white"><Navigation2 className="size-4"/>{tracking ? "Arrêter le suivi GPS" : "Démarrer le suivi GPS"}</button>
-                </div>
-              ) : (
-                <div className="rounded-[22px] border border-slate-200 bg-white px-4 py-5 text-center text-sm text-slate-600">
-                  {busy ? <span className="flex items-center justify-center gap-2"><LoaderCircle className="size-4 animate-spin"/> Calcul du trajet en cours…</span>
-                    : !start || !end ? "Choisissez votre départ et votre arrivée : le trajet sera calculé automatiquement."
-                    : "Aucun trajet vérifié à afficher pour le moment."}
-                </div>
-              )}
-              <p className="px-1 text-[11px] leading-relaxed text-slate-500">La durée affichée utilise les vitesses effectives du graphe Viago, sans trafic en temps réel. Les alternatives restent à développer. Le guidage vocal doit être activé manuellement.</p>
-            </div>
-          </div>
-        </div>
-      </section>}
 
 
       {/* P6-C10A: autonomous, light-surface driving HUD. No legacy nav classes. */}
@@ -1417,6 +1710,10 @@ export default function ViagoPage() {
           speed={gpsSignal === "valid" ? gpsSpeedKmh : null}
           gpsSignal={gpsSignal}
           gpsAccuracy={gpsAccuracy}
+          confirmed={guidance.mode !== "unconfirmed"}
+          showRecenter={!follow}
+          roadNotice={alertNotice ?? roadNotice}
+          onReport={() => setReporting(true)}
           remaining={confirmedRemainingM !== null ? prettyDistance(confirmedRemainingM) : prettyDistance(distance)}
           remainingLabel={tripEstimate.source === "live" ? "Distance restante" : tripEstimate.source === "last_confirmed" ? "Restante · dernier GPS" : "Distance initiale"}
           duration={displayedDurationS !== null ? prettyDuration(displayedDurationS) : "--"}
@@ -1479,25 +1776,93 @@ export default function ViagoPage() {
         <span aria-label="Source GPS native Android" className="sr-only">GPS Android natif</span>
       )}
 
-      {/* Aperçu compact : le trajet et sa distance restent visibles carte ouverte. */}
-      {!sheetOpen && !tracking && <div className="pointer-events-auto absolute bottom-4 left-3 right-[76px] z-[520] max-w-[380px] rounded-2xl border border-emerald-100 bg-white/95 p-3 shadow-xl backdrop-blur md:bottom-5 md:left-5" role="region" aria-label="Résumé du trajet Viago">
-        <button type="button" onClick={() => setSheetOpen(true)} className="flex w-full items-center justify-between gap-2 text-left" aria-label="Ouvrir le planificateur d’itinéraire">
-          <span className="flex min-w-0 items-center gap-2 text-sm font-bold text-emerald-900"><Navigation2 className="size-4 shrink-0"/><span className="truncate">{route && distance !== null ? "Votre itinéraire" : "Préparer un trajet"}</span></span>
-          <span className="flex shrink-0 items-center gap-1 text-sm font-extrabold text-emerald-800">{route && distance !== null ? prettyDistance(distance) : "Ouvrir"}<ChevronUp className="size-4"/></span>
-        </button>
-        {route && distance !== null && <>
-          <p className="mt-1 truncate text-[11px] text-slate-500">{endName} · {profile === "car" ? "Voiture" : profile === "motorcycle" ? "Moto" : "Piéton"} · {duration !== null ? prettyDuration(duration) : "Durée indisponible"}</p>
-          {duration !== null && arrivalAt !== null && (
-            <p className="mt-1 text-[11px] text-slate-600">
-              Arrivée estimée : {new Date(arrivalAt).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
-              {" · Hors trafic en temps réel"}
-            </p>
-          )}
-          <button type="button" onClick={tracking ? stopTracking : startTracking} className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-[#007e6a] px-3 py-2.5 text-xs font-bold text-white"><Navigation2 className="size-4"/>{tracking ? "Arrêter le suivi GPS" : "Démarrer le suivi GPS"}</button>
-        </>}
-      </div>}
+      {reporting && <ViagoReportSheet busy={reportBusy} onPick={(type) => { void sendReport(type); }} onClose={() => setReporting(false)} />}
 
-      {route && route.length >= 2 && !tracking && (
+      {selectedAlert && (
+        <div className="pointer-events-auto absolute inset-x-3 bottom-4 z-[560] mx-auto max-w-[460px] rounded-2xl bg-white p-4 shadow-[0_8px_30px_rgba(10,30,50,0.3)]" role="dialog" aria-label="Signalement">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-base font-bold text-slate-900"><span aria-hidden="true">{ALERT_META[selectedAlert.type].emoji}</span> {ALERT_META[selectedAlert.type].label}</p>
+              <p className="mt-0.5 text-xs text-slate-500">Signalé {timeAgo(selectedAlert.createdAt)} · {selectedAlert.confirms} confirmation{selectedAlert.confirms > 1 ? "s" : ""}</p>
+            </div>
+            <button type="button" onClick={() => setSelectedAlertId(null)} aria-label="Fermer" className="flex size-8 items-center justify-center rounded-full bg-slate-100 text-slate-700"><X className="size-4" /></button>
+          </div>
+          <p className="mt-3 text-sm font-semibold text-slate-800">Est-ce toujours là ?</p>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <button type="button" onClick={() => { void voteAlert(selectedAlert.id, "still"); }} className="rounded-xl bg-[#0b7f78] py-2.5 text-sm font-bold text-white">Oui, toujours là</button>
+            <button type="button" onClick={() => { void voteAlert(selectedAlert.id, "gone"); }} className="rounded-xl border border-slate-300 bg-white py-2.5 text-sm font-bold text-slate-800">Non, plus là</button>
+          </div>
+        </div>
+      )}
+
+      {!tracking && (
+        <ViagoDirectionsCard
+          startValue={startQuery}
+          endValue={endQuery}
+          stops={stops.map((_, i) => ({ value: stopQueries[i] ?? "", placeholder: `Étape ${i + 1} : lieu ou Adresse GN` }))}
+          focus={dirFocus}
+          searching={searching}
+          slowSearch={slowSearch}
+          suggestions={dirSuggestions}
+          canShare={end !== null}
+          onFocus={(role) => { setDirFocus(role); if (role === "start" || role === "end") setSearchRole(role); }}
+          onChange={(role, value) => {
+            if (role === "start") { setStartQuery(value); setPlaces([]); }
+            else if (role === "end") { setEndQuery(value); setPlaces([]); }
+            else { setStopQueries((c) => c.map((q, i) => i === role ? value : q)); setStopPlaces([]); }
+          }}
+          onSubmit={(role) => {
+            if (typeof role === "number") void searchStop(role);
+            else void searchDestination({ preventDefault() {} } as React.FormEvent<HTMLFormElement>, role);
+          }}
+          onPickSuggestion={(id) => {
+            const idx = Number(id);
+            if (typeof dirFocus === "number") { const p = stopPlaces[idx]; if (p) pickStop(dirFocus, p); return; }
+            const p = places[idx];
+            if (p && (dirFocus === "start" || dirFocus === "end")) {
+              applyPoint({ lat: Number(p.lat), lng: Number(p.lon) }, dirFocus, p.display_name.split(",").slice(0, 2).join(","));
+              setDirFocus(null);
+            }
+          }}
+          onUseMyPosition={() => { setDirFocus(null); void positionGps(); }}
+          onPickOnMap={(role) => { setDirFocus(null); setSelection(role); setMessage(role === "start" ? "Touchez la carte pour choisir le départ." : "Touchez la carte pour choisir l’arrivée."); }}
+          onSwap={swapPoints}
+          onAddStop={addStop}
+          onRemoveStop={removeStop}
+          onShare={() => { void shareRoute(); }}
+          onTools={() => setAdvanced(true)}
+          onReset={resetAll}
+          onDismiss={() => setDirFocus(null)}
+        />
+      )}
+
+      {!tracking && !previewShown && (
+        <div className="pointer-events-none absolute inset-x-3 bottom-4 z-[520] mx-auto max-w-[460px]">
+          <div className="pointer-events-auto rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-[0_6px_24px_rgba(10,30,50,0.22)]">
+            {busy ? "Calcul de l’itinéraire…" : start && end ? "Calcul de l’itinéraire…" : !start && !end ? "Saisissez une destination, une Adresse GN, ou touchez la carte." : !end ? "Choisissez la destination." : "Choisissez le point de départ."}
+          </div>
+        </div>
+      )}
+
+      {previewShown && (
+        <ViagoRoutePreview
+          profile={profile}
+          onProfile={setProfile}
+          candidates={candidates}
+          chosen={chosenRoute}
+          onChoose={chooseCandidate}
+          altBusy={altBusy}
+          distanceLabel={distance !== null ? prettyDistance(distance) : ""}
+          durationS={duration}
+          arrivalLabel={arrivalAt !== null ? new Date(arrivalAt).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }) : null}
+          onClose={resetAll}
+          onStart={startTracking}
+        />
+      )}
+
+      {/* Aperçu compact : le trajet et sa distance restent visibles carte ouverte. */}
+
+      {route && route.length >= 2 && !tracking && !previewShown && (
         <button
           type="button"
           onClick={() => {
@@ -1515,7 +1880,7 @@ export default function ViagoPage() {
         </button>
       )}
 
-      {route && route.length >= 2 && !tracking && (
+      {route && route.length >= 2 && !tracking && !previewShown && (
         <button
           type="button"
           onClick={() => {
@@ -1534,7 +1899,7 @@ export default function ViagoPage() {
       )}
 
       <button type="button" onClick={() => { if (tracking && livePosition) setFollow(true); else positionGps(); }} aria-label="Recentrer sur ma position"
-        className={tracking ? "hidden" : "absolute bottom-5 right-3 z-[510] flex size-12 items-center justify-center rounded-2xl bg-white shadow-xl md:right-5"}><Crosshair className="size-5 text-emerald-800"/></button>
+        className={tracking ? "hidden" : `absolute ${previewShown ? "bottom-[360px]" : "bottom-24"} right-3 z-[510] flex size-12 items-center justify-center rounded-2xl bg-white shadow-xl md:right-5`}><Crosshair className="size-5 text-emerald-800"/></button>
 
       {message && <div className="pointer-events-auto absolute bottom-20 left-3 right-3 z-[550] mx-auto max-w-md rounded-xl bg-slate-900 px-4 py-3 text-xs text-white shadow-xl md:bottom-5" role="status" aria-live="polite"><div className="flex items-start justify-between gap-3"><span>{message}</span><button type="button" aria-label="Fermer le message" onClick={() => setMessage(null)}><X className="size-4"/></button></div></div>}
 

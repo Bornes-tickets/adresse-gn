@@ -1,0 +1,76 @@
+/* VIAGO HUD c11 : navigation epuree (carte d'abord), inspiree de Google Maps et Waze.
+   Presentation uniquement. Surfaces claires, independantes du theme du navigateur. */
+.shell { position:absolute; inset:0; z-index:530; pointer-events:none; font-family:inherit; color:#12303f; color-scheme:only light; forced-color-adjust:none;
+  --edge:10px; --brand:#0a7a64; --brand-dark:#07594a; --ink:#12303f; --muted:#5d7482; }
+.shell * { box-sizing:border-box; color-scheme:only light; }
+.shell button { pointer-events:auto; cursor:pointer; touch-action:manipulation; }
+
+/* --- Instruction de virage (style Waze/Google : grande fleche + distance) --- */
+.top { position:absolute; top:calc(2px + env(safe-area-inset-top,0px)); left:var(--edge); right:var(--edge); display:flex; flex-direction:column; align-items:stretch; }
+.turnCard { position:relative; z-index:2;
+  display:flex; align-items:center; gap:10px; padding:7px 14px 7px 10px; border-radius:16px;
+  background:linear-gradient(135deg,var(--brand),var(--brand-dark)); color:#fff; box-shadow:0 6px 20px rgba(4,40,33,.30); }
+.turnArrow { flex:none; width:40px; text-align:center; font-size:34px; line-height:1; font-weight:800; }
+.turnBody { min-width:0; display:flex; flex-direction:column; gap:2px; }
+.turnDistance { font-size:clamp(20px,5.6vw,26px); font-weight:900; line-height:1.05; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+.turnStreet { font-size:clamp(14px,3.9vw,16px); font-weight:700; line-height:1.15; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; }
+.turnHint { font-size:11px; font-weight:600; opacity:.85; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.voiceAlert { margin-top:3px; font-size:12px; font-weight:700; color:#ffe9a8; }
+
+/* "Puis ..." : petit rappel colle sous la carte */
+.thenChip { position:relative; z-index:1; align-self:flex-start; margin:-4px 0 0 14px;
+  display:flex; align-items:center; gap:8px; padding:3px 10px 4px 8px; border-radius:0 0 10px 10px; background:#0b3f36; color:#fff; font-size:12px; font-weight:700; box-shadow:0 3px 10px rgba(4,40,33,.25); }
+.thenChip b { font-size:16px; font-weight:800; line-height:1; }
+
+/* --- Recherche du GPS : discret, ne masque plus la carte --- */
+.searchPill { position:relative;
+  display:flex; align-items:center; gap:12px; padding:11px 16px; border-radius:16px; background:#fff; border:1px solid #e3ebf0; box-shadow:0 4px 16px rgba(10,42,60,.18); }
+.searchDot { flex:none; width:12px; height:12px; border-radius:50%; background:#f1ac3e; box-shadow:0 0 0 0 rgba(241,172,62,.6); animation:viagoPulse 1.6s infinite; }
+.searchText { min-width:0; display:flex; flex-direction:column; gap:1px; }
+.searchText strong { font-size:15px; font-weight:800; color:var(--ink); line-height:1.2; }
+.searchText span { font-size:12px; color:var(--muted); font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+@keyframes viagoPulse { 0%{box-shadow:0 0 0 0 rgba(241,172,62,.55);} 70%{box-shadow:0 0 0 10px rgba(241,172,62,0);} 100%{box-shadow:0 0 0 0 rgba(241,172,62,0);} }
+@media (prefers-reduced-motion:reduce) { .searchDot { animation:none; } }
+
+/* signal perdu pendant le guidage */
+.signalChip { align-self:flex-start; margin:8px 0 0 4px;
+  display:flex; align-items:center; gap:7px; padding:6px 11px; border-radius:999px; background:#fff; border:1px solid #e3ebf0; box-shadow:0 2px 10px rgba(10,42,60,.16); font-size:12px; font-weight:700; color:var(--ink); }
+.signalChip i { width:8px; height:8px; border-radius:50%; background:#f1ac3e; }
+
+/* --- Boutons ronds (3 maximum visibles) --- */
+.controls { position:absolute; right:var(--edge); top:52%; transform:translateY(-50%); display:flex; flex-direction:column; gap:10px; }
+.roundButton { width:48px; height:48px; border-radius:50%; border:1px solid #e3ebf0; background:#fff; color:#0a6aa8; display:flex; align-items:center; justify-content:center; box-shadow:0 3px 12px rgba(10,42,60,.20); }
+.roundButtonOff { color:#8a9ba6; }
+.roundButton:focus-visible,.stopButton:focus-visible { outline:3px solid #f4a900; outline-offset:3px; }
+
+/* --- Recentrer : visible quand la carte a ete deplacee (comme Google Maps) --- */
+.recenterPill { position:absolute; left:50%; transform:translateX(-50%); bottom:calc(100px + env(safe-area-inset-bottom,0px));
+  display:flex; align-items:center; gap:8px; min-height:44px; padding:0 18px 0 14px; border:1px solid #e3ebf0; border-radius:999px; background:#fff; color:#0a6aa8; font-size:15px; font-weight:800; box-shadow:0 4px 16px rgba(10,42,60,.25); }
+.recenterPill:focus-visible { outline:3px solid #f4a900; outline-offset:3px; }
+
+/* --- Vitesse : seulement si connue --- */
+.speed { position:absolute; left:var(--edge); bottom:calc(82px + env(safe-area-inset-bottom,0px)); width:58px; height:58px; border-radius:50%; background:#fff; border:3px solid #e3ebf0; box-shadow:0 3px 12px rgba(10,42,60,.18); display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.speedNumber { font-size:22px; font-weight:900; line-height:1; font-variant-numeric:tabular-nums; }
+.speedUnit { font-size:9px; font-weight:800; color:var(--muted); }
+
+/* --- Panneau du bas : ETA lisible comme Google Maps --- */
+.dock { position:absolute; left:var(--edge); right:var(--edge); bottom:calc(4px + env(safe-area-inset-bottom,0px));
+  display:flex; align-items:center; gap:10px; padding:8px 10px 8px 16px; border-radius:20px; background:#fff; border:1px solid #e3ebf0; box-shadow:0 -2px 22px rgba(10,42,60,.22); }
+.eta { min-width:0; flex:1; display:flex; flex-direction:column; gap:3px; }
+.etaMain { display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
+.etaTime { font-size:clamp(22px,6vw,26px); font-weight:900; color:#0a7a3f; line-height:1; font-variant-numeric:tabular-nums; }
+.etaSub { font-size:14px; font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums; }
+.etaNote { font-size:11px; color:var(--muted); font-weight:600; line-height:1.25; }
+.stopButton { flex:none; display:flex; align-items:center; gap:6px; min-height:42px; padding:0 16px 0 12px; border:none; border-radius:999px; background:#fdecea; color:#b3261e; font-size:14px; font-weight:800; }
+
+@media (max-width:360px) { .turnArrow { width:42px; font-size:38px; } .turnCard { gap:10px; padding:10px 12px; } .stopButton { padding:0 12px 0 10px; } }
+@media (max-height:680px) { .speed { display:none; } }
+@media (min-width:768px) {
+  .top { left:20px; right:auto; top:20px; width:min(460px,calc(100% - 40px)); }
+  .controls { top:20px; right:20px; transform:none; }
+  .dock { left:50%; right:auto; transform:translateX(-50%); width:min(560px,calc(100% - 40px)); bottom:24px; }
+  .speed { left:20px; bottom:120px; }
+}
+
+.roadChip { align-self:flex-start; margin:5px 0 0 4px; display:flex; align-items:center; gap:7px; padding:4px 10px; border-radius:999px; background:#8a5a2b; color:#fff; font-size:11px; font-weight:800; box-shadow:0 2px 10px rgba(60,35,10,.35); }
+.roadChip i { width:8px; height:8px; border-radius:50%; background:#ffd9a0; }

@@ -65,3 +65,6 @@ test-results/
 
 # Tuiles locales Viago (générées, volumineuses)
 .tiles/
+
+# Viago : signalements communautaires (donnees locales, jamais commitees)
+.viago-data/
