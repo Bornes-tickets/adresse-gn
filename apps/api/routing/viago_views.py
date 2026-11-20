@@ -39,6 +39,7 @@ class ViagoRequestSerializer(serializers.Serializer):
     end_latitude = serializers.FloatField(min_value=-90, max_value=90)
     end_longitude = serializers.FloatField(min_value=-180, max_value=180)
     profile = serializers.ChoiceField(choices=("car", "motorcycle", "foot"))
+    alternatives = serializers.IntegerField(required=False, default=0, min_value=0, max_value=2)
 
 
 class ViagoLocalRouteView(APIView):
@@ -75,8 +76,8 @@ class ViagoLocalRouteView(APIView):
             return Response({"status": "routing_not_isolated", "geometry": None},
                             status=status.HTTP_503_SERVICE_UNAVAILABLE)
         try:
-            result = make_viago_route(
-                **serializer.validated_data, db_connection=routing_db)
+            params = {k: v for k, v in serializer.validated_data.items() if k != "alternatives"}
+            result = make_viago_route(**params, db_connection=routing_db)
         except (GPSRouteValidationError, SnapValidationError,
                 StateODValidationError, ValueError):
             return Response({"status": "invalid_input", "geometry": None},

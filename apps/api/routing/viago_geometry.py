@@ -289,11 +289,46 @@ def _network_states(*, candidate: Mapping, profile: str,
 DEFAULT_MAX_SNAP_DISTANCE_M = 1000.0
 
 
+_ROUTE_CACHE: dict = {}
+_ROUTE_CACHE_TTL_S = 600
+_ROUTE_CACHE_MAX = 32
+
+
+def _route_key(profile, start_longitude, start_latitude, end_longitude, end_latitude):
+    return (str(profile), round(float(start_longitude), 6), round(float(start_latitude), 6),
+            round(float(end_longitude), 6), round(float(end_latitude), 6))
+
+
+def _cache_get(key):
+    import time
+    entry = _ROUTE_CACHE.get(key)
+    if entry and time.monotonic() - entry["t"] <= _ROUTE_CACHE_TTL_S:
+        return entry
+    _ROUTE_CACHE.pop(key, None)
+    return None
+
+
+def _cache_put(key, edges, route_result):
+    import time
+    if len(_ROUTE_CACHE) >= _ROUTE_CACHE_MAX:
+        oldest = min(_ROUTE_CACHE, key=lambda k: _ROUTE_CACHE[k]["t"])
+        _ROUTE_CACHE.pop(oldest, None)
+    _ROUTE_CACHE[key] = {
+        "t": time.monotonic(), "main_edges": list(edges),
+        "main_ids": {e for e, _ in edges},
+        "main_distance": route_result.get("distance_m"),
+        "main_duration": route_result.get("duration_s"),
+        "alts": [], "rejected": set(), "attempts": 0,
+    }
+
+
 def make_viago_route(*, start_longitude: float, start_latitude: float,
                      end_longitude: float, end_latitude: float,
                      profile: str, candidate_limit: int = 64,
                      db_connection=connection,
-                     max_snap_distance_m: float = DEFAULT_MAX_SNAP_DISTANCE_M) -> dict:
+                     max_snap_distance_m: float = DEFAULT_MAX_SNAP_DISTANCE_M,
+                     avoid_edge_ids=None, edge_ids_sink: list | None = None,
+                     include_surface: bool = False) -> dict:
     """Compose GPS path and derive verified GeoJSON for its selected candidate.
 
     The existing compose_gps_route arbitration is never bypassed.
@@ -308,7 +343,8 @@ def make_viago_route(*, start_longitude: float, start_latitude: float,
         profile=profile, candidate_limit=candidate_limit,
         state_od_executor=lambda **kwargs: execute_state_od_matrix(
             **kwargs, connection_obj=db_connection,
-            path_sink=path_sink),
+            path_sink=path_sink, avoid_edge_ids=avoid_edge_ids,
+            avoid_tracks=(str(profile).lower() == "car")),
         snapper=lambda **kwargs: snap_point_to_routing_graph(
             **kwargs, connection_obj=db_connection,
             max_distance_m=max_snap_distance_m),
@@ -372,6 +408,10 @@ def make_viago_route(*, start_longitude: float, start_latitude: float,
         distance_m += length
     if len(coordinates) < 2:
         raise ViagoGeometryUnavailable("Path has insufficient coordinates.")
+    path_edges = [(state_id // 2, float(length))
+                  for (state_id, _, _), (_, length) in zip(duration_portions, segments)]
+    if edge_ids_sink is not None:
+        edge_ids_sink.extend(path_edges)
     route_result = {
         **result,
         "geometry": {
@@ -422,4 +462,87 @@ def make_viago_route(*, start_longitude: float, start_latitude: float,
             route_result["duration_s"] = round(total_seconds, 1)
             route_result["duration_source"] = "profile_effective_speed"
 
+    # Revetement : information facultative (desactivee par defaut cote interface).
+    try:
+        if not include_surface:
+            raise LookupError("surface disabled")
+        from .viago_surface import surface_summary
+        route_result["surface"] = surface_summary(
+            portions=duration_portions,
+            lengths=[length for _, length in segments],
+            db_connection=db_connection)
+    except LookupError:
+        pass
+    except Exception as exc:
+        print("VIAGO_SURFACE_EXCEPTION =", type(exc).__name__,
+              str(exc)[:300], flush=True)
+        route_result["surface"] = None
+
+    if avoid_edge_ids is None:
+        _cache_put(_route_key(profile, start_longitude, start_latitude,
+                              end_longitude, end_latitude), path_edges, route_result)
     return route_result
+
+
+ALT_PENALTY_OVERLAP_MAX = 0.80   # part de longueur commune maximale avec un itineraire deja retenu
+ALT_MAX_DISTANCE_RATIO = 1.6
+ALT_MAX_DURATION_RATIO = 1.7
+
+
+def _shared_ratio(edges_a: list, edges_b_ids: set) -> float:
+    total = sum(length for _, length in edges_a) or 1.0
+    return sum(length for edge, length in edges_a if edge in edges_b_ids) / total
+
+
+def make_viago_alternatives(*, count: int = 2, db_connection=connection, **kwargs) -> dict:
+    """Itineraire principal + jusqu'a `count` alternatives (methode de la penalite).
+
+    Chaque alternative est un VRAI chemin du graphe (memes controles que le
+    principal) calcule en majorant le cout des arcs deja empruntes. Rien
+    n'est invente : une alternative trop longue ou trop proche est ecartee.
+    Le principal et les alternatives deja calcules sont gardes 10 min en memoire :
+    une demande suivante ne recalcule que ce qui manque."""
+    from django.db import transaction
+
+    key = _route_key(kwargs["profile"], kwargs["start_longitude"], kwargs["start_latitude"],
+                     kwargs["end_longitude"], kwargs["end_latitude"])
+    entry = _cache_get(key)
+    if entry is None:
+        main = make_viago_route(**kwargs, db_connection=db_connection)
+        entry = _cache_get(key)
+        if main.get("status") != "ok" or not main.get("geometry") or entry is None:
+            main["alternatives"] = []
+            return main
+    else:
+        main = {"status": "ok", "profile": kwargs["profile"], "main_cached": True}
+    alias = getattr(db_connection, "alias", None)
+    count = max(0, min(int(count), 2))
+    while len(entry["alts"]) < count and entry["attempts"] < 3:
+        entry["attempts"] += 1
+        avoid = set(entry["main_ids"]) | entry["rejected"]
+        for ids, _ in entry["alts"]:
+            avoid |= ids
+        sink: list = []
+        try:
+            with transaction.atomic(using=alias):   # savepoint : un echec n'annule rien d'autre
+                alt = make_viago_route(**kwargs, db_connection=db_connection,
+                                       avoid_edge_ids=sorted(avoid), edge_ids_sink=sink)
+        except Exception as exc:
+            print("VIAGO_ALT_EXCEPTION =", type(exc).__name__, str(exc)[:300], flush=True)
+            entry["attempts"] = 99
+            break
+        if alt.get("status") != "ok" or not alt.get("geometry") or not sink:
+            entry["attempts"] = 99
+            break
+        ids = {e for e, _ in sink}
+        others = [entry["main_ids"]] + [i for i, _ in entry["alts"]]
+        too_close = any(_shared_ratio(sink, other) > ALT_PENALTY_OVERLAP_MAX for other in others)
+        too_long = (alt.get("distance_m") or 0) > ALT_MAX_DISTANCE_RATIO * (entry["main_distance"] or 1)
+        too_slow = bool(entry["main_duration"] and alt.get("duration_s")
+                        and alt["duration_s"] > ALT_MAX_DURATION_RATIO * entry["main_duration"])
+        if too_close or too_long or too_slow:
+            entry["rejected"] |= ids
+            continue
+        entry["alts"].append((ids, alt))
+    main["alternatives"] = [r for _, r in entry["alts"][:count]]
+    return main

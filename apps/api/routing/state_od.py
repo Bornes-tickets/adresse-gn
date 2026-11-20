@@ -24,8 +24,29 @@ class StateODContractError(RuntimeError):
     pass
 
 
+PENALIZED_EDGE_SQL_TEMPLATE: Final[str] = "SELECT\n    transition_id AS id,\n    source_state_id AS source,\n    target_state_id AS target,\n    CASE WHEN (target_state_id / 2) = ANY(ARRAY[{IDS}]::bigint[]) THEN cost * {FACTOR} ELSE cost END AS cost,\n    -1::double precision AS reverse_cost\nFROM maps_routing_stage.routing_state_transitions\nWHERE profile = '{PROFILE}'"
+
+
+# Voiture : les pistes (highway=track) restent possibles mais fortement penalisees.
+CAR_TRACK_FACTOR: Final[float] = 8.0
+
+TRACK_PENALIZED_EDGE_SQL_TEMPLATE: Final[str] = (
+    "SELECT\n    t.transition_id AS id,\n    t.source_state_id AS source,\n    t.target_state_id AS target,\n"
+    "    (t.cost{AVOID_EXPR}) * CASE WHEN k.edge_id IS NOT NULL THEN {TRACK_FACTOR} ELSE 1.0 END AS cost,\n"
+    "    -1::double precision AS reverse_cost\n"
+    "FROM maps_routing_stage.routing_state_transitions AS t\n"
+    "LEFT JOIN (\n    SELECT e.edge_id FROM maps_routing_stage.routing_edges AS e\n"
+    "    JOIN maps_routing_stage.routing_ways AS w ON w.way_id = e.way_id\n"
+    "    WHERE w.highway = 'track'\n) AS k ON k.edge_id = (t.target_state_id / 2)\n"
+    "WHERE t.profile = '{PROFILE}'"
+)
+
+
 def render_edge_sql(
     profile: Any,
+    avoid_edge_ids: Any = None,
+    avoid_factor: float = 3.0,
+    avoid_tracks: bool = False,
 ) -> str:
     if not isinstance(
         profile,
@@ -44,6 +65,33 @@ def render_edge_sql(
     if normalized not in ALLOWED_PROFILES:
         raise StateODValidationError(
             "profile must be car, motorcycle, or foot."
+        )
+
+    if avoid_tracks and normalized == "car":
+        expr = ""
+        if avoid_edge_ids:
+            ids = sorted({int(e) for e in avoid_edge_ids})
+            factor = float(avoid_factor)
+            if not (1.0 < factor <= 20.0) or len(ids) > 200000:
+                raise StateODValidationError("invalid avoid parameters.")
+            expr = (" * CASE WHEN (t.target_state_id / 2) = ANY(ARRAY[" + ",".join(str(e) for e in ids)
+                    + "]::bigint[]) THEN " + repr(factor) + " ELSE 1.0 END")
+        return (TRACK_PENALIZED_EDGE_SQL_TEMPLATE
+                .replace("{AVOID_EXPR}", expr)
+                .replace("{TRACK_FACTOR}", repr(CAR_TRACK_FACTOR))
+                .replace("{PROFILE}", normalized))
+
+    if avoid_edge_ids:
+        # Itineraires alternatifs : majore le cout des arcs deja utilises (entiers valides uniquement).
+        ids = sorted({int(e) for e in avoid_edge_ids})
+        factor = float(avoid_factor)
+        if not (1.0 < factor <= 20.0) or len(ids) > 200000:
+            raise StateODValidationError("invalid avoid parameters.")
+        return (
+            PENALIZED_EDGE_SQL_TEMPLATE
+            .replace("{IDS}", ",".join(str(e) for e in ids))
+            .replace("{FACTOR}", repr(factor))
+            .replace("{PROFILE}", normalized)
         )
 
     return EDGE_SQL_TEMPLATE.replace(
@@ -176,6 +224,8 @@ def execute_state_od_matrix(
     target_state_ids: Any,
     connection_obj=None,
     path_sink: dict | None = None,
+    avoid_edge_ids: Any = None,
+    avoid_tracks: bool = False,
 ) -> list[dict[str, Any]]:
     normalized_sources = (
         _validate_state_ids(
@@ -193,7 +243,9 @@ def execute_state_od_matrix(
 
     rendered_edge_sql = (
         render_edge_sql(
-            profile
+            profile,
+            avoid_edge_ids,
+            avoid_tracks=avoid_tracks,
         )
     )
 

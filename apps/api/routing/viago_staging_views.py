@@ -17,7 +17,7 @@ from rest_framework.views import APIView
 from .gps_route import GPSRouteContractError, GPSRouteValidationError
 from .snap import SnapContractError, SnapNotFoundError, SnapValidationError
 from .state_od import StateODContractError, StateODValidationError
-from .viago_geometry import ViagoGeometryUnavailable, make_viago_route
+from .viago_geometry import ViagoGeometryUnavailable, make_viago_alternatives, make_viago_route
 from .viago_views import ViagoRequestSerializer
 
 
@@ -56,10 +56,14 @@ class ViagoStagingRouteView(APIView):
                     )
                     cursor.execute("SET LOCAL statement_timeout TO 12000")
                     cursor.execute("SET LOCAL lock_timeout TO 3000")
-                result = make_viago_route(
-                    **serializer.validated_data,
-                    db_connection=connections[alias],
-                )
+                params = dict(serializer.validated_data)
+                alternatives = int(params.pop("alternatives", 0) or 0)
+                if alternatives > 0:
+                    result = make_viago_alternatives(
+                        count=alternatives, db_connection=connections[alias], **params)
+                else:
+                    result = make_viago_route(
+                        **params, db_connection=connections[alias])
         except (GPSRouteValidationError, SnapValidationError, StateODValidationError, ValueError):
             return Response({"detail": "Invalid route request"}, status=status.HTTP_400_BAD_REQUEST)
         except (
@@ -69,7 +73,9 @@ class ViagoStagingRouteView(APIView):
             SnapContractError,
             SnapNotFoundError,
             StateODContractError,
-        ):
+        ) as exc:
+            # Cote serveur uniquement (console locale) : type et debut du message, jamais renvoyes au client.
+            print("VIAGO_ROUTE_503 =", type(exc).__name__, str(exc)[:300], flush=True)
             # No internal errors, SQL, or credentials are exposed to callers.
             return Response({"detail": "Routing temporarily unavailable"}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
