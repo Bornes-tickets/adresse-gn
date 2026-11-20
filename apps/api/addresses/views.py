@@ -23,6 +23,7 @@ from .serializers import (
     AddressSearchSerializer,
     RouteLogSerializer,
 )
+from .places import search_places
 from .services import (
     client_ip,
     get_address_detail,
@@ -644,3 +645,30 @@ class AddressClaimView(APIView):
             result,
             status=status.HTTP_201_CREATED,
         )
+
+
+class PlaceSearchView(APIView):
+    """Recherche de lieux publics par nom, categorie ou nom commercial (lecture seule)."""
+    authentication_classes = []
+    permission_classes = []
+
+    @extend_schema(tags=["Addresses"], description="Recherche de lieux publics Adresse GN par nom.")
+    def get(self, request):
+        q = (request.query_params.get("q") or "").strip()
+        if len(q) < 2 or len(q) > 60:
+            return Response({"status": "invalid", "results": [], "message": "Saisissez entre 2 et 60 caracteres."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        def _coord(name, limit):
+            try:
+                value = float(request.query_params.get(name))
+            except (TypeError, ValueError):
+                return None
+            return value if abs(value) <= limit else None
+
+        try:
+            results = search_places(q, _coord("lat", 90), _coord("lng", 180))
+        except Exception:
+            return Response({"status": "error", "results": [], "message": "Une erreur interne est survenue."},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"status": "ok", "results": results})

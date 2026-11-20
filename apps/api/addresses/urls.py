@@ -6,11 +6,18 @@ from .views import (
     AddressFavoriteView,
     AddressReportView,
     AddressSearchView,
+    PlaceSearchView,
     RouteLogView,
 )
 
 
 urlpatterns = [
+    path(
+        "places/",
+        PlaceSearchView.as_view(),
+        name="place-search",
+    ),
+
     path(
         "search/",
         AddressSearchView.as_view(),
