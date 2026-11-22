@@ -322,13 +322,84 @@ def _cache_put(key, edges, route_result):
     }
 
 
-def make_viago_route(*, start_longitude: float, start_latitude: float,
+ZONE_MIN_MARGIN_DEG = 0.05
+ZONE_MARGIN_FACTOR = 0.5
+ZONE_MAX_STRAIGHT_M = 60000.0
+
+
+def zone_routing_enabled() -> bool:
+    import os
+    return os.environ.get("VIAGO_ZONE_ROUTING", "1").strip() not in ("0", "false", "off")
+
+
+def compute_zone(start_longitude, start_latitude, end_longitude, end_latitude):
+    """Return (zone, inner) or None. zone = bbox of start/end expanded by
+    max(0.05 deg, 0.5 x largest span); inner = zone shrunk by a border band.
+    None when the trip is too long: the full graph is then used."""
+    try:
+        lons = (float(start_longitude), float(end_longitude))
+        lats = (float(start_latitude), float(end_latitude))
+    except (TypeError, ValueError):
+        return None
+    if not all(math.isfinite(v) for v in lons + lats):
+        return None
+    straight = _haversine_m([lons[0], lats[0]], [lons[1], lats[1]])
+    if straight > ZONE_MAX_STRAIGHT_M:
+        return None
+    span = max(max(lons) - min(lons), max(lats) - min(lats))
+    margin = max(ZONE_MIN_MARGIN_DEG, ZONE_MARGIN_FACTOR * span)
+    zone = (min(lons) - margin, min(lats) - margin, max(lons) + margin, max(lats) + margin)
+    band = max(0.01, 0.25 * margin)
+    inner = (zone[0] + band, zone[1] + band, zone[2] - band, zone[3] - band)
+    return zone, inner
+
+
+def _touches_border(geometry, inner) -> bool:
+    if not geometry:
+        return True
+    for point in geometry.get("coordinates", ()):
+        if not (inner[0] <= point[0] <= inner[2] and inner[1] <= point[1] <= inner[3]):
+            return True
+    return False
+
+
+def make_viago_route(**kwargs) -> dict:
+    """Route restreinte a une zone autour du trajet (rapide), avec repli sur
+    le graphe complet si : trajet trop long, aucun chemin, chemin touchant le
+    bord de la zone, ou erreur. Le repli garantit le comportement d'origine."""
+    zone_info = None
+    if zone_routing_enabled() and "zone" not in kwargs:
+        zone_info = compute_zone(kwargs.get("start_longitude"), kwargs.get("start_latitude"),
+                                 kwargs.get("end_longitude"), kwargs.get("end_latitude"))
+    if zone_info is None:
+        return _make_viago_route_impl(**kwargs)
+    zone, inner = zone_info
+    alias = getattr(kwargs.get("db_connection", connection), "alias", None)
+    from django.db import transaction
+    try:
+        with transaction.atomic(using=alias):
+            result = _make_viago_route_impl(**kwargs, zone=zone)
+        if (result.get("status") == "ok" and result.get("geometry")
+                and not _touches_border(result["geometry"], inner)):
+            result["routing_scope"] = "zone"
+            return result
+    except Exception as exc:
+        print("VIAGO_ZONE_FALLBACK =", type(exc).__name__, str(exc)[:200], flush=True)
+    if kwargs.get("edge_ids_sink") is not None:
+        kwargs["edge_ids_sink"].clear()
+    _ROUTE_CACHE.pop(_route_key(kwargs["profile"], kwargs["start_longitude"],
+                                kwargs["start_latitude"], kwargs["end_longitude"],
+                                kwargs["end_latitude"]), None)
+    return _make_viago_route_impl(**kwargs)
+
+
+def _make_viago_route_impl(*, start_longitude: float, start_latitude: float,
                      end_longitude: float, end_latitude: float,
                      profile: str, candidate_limit: int = 64,
                      db_connection=connection,
                      max_snap_distance_m: float = DEFAULT_MAX_SNAP_DISTANCE_M,
                      avoid_edge_ids=None, edge_ids_sink: list | None = None,
-                     include_surface: bool = False) -> dict:
+                     include_surface: bool = False, zone=None) -> dict:
     """Compose GPS path and derive verified GeoJSON for its selected candidate.
 
     The existing compose_gps_route arbitration is never bypassed.
@@ -344,7 +415,7 @@ def make_viago_route(*, start_longitude: float, start_latitude: float,
         state_od_executor=lambda **kwargs: execute_state_od_matrix(
             **kwargs, connection_obj=db_connection,
             path_sink=path_sink, avoid_edge_ids=avoid_edge_ids,
-            avoid_tracks=(str(profile).lower() == "car")),
+            avoid_tracks=(str(profile).lower() == "car"), zone=zone),
         snapper=lambda **kwargs: snap_point_to_routing_graph(
             **kwargs, connection_obj=db_connection,
             max_distance_m=max_snap_distance_m),

@@ -117,15 +117,14 @@ def _snap_sql(profile_view: str) -> str:
         knn AS (
             SELECT
                 e.edge_id::bigint AS edge_id,
-                (e.geom <-> p.g)::double precision AS planar_distance
+                (e.geom <-> (SELECT g FROM p))::double precision AS planar_distance
 
             FROM maps_routing_stage.routing_edges AS e
-            CROSS JOIN p
 
             WHERE e.geom IS NOT NULL
 
             ORDER BY
-                e.geom <-> p.g
+                e.geom <-> (SELECT g FROM p)
 
             LIMIT %s
         ),
@@ -247,18 +246,17 @@ def _snap_sql_strict(profile_view: str) -> str:
         knn AS (
             SELECT
                 e.edge_id::bigint AS edge_id,
-                (e.geom <-> p.g)::double precision AS planar_distance
+                (e.geom <-> (SELECT g FROM p))::double precision AS planar_distance
 
             FROM maps_routing_stage.routing_edges AS e
             JOIN {profile_view} AS ev
               ON ev.id = e.edge_id
              AND (ev.cost >= 0 OR ev.reverse_cost >= 0)
-            CROSS JOIN p
 
             WHERE e.geom IS NOT NULL
 
             ORDER BY
-                e.geom <-> p.g
+                e.geom <-> (SELECT g FROM p)
 
             LIMIT %s
         ),

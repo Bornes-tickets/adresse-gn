@@ -70,3 +70,42 @@ class ViagoGeometryContractTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ZoneRoutingTests(unittest.TestCase):
+    def test_zone_sql_is_added_and_validated(self):
+        from routing.state_od import StateODValidationError, render_edge_sql
+        zone = (-13.74, 9.48, -13.57, 9.70)
+        for kwargs in ({}, {"avoid_tracks": True}, {"avoid_edge_ids": [4, 9]}):
+            sql = render_edge_sql("car", zone=zone, **kwargs)
+            self.assertIn("ST_MakeEnvelope(-13.74, 9.48, -13.57, 9.7, 4326)", sql)
+            self.assertEqual(sql.count("IN (SELECT e.edge_id * 2"), 2)
+        self.assertNotIn("ST_MakeEnvelope", render_edge_sql("car"))
+        for bad in ((1, 2, 3), (float("nan"), 0, 1, 1), (5, 0, 1, 1), "abc"):
+            with self.assertRaises(StateODValidationError):
+                render_edge_sql("car", zone=bad)
+
+    def test_compute_zone_margin_and_long_trip_fallback(self):
+        from routing.viago_geometry import compute_zone
+        zone, inner = compute_zone(-13.6785, 9.5370, -13.6130, 9.6412)
+        self.assertGreater(zone[2] - zone[0], 0.0655 + 0.1)
+        self.assertGreater(inner[0], zone[0])
+        self.assertIsNone(compute_zone(-13.68, 9.54, -10.0, 10.5))
+
+    def test_falls_back_to_full_graph_when_path_touches_border(self):
+        from routing import viago_geometry as vg
+        calls = []
+
+        def fake(**kwargs):
+            calls.append(kwargs.get("zone"))
+            return {"status": "ok", "geometry": {"coordinates": [[-13.60, 9.60], [-13.0, 9.0]]}}
+
+        with patch.object(vg, "_make_viago_route_impl", side_effect=fake), \
+             patch("django.db.transaction.atomic"):
+            result = vg.make_viago_route(start_longitude=-13.60, start_latitude=9.60,
+                                         end_longitude=-13.59, end_latitude=9.61,
+                                         profile="car")
+        self.assertEqual(len(calls), 2)
+        self.assertIsNotNone(calls[0])
+        self.assertIsNone(calls[1])
+        self.assertNotIn("routing_scope", result)

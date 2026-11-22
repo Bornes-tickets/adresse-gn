@@ -252,7 +252,7 @@ class SnapServiceUnitTests(unittest.TestCase):
         lowered = normalized.lower()
 
         self.assertIn(
-            "ORDER BY e.geom <-> p.g LIMIT %s",
+            "ORDER BY e.geom <-> (SELECT g FROM p) LIMIT %s",
             normalized,
         )
 

@@ -42,7 +42,53 @@ TRACK_PENALIZED_EDGE_SQL_TEMPLATE: Final[str] = (
 )
 
 
+ZONE_STATES_SQL: Final[str] = (
+    "SELECT e.edge_id * 2 + g.k FROM maps_routing_stage.routing_edges AS e "
+    "CROSS JOIN (VALUES (0), (1)) AS g(k) "
+    "WHERE e.geom && ST_MakeEnvelope({MINLON}, {MINLAT}, {MAXLON}, {MAXLAT}, 4326)"
+)
+
+
+def validate_zone(zone: Any) -> tuple[float, float, float, float]:
+    """zone = (min_lon, min_lat, max_lon, max_lat), finite and ordered."""
+    try:
+        values = tuple(float(v) for v in zone)
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise StateODValidationError("invalid zone.") from exc
+    if len(values) != 4 or not all(math.isfinite(v) for v in values):
+        raise StateODValidationError("invalid zone.")
+    min_lon, min_lat, max_lon, max_lat = values
+    if not (-180.0 <= min_lon < max_lon <= 180.0 and -90.0 <= min_lat < max_lat <= 90.0):
+        raise StateODValidationError("invalid zone.")
+    return values
+
+
+def _zone_condition(zone: Any, prefix: str) -> str:
+    min_lon, min_lat, max_lon, max_lat = validate_zone(zone)
+    states = (ZONE_STATES_SQL
+              .replace("{MINLON}", repr(min_lon)).replace("{MINLAT}", repr(min_lat))
+              .replace("{MAXLON}", repr(max_lon)).replace("{MAXLAT}", repr(max_lat)))
+    return (f"\n  AND {prefix}source_state_id IN ({states})"
+            f"\n  AND {prefix}target_state_id IN ({states})")
+
+
 def render_edge_sql(
+    profile: Any,
+    avoid_edge_ids: Any = None,
+    avoid_factor: float = 3.0,
+    avoid_tracks: bool = False,
+    zone: Any = None,
+) -> str:
+    """Edge SQL for pgr_dijkstra. With `zone`, only transitions whose two
+    states belong to edges intersecting the bbox are loaded."""
+    sql = _render_edge_sql_full(profile, avoid_edge_ids, avoid_factor, avoid_tracks)
+    if zone is None:
+        return sql
+    prefix = "t." if "AS t\n" in sql else ""
+    return sql + _zone_condition(zone, prefix)
+
+
+def _render_edge_sql_full(
     profile: Any,
     avoid_edge_ids: Any = None,
     avoid_factor: float = 3.0,
@@ -226,6 +272,7 @@ def execute_state_od_matrix(
     path_sink: dict | None = None,
     avoid_edge_ids: Any = None,
     avoid_tracks: bool = False,
+    zone: Any = None,
 ) -> list[dict[str, Any]]:
     normalized_sources = (
         _validate_state_ids(
@@ -246,6 +293,7 @@ def execute_state_od_matrix(
             profile,
             avoid_edge_ids,
             avoid_tracks=avoid_tracks,
+            zone=zone,
         )
     )
 
