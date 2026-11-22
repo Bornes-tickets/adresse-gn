@@ -60,7 +60,8 @@ PROFILE_SPEED_COLUMN = {
 DURATION_SQL = """
 SELECT
   ST_Length(ST_LineSubstring(e.geom, %s, %s)::geography),
-  w.{speed_column}
+  w.{speed_column},
+  w.car_effective_speed_kmh
 FROM maps_routing_stage.routing_edges AS e
 JOIN maps_routing_stage.routing_ways AS w ON w.way_id = e.way_id
 JOIN {profile_view} AS pv ON pv.id = e.edge_id
@@ -68,6 +69,30 @@ WHERE e.edge_id = %s
   AND ST_GeometryType(e.geom) = 'ST_LineString'
   AND (CASE WHEN %s THEN pv.reverse_cost ELSE pv.cost END) >= 0
 """.strip()
+
+
+# Estimation de duree en ville (ESTIMATION, pas une mesure) : les vitesses de calcul correspondent a une route
+# sans aucun ralentissement. Sur les routes lentes (rues urbaines), la duree affichee est majoree.
+# Ne change JAMAIS le choix de l'itineraire (les couts de routage restent inchanges). VIAGO_URBAN_SLOWDOWN=0 coupe.
+URBAN_SPEED_MAX_KMH = 50.0
+URBAN_SLOWDOWN = {"car": 1.5, "motorcycle": 1.3}
+
+
+def _effective_speed(profile, speed_kmh, car_speed_kmh):
+    """Une moto n'est jamais supposee plus lente qu'une voiture sur la meme route (hypothese d'estimation)."""
+    if profile == "motorcycle" and car_speed_kmh is not None and math.isfinite(car_speed_kmh) and car_speed_kmh > 0:
+        return max(speed_kmh, car_speed_kmh) if speed_kmh is not None else car_speed_kmh
+    return speed_kmh
+
+
+def _urban_factor(profile, speed_kmh) -> float:
+    import os
+    if os.environ.get("VIAGO_URBAN_SLOWDOWN", "1").strip() in ("0", "false", "off"):
+        return 1.0
+    if speed_kmh is None or not math.isfinite(speed_kmh) or speed_kmh > URBAN_SPEED_MAX_KMH:
+        return 1.0
+    return URBAN_SLOWDOWN.get(profile, 1.0)
+
 
 
 def _seconds_for_state(*, state_id: int, profile: str,
@@ -109,6 +134,8 @@ def _seconds_for_state(*, state_id: int, profile: str,
     try:
         length_m = float(row[0])
         speed_kmh = float(row[1])
+        car_kmh = None if row[2] is None else float(row[2])
+        speed_kmh = _effective_speed(profile, speed_kmh, car_kmh)
     except (TypeError, ValueError, OverflowError):
         return None
 
@@ -118,7 +145,7 @@ def _seconds_for_state(*, state_id: int, profile: str,
     if length_m < 0 or speed_kmh <= 0:
         return None
 
-    seconds = length_m * 3.6 / speed_kmh
+    seconds = length_m * 3.6 / speed_kmh * _urban_factor(profile, speed_kmh)
 
     return seconds if math.isfinite(seconds) and seconds >= 0 else None
 
@@ -138,7 +165,8 @@ SELECT
     END
   ) AS line_geojson,
   ST_Length(ST_LineSubstring(e.geom, req.lo, req.hi)::geography) AS length_m,
-  w.{speed_column} AS speed_kmh
+  w.{speed_column} AS speed_kmh,
+  w.car_effective_speed_kmh AS car_speed_kmh
 FROM req
 JOIN maps_routing_stage.routing_edges AS e ON e.edge_id = req.edge_id
 JOIN {profile_view} AS pv ON pv.id = e.edge_id
@@ -203,8 +231,10 @@ def _lines_for_portions(*, portions, profile: str,
         seconds = None
         try:
             speed = None if row[3] is None else float(row[3])
+            car_kmh = None if row[4] is None else float(row[4])
+            speed = _effective_speed(profile, speed, car_kmh)
             if speed is not None and speed > 0 and math.isfinite(speed):
-                value = distance * 3.6 / speed
+                value = distance * 3.6 / speed * _urban_factor(profile, speed)
                 seconds = value if math.isfinite(value) and value >= 0 else None
         except (TypeError, ValueError, OverflowError):
             seconds = None
@@ -399,7 +429,8 @@ def _make_viago_route_impl(*, start_longitude: float, start_latitude: float,
                      db_connection=connection,
                      max_snap_distance_m: float = DEFAULT_MAX_SNAP_DISTANCE_M,
                      avoid_edge_ids=None, edge_ids_sink: list | None = None,
-                     include_surface: bool = False, zone=None) -> dict:
+                     include_surface: bool = False, zone=None,
+                     avoid_factor: float = 3.0) -> dict:
     """Compose GPS path and derive verified GeoJSON for its selected candidate.
 
     The existing compose_gps_route arbitration is never bypassed.
@@ -415,7 +446,8 @@ def _make_viago_route_impl(*, start_longitude: float, start_latitude: float,
         state_od_executor=lambda **kwargs: execute_state_od_matrix(
             **kwargs, connection_obj=db_connection,
             path_sink=path_sink, avoid_edge_ids=avoid_edge_ids,
-            avoid_tracks=(str(profile).lower() == "car"), zone=zone),
+            avoid_tracks=(str(profile).lower() == "car"), zone=zone,
+            avoid_factor=avoid_factor),
         snapper=lambda **kwargs: snap_point_to_routing_graph(
             **kwargs, connection_obj=db_connection,
             max_distance_m=max_snap_distance_m),
@@ -555,9 +587,12 @@ def _make_viago_route_impl(*, start_longitude: float, start_latitude: float,
     return route_result
 
 
-ALT_PENALTY_OVERLAP_MAX = 0.80   # part de longueur commune maximale avec un itineraire deja retenu
-ALT_MAX_DISTANCE_RATIO = 1.6
-ALT_MAX_DURATION_RATIO = 1.7
+ALT_PENALTY_OVERLAP_MAX = 0.85   # part de longueur commune maximale avec un itineraire deja retenu
+ALT_MAX_DISTANCE_RATIO = 1.7
+ALT_MAX_DURATION_RATIO = 2.4
+# Penalite croissante a chaque tentative : plus on insiste, plus l'alternative doit s'ecarter des routes deja prises.
+ALT_AVOID_FACTORS = (3.0, 5.0, 8.0, 12.0, 16.0, 20.0)
+ALT_MAX_ATTEMPTS = 6
 
 
 def _shared_ratio(edges_a: list, edges_b_ids: set) -> float:
@@ -588,7 +623,7 @@ def make_viago_alternatives(*, count: int = 2, db_connection=connection, **kwarg
         main = {"status": "ok", "profile": kwargs["profile"], "main_cached": True}
     alias = getattr(db_connection, "alias", None)
     count = max(0, min(int(count), 2))
-    while len(entry["alts"]) < count and entry["attempts"] < 3:
+    while len(entry["alts"]) < count and entry["attempts"] < ALT_MAX_ATTEMPTS:
         entry["attempts"] += 1
         avoid = set(entry["main_ids"]) | entry["rejected"]
         for ids, _ in entry["alts"]:
@@ -597,9 +632,10 @@ def make_viago_alternatives(*, count: int = 2, db_connection=connection, **kwarg
         try:
             with transaction.atomic(using=alias):   # savepoint : un echec n'annule rien d'autre
                 alt = make_viago_route(**kwargs, db_connection=db_connection,
-                                       avoid_edge_ids=sorted(avoid), edge_ids_sink=sink)
+                                       avoid_edge_ids=sorted(avoid), edge_ids_sink=sink,
+                                       avoid_factor=ALT_AVOID_FACTORS[max(0, min(entry["attempts"] - 1 - len(entry["alts"]), len(ALT_AVOID_FACTORS) - 1))])
         except Exception as exc:
-            print("VIAGO_ALT_EXCEPTION =", type(exc).__name__, str(exc)[:300], flush=True)
+            print("VIAGO_ALT_EXCEPTION try", entry["attempts"], "=", type(exc).__name__, str(exc)[:300], flush=True)
             entry["attempts"] = 99
             break
         if alt.get("status") != "ok" or not alt.get("geometry") or not sink:
@@ -611,6 +647,9 @@ def make_viago_alternatives(*, count: int = 2, db_connection=connection, **kwarg
         too_long = (alt.get("distance_m") or 0) > ALT_MAX_DISTANCE_RATIO * (entry["main_distance"] or 1)
         too_slow = bool(entry["main_duration"] and alt.get("duration_s")
                         and alt["duration_s"] > ALT_MAX_DURATION_RATIO * entry["main_duration"])
+        print("VIAGO_ALT_TRY", entry["attempts"], "close=%s long=%s slow=%s" % (too_close, too_long, too_slow),
+              "dist=%s main=%s dur=%s mainDur=%s" % (alt.get("distance_m"), entry["main_distance"], alt.get("duration_s"), entry["main_duration"]),
+              "overlap=%s" % [round(_shared_ratio(sink, o), 2) for o in others], flush=True)
         if too_close or too_long or too_slow:
             entry["rejected"] |= ids
             continue

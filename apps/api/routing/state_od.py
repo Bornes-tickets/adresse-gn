@@ -273,6 +273,7 @@ def execute_state_od_matrix(
     avoid_edge_ids: Any = None,
     avoid_tracks: bool = False,
     zone: Any = None,
+    avoid_factor: float = 3.0,
 ) -> list[dict[str, Any]]:
     normalized_sources = (
         _validate_state_ids(
@@ -292,6 +293,7 @@ def execute_state_od_matrix(
         render_edge_sql(
             profile,
             avoid_edge_ids,
+            avoid_factor=avoid_factor,
             avoid_tracks=avoid_tracks,
             zone=zone,
         )

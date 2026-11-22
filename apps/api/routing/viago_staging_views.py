@@ -59,6 +59,8 @@ class ViagoStagingRouteView(APIView):
                 params = dict(serializer.validated_data)
                 alternatives = int(params.pop("alternatives", 0) or 0)
                 if alternatives > 0:
+                    with connections[alias].cursor() as cursor:
+                        cursor.execute("SET LOCAL statement_timeout TO 40000")   # alternatives : demandees apres l'affichage du principal
                     result = make_viago_alternatives(
                         count=alternatives, db_connection=connections[alias], **params)
                 else:

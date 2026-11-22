@@ -536,6 +536,18 @@ export default function ViagoMapLibre(props: Props) {
       Date.now() - lastApproxCamera.current.at >= 5000 &&
       visualDistanceM(lastApproxCamera.current.point, cameraPoint) >= 120
     );
+    // Depart sans position GPS : la carte se place deja au depart de la route, tournee dans le sens de la route
+    // (la direction a suivre en haut de l'ecran). Purement visuel ; le suivi GPS reprend des qu'une position arrive.
+    if (following && !cameraPoint && !walking && !followedRef.current && (props.route?.length ?? 0) >= 2) {
+      const origin = props.route![0];
+      map.easeTo({ center: [origin.lng, origin.lat],
+        offset: [0, Math.round(map.getContainer().clientHeight * 0.22)],
+        zoom: 17.0,
+        bearing: routeLookAheadBearing(props.route, origin, 80) ?? routeVisualBearing(props.route, origin) ?? 0,
+        pitch: 0, padding: { top: 0, right: 0, bottom: 0, left: 0 },
+        duration: 500, essential: true });
+      return;
+    }
     // Heading-up is enabled only for a usable GPS fix and real heading.
     if (following && cameraPoint && (recenterRequested || !followedRef.current ||
         (walking ? footCameraReady : ((props.motionPhase === "moving" && props.visualGpsUsable) || approximateFollowReady)))) {
@@ -546,7 +558,7 @@ export default function ViagoMapLibre(props: Props) {
       const routeAhead = routeLookAheadBearing(props.route, cameraPoint);
       map.easeTo({ center: [cameraPoint.lng, cameraPoint.lat],
         offset: [0, walking ? 0 : Math.round(map.getContainer().clientHeight * 0.22)],
-        zoom: walking ? 17.2 : (props.visualGpsUsable ? (props.gpsFixValid ? 18.5 : 18.0) : 17.2),
+        zoom: walking ? 17.0 : (props.visualGpsUsable ? (props.gpsFixValid ? 17.0 : 16.8) : 16.5),
         bearing: headingReady ? (props.vehicleHeading ?? 0) : (routeAhead ?? 0),
         pitch: walking ? 0 : 0,
         padding: { top: 0, right: 0, bottom: 0, left: 0 },

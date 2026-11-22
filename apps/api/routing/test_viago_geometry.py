@@ -109,3 +109,14 @@ class ZoneRoutingTests(unittest.TestCase):
         self.assertIsNotNone(calls[0])
         self.assertIsNone(calls[1])
         self.assertNotIn("routing_scope", result)
+
+
+class AlternativeEscalationTests(unittest.TestCase):
+    def test_penalty_escalates_and_attempts_cover_it(self):
+        import inspect
+        from routing import viago_geometry as vg
+        factors = vg.ALT_AVOID_FACTORS
+        self.assertEqual(list(factors), sorted(factors))
+        self.assertGreater(factors[-1], factors[0])
+        self.assertGreaterEqual(vg.ALT_MAX_ATTEMPTS, 6)
+        self.assertIn("avoid_factor", inspect.signature(vg._make_viago_route_impl).parameters)

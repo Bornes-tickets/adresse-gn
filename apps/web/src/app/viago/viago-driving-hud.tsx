@@ -88,7 +88,7 @@ export default function ViagoDrivingHud(props: Props) {
       <div className={driving.controls} aria-label="Contrôles de la carte">
         {onReport && (
           <button type="button" onClick={onReport} className={driving.roundButton} aria-label="Signaler un événement sur la route" title="Signaler">
-            <span aria-hidden="true" style={{ fontSize: 22, fontWeight: 900, color: "#d97706", lineHeight: 1 }}>!</span>
+            <span aria-hidden="true" style={{ fontSize: 22, fontWeight: 900, color: "#ffd27a", lineHeight: 1 }}>!</span>
           </button>
         )}
         <button type="button" onClick={onToggleVoice}
@@ -126,7 +126,7 @@ export default function ViagoDrivingHud(props: Props) {
             <span className={driving.etaTime}>{duration}</span>
             <span className={driving.etaSub}>{remaining} · {arrival}</span>
           </div>
-          <span className={driving.etaNote}>{durationLabel ?? "Durée indicative"} · sans trafic en temps réel</span>
+          <span className={driving.etaNote}>{durationLabel ?? "Durée indicative"} · sans trafic</span>
         </div>
         <button type="button" className={driving.stopButton} onClick={onStop} aria-label="Arrêter la navigation">
           <X size={20} aria-hidden="true" /><span>Terminer</span>
