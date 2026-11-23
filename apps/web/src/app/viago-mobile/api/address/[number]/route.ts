@@ -1,5 +1,7 @@
 import { NextRequest } from "next/server";
 
+import { fetchAddressJson } from "@/features/viago/address-cache";
+
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -38,51 +40,18 @@ export async function GET(
   }
 
   try {
-    const response = await fetch(
-      `${addressApiBaseUrl}/api/v1/addresses/${encodeURIComponent(number)}/`,
-      {
-        method: "GET",
-        headers: { Accept: "application/json" },
-        cache: "no-store",
-        redirect: "manual",
-        signal: AbortSignal.timeout(75000),
-      },
-    );
-
-    if (response.status >= 300 && response.status < 400) {
-      return Response.json(
-        { status: "error", message: "Unexpected backend redirect." },
-        { status: 502 },
-      );
-    }
-
-    const payload = await response.text();
-
-    if (payload.length > 1000000) {
-      return Response.json(
-        { status: "error", message: "Backend response too large." },
-        { status: 502 },
-      );
-    }
-
-    if (!response.headers.get("content-type")?.includes("application/json")) {
-      return Response.json(
-        { status: "error", message: "Invalid backend response." },
-        { status: 502 },
-      );
-    }
-
-    if (response.status === 200) {
+    const result = await fetchAddressJson({
+      kind: "address", key: number.toUpperCase(),
+      url: `${addressApiBaseUrl}/api/v1/addresses/${encodeURIComponent(number)}/`,
+      timeoutMs: 75000, slowMs: 6000, maxBytes: 1000000,
+    });
+    if (result.source === "live" && result.status === 200) {
       if (cache.size >= 200) cache.clear();
-      cache.set(number.toUpperCase(), { at: Date.now(), payload });
+      cache.set(number.toUpperCase(), { at: Date.now(), payload: result.body });
     }
-
-    return new Response(payload, {
-      status: response.status,
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-        "Cache-Control": "no-store",
-      },
+    return new Response(result.body, {
+      status: result.status,
+      headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", "X-Viago-Source": result.source },
     });
   } catch {
     return Response.json(
