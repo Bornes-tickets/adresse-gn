@@ -55,7 +55,7 @@ export default function ViagoDirectionsCard(props: Props) {
   const [menu, setMenu] = useState(false);
   const item = "flex w-full items-center gap-3 px-4 py-3 text-left text-[14px] text-white hover:bg-white/10";
   return (
-    <div className="pointer-events-auto absolute left-3 right-3 top-3 z-[530] mx-auto max-w-[460px]">
+    <div className="pointer-events-auto absolute left-3 right-3 top-[calc(0.75rem+env(safe-area-inset-top,0px))] z-[530] mx-auto max-w-[460px]">
       <div className="rounded-2xl bg-gradient-to-br from-[#0b5d8f] via-[#0a7a8a] to-[#0a7a64] px-3 py-1.5 shadow-[0_6px_24px_rgba(10,30,50,0.22)]">
         <Row role="start" value={props.startValue} placeholder="Choisir le point de départ" props={props}
           marker={<span className="size-3 rounded-full border-[3px] border-[#a8dcff] bg-white/10" />}

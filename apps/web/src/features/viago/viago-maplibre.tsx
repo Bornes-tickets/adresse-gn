@@ -250,11 +250,19 @@ export default function ViagoMapLibre(props: Props) {
     const map = new maplibregl.Map({
       container: divRef.current, style: BASE_STYLE,
       center: [-13.5784, 9.6412], zoom: 12,
-      bearing: 0, pitch: 0, maxPitch: 65, attributionControl: {},
+      bearing: 0, pitch: 0, maxPitch: 65, attributionControl: { compact: true },
     });
     mapRef.current = map;
     let initialStyleRendered = false;
     const onLoad = () => {
+      // Attribution reduite au bouton (i) : le texte deplie masquait le bas de l'ecran.
+      const collapseAttribution = () => {
+        const el = map.getContainer().querySelector(".maplibregl-ctrl-attrib");
+        el?.classList.remove("maplibregl-compact-show");
+        el?.removeAttribute("open");
+      };
+      collapseAttribution();
+      window.setTimeout(collapseAttribution, 1500);
       // Le fond local embarque deja le theme navigation (apply_nav_theme.py) : on ne le repeint pas.
       if (!LOCAL_BASEMAP) applyViagoNavigationPalette(map);
       // Ciel / horizon pour la vue conduite inclinee (facultatif selon la version).

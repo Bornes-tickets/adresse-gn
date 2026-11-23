@@ -1676,7 +1676,10 @@ export default function ViagoPage() {
   const roadNotice = upcomingSurfaceNotice(surface, distance !== null && confirmedRemainingM !== null ? Math.max(0, distance - confirmedRemainingM) : null);
 
   return (
-    <main className={`${tracking ? "viago-c3-driving" : ""} relative isolate h-[calc(100dvh-66px)] min-h-[570px] w-full overflow-hidden bg-[#e6f4f1] text-slate-900`} aria-label="Navigation Viago">
+    <main className={`${tracking ? "viago-c3-driving" : ""} relative isolate h-dvh min-h-[570px] w-full overflow-hidden bg-[#e6f4f1] text-slate-900`} aria-label="Navigation Viago">
+      {/* Bandes pleines sous la barre d'etat et sous les boutons Android : jamais de carte derriere l'heure/reseau ni les boutons. */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 z-[900] bg-[#0a3d5c]" style={{ height: "env(safe-area-inset-top, 0px)" }} />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 z-[900] bg-[#0a3d5c]" style={{ height: "env(safe-area-inset-bottom, 0px)" }} />
       {/* Carte interactive, jamais remplacée par une image de démonstration. */}
       <div className="absolute inset-0 z-0">
         {mapLibreEnabled ? (
@@ -1717,7 +1720,7 @@ export default function ViagoPage() {
           remaining={confirmedRemainingM !== null ? prettyDistance(confirmedRemainingM) : prettyDistance(distance)}
           remainingLabel={tripEstimate.source === "live" ? "Distance restante" : tripEstimate.source === "last_confirmed" ? "Restante · dernier GPS" : "Distance initiale"}
           duration={displayedDurationS !== null ? prettyDuration(displayedDurationS) : "--"}
-          durationLabel={tripEstimate.source === "last_confirmed" ? "Durée · dernier GPS" : "Durée indicative"}
+          durationLabel={tripEstimate.source === "last_confirmed" ? "Durée · dernier GPS" : "Estimation"}
           arrival={displayedArrivalAt !== null ? new Date(displayedArrivalAt).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }) : "--:--"}
           arrivalLabel={tripEstimate.source === "last_confirmed" ? "Arrivée · dernier GPS" : "Arrivée est."}
           voiceEnabled={voiceEnabled}
@@ -1735,10 +1738,10 @@ export default function ViagoPage() {
 
       {/* Opt-in field telemetry; never records GPS coordinates or device identifiers. */}
       {tracking && gpsSource === "android-native" && (
-        <div className="pointer-events-auto absolute bottom-[155px] right-3 z-[570] flex flex-col items-end gap-2">
+        <div className="pointer-events-auto absolute bottom-[calc(155px+env(safe-area-inset-bottom,0px))] right-3 z-[570] flex flex-col items-end gap-2">
           <button type="button" onClick={toggleGpsDiagnostic}
             aria-expanded={telemetryEnabled}
-            className="rounded-lg bg-white/95 px-2.5 py-2 text-[11px] font-bold text-slate-800 shadow">
+            className="rounded-full border border-white/35 bg-gradient-to-br from-[#0b5d8f] to-[#0a7a8a] px-3.5 py-2 text-[12px] font-bold text-white shadow-[0_3px_12px_rgba(4,50,70,0.30)]">
             {telemetryEnabled ? "Fermer" : "GPS"}
           </button>
           {telemetryEnabled && telemetryReport && (
@@ -1766,7 +1769,7 @@ export default function ViagoPage() {
       )}
 
       {tracking && gpsSource === "android-native" && gpsPermissionDenied && (
-        <div role="alert" className="pointer-events-auto absolute bottom-[145px] left-3 right-3 z-[550] flex max-w-[420px] items-center justify-between gap-3 rounded-xl border border-amber-200 bg-white px-3 py-2 shadow-xl">
+        <div role="alert" className="pointer-events-auto absolute bottom-[calc(145px+env(safe-area-inset-bottom,0px))] left-3 right-3 z-[550] flex max-w-[420px] items-center justify-between gap-3 rounded-xl border border-amber-200 bg-white px-3 py-2 shadow-xl">
           <span className="text-xs font-semibold text-slate-800">Localisation désactivée pour Viago.</span>
           <button type="button" onClick={() => retryGpsPermission.current?.()} className="shrink-0 rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white">Réautoriser GPS</button>
         </div>
@@ -1779,7 +1782,7 @@ export default function ViagoPage() {
       {reporting && <ViagoReportSheet busy={reportBusy} onPick={(type) => { void sendReport(type); }} onClose={() => setReporting(false)} />}
 
       {selectedAlert && (
-        <div className="pointer-events-auto absolute inset-x-3 bottom-4 z-[560] mx-auto max-w-[460px] rounded-2xl bg-white p-4 shadow-[0_8px_30px_rgba(10,30,50,0.3)]" role="dialog" aria-label="Signalement">
+        <div className="pointer-events-auto absolute inset-x-3 bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] z-[560] mx-auto max-w-[460px] rounded-2xl bg-white p-4 shadow-[0_8px_30px_rgba(10,30,50,0.3)]" role="dialog" aria-label="Signalement">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-base font-bold text-slate-900"><span aria-hidden="true">{ALERT_META[selectedAlert.type].emoji}</span> {ALERT_META[selectedAlert.type].label}</p>
@@ -1837,7 +1840,7 @@ export default function ViagoPage() {
       )}
 
       {!tracking && !previewShown && (
-        <div className="pointer-events-none absolute inset-x-3 bottom-4 z-[520] mx-auto max-w-[460px]">
+        <div className="pointer-events-none absolute inset-x-3 bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] z-[520] mx-auto max-w-[460px]">
           <div className="pointer-events-auto rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-[0_6px_24px_rgba(10,30,50,0.22)]">
             {busy ? "Calcul de l’itinéraire…" : start && end ? "Calcul de l’itinéraire…" : !start && !end ? "Saisissez une destination, une Adresse GN, ou touchez la carte." : !end ? "Choisissez la destination." : "Choisissez le point de départ."}
           </div>
@@ -1873,7 +1876,7 @@ export default function ViagoPage() {
           }}
           aria-label="Vue rapprochee du depart"
           title="Vue rapprochee du depart"
-          className="pointer-events-auto absolute bottom-32 right-3 z-[510] flex items-center gap-2 rounded-xl bg-white px-3 py-2.5 text-xs font-bold text-emerald-800 shadow-xl md:right-5"
+          className="pointer-events-auto absolute bottom-[calc(8rem+env(safe-area-inset-bottom,0px))] right-3 z-[510] flex items-center gap-2 rounded-xl bg-white px-3 py-2.5 text-xs font-bold text-emerald-800 shadow-xl md:right-5"
         >
           <Navigation2 className="size-4" />
           Vue rapprochée
@@ -1891,7 +1894,7 @@ export default function ViagoPage() {
           }}
           aria-label="Voir tout le trajet"
           title="Voir tout le trajet"
-          className="pointer-events-auto absolute bottom-20 right-3 z-[510] flex items-center gap-2 rounded-xl bg-white px-3 py-2.5 text-xs font-bold text-emerald-800 shadow-xl md:right-5"
+          className="pointer-events-auto absolute bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] right-3 z-[510] flex items-center gap-2 rounded-xl bg-white px-3 py-2.5 text-xs font-bold text-emerald-800 shadow-xl md:right-5"
         >
           <Navigation2 className="size-4" />
           Voir tout le trajet
@@ -1899,11 +1902,11 @@ export default function ViagoPage() {
       )}
 
       <button type="button" onClick={() => { if (tracking && livePosition) setFollow(true); else positionGps(); }} aria-label="Recentrer sur ma position"
-        className={tracking ? "hidden" : `absolute ${previewShown ? "bottom-[360px]" : "bottom-24"} right-3 z-[510] flex size-12 items-center justify-center rounded-2xl bg-white shadow-xl md:right-5`}><Crosshair className="size-5 text-emerald-800"/></button>
+        className={tracking ? "hidden" : `absolute ${previewShown ? "bottom-[calc(360px+env(safe-area-inset-bottom,0px))]" : "bottom-[calc(6rem+env(safe-area-inset-bottom,0px))]"} right-3 z-[510] flex size-12 items-center justify-center rounded-2xl bg-white shadow-xl md:right-5`}><Crosshair className="size-5 text-emerald-800"/></button>
 
-      {message && <div className="pointer-events-auto absolute bottom-20 left-3 right-3 z-[550] mx-auto max-w-md rounded-xl bg-slate-900 px-4 py-3 text-xs text-white shadow-xl md:bottom-5" role="status" aria-live="polite"><div className="flex items-start justify-between gap-3"><span>{message}</span><button type="button" aria-label="Fermer le message" onClick={() => setMessage(null)}><X className="size-4"/></button></div></div>}
+      {message && <div className="pointer-events-auto absolute bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] left-3 right-3 z-[550] mx-auto max-w-md rounded-xl bg-slate-900 px-4 py-3 text-xs text-white shadow-xl md:bottom-5" role="status" aria-live="polite"><div className="flex items-start justify-between gap-3"><span>{message}</span><button type="button" aria-label="Fermer le message" onClick={() => setMessage(null)}><X className="size-4"/></button></div></div>}
 
-      {advanced && <aside className="absolute right-3 top-20 z-[600] max-h-[75dvh] w-[min(350px,calc(100vw-24px))] overflow-auto rounded-2xl bg-white p-4 shadow-2xl ring-1 ring-slate-200 md:right-5" aria-label="Outils de test Viago">
+      {advanced && <aside className="absolute right-3 top-[calc(5rem+env(safe-area-inset-top,0px))] z-[600] max-h-[75dvh] w-[min(350px,calc(100vw-24px))] overflow-auto rounded-2xl bg-white p-4 shadow-2xl ring-1 ring-slate-200 md:right-5" aria-label="Outils de test Viago">
         <div className="flex items-center justify-between"><p className="text-sm font-bold">Options et outils de test</p><button type="button" onClick={() => setAdvanced(false)} aria-label="Fermer les options"><X className="size-5"/></button></div>
         <p className="mt-2 text-xs text-slate-500">Outils techniques masqués aux utilisateurs habituels.</p>
         <div className="mt-3 grid grid-cols-2 gap-2"><button type="button" onClick={() => setSelection("start")} className={`rounded-lg border px-2 py-2 text-xs ${selection === "start" ? "border-emerald-600 bg-emerald-50" : ""}`}>Point de départ</button><button type="button" onClick={() => setSelection("end")} className={`rounded-lg border px-2 py-2 text-xs ${selection === "end" ? "border-emerald-600 bg-emerald-50" : ""}`}>Destination</button></div>

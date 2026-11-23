@@ -30,7 +30,7 @@ export default function ViagoRoutePreview(p: Props) {
   const fastest = p.candidates[0]?.duration ?? null;
   return (
     <>
-      <section className="pointer-events-auto absolute inset-x-0 bottom-0 z-[520] mx-auto max-w-[560px] rounded-t-[28px] bg-gradient-to-b from-[#0b5d8f] to-[#0a6f7e] px-4 pb-4 pt-2 shadow-[0_-6px_28px_rgba(10,30,50,0.22)]" aria-label="Itinéraire proposé">
+      <section className="pointer-events-auto absolute inset-x-0 bottom-0 z-[520] mx-auto max-w-[560px] rounded-t-[28px] bg-gradient-to-b from-[#0b5d8f] to-[#0a6f7e] px-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] pt-2 shadow-[0_-6px_28px_rgba(10,30,50,0.22)]" aria-label="Itinéraire proposé">
         <div className="mx-auto h-1.5 w-10 rounded-full bg-white/40" aria-hidden="true" />
         <div className="mt-2 flex items-center justify-between">
           <div className="flex flex-1 items-center justify-around" role="tablist" aria-label="Mode de déplacement">
@@ -54,7 +54,7 @@ export default function ViagoRoutePreview(p: Props) {
             {p.durationS !== null ? formatMinutes(p.durationS) : "--"} <span className="text-lg font-normal text-sky-50">({p.distanceLabel})</span>
           </p>
           <p className="mt-0.5 text-[13px] text-sky-100">
-            {p.chosen === 0 ? "Itinéraire le plus rapide" : "Autre itinéraire"}{p.arrivalLabel ? ` · arrivée ${p.arrivalLabel}` : ""} · hors trafic en temps réel
+            {p.chosen === 0 ? "Itinéraire le plus rapide" : "Autre itinéraire"}{p.arrivalLabel ? ` · arrivée ${p.arrivalLabel}` : ""} · estimation hors trafic en direct
           </p>
         </div>
 
