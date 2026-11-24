@@ -143,6 +143,8 @@ export async function watchViagoPosition(
       enableHighAccuracy: true,
       timeout: 15000,
       maximumAge: 1000,
+      // Sans "interval", le plugin Capacitor utilise le timeout (15 s) comme cadence : une position toutes les 15 s.
+      interval: 1000,
       minimumUpdateInterval: 1000,
     }, (data, error) => {
       if (stopped) return;

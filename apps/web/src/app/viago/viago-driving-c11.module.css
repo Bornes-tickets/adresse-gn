@@ -49,9 +49,9 @@
 .recenterPill:focus-visible { outline:3px solid #f4a900; outline-offset:3px; }
 
 /* --- Vitesse : seulement si connue --- */
-.speed { position:absolute; left:var(--edge); bottom:calc(88px + env(safe-area-inset-bottom,0px)); width:58px; height:58px; border-radius:50%; background:linear-gradient(135deg,#0b5d8f,#0a7a64); color:#fff; border:3px solid rgba(255,255,255,.55); box-shadow:0 3px 12px rgba(4,50,70,.30); display:flex; flex-direction:column; align-items:center; justify-content:center; }
-.speedNumber { font-size:22px; font-weight:900; line-height:1; font-variant-numeric:tabular-nums; }
-.speedUnit { font-size:9px; font-weight:800; color:#cfe8f5; }
+.speed { position:absolute; left:var(--edge); bottom:calc(88px + env(safe-area-inset-bottom,0px)); width:84px; height:84px; border-radius:50%; background:linear-gradient(135deg,#0b5d8f,#0a7a64); color:#fff; border:3px solid rgba(255,255,255,.75); box-shadow:0 3px 12px rgba(4,50,70,.30); display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.speedNumber { font-size:38px; font-weight:900; line-height:1; font-variant-numeric:tabular-nums; }
+.speedUnit { font-size:12px; font-weight:800; color:#cfe8f5; }
 
 /* --- Panneau du bas : ETA lisible comme Google Maps --- */
 .dock { position:absolute; left:var(--edge); right:var(--edge); bottom:calc(10px + env(safe-area-inset-bottom,0px));
@@ -64,7 +64,7 @@
 .stopButton { flex:none; display:flex; align-items:center; gap:6px; min-height:38px; padding:0 14px 0 10px; border:none; border-radius:999px; background:rgba(255,255,255,.18); color:#fff; font-size:14px; font-weight:800; }
 
 @media (max-width:360px) { .turnArrow { width:42px; font-size:38px; } .turnCard { gap:10px; padding:10px 12px; } .stopButton { padding:0 12px 0 10px; } }
-@media (max-height:680px) { .speed { display:none; } }
+@media (max-height:680px) { .speed { width:68px; height:68px; } .speedNumber { font-size:30px; } }
 @media (min-width:768px) {
   .top { left:20px; right:auto; top:20px; width:min(460px,calc(100% - 40px)); }
   .controls { top:20px; right:20px; transform:none; }
@@ -81,7 +81,7 @@
   .stopButton { padding:0; width:42px; min-height:42px; justify-content:center; }
   .stopButton span { display:none; }
   .recenterPill { bottom:calc(82px + env(safe-area-inset-bottom,0px)); }
-  .speed { bottom:calc(70px + env(safe-area-inset-bottom,0px)); width:50px; height:50px; }
+  .speed { bottom:calc(76px + env(safe-area-inset-bottom,0px)); }
 }
 
 .stopButton:hover { background:rgba(255,255,255,.28); }

@@ -382,21 +382,44 @@ export default function ViagoPage() {
   const [telemetryEnabled, setTelemetryEnabled] = useState(false);
   const [telemetryReport, setTelemetryReport] = useState<ReturnType<typeof summarizeGpsTelemetry> | null>(null);
   const [telemetryCopyStatus, setTelemetryCopyStatus] = useState("");
+  // Diagnostic du pipeline de suivi (aucune coordonnée) : où le suivi se bloque-t-il ?
+  const newGpsDbg = () => ({
+    phase: "-", spd: null as number | null, acc: null as number | null,
+    route: "-", cont: true, lock: "-", confirmed: 0, contFail: 0,
+    routes: {} as Record<string, number>, locks: {} as Record<string, number>,
+  });
+  const gpsDbg = useRef(newGpsDbg());
+  const [dbgSnap, setDbgSnap] = useState(() => newGpsDbg());
+  const [telemetryCompact, setTelemetryCompact] = useState(false);
   useEffect(() => {
     if (!telemetryEnabled) return;
     const id = window.setInterval(() => {
       if (gpsTelemetry.current) setTelemetryReport(summarizeGpsTelemetry(gpsTelemetry.current));
-    }, 2000);
+      setDbgSnap({ ...gpsDbg.current, routes: { ...gpsDbg.current.routes }, locks: { ...gpsDbg.current.locks } });
+    }, 1000);
     return () => window.clearInterval(id);
   }, [telemetryEnabled]);
+  // Comme Waze : si la carte a été déplacée à la main, elle revient seule sur le véhicule après 8 s.
+  const autoFollowMs = useRef(8000);
+  useEffect(() => {
+    if (!tracking || follow) return;
+    const id = window.setTimeout(() => {
+      setMapView("detail");
+      setFollow(true);
+      setRecenterRequest((value) => value + 1);
+    }, autoFollowMs.current);
+    return () => window.clearTimeout(id);
+  }, [tracking, follow]);
   function toggleGpsDiagnostic() {
     if (telemetryEnabled) {
       gpsTelemetry.current = null;
       setTelemetryReport(null);
       setTelemetryCopyStatus("");
+      setTelemetryCompact(false);
       setTelemetryEnabled(false);
     } else {
       gpsTelemetry.current = newGpsTelemetry();
+      gpsDbg.current = newGpsDbg();
       setTelemetryReport(summarizeGpsTelemetry(gpsTelemetry.current));
       setTelemetryCopyStatus("");
       setTelemetryEnabled(true);
@@ -405,7 +428,7 @@ export default function ViagoPage() {
   async function copyGpsDiagnostic() {
     if (!gpsTelemetry.current) return;
     try {
-      await navigator.clipboard.writeText(JSON.stringify(summarizeGpsTelemetry(gpsTelemetry.current), null, 2));
+      await navigator.clipboard.writeText(JSON.stringify({ ...summarizeGpsTelemetry(gpsTelemetry.current), pipeline: gpsDbg.current }, null, 2));
       setTelemetryCopyStatus("Statistiques copiées (sans coordonnées).");
     } catch {
       setTelemetryCopyStatus("Copie bloquée : autorisez le presse-papiers.");
@@ -1355,6 +1378,18 @@ export default function ViagoPage() {
                 ? (footDecision?.confirmed && continuityOk ? result : null)
                 : (nativeDecision?.accepted ? result : null))
             : (continuityOk ? result : null);
+          if (gpsTelemetry.current) {
+            const d = gpsDbg.current;
+            const st = result?.status ?? "none";
+            d.phase = effectivePhase; d.acc = Math.round(accuracy * 10) / 10;
+            d.spd = speedMps === null ? null : Math.round(speedMps * 3.6);
+            d.route = st; d.cont = continuityOk;
+            d.routes[st] = (d.routes[st] ?? 0) + 1;
+            if (!continuityOk) d.contFail++;
+            d.lock = nativeDecision ? nativeDecision.reason : "-";
+            if (nativeDecision) d.locks[nativeDecision.reason] = (d.locks[nativeDecision.reason] ?? 0) + 1;
+            if (confirmedResult?.status === "on_route") d.confirmed++;
+          }
           setGpsSignal("valid");
           // G1-P3: speed is displayed only after corroborated motion. Prefer
           // Android's speed when plausible; otherwise derive it from two
@@ -1365,7 +1400,7 @@ export default function ViagoPage() {
                   travelledMeters: confirmedResult.travelledMeters, at: now,
                 }, accuracy, maxSpeedMps)
               : null;
-          const nativeSpeed = speedMps !== null && speedMps >= (profile === "foot" ? 0.5 : 1) &&
+          const nativeSpeed = speedMps !== null && speedMps >= 0.5 &&
             speedMps <= maxSpeedMps ? Math.round(speedMps * 3.6) : null;
           // A recent pedestrian lock permits the independently reported Android
           // speed between route-progress confirmations. Never infer movement from
@@ -1374,6 +1409,11 @@ export default function ViagoPage() {
             pedestrianGate.current.lastAccepted !== null &&
             now - pedestrianGate.current.lastAccepted.at >= 0 &&
             now - pedestrianGate.current.lastAccepted.at <= 20000;
+          // Vitesse affichée comme Waze : valeur Doppler d'Android dès 2 km/h, 0 à l'arrêt,
+          // tant que le point GPS est précis. Aucune coordonnée n'est inventée ici.
+          const directKmh = androidNative && speedMps !== null && accuracy <= 25 &&
+            speedMps <= maxSpeedMps ? (speedMps < 0.5 ? 0 : Math.round(speedMps * 3.6)) : null;
+          if (directKmh !== null) setGpsSpeedKmh(directKmh); else
           setGpsSpeedKmh(effectivePhase === "stationary" ? 0 :
             effectivePhase === "uncertain" ? null :
             androidNative ? (profile === "foot"
@@ -1687,7 +1727,7 @@ export default function ViagoPage() {
             userPosition={livePosition} pedestrianMode={profile === "foot"} profile={profile}
             pedestrianPosition={profile === "foot" ? pedestrianGpsPosition : null}
             pedestrianAccuracyM={profile === "foot" ? gpsAccuracy : null}
-            vehicleHeading={vehicleHeading} motionPhase={motionPhase} followUser={tracking && follow} recenterRequest={recenterRequest} onUserPan={() => setFollow(false)} gpsFixValid={gpsSignal === "valid" && routeProgress?.status === "on_route"} visualGpsUsable={(gpsSignal === "valid" || gpsSignal === "imprecise") && livePosition !== null && typeof gpsAccuracy === "number" && gpsAccuracy <= MAX_GPS_VISUAL_ACCURACY_M} navigationActive={tracking} sheetOpen={false} fitRequest={fitRequest} viewMode={mapView} detailRequest={detailRequest} />
+            vehicleHeading={vehicleHeading} motionPhase={motionPhase} followUser={tracking && follow} recenterRequest={recenterRequest} progressMeters={tracking && lastConfirmedGuidance ? Math.floor(lastConfirmedGuidance.travelledMeters / 10) * 10 : null} onUserPan={() => { autoFollowMs.current = 8000; setFollow(false); }} gpsFixValid={gpsSignal === "valid" && routeProgress?.status === "on_route"} visualGpsUsable={(gpsSignal === "valid" || gpsSignal === "imprecise") && livePosition !== null && typeof gpsAccuracy === "number" && gpsAccuracy <= MAX_GPS_VISUAL_ACCURACY_M} navigationActive={tracking} sheetOpen={false} fitRequest={fitRequest} viewMode={mapView} detailRequest={detailRequest} />
         ) : (
           <ViagoLeafletMap start={start} end={end} route={route} onSelect={choosePoint}
             userPosition={livePosition} vehicleHeading={vehicleHeading} followUser={tracking && follow} gpsFixValid={gpsSignal === "valid" && routeProgress?.status === "on_route"} navigationActive={tracking} sheetOpen={false} fitRequest={fitRequest} viewMode={mapView} detailRequest={detailRequest} />
@@ -1731,7 +1771,7 @@ export default function ViagoPage() {
           voiceError={voiceError}
           onToggleVoice={() => { void toggleVoice(); }}
           onFollow={() => { setMapView("detail"); setFollow(true); setRecenterRequest((value) => value + 1); }}
-          onOverview={() => { setFollow(false); setMapView("overview"); setFitRequest((value) => value + 1); }}
+          onOverview={() => { autoFollowMs.current = 20000; setFollow(false); setMapView("overview"); setFitRequest((value) => value + 1); }}
           onStop={() => { stopTracking(); setSheetOpen(true); setMapView("overview"); setFitRequest((value) => value + 1); }}
         />
       )}
@@ -1744,7 +1784,14 @@ export default function ViagoPage() {
             className="rounded-full border border-white/35 bg-gradient-to-br from-[#0b5d8f] to-[#0a7a8a] px-3.5 py-2 text-[12px] font-bold text-white shadow-[0_3px_12px_rgba(4,50,70,0.30)]">
             {telemetryEnabled ? "Fermer" : "GPS"}
           </button>
-          {telemetryEnabled && telemetryReport && (
+          {telemetryEnabled && telemetryCompact && (
+            <button type="button" onClick={() => setTelemetryCompact(false)} aria-label="Afficher le diagnostic GPS complet"
+              className="max-w-[200px] rounded-lg border border-slate-300 bg-white/95 px-2 py-1 text-left text-[10px] font-semibold leading-tight text-slate-800 shadow-lg">
+              {dbgSnap.phase} · {dbgSnap.spd ?? "--"} km/h · ±{dbgSnap.acc ?? "--"} m<br />
+              route {dbgSnap.route} · verrou {dbgSnap.lock} · conf. {dbgSnap.confirmed}
+            </button>
+          )}
+          {telemetryEnabled && telemetryReport && !telemetryCompact && (
             <div role="region" aria-label="Statistiques de qualité GPS, sans coordonnées"
               className="max-h-[47dvh] w-[255px] overflow-y-auto rounded-xl border border-slate-200 bg-white/95 p-3 text-[11px] text-slate-800 shadow-xl">
               <div className="mb-1 font-bold text-slate-900">Qualité GPS · diagnostic local</div>
@@ -1758,10 +1805,16 @@ export default function ViagoPage() {
               <p>Route confirmée / rejetée : {telemetryReport.roadAccepted} / {telemetryReport.rejected.route}</p>
               <p>GPS imprécis / ancien : {telemetryReport.rejected.accuracy} / {telemetryReport.rejected.stale}</p>
               <p>Erreurs / reprises : {telemetryReport.nativeErrors} / {telemetryReport.restarts}</p>
+              <p>Mouvement : {dbgSnap.phase} · GPS {dbgSnap.spd ?? "--"} km/h</p>
+              <p>Route : {Object.entries(dbgSnap.routes).map(([k, v]) => `${k} ${v}`).join(", ") || "--"}</p>
+              <p>Continuité refusée : {dbgSnap.contFail} · Positions confirmées : {dbgSnap.confirmed}</p>
+              <p>Verrou route : {Object.entries(dbgSnap.locks).map(([k, v]) => `${k} ${v}`).join(", ") || "--"}</p>
               <p>Signal actuel : {telemetryReport.staleNow === null ? "En attente" : telemetryReport.staleNow ? "Ancien" : "Récent"}</p>
               <p className="mt-1 text-[10px] text-slate-500">Aucune coordonnée enregistrée. Statistiques en mémoire uniquement, effacées à la fermeture du diagnostic.</p>
               <button type="button" onClick={() => void copyGpsDiagnostic()}
                 className="mt-2 rounded-md bg-emerald-700 px-3 py-1.5 font-bold text-white">Copier les statistiques</button>
+              <button type="button" onClick={() => setTelemetryCompact(true)}
+                className="ml-2 mt-2 rounded-md bg-slate-700 px-3 py-1.5 font-bold text-white">Réduire</button>
               {telemetryCopyStatus && <p role="status" className="mt-1">{telemetryCopyStatus}</p>}
             </div>
           )}

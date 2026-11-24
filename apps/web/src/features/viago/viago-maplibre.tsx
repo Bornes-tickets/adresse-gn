@@ -28,6 +28,8 @@ type Props = {
   vehicleHeading?: number | null;
   followUser?: boolean;
   recenterRequest?: number;
+  /** Distance déjà parcourue sur l'itinéraire (m, arrondie) : le tronçon parcouru est grisé. */
+  progressMeters?: number | null;
   onUserPan?: () => void;
   gpsFixValid?: boolean;
   visualGpsUsable?: boolean;
@@ -86,6 +88,57 @@ function lineFeature(points: ViagoPoint[] | null): GeoJSON.FeatureCollection {
       type: "LineString", coordinates: points.map((p) => [p.lng, p.lat]),
     },
   }] : [] };
+}
+// Coupe l'itinéraire à `meters` du départ (même métrique haversine que le suivi de progression).
+function splitRoute(route: ViagoPoint[] | null, meters: number | null | undefined): { done: ViagoPoint[] | null; rest: ViagoPoint[] | null } {
+  if (!route || route.length < 2 || typeof meters !== "number" || !Number.isFinite(meters) || meters < 4) return { done: null, rest: route };
+  const rad = Math.PI / 180;
+  const hav = (a: ViagoPoint, b: ViagoPoint) => {
+    const dLat = (b.lat - a.lat) * rad, dLng = (b.lng - a.lng) * rad;
+    const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLng / 2) ** 2;
+    return 2 * 6371008.8 * Math.atan2(Math.sqrt(h), Math.sqrt(Math.max(0, 1 - h)));
+  };
+  let acc = 0;
+  for (let i = 1; i < route.length; i++) {
+    const len = hav(route[i - 1], route[i]);
+    if (acc + len >= meters) {
+      const t = len > 0 ? (meters - acc) / len : 0;
+      const cut = { lat: route[i - 1].lat + (route[i].lat - route[i - 1].lat) * t,
+        lng: route[i - 1].lng + (route[i].lng - route[i - 1].lng) * t };
+      return { done: [...route.slice(0, i), cut], rest: [cut, ...route.slice(i)] };
+    }
+    acc += len;
+  }
+  return { done: route, rest: null };
+}
+// Distances cumulées le long de l'itinéraire (haversine, comme le suivi de progression).
+function cumulativeMeters(route: ViagoPoint[]): number[] {
+  const rad = Math.PI / 180;
+  const cum = [0];
+  for (let i = 1; i < route.length; i++) {
+    const a = route[i - 1], b = route[i];
+    const dLat = (b.lat - a.lat) * rad, dLng = (b.lng - a.lng) * rad;
+    const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLng / 2) ** 2;
+    cum.push(cum[i - 1] + 2 * 6371008.8 * Math.atan2(Math.sqrt(h), Math.sqrt(Math.max(0, 1 - h))));
+  }
+  return cum;
+}
+// Abscisse (m depuis le départ) du point de l'itinéraire le plus proche de p, limitée à [fromM, toM]
+// pour ne jamais « sauter » vers un autre tronçon de la même route. Null si p est à plus de 40 m.
+function alongOnRoute(route: ViagoPoint[], cum: number[], p: ViagoPoint, fromM: number, toM: number): number | null {
+  const mx = 111320 * Math.cos((p.lat * Math.PI) / 180), my = 110574;
+  let best: { along: number; d: number } | null = null;
+  for (let i = 1; i < route.length; i++) {
+    if (cum[i] < fromM || cum[i - 1] > toM) continue;
+    const a = route[i - 1], b = route[i];
+    const ax = (a.lng - p.lng) * mx, ay = (a.lat - p.lat) * my;
+    const vx = (b.lng - a.lng) * mx, vy = (b.lat - a.lat) * my;
+    const len2 = vx * vx + vy * vy;
+    const t = len2 > 0 ? Math.max(0, Math.min(1, -(ax * vx + ay * vy) / len2)) : 0;
+    const d = Math.hypot(ax + t * vx, ay + t * vy);
+    if (!best || d < best.d) best = { along: cum[i - 1] + t * (cum[i] - cum[i - 1]), d };
+  }
+  return best && best.d <= 40 ? best.along : null;
 }
 const SNAP_DISPLAY_M = 25;   // affichage seulement : colle le marqueur a la route s'il en est proche
 const CONNECTOR_MIN_M = 8;   // au-dela, un pointille relie le marqueur a la route
@@ -234,6 +287,9 @@ export default function ViagoMapLibre(props: Props) {
   const lastDetailRef = useRef(props.detailRequest);
   const followedRef = useRef(false);
   const lastRecenterRef = useRef(props.recenterRequest ?? 0);
+  const shownVehicleRef = useRef<ViagoPoint | null>(null);
+  const routeCumRef = useRef<{ route: ViagoPoint[]; cum: number[] } | null>(null);
+  const doneAlongRef = useRef(0);
   const lastReliableBearingRef = useRef<number | null>(null);
   const everConfirmedRef = useRef(false);
   const heldVehicleRef = useRef<ViagoPoint | null>(null);
@@ -316,6 +372,12 @@ export default function ViagoMapLibre(props: Props) {
         paint: { "line-color": "#ffffff", "line-width": routeWidth(6), "line-opacity": 1 } }, firstSymbolId);
       map.addLayer({ id: "viago-route-blue", type: "line", source: "viago-route", layout: routeLayout,
         paint: { "line-color": "#1d8cff", "line-width": routeWidth(0), "line-opacity": 1 } }, firstSymbolId);
+      // Tronçon déjà parcouru : gris, sous le bleu restant (viago-route ne contient que le reste).
+      map.addSource("viago-route-done", { type: "geojson", data: lineFeature(null) });
+      map.addLayer({ id: "viago-route-done-halo", type: "line", source: "viago-route-done", layout: routeLayout,
+        paint: { "line-color": "#ffffff", "line-width": routeWidth(6), "line-opacity": 0.9 } }, firstSymbolId);
+      map.addLayer({ id: "viago-route-done-line", type: "line", source: "viago-route-done", layout: routeLayout,
+        paint: { "line-color": "#a3adb8", "line-width": routeWidth(0), "line-opacity": 1 } }, firstSymbolId);
       // Tronçons non revetus / pistes : tireté brun clair par-dessus le bleu.
       map.addSource("viago-route-surface", { type: "geojson", data: lineFeature(null) });
       map.addLayer({ id: "viago-route-surface-dash", type: "line", source: "viago-route-surface",
@@ -454,7 +516,7 @@ export default function ViagoMapLibre(props: Props) {
     if (!map || !loaded) return;
     const update = (key: string, data: GeoJSON.FeatureCollection) =>
       (map.getSource(key) as GeoJSONSource | undefined)?.setData(data);
-    update("viago-route", lineFeature(props.route));
+
     // Walking follow mode shows the estimated GPS point, not a competing green start dot.
     update("viago-start", pointFeature(props.navigationActive ? null : props.start, "start"));
     update("viago-end", pointFeature(props.end, "end"));
@@ -493,6 +555,30 @@ export default function ViagoMapLibre(props: Props) {
     } else if (props.navigationActive && !props.pedestrianMode && props.route && !everConfirmedRef.current) {
       shown = props.route[0];
     }
+    shownVehicleRef.current = shown;
+    // Trajet parcouru : coupé exactement à la position affichée du véhicule (ou du piéton),
+    // jamais en arrière (monotone), borné pour ne pas sauter vers un autre tronçon.
+    let doneAlong = 0;
+    if (props.navigationActive && props.route && props.route.length >= 2) {
+      if (routeCumRef.current?.route !== props.route) {
+        routeCumRef.current = { route: props.route, cum: cumulativeMeters(props.route) };
+        doneAlongRef.current = 0;
+      }
+      const { cum } = routeCumRef.current;
+      const trackPoint = props.pedestrianMode ? (props.pedestrianPosition ?? null) : (everConfirmedRef.current ? shown : null);
+      if (trackPoint) {
+        const a = alongOnRoute(props.route, cum, trackPoint, Math.max(0, doneAlongRef.current - 25), doneAlongRef.current + 500);
+        if (a !== null && a > doneAlongRef.current) doneAlongRef.current = a;
+      }
+      if (typeof props.progressMeters === "number" && props.progressMeters > doneAlongRef.current) doneAlongRef.current = props.progressMeters;
+      doneAlong = doneAlongRef.current;
+    } else {
+      routeCumRef.current = null;
+      doneAlongRef.current = 0;
+    }
+    const split = props.navigationActive ? splitRoute(props.route, doneAlong) : { done: null, rest: props.route };
+    update("viago-route", lineFeature(split.rest));
+    update("viago-route-done", lineFeature(split.done));
     update("viago-vehicle", pointFeature(shown, "vehicle"));
     update("viago-connector", lineFeature(connector));
     if (map.getLayer("viago-vehicle-arrow")) {
@@ -506,7 +592,7 @@ export default function ViagoMapLibre(props: Props) {
     if (map.getLayer("viago-vehicle-arrow")) {
       map.setLayoutProperty("viago-vehicle-arrow", "icon-rotate", displayBearing ?? 0);
     }
-  }, [loaded, props.route, props.start, props.end, props.userPosition,
+  }, [loaded, props.route, props.start, props.end, props.userPosition, props.progressMeters,
     props.pedestrianMode, props.pedestrianPosition, props.pedestrianAccuracyM, props.profile,
     props.vehicleHeading, props.navigationActive, props.followUser, props.motionPhase, props.gpsFixValid, props.visualGpsUsable]);
 
@@ -518,7 +604,10 @@ export default function ViagoMapLibre(props: Props) {
     const recenterRequested = (props.recenterRequest ?? 0) !== lastRecenterRef.current;
     lastRecenterRef.current = props.recenterRequest ?? 0;
     const walking = Boolean(props.pedestrianMode && props.pedestrianPosition);
-    const cameraPoint = walking ? props.pedestrianPosition! : (props.visualGpsUsable ? (props.userPosition ?? heldVehicleRef.current) : (heldVehicleRef.current ?? props.userPosition));
+    const baseCameraPoint = walking ? props.pedestrianPosition! : (props.visualGpsUsable ? (props.userPosition ?? heldVehicleRef.current) : (heldVehicleRef.current ?? props.userPosition));
+    // « Recentrer » ramène toujours sur le véhicule (ou le piéton) affiché, jamais sur le départ du trajet.
+    const vehicleNow = walking ? props.pedestrianPosition! : ((everConfirmedRef.current ? shownVehicleRef.current : null) ?? props.userPosition ?? heldVehicleRef.current);
+    const cameraPoint = recenterRequested && vehicleNow ? vehicleNow : baseCameraPoint;
     // Walking camera follows the *estimated* GPS dot with an accuracy-aware
     // displacement threshold. This never confirms route progress/turns/speed.
     const footDistance = walking && lastFootCamera.current && cameraPoint

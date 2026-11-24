@@ -57,10 +57,14 @@ export function updateNativeMotionGate(
   const quietRadius = Math.max(9, Math.min(18, Math.max(accuracyM, previous.anchorAccuracyM)));
   const accurate = accuracyM <= 20 && previous.anchorAccuracyM <= 20;
   const speedZero = speedMps !== null && speedMps <= 0.45;
-  const speedMoving = speedMps !== null && speedMps >= 2.5;
+  // Comme les autres GPS : la vitesse Doppler d'Android fait foi des ~2 km/h.
+  const speedMoving = speedMps !== null && speedMps >= 0.55;
+  const fastEnough = speedMps !== null && speedMps >= 2.5;
   const plausible = drift <= Math.max(0, elapsed) * 45 + accuracyM + previous.anchorAccuracyM;
+  const accSum = accuracyM + previous.anchorAccuracyM;
+  const minDrift = fastEnough ? Math.max(18, 1.7 * accSum) : Math.max(8, 1.2 * accSum);
   const coherentTravel = accurate && speedMoving && plausible && elapsed >= 3 &&
-    drift >= Math.max(18, 1.7 * (accuracyM + previous.anchorAccuracyM));
+    drift >= minDrift;
 
   // A confirmed moving state is not stopped by a single zero-speed sample.
   if (previous.phase === "moving") {
@@ -74,7 +78,8 @@ export function updateNativeMotionGate(
       };
       return { ...previous, lastAt: at, stableCount: count, stableSince };
     }
-    if (speedMoving && accurate && plausible) return {
+    // Zone grise 0,45-0,55 m/s : on garde l'état « en mouvement » (pas de clignotement).
+    if (speedMps !== null && speedMps > 0.45 && accurate && plausible) return {
       ...previous, anchor: point, anchorAt: at, anchorAccuracyM: accuracyM,
       lastAt: at, stableCount: 0, stableSince: at,
     };
@@ -95,14 +100,16 @@ export function updateNativeMotionGate(
   }
 
   // Native speed without reliable spatial confirmation is untrusted.
+  // La distance doit croître d'une mesure à l'autre, mais à 1 mesure/s un véhicule
+  // à 18 km/h ne gagne que 5 m : l'ancien seuil fixe (+8 m) bloquait sous ~29 km/h.
   if (!coherentTravel || (previous.candidateDisplacementM !== undefined &&
-      drift < previous.candidateDisplacementM + 8)) {
+      drift < previous.candidateDisplacementM + 1.5)) {
     return { ...previous, lastAt: at, phase: "uncertain", evidence: 0,
       stableCount: 0, stableSince: at,
       candidateDisplacementM: undefined, candidateBearing: undefined };
   }
   const evidence = previous.evidence + 1;
-  if (evidence >= 3 && elapsed >= 9) return {
+  if (evidence >= 3 && elapsed >= 6) return {
     ...previous, anchor: point, anchorAt: at, anchorAccuracyM: accuracyM,
     lastAt: at, phase: "moving", evidence: 0,
     stableCount: 0, stableSince: at,

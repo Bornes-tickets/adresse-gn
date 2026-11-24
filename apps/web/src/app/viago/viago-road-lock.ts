@@ -83,7 +83,7 @@ export function updateRoadLock(previous: RoadLockState | null, input: RoadLockIn
       !Number.isFinite(accuracyM) || accuracyM < 0 || accuracyM > 25 ||
       travelledMeters === null || !Number.isFinite(travelledMeters) || travelledMeters < 0 ||
       !Number.isFinite(maxSpeedMps) || maxSpeedMps <= 0 ||
-      speedMps === null || !Number.isFinite(speedMps) || speedMps < 1.5) {
+      speedMps === null || !Number.isFinite(speedMps) || speedMps < 0.5) {
     return fail("gps_uncertain");
   }
   if (routeGeometryAmbiguous(route, raw, accuracyM)) return fail("route_ambiguous");
